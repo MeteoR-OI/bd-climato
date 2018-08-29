@@ -1,0 +1,24 @@
+ * * * * * root cd /srv/bd-climato/env-prod && source bin/activate && cd ../prod && python manage.py get_data_INSTAN &> /srv/bd-climato/prod/cron.log
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

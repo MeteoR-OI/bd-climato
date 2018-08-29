@@ -1,0 +1,106 @@
+{% load static %}
+<h1>MeteoR-OI</h1>
+<h2>Affichage graphique - Récapitulatif</h2>
+
+<h2>De la journée du {{jourchoisi}}/{{moischoisi}}/{{anneechoisi}}</h2>
+Période de mesure possible : Du {{debutmesure}} au {{finmesure}}
+</br>
+<form action="." method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    Choix de la journée :
+    <SELECT name="jour" size="1">
+    {% for jour in jour_dispo %}
+    <OPTION>{{jour}}
+    {% endfor %}
+    </SELECT>
+    <SELECT name="mois" size="1">
+    {% for mois in mois_dispo %}
+    <OPTION>{{mois}}
+    {% endfor %}
+    </SELECT>
+    <SELECT name="annee" size="1">
+    {% for annee in annee_dispo %}
+    <OPTION>{{annee}}
+    {% endfor %}
+    </SELECT> <input type="submit" value="Submit" />
+</form>
+
+    </br>
+ 
+<table rules=cols border=5 ><tr><td>
+
+<table><tr><td colspan=2>
+<img src="{% static linkT  %}" />
+</td></tr><tr><td>
+<li>T moyenne : {{MoyTemp}}°C </br>
+<li>Tx : {{Tx}}°C à {{DateTx}}</br>
+<li>Tn : {{Tn}}°C à {{DateTn}}</td><td>
+<li>IC max : {{ICmax}}°C </br>
+<li>Windchill absolu : {{WINDCHILLmax}}°C </br>
+</td></tr></table>
+
+</td><td>
+    
+
+<table><tr><td>
+<img src="{% static linkRR  %}" />
+</td></tr><tr><td>
+<li>Cumul : {{cumultotal}}mm </br>
+<li>Intensité max : {{maxRRI}}mm/h à  {{hrmaxRRI}}  </br>
+</td></tr> </table>
+
+</td><td>
+  
+ 
+<table><tr><td>
+ <img src="{% static linkPMER  %}" />  
+ </td></tr><tr><td>
+<li>Pression moyenne : {{pmoy}}hPa</br>
+ <li>Pression max : {{pmax}}hPa</br>
+ <li>Pression min : {{pmin}}hPa à {{hpmin}}
+ </td></tr></table>  
+  
+    
+    
+</td></tr><tr><td>
+
+
+<table><tr><td>
+<img src="{% static linkFF  %}" />
+</td></tr><tr><td>
+<li>Vent moyen :  {{MoyFF}}km/h</br>
+<li>Vent moyen max:  {{ventmoyenmax}}km/h</br>
+<li>Rafale max : {{rafmax}}km/h à {{hrrafmax}}</br>
+</td></tr>    
+</table>
+
+
+</td><td>
+
+
+<table><tr><td>
+<img src="{% static linkDD2  %}" />
+</td></tr><tr><td>
+</td></tr>    
+</table>
+ 
+</td><td>
+    
+{% if enso %}  
+<table><tr><td>
+
+<img src="{% static linkRAD  %}" />
+</td></tr><tr><td>
+<li>Durée ensoleillement :  {{hRAD}}h{{mRAD}} min  </br>
+<li>UV max :  {{UVmax}}  </br>
+</td></tr>    
+</table>
+{% endif %}  
+</td></tr></table>
+
+
+  <a href ="../../../accueil">Accueil</a>
+    
+    
+

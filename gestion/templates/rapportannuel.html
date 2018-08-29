@@ -1,0 +1,128 @@
+{% load static %}
+<html>
+<head>
+    <title> Rapport annuel </title>
+</head>
+ 
+<body>
+ 
+ <table border="1" width='1000px'><tr><td>
+ 
+<font size="6pt"> <center><b>RAPPORT ANNUEL : {{date_rapport}} </b></center>  </font>
+<font size="5pt"> <center><b>Station: {{nomposte}} </b></center>  </font>
+{{derniermois}}
+
+<table width="100%"><tr><td width="70%">
+Localisation:    
+<li> Ville : {{ville}}    
+<li> Longitude/Latitude : {{lon}}°/{{lat}}°  
+<li> Altitude : {{alt}}m  
+</td><td>
+<li> Modèle : {{type}}
+<li> Type d'informations : {{typinfo}}
+</td></tr></table>
+
+<h2>Température</h2>
+<table width="100%">
+<tr><td>
+<img src="{% static linkT  %}" />    
+    
+</td><td>
+<div style="padding:3px; border:2px dotted #a5a5a5; background-color:#e3e3e3;">
+<strong>Commentaire :</strong></br> 
+Le mois le plus chaud de l'année était le mois de <font color="red">{{TMmaxdate}}</font> avec <font color="red">{{TMmax}}°C</font> en moyenne .</br>
+Le mois le plus froid de l'année était le mois de <font color="blue">{{TMmindate}}</font> avec <font color="blue">{{TMmin}}°C</font> en moyenne .</br>
+TX/TN absolus de l'année : <font color="red">{{TXabs}}°C</font> en {{dateTX}} / <font color="blue">{{TNabs}}°C</font> en {{dateTN}}. </br>
+{% for commt in Comm_T%}
+{{commt}}</br>
+{% endfor %}
+</div>
+
+</td></tr>
+    <tr><td colspan =2>
+        
+{% if divT %}
+<div style="padding:5px; background-color:#ffaca3; border:2px solid #ff3924; -moz-border-radius:9px; -khtml-border-radius:9px; -webkit-border-radius:9px; border-radius:9px;">
+<strong><big>/!\</big> Record</strong>: 
+{% for recordT in Record_T %}
+{{recordT}} </br> 
+{% endfor %}
+{% endif %}
+</div>
+
+    </td></tr>
+   
+</table>
+
+
+
+<h2>Précipitations</h2>
+<table width="100%">
+<tr><td> 
+<div style="padding:3px; border:2px dotted #a5a5a5; background-color:#e3e3e3;">
+<strong>Commentaire :</strong></br> 
+Il est tombé <font color = "blue">{{Cumulannee}}mm</font> sur toute l'année de {{annee}}.</br>
+Le mois le plus pluvieux était le mois de {{moispluvieux}} avec un cumul total de <font color = "blue">{{cumulpluvieux}}mm</font>.</br>
+Le mois le plus sec était le mois de {{moissec}} avec un cumul total de <font color = "red">{{cumulsec}}mm</font>.</br>
+La journée la plus pluvieuse était la journée du {{Datecumul1jmax}} avec <b>{{Cumul1jmax}}mm</b>.</br>
+{% for commrr in Comm_RR %}
+{{commrr}}</br>
+{% endfor %}
+
+</div>
+</td><td><img src="{% static linkRR  %}" align="right"/></td></tr>
+    <tr><td colspan = 2>{% if divRR %}
+        <div style="padding:5px; background-color:#ffaca3; border:2px solid #ff3924; -moz-border-radius:9px; -khtml-border-radius:9px; -webkit-border-radius:9px; border-radius:9px;">
+<strong><big>/!\</big> Record</strong>: {% for recordRR in Record_RR %}
+{{recordRR}} </br> 
+{% endfor %}
+{% endif %}
+</div>
+    </td></tr>
+
+</table>
+
+
+
+
+
+
+<h2>Vent</h2>
+<table width="100%">
+<tr><td>
+<img src="{% static linkDD  %}" />
+</td><td><div style="padding:3px; border:2px dotted #a5a5a5; background-color:#e3e3e3;">
+<strong>Commentaire :</strong></br> 
+Le vent était majoritairement de secteur {{DirDD}} ({{DDmoy}}°).</br>
+Le vent moyen maximal a été relevé le {{HXY}}, il provenait du secteur {{DirDXY}} ({{DXY}}°) à {{FXY}}km/h.</br>
+La rafale maximale de {{FXI}}km/h a été relevé le {{HXI}}.</br>
+
+</div></td></tr><tr><td colspan=2>
+<table width="100%"><tr><td width="50%"><center><img src="{% static linkFFAB  %}" /></center></td><td width="50%"><center><img src="{% static linkNBJFXI  %}" /></center></td></tr></table>
+    {% if divFF%}
+<div style="padding:5px; background-color:#ffaca3; border:2px solid #ff3924; -moz-border-radius:9px; -khtml-border-radius:9px; -webkit-border-radius:9px; border-radius:9px;">
+<strong><big>/!\</big> Record</strong>: {{RecordFF}}.
+</div>{% endif %}</td></tr></table>
+
+ 
+ <h2>Pression</h2> 
+ 
+<table width="100%">
+<tr><td>
+<img src="{% static linkPMER  %}" />
+</td><td><div style="padding:3px; border:2px dotted #a5a5a5; background-color:#e3e3e3;">
+<strong>Commentaire :</strong></br> 
+La pression minimale de {{PMERMIN}}hPa a été relevée le {{DATEPMERMIN}}.</br>
+
+
+</div></td></tr></table>
+ 
+ 
+ 
+ </td></tr>
+ </table>
+  <a href ="../accueil">Accueil</a> 
+
+ 
+</body>
+</html>

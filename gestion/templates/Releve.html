@@ -1,0 +1,66 @@
+<h2>Soumission manuelle de données </h2>
+{% load static %}
+<form action="." method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    Choix de votre poste :
+    </br>
+    <SELECT name="code" size="1">
+    {% for station in liste %}
+
+    <OPTION>{{station}}
+    {% endfor %}
+    </SELECT>
+    </br>
+    <input type="submit" value="Submit" />
+
+</form>
+
+
+
+{% if envoiCODE %}Vous avez choisi la station : {{code}} 
+<br/>
+<br/>
+<form action="." method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input id="code" name="code" type="hidden"  value={{code}} />
+    Mesure sur <b>1h</b> du : <input id="date" name="date" type="text"  value="JJ/MM/AAAA"/> à <input id="hrfin" name="hrfin" type="text"  value="HH:MM"/>
+    <br/>
+    Quantité de précipitations : <input id="mm" name="mm" type="text"  />mm
+    <input type="submit" value="Submit" />
+ </form>
+
+<h2>Récapitulatif </h2>
+<h3>Du jour : {{datejour}}</h3>
+<form action="." method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" id="code" name ="code" value={{code}} >
+    Choix de la journée :
+    <SELECT name="jour" size="1">
+    {% for jour in jour_dispo %}
+    <OPTION>{{jour}}
+    {% endfor %}
+    </SELECT>
+    <SELECT name="mois" size="1">
+    {% for mois in mois_dispo %}
+    <OPTION>{{mois}}
+    {% endfor %}
+    </SELECT>
+    <SELECT name="annee" size="1">
+    {% for annee in annee_dispo %}
+    <OPTION>{{annee}}
+    {% endfor %}
+    </SELECT> <input type="submit" value="Submit" />
+</form>
+<table><tr><td> <img src="{% static linkJ  %}" /></td><td>
+ Cumul journalier : {{cumulj}}mm </br>
+Cumul max sur 1h: {{cumul1hmax}}mm</td></tr></table>
+</br>
+<h3>Du mois : {{mois_choisi}}/{{annee_choisi}}</h3>
+<table><tr><td><img src="{% static linkM  %}" /></td><td>
+ Cumul mensuel : {{cumulm}}mm</br>
+ Cumul max sur 1h : {{cumul1hmaxmois}}mm</br>
+ Cumul journalier max  : {{cumuljmaxmois}}mm
+{% endif %}
+
+</br>  
+<a href ="../accueil">Accueil</a>

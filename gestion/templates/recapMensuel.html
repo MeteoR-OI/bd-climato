@@ -1,0 +1,147 @@
+{% load static %}
+<h1>MeteoR-OI</h1>
+<h2>Affichage graphique - Récapitulatif</h2>
+
+<h2>Du mois du {{moischoisi}}/{{anneechoisi}}</h2>
+Période de mesure possible : Du {{debutmesure}} au {{finmesure}}
+</br>
+<form action="." method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    Choix du mois :
+    <SELECT name="mois" size="1">
+    {% for mois in mois_dispo %}
+    <OPTION>{{mois}}
+    {% endfor %}
+    </SELECT>
+    <SELECT name="annee" size="1">
+    {% for annee in annee_dispo %}
+    <OPTION>{{annee}}
+    {% endfor %}
+    </SELECT> <input type="submit" value="Submit" />
+</form>
+
+    </br>
+   
+<table rules=cols border=5 ><tr><td>
+
+<table><tr><td colspan=2>
+<img src="{% static linkT  %}" />
+</td></tr><tr><td>
+<li>T moyenne : {{MoyTemp}}°C </br>
+<li>Tx absolu : {{Tx}}°C le {{datTx}}</br>
+<li>Tn absolu : {{Tn}}°C le {{datTn}}</td><td>
+<li>Tx min : {{Txmin}}°C le {{datTxmin}}</br>
+<li>Tn max: {{Tnmax}}°C le {{datTnmax}}
+</td></tr></table>
+
+</td><td>
+    
+
+<table><tr><td>
+<img src="{% static linkRR1  %}" />
+</td></tr><tr><td>
+<li>Cumul : {{cumultotal}}mm en {{hDRR}}h{{mDRR}}</br>
+<li>Intensité max : {{RRI}}mm/h le  {{datRRI}}  </br>
+</td></tr> </table>
+
+</td><td>
+  
+ 
+<table><tr><td>
+ <img src="{% static linkPMER  %}" />  
+ </td></tr><tr><td>
+<li>Pression moyenne : {{pmoy}}hPa</br>
+ <li>Pression max : {{pmax}}hPa</br>
+ <li>Pression min : {{pmin}}hPa le {{hpmin}}
+ </td></tr></table>  
+  
+    
+    
+</td></tr><tr><td>
+
+
+<table><tr><td>
+<img src="{% static linkFF  %}" />
+</td></tr><tr><td>
+<li>Vent moyen max:  {{ventmoyenmax}}km/h le {{datventmoyenmax}}</br>
+<li>Rafale max : {{rafmax}}km/h le {{datrafmax}}</br>
+</td></tr>    
+</table>
+
+
+</td><td>
+
+
+<table><tr><td>
+<center><img src="{% static linkDD  %}" /></center>
+</td></tr><tr><td>
+</td></tr>    
+</table>
+ 
+</td><td>
+    
+<table><tr><td>
+<img src="{% static linkH  %}" />
+</td></tr><tr><td>
+<li>Humidité max :  {{UX}}%  le {{hUX}}</br>
+<li>Humidité min :  {{UN}}%  le {{hUN}} 
+</td></tr>    
+</table>    
+
+    
+</td></tr></table>
+
+
+{% if mois_passe %}
+<h2>Statistiques</h2>
+<table width=80%><tr><td>
+
+<table border = 1> 
+<tr><td><font color="blue"><b>Cumul de pluie</b></font></td><td><b>Nombre de jours</b></td></tr>
+<tr><td><b>>1 mm</b></td><td> {{NBJRR1}}</td></tr>
+<tr><td><b>>5 mm</b></td><td> {{NBJRR5}}</td></tr>
+<tr><td><b>>10 mm</b></td><td> {{NBJRR10}}</td></tr>
+<tr><td><b>>30 mm</b></td><td> {{NBJRR30}}</td></tr>
+<tr><td><b>>50 mm</b></td><td> {{NBJRR50}}</td></tr>
+<tr><td><b>>100 mm</b></td><td> {{NBJRR100}}</td></tr>
+</table>
+
+</td><td>
+<table border = 1> 
+<tr><td><font color="red"><b>T max</b></font></td><td><b>Nombre de jours</b></td></tr>
+<tr><td><b>< 0°C</b></td><td> {{NBJTX0}}</td></tr>
+<tr><td><b>< 20°C</b></td><td> {{NBJTXI20}}</td></tr>
+<tr><td><b>< 27°C</b></td><td> {{NBJTXI27}}</td></tr>
+<tr><td><b>> 25°C</b></td><td> {{NBJTX25}}</td></tr>
+<tr><td><b>> 30°C</b></td><td> {{NBJTX30}}</td></tr>
+<tr><td><b>> 32°C</b></td><td> {{NBJTX32}}</td></tr>
+<tr><td><b>> 35°C</b></td><td> {{NBJTX35}}</td></tr>
+</table>
+
+</td><td>
+
+<table border = 1> 
+<tr><td><font color="blue"><b>T min</b></font></td><td><b>Nombre de jours</b></td></tr>
+<tr><td><b>< -5°C</b></td><td> {{NBJTN5}}</td></tr>
+<tr><td><b>< 0°C</b></td><td> {{NBJGELEE}}</td></tr>
+<tr><td><b>< 10°C</b></td><td> {{NBJTNI10}}</td></tr>
+<tr><td><b>< 15°C</b></td><td> {{NBJTNI15}}</td></tr>
+<tr><td><b>< 20°C</b></td><td> {{NBJTNI20}}</td></tr>
+<tr><td><b>> 20°C</b></td><td> {{NBJTNS20}}</td></tr>
+<tr><td><b>> 25°C</b></td><td> {{NBJTNS25}}</td></tr>
+</table>
+
+</td><td>
+
+<table border = 1> 
+<tr><td><font color="purple"><b>Rafales</b></font></td><td><b>Nombre de jours</b></td></tr>
+<tr><td><b>> 36km/h (10kt)</b></td><td> {{NBJFF10}}</td></tr>
+<tr><td><b>> 57.6km/h (16kt)</b></td><td> {{NBJFF16}}</td></tr>
+<tr><td><b>> 100km/h (28kt)</b></td><td> {{NBJFF28}}</td></tr>
+
+</table>
+
+</td>
+</tr></table>
+{% endif %}    
+

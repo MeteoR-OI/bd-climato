@@ -1,0 +1,24 @@
+{% if envoi %}Vos données de "{{CODE_POSTE}}" ont bien été envoyées !<br/>
+{% endif %}
+
+<h1>Initialisation du poste</h1>
+
+Veuillez entrer toutes les informations sur la station : <br/>
+Les champs précédés par un * sont obligatoires.
+
+
+
+<form action="." method="post" enctype="multipart/form-data">
+    
+    {% csrf_token %}
+    
+    {{ form.as_p }}
+
+    <input type="submit" value="Submit" />
+
+</form>
+
+
+
+{{form.errors}}
+{{form.non_form_errors}}

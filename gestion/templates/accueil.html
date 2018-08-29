@@ -1,0 +1,155 @@
+<title>Accueil</title>
+<h1>Accueil - MétéoR OI</h>
+
+<h2>Initialisation</h2>
+<li> Initialiser station et de ses archives <a href="initialisation">Ici</a>
+
+<form method="post" >
+    {% csrf_token %}
+    <li> Initialiser les instruments d'une station :
+
+    <SELECT name="codeposte_instrument" size="1">
+    {% for station in liste %}
+    <OPTION>{{station}}
+    {% endfor %}
+    </SELECT>
+
+    <input type="submit" value="Envoyer" />
+
+</form>
+<b><u>A améliorer</b></u> : Gestion d'erreurs, liste pré-remplie pour les villes.
+
+<h2>SPIEA</h2>
+<li> Ajouter un relevé manuel pluviométrique SPIEA + Affichage graphique <a href="Releve">Ici</a>
+</br></br><b><u>A améliorer</b></u> : Ajouter la possibilité d'envoyer des cumuls infra-horaire. Ajouter de nouvelles données extraites (<strike>cumul max sur 1h</strike>, record etc) + <strike>affichage graphique avec choix de période (historique)</strike>. Possibilité de rectification ?
+<h2>Affichage graphique</h2>
+<form method="post" >
+    {% csrf_token %}
+    <li> Données instantanées :
+
+    <SELECT name="codeposte_instan" size="1">
+    {% for station in liste %}
+    <OPTION>{{station}}
+    {% endfor %}
+    </SELECT>
+
+    <input type="submit" value="Envoyer" />
+
+</form>
+
+<form method="post" >
+    {% csrf_token %}
+    <li> Récapitulatif journalier :
+
+    <SELECT name="codeposte_recapj" size="1">
+    {% for station in liste %}
+    <OPTION>{{station}}
+    {% endfor %}
+    </SELECT>
+
+    <input type="submit" value="Envoyer" />
+
+</form>
+<form method="post" >
+    {% csrf_token %}
+    <li> Récapitulatif mensuel :
+
+    <SELECT name="codeposte_recapm" size="1">
+    {% for station in liste %}
+    <OPTION>{{station}}
+    {% endfor %}
+    </SELECT>
+
+    <input type="submit" value="Envoyer" />
+
+</form>
+</br><b><u>A améliorer:</b></u> Ajouter de meilleures interfaces graphiques <strike>avec possibilité de superpositions. Adapter échelle pour les superpositions.</strike> Ne pas lister les stations SPIEA. Ajouter de nouvelles données extraites intéressantes + records.
+
+<h2>Rapport périodique</h2>
+<form method="post" >
+    {% csrf_token %}
+    <li> Rapport mensuel :
+
+    <SELECT name="codeposte_rapportm" size="1">
+    {% for station in liste %}
+    <OPTION>{{station}}
+    {% endfor %}
+    </SELECT>
+    - Mois <input id="rapportmois" name="rapportmois" type="text" />
+    - Année <input id="rapportmoisannee" name="rapportmoisannee" type="text" />
+    <input type="submit" value="Envoyer" />
+
+</form>
+
+<form method="post" >
+    {% csrf_token %}
+    <li> Rapport annuel :
+
+    <SELECT name="codeposte_rapporta" size="1">
+    {% for station in liste %}
+    <OPTION>{{station}}
+    {% endfor %}
+    </SELECT>
+    - Année <input id="rapportannee" name="rapportannee" type="text" />
+    <input type="submit" value="Envoyer" />
+
+</form>
+</br><b><u> A améliorer</b></u> : Ajouter plus de données extraites avec des comparaisons aux records. MODIFIER LES MOYENNES DE DIRECTION DE VENT.
+<h2>Extraction de données</h2>
+<form method="post" >
+    {% csrf_token %}
+<li>Station: <SELECT name="codeposte_extraction" size="1">
+    {% for station in liste %}
+    <OPTION>{{station}}
+    {% endfor %}
+    </SELECT>
+<li>Période: Début <input id="debutextraction" name="debutextraction" type="text" value="HH:MM JJ/MM/AAAA"/> - Fin <input id="finextraction" name="finextraction" type="text" value="HH:MM JJ/MM/AAAA"/>
+<input type="submit" value="Envoyer" />
+</form>
+
+{%if converti %}
+
+Votre fichier a été conveti. Le <a href="{{link}}" download="{{codeposte_extraction}}">télécharger.</a>
+{% endif %}
+
+<h2>Ajout et affichage graphique d'évènements </h2>
+<li>Créer un nouvel évènement :
+<form method="post" >
+    {% csrf_token %}
+    Nom de l'évènement:  <input id="nom_evenement" name="nom_evenement" type="text" /> - Début  : <input id="debut_evenement" name="debut_evenement" type="text" value ="HH:MM JJ/MM/AAAA"/> - Fin  : <input id="fin_evenement" name="fin_evenement" type="text" value ="HH:MM JJ/MM/AAAA"/>
+    <input type="submit" value="Envoyer" />
+</form>
+<li>Ajouter un poste à un évènement :
+<form method="post" >
+    {% csrf_token %}
+    Nom de l'évènement: <SELECT name="nom_evenementposte" size="1">
+    {% for ev in liste_evenement %}
+    <OPTION>{{ev}}
+    {% endfor %}
+    </SELECT>
+    -  Nom du poste:  <SELECT name="codeposte_evenement" size="1">
+    {% for station in liste %}
+    <OPTION>{{station}}
+    {% endfor %}
+    </SELECT>
+     <input type="submit" value="Envoyer" />
+</form>
+
+<li> Affichage d'évènements : </br>
+Choix de l'évènement : <form method="post" > {% csrf_token %} <SELECT name="affichage_evenement" size="1">
+    {% for ev in liste_evenement %}
+    <OPTION>{{ev}}
+    {% endfor %}
+    </SELECT>
+    <input type="submit" value="Envoyer" />
+</form>
+
+{% if choixevenement %}
+Evenement {{nom_evenement_choisi}} du {{debut_evenement_choisi}} au {{fin_evenement_choisi}}: </br>
+- Postes concernés: </br>
+{% for poste_ev in liste_evenement_poste %}
+<li><a href="recap/ev/{{nom_evenement_choisi}}/{{poste_ev}}">{{poste_ev}}</a>
+{% endfor %}
+
+{% endif %}
+</br><b><u> A améliorer</b></u> : Ajouter plus de données extraites. Possibilité de choisir un format de rapports (front froid = précisions sur T et RR, cyclone = précisions sur RR,FF, orage = précisions sur RR) et création de rapports.

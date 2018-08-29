@@ -1,0 +1,6 @@
+.project
+.pydevproject
+.settings
+db.sqlite3
+Clim_MeteoR/settings.py
+

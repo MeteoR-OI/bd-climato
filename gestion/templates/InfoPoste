@@ -1,0 +1,58 @@
+<h1>Informations complémentaires au poste</h1>
+
+<h2>Capteur de {{code}} </h2>
+<form action="." method="post">
+
+    {% csrf_token %}
+    
+    
+    Station : <input id="code" name="code" type="text" value ={{code}} /><br/>
+    <br>
+    Modèle station : <input id="typestation" name="typestation" type="text" value ={{typestation}} /><br/>
+    <br>
+    Capteur : <input id="nomcapteur" name="nomcapteur" type="text" value ={{nomcapteur}} /><br/>
+    {% if typestation != "Autre" %}
+  
+    <br>
+    Seuil min : <input id="seuilmin" name="seuilmin" type="number" value ={{seuilmin}} />{{unite}}<br/>
+    <br>
+    Seuil max : <input id="seuilmax" name="seuilmax" type="number" value ={{seuilmax}} />{{unite}}</br>
+    <br>
+    Précision : <input id="precision" name="precision" type="number" value ={{precision}} />{{unite}}</br>
+    <br>
+    Intervalle de MAJ : <input id="pasdetemps" name="pasdetemps" type="number" value ={{pasdetemps}} /> (en secondes)</br>
+    <br>
+    Unité : <input id="unite" name="unite" type="text" value ={{unite}} /></br> 
+    {% endif %}
+    {{ form.as_p }} 
+    
+    <input type="submit" value="Submit" />
+
+</form>
+
+{% if envoi == True %}
+<b>Votre capteur {{nomcapteur}} a bien été initialisé. </b><br/>
+{% if typestation == 'Autre' %}
+<b>Vous pouvez modifier le formulaire pour ajouter un autre capteur.</b>
+{% endif %}
+{% endif %}
+
+
+
+
+<br/>
+
+
+{% if typestation != 'Autre' %}
+Initialisez votre : 
+<li> <a href="../T/">Thermomètre</a>
+<li> <a href="../Pl/">Pluviomètre</a>
+<li> <a href="../A/">Anénomètre</a>
+<li> <a href="../P/">Baromètre</a>
+{% if typestation == "VP2P" %}
+<li> <a href="../Ray/">Rayonnement</a>
+<li> <a href="../UV/">UV</a>
+{% endif %}
+
+<li> <a href="../../Autre/T">Autre</a>
+{% endif %}
