@@ -11,7 +11,6 @@ from django.db.models import Sum,Count,Min,Max,Avg
 from django.shortcuts import redirect
 from django.urls import path
 import datetime
-import math
 from windrose import WindroseAxes
 import matplotlib.cm as cm
 import webbrowser
