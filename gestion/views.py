@@ -655,7 +655,7 @@ def reactualisation(request):
             for ligne in lignes:
                 #Récupération des données pour chaque ligne
                 l = ligne.split(',')
-                l = [np.nan if element == '\\N' else element for element in l]
+                l = [None if element == '\\N' else element for element in l]
                 
                 dateTime = int(l[0])
                 
@@ -981,40 +981,9 @@ def affichage(request,codeposte):
                 
                     
                 #Changement de légende axe x selon la période choisie
-                if delta_date.days >= 90:
-                    ax.xaxis.set_minor_locator(dates.DayLocator(interval=31))   
-                    ax.xaxis.set_minor_formatter(dates.DateFormatter('%d/%m/%Y'))
-                elif delta_date.days >= 62:
-                    ax.xaxis.set_minor_locator(dates.DayLocator(interval=15))   
-                    ax.xaxis.set_minor_formatter(dates.DateFormatter('%d/%m')) 
-                elif delta_date.days >= 31:
-                    ax.xaxis.set_minor_locator(dates.DayLocator(interval=5))   
-                    ax.xaxis.set_minor_formatter(dates.DateFormatter('%d/%m')) 
-                elif delta_date.days >= 20 : 
-                    ax.xaxis.set_minor_locator(dates.DayLocator(interval=2))   
-                    ax.xaxis.set_minor_formatter(dates.DateFormatter('%d/%m')) 
-                elif delta_date.days >= 10 : 
-                    ax.xaxis.set_minor_locator(dates.DayLocator(interval=1))   
-                    ax.xaxis.set_minor_formatter(dates.DateFormatter('%d/%m'))  
-                    
-                elif delta_date.days >= 5 : 
-                    ax.xaxis.set_minor_locator(dates.HourLocator(interval=12))   
-                    ax.xaxis.set_minor_formatter(dates.DateFormatter('%Hh'))  
-                    ax.xaxis.set_major_locator(dates.DayLocator(interval=1))   
-                    ax.xaxis.set_major_formatter(dates.DateFormatter('\n\n%d'))   
-                elif delta_date.days >= 3 : 
-                    ax.xaxis.set_minor_locator(dates.HourLocator(interval=6))   
-                    ax.xaxis.set_minor_formatter(dates.DateFormatter('%Hh'))  
-                    ax.xaxis.set_major_locator(dates.DayLocator(interval=1))   
-                    ax.xaxis.set_major_formatter(dates.DateFormatter('\n\n%d'))     
-                elif delta_date.days >= 1 : 
-                    ax.xaxis.set_minor_locator(dates.HourLocator(interval=3))   
-                    ax.xaxis.set_minor_formatter(dates.DateFormatter('%Hh'))  
-                    ax.xaxis.set_major_locator(dates.DayLocator(interval=1))   
-                    ax.xaxis.set_major_formatter(dates.DateFormatter('\n\n%d')) 
-                else: 
-                    ax.xaxis.set_minor_locator(dates.HourLocator(interval=1))   
-                    ax.xaxis.set_minor_formatter(dates.DateFormatter('%Hh'))  
+                format_date(delta_date.days,ax)
+                
+                
                     
                 for text in ax.get_xminorticklabels():
                     text.set_rotation(50)    
@@ -1093,7 +1062,45 @@ def affichage(request,codeposte):
             carte = False
        
     return render(request, 'station.html', locals())
+
+def format_date(delta,ax):
     
+    if delta >= 90:
+        ax.xaxis.set_minor_locator(dates.DayLocator(interval=31))   
+        ax.xaxis.set_minor_formatter(dates.DateFormatter('%d/%m/%Y'))
+    elif delta >= 62:
+        ax.xaxis.set_minor_locator(dates.DayLocator(interval=15))   
+        ax.xaxis.set_minor_formatter(dates.DateFormatter('%d/%m')) 
+    elif delta >= 31:
+        ax.xaxis.set_minor_locator(dates.DayLocator(interval=5))   
+        ax.xaxis.set_minor_formatter(dates.DateFormatter('%d/%m')) 
+    elif delta >= 20 : 
+        ax.xaxis.set_minor_locator(dates.DayLocator(interval=2))   
+        ax.xaxis.set_minor_formatter(dates.DateFormatter('%d/%m')) 
+    elif delta >= 10 : 
+        ax.xaxis.set_minor_locator(dates.DayLocator(interval=1))   
+        ax.xaxis.set_minor_formatter(dates.DateFormatter('%d/%m'))  
+        
+    elif delta >= 5 : 
+        ax.xaxis.set_minor_locator(dates.HourLocator(interval=12))   
+        ax.xaxis.set_minor_formatter(dates.DateFormatter('%Hh'))  
+        ax.xaxis.set_major_locator(dates.DayLocator(interval=1))   
+        ax.xaxis.set_major_formatter(dates.DateFormatter('\n\n%d'))   
+    elif delta >= 3 : 
+        ax.xaxis.set_minor_locator(dates.HourLocator(interval=6))   
+        ax.xaxis.set_minor_formatter(dates.DateFormatter('%Hh'))  
+        ax.xaxis.set_major_locator(dates.DayLocator(interval=1))   
+        ax.xaxis.set_major_formatter(dates.DateFormatter('\n\n%d'))     
+    elif delta >= 1 : 
+        ax.xaxis.set_minor_locator(dates.HourLocator(interval=3))   
+        ax.xaxis.set_minor_formatter(dates.DateFormatter('%Hh'))  
+        ax.xaxis.set_major_locator(dates.DayLocator(interval=1))   
+        ax.xaxis.set_major_formatter(dates.DateFormatter('\n\n%d')) 
+    else: 
+        ax.xaxis.set_minor_locator(dates.HourLocator(interval=1))   
+        ax.xaxis.set_minor_formatter(dates.DateFormatter('%Hh'))    
+        
+    return  
  #Récapitulatif des différentes périodes : journalier   
 def recap(request,codeposte):
     
@@ -1717,8 +1724,10 @@ def recapevenement(request,codeposte,codeevenement):
     plt.plot(x,y2,'b',label='TD') 
     plt.ylabel('Température °C')
     ax.set_xticklabels([])
-    ax.xaxis.set_minor_locator(dates.HourLocator(interval=2))   
-    ax.xaxis.set_minor_formatter(dates.DateFormatter('%Hh')) 
+    
+    delta_date = date_Fin - date_Debut
+    format_date(delta_date.days,ax)
+    
     for text in ax.get_xminorticklabels():
         text.set_rotation(50)
     ax2=ax.twinx()
@@ -1776,8 +1785,8 @@ def recapevenement(request,codeposte,codeevenement):
             linestyle = 'solid',linewidth = 1)
     ax1.set_ylabel('Pluviomètrie mm')
     #plt.bar(r, y2, width = barWidth, bottom = y1, color = ['pink' for i in y1],edgecolor = ['green' for i in y1], linestyle = 'dotted', hatch = 'o',linewidth = 3)
-    plt.xticks([r + barWidth / 2 for r in range(0,len(RR1),2)],
-                [hr[i].strftime('%H h') for i in range(0,len(RR1),2)])       
+    plt.xticks([r + barWidth / 2 for r in range(0,len(RR1),5)],
+                [hr[i].strftime('%H h') for i in range(0,len(RR1),5)])       
     plt.xticks(rotation=70)
     ax2 = ax1.twinx()
     ax2.plot(r,RRI,'r',label='Intensité')        
@@ -1804,8 +1813,7 @@ def recapevenement(request,codeposte,codeevenement):
     #Tracé des données vent   
     plt.plot(x,PMER,'k',label='PMER',linewidth=1)
     ax.set_xticklabels([])
-    ax.xaxis.set_minor_locator(dates.HourLocator(interval=2))   
-    ax.xaxis.set_minor_formatter(dates.DateFormatter('%Hh'))  
+    format_date(delta_date.days,ax)  
     for text in ax.get_xminorticklabels():
         text.set_rotation(50)
     plt.grid()
@@ -1838,8 +1846,7 @@ def recapevenement(request,codeposte,codeevenement):
     ax2 = ax.twinx()
     ax2.plot(x,dir,'*k', label='Direction vent moyen')
     ax.set_xticklabels([])
-    ax.xaxis.set_minor_locator(dates.HourLocator(interval=2))   
-    ax.xaxis.set_minor_formatter(dates.DateFormatter('%Hh'))  
+    format_date(delta_date.days,ax) 
     for text in ax.get_xminorticklabels():
         text.set_rotation(50)
     plt.grid()
@@ -1904,17 +1911,18 @@ def recapevenement(request,codeposte,codeevenement):
             pass
         for valuesRR in Precip_comp:
             
-            liste_cumul1h += [[Decimal(str(round(float(valuesRR.RR1),2))),valuesRR.DATJ.strftime('%d/%m à %Hh%M'),poste.POSTE]]
+            liste_cumul1h += [[Decimal(str(round(float(valuesRR.RR1),2))),valuesRR.DATJ.strftime('%d/%m à %Hh%M'),poste.POSTE.CODE_POSTE]]
         
         for values in H_comp:
-            liste_FXI += [[Decimal(str(round(float(values.FXI),2))),values.HXI.strftime('%d/%m à %Hh%M'),poste.POSTE]]
-            liste_TX += [[Decimal(str(round(float(values.TX),2))),values.HTX.strftime('%d/%m à %Hh%M'),poste.POSTE]]
-            liste_TN += [[Decimal(str(round(float(values.TN),2))),values.HTN.strftime('%d/%m à %Hh%M'),poste.POSTE]]
-            liste_UX += [[Decimal(str(round(float(values.UX),2))),values.HUX.strftime('%d/%m à %Hh%M'),poste.POSTE]]
-            liste_UN += [[Decimal(str(round(float(values.UN),2))),values.HUN.strftime('%d/%m à %Hh%M'),poste.POSTE]]
-            liste_RRI += [[Decimal(str(round(float(values.RRI),2))),values.HRRI.strftime('%d/%m à %Hh%M'),poste.POSTE]]
+            liste_FXI += [[Decimal(str(round(float(values.FXI),2))),values.HXI.strftime('%d/%m à %Hh%M'),poste.POSTE.CODE_POSTE]]
+            liste_TX += [[Decimal(str(round(float(values.TX),2))),values.HTX.strftime('%d/%m à %Hh%M'),poste.POSTE.CODE_POSTE]]
+            liste_TN += [[Decimal(str(round(float(values.TN),2))),values.HTN.strftime('%d/%m à %Hh%M'),poste.POSTE.CODE_POSTE]]
+            liste_UX += [[Decimal(str(round(float(values.UX),2))),values.HUX.strftime('%d/%m à %Hh%M'),poste.POSTE.CODE_POSTE]]
+            liste_UN += [[Decimal(str(round(float(values.UN),2))),values.HUN.strftime('%d/%m à %Hh%M'),poste.POSTE.CODE_POSTE]]
+            liste_RRI += [[Decimal(str(round(float(values.RRI),2))),values.HRRI.strftime('%d/%m à %Hh%M'),poste.POSTE.CODE_POSTE]]
        
     #Top des RR1
+    print(liste_cumul1h)
     liste_cumul1h = sorted(liste_cumul1h,reverse=True)
     liste_cumul1h = liste_cumul1h[0:10]
     for i in range(0,10):

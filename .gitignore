@@ -3,4 +3,7 @@
 .settings
 db.sqlite3
 Clim_MeteoR/settings.py
+static/**/*.png
+data/**/*.csv
+
 

@@ -7,7 +7,7 @@ from decimal import Decimal
 def initDonnees(nom, CODE_POSTE):
     
         #On récupère le fichier enregistré
-        link = "data/" + nom + ".csv"
+        link =  nom + ".csv"
         #On l'ouvre, on le lit ligne par ligne et on injecte les données dans 
         #la table INSTAN
         with open(link, "r") as f:
@@ -18,50 +18,64 @@ def initDonnees(nom, CODE_POSTE):
                 #ligne = ligne.replace('NULL','\N')
                 
                 l = ligne.split(',')
-                l = [np.nan if element == '\\N' else element for element in l]
+                l = [None if element == '\\N' else element for element in l]
                 
                 dateTime = int(str(l[0]).replace('"',''))
                 
                 interval = str(l[2]).replace('"','')
                 barometer = str(l[3]).replace('"','')
                
-                barometer = Decimal(str(round(float(barometer),2)))
+                barometer = convert(barometer)
                 pressure = str(l[4]).replace('"','')
                 altimeter = str(l[5]).replace('"','')
                 outTemp = str(l[7]).replace('"','')
-                outTemp = Decimal(str(round(float(outTemp),2)))
+                outTemp = convert(outTemp)
                 outHumidity = str(l[9]).replace('"','')
-                outHumidity = Decimal(str(round(float(outHumidity),2)))
+                outHumidity = convert(outHumidity)
                 windSpeed = str(l[10]).replace('"','')
-                windSpeed = Decimal(str(round(float(windSpeed),2)))
+                windSpeed = convert(windSpeed)
                 windDir = str(l[11]).replace('"','')
-                windDir = Decimal(str(round(float(windDir),2)))
+                windDir = convert(windDir)
                 windGust = str(l[12]).replace('"','')
-                windGust = Decimal(str(round(float(windGust),2)))
+                windGust = convert(windGust)
                 windGustDir = str(l[13]).replace('"','')
-                windGustDir = Decimal(str(round(float(windGustDir),2)))
+                windGustDir = convert(windGustDir)
                 rainRate = str(l[14]).replace('"','')
-                rainRate = Decimal(str(round(float(rainRate),2)))
+                rainRate = convert(rainRate)
                 rain = str(l[15]).replace('"','')
-                rain = Decimal(str(round(float(rain),2)))
+                rain = convert(rain)
                 dewpoint = str(l[16]).replace('"','')
-                dewpoint = Decimal(str(round(float(dewpoint),2)))
+                dewpoint = convert(dewpoint)
                 windchill = str(l[17]).replace('"','')
-                windchill = Decimal(str(round(float(windchill),2)))
+                windchill = convert(windchill)
                 heatindex = str(l[18]).replace('"','')
-                heatindex = Decimal(str(round(float(heatindex),2)))
-                ET= str(l[19]).replace('"','')
-                ET = Decimal(str(round(float(ET),2)))
-                radiation = str(l[20]).replace('"','')
-                radiation = Decimal(str(round(float(radiation),2)))
-                UV= str(l[21]).replace('"','')
-                UV = Decimal(str(round(float(UV),2)))
-                soilTemp = str(l[25]).replace('"','')
-                soilTemp = Decimal(str(round(float(soilTemp),2)))
-                leafTemp = str(l[29]).replace('"','')
-                leafTemp = Decimal(str(round(float(leafTemp),2)))
-                leafWet =str(l[33]).replace('"','')
-                leafWet = Decimal(str(round(float(leafWet),2)))
+                heatindex = convert(heatindex)
+                
+                try:
+                    radiation = str(l[20]).replace('"','')
+                    radiation = convert(radiation)
+                    ET= str(l[19]).replace('"','')
+                    ET = convert(ET)
+                except:
+                    radiation = None
+                    ET = None
+                
+                try:
+                    UV= str(l[21]).replace('"','')
+                    UV = convert(UV)
+                except: 
+                    UV = None
+                try:
+                    soilTemp = str(l[25]).replace('"','')
+                    soilTemp = convert(soilTemp)
+                    leafTemp = str(l[29]).replace('"','')
+                    leafTemp = convert(leafTemp)
+                    leafWet =str(l[33]).replace('"','')
+                    leafWet = convert(leafWet)
+                except:
+                    soilTemp = None
+                    leafTemp = None
+                    leafWet = None
                 
                 
                 #Traitement des données
@@ -70,17 +84,25 @@ def initDonnees(nom, CODE_POSTE):
                 #Injection de toutes les donnees dans la table INS
                 postes = POSTE.objects.get(CODE_POSTE = CODE_POSTE)
                 INSTAN.objects.get_or_create(POSTE = postes, 
-                                             DATJ = dateTime, RR = float(rain*10),
-                RRI = float(rainRate*10), FF = float(windSpeed), 
-                DD = windDir, FXI = float(windGust), 
-                DXI = float(windGustDir), T = float(outTemp), 
-                TD = float(dewpoint), U = float(outHumidity), 
-                PMER = float(barometer), UV = float(UV), RAD = float(radiation),
-                IC = float(heatindex), WINDCHILL = float(windchill),
-                ETP = float(ET), HF = float(leafWet), TS = float(soilTemp))
+                                             DATJ = dateTime, RR = rain*10,
+                RRI = rainRate*10, FF = windSpeed, 
+                DD = windDir, FXI = windGust, 
+                DXI = windGustDir, T = outTemp, 
+                TD = dewpoint, U = outHumidity, 
+                PMER = barometer, UV = UV, RAD = radiation,
+                IC = heatindex, WINDCHILL = windchill,
+                ETP = ET, HF = leafWet, TS = soilTemp)
                   
         #On initialise les données horaires        
-       
+ 
+def convert(value):
+    if value is None:
+        return value
+    try:
+        return round(float(value),2)
+    except:
+        return None 
+          
 def initH(nom_poste, datedeb=0, datefin=0,perte=0):
     #code = 0 : initialisation / perte de donnees
     #code = 1 : MAJ automatique des dernieres donnees
