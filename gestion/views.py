@@ -209,7 +209,7 @@ def initPays(request):
         lien = form.cleaned_data['lien']
         REF_MF = form.cleaned_data['REFERENCE_METEO_FRANCE']
        
-        
+        PASDETEMPS = form.cleaned_data['PASDETEMPS']
         NOM = form.cleaned_data['NOM_PUBLIQUE']
         LAT = form.cleaned_data['LATITUDE']
         LON = form.cleaned_data['LONGITUDE']
@@ -233,7 +233,7 @@ def initPays(request):
                   DATEOUV = DATEOUV, NOM = NOM, LAT = LAT, LON = LON, ALT = ALT, 
                   POS = POS, AUT = AUT, PROP = PROP, MAINT = MAINT, TYPE = TYPE, 
                   TYPINFO = TYPINFO, ADRESSE = ADRESSE, LIEU_DIT = LIEU_DIT, 
-                  MEL = MEL, TEL = TEL, COMM = COMM, COMMUNE = commune).save()
+                  MEL = MEL, TEL = TEL, COMM = COMM, COMMUNE = commune,INIT=0,PASDETEMPS=PASDETEMPS).save()
             poste = POSTE.objects.get(CODE_POSTE = CODE_POSTE)
             c = Files(POSTE = poste, lien = lien)
             c.save()
@@ -247,6 +247,8 @@ def initPays(request):
             init.initH(CODE_POSTE)
             init.initQ(CODE_POSTE)
             init.initMensQ(CODE_POSTE)
+            poste.INIT = 1
+            poste.save()
             #Une fois que toutes les tables seront initialisées, on redirige
             #vers la page d'initialisation des instruments.
             return redirect("../InfoPoste/" + CODE_POSTE + '/' + 

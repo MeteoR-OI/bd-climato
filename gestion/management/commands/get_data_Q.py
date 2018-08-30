@@ -17,7 +17,7 @@ except ImportError:
     # Fall back to Python 2's urllib2
     from urllib2 import urlopen
 import encodings    
-    
+import pytz    
 import codecs
     
 class Command(BaseCommand):
@@ -37,17 +37,41 @@ class Command(BaseCommand):
        #-----------------------------------------------------------------------------
        #------------------EXECUTION HORAIRE------------------------------------------
        #-----------------------------------------------------------------------------
-       postes = POSTE.objects.all()
+#        postes = POSTE.objects.all()
+#         
+#        for i in range(0,postes.count()): #On parcourt tous les postes de la BDD
+#             type = postes[i].TYPE 
+#             
+#             if type != 'SPIEA':
+#                 jr_pre = datetime.datetime.now() - datetime.timedelta(days=1)
+#                 jr_pre = datetime.datetime(jr_pre.year,jr_pre.month,jr_pre.day,
+#                                            0,0)
+#                 deb = jr_pre - datetime.timedelta(seconds=300)
+#                 fin = jr_pre + datetime.timedelta(seconds=300)
+#                 
+#                 
+#                 init.initQ(nom_poste=postes[i].CODE_POSTE,datedeb=deb,datefin=fin)
+                
+        nomposte = 'NDLP1520'
+        poste = POSTE.objects.get(CODE_POSTE=nomposte)
         
-       for i in range(0,postes.count()): #On parcourt tous les postes de la BDD
-            type = postes[i].TYPE 
-            
-            if type != 'SPIEA':
-                jr_pre = datetime.datetime.now() - datetime.timedelta(days=1)
-                jr_pre = datetime.datetime(jr_pre.year,jr_pre.month,jr_pre.day,
-                                           0,0)
+        h = H.objects.filter(POSTE=poste).order_by('-DATJ')
+        
+        jr_pre = 600
+        
+        for value_h in h:
+            if value_h.DATJ.minute == 0 and value_h.DATJ.hour == 0:
+                derniere_date = datetime.datetime(value_h.DATJ.year,
+                            value_h.DATJ.month,value_h.DATJ.day,
+                            0,0)
+                jr_pre = derniere_date - datetime.timedelta(hours=24)
                 deb = jr_pre - datetime.timedelta(seconds=300)
                 fin = jr_pre + datetime.timedelta(seconds=300)
-                
-                
-                init.initQ(nom_poste=postes[i].CODE_POSTE,datedeb=deb,datefin=fin)
+                deb = deb.replace(tzinfo=pytz.UTC)
+                fin = fin.replace(tzinfo=pytz.UTC)
+                init.initQ(nom_poste=nomposte,datedeb=deb,datefin=fin)
+                break
+        
+        
+        print(jr_pre)  
+       

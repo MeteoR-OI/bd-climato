@@ -149,15 +149,15 @@ def initH(nom_poste, datedeb=0, datefin=0,perte=0):
                                 ins[i].DATJ + 
                                     datetime.timedelta(hours=1)) 
              
-            
+            PDT = int(poste.PASDETEMPS)
             #On parcourt les données de l'heure voulue en les traitant  
             Ventmoyen = filtreVent.order_by('-FF')[0]
             FXY, DXY, HXY = Ventmoyen.FF, Ventmoyen.DD, Ventmoyen.DATJ
             Rafales = filtreVent.order_by('-FXI')[0]
             FXI, DXI, HXI  = Rafales.FXI, Rafales.DXI, Rafales.DATJ
             cumulRR = float(filtreRR.aggregate(Sum('RR'))['RR__sum'])
-            DRR1 = (filtreRR.filter(RR__gt=0).count())*5
-            INST = (filtre.filter(RAD__gt=0).count())*5
+            DRR1 = (filtreRR.filter(RR__gt=0).count())*PDT
+            INST = (filtre.filter(RAD__gt=0).count())*PDT
             PluieInstan = filtreRR.order_by('-RRI')[0]
             RRI, HRRI = PluieInstan.RRI, PluieInstan.DATJ
             Tempemini = filtre.order_by('T')[0]

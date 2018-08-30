@@ -9,6 +9,7 @@ import json
 import csv
 import math
 import urllib
+import pytz
 from gestion.management.commands import init
 try:
     # For Python 3.0 and later
@@ -37,21 +38,46 @@ class Command(BaseCommand):
        #-----------------------------------------------------------------------------
        #------------------EXECUTION HORAIRE------------------------------------------
        #-----------------------------------------------------------------------------
-       postes = POSTE.objects.all()
-       #AVANT DE FAIRE L'INITIALISATION HORAIRE - VERIFIER LA PRESENCE DE TOUS LES INSTAN 
-       for i in range(0,postes.count()): 
-            type = postes[i].TYPE 
+#         postes = POSTE.objects.all()
+#         #AVANT DE FAIRE L'INITIALISATION HORAIRE - VERIFIER LA PRESENCE DE TOUS LES INSTAN 
+#         for i in range(0,postes.count()): 
+#              type = postes[i].TYPE 
+#             
+#             if type != 'SPIEA':
             
-            if type != 'SPIEA':
+            
             #On définit l'heure à laquelle doit s'initialiser les tables
-                hr_pre = datetime.datetime.now() - datetime.timedelta(hours=1)
-                hr_pre = datetime.datetime(hr_pre.year,hr_pre.month,hr_pre.day,
-                                           hr_pre.hour,0)
-                deb = hr_pre - datetime.timedelta(seconds=300)
-                fin = hr_pre + datetime.timedelta(seconds=300)
+            
+            #recherche du premier créneau horaire complet puis mise à jour
+            
+            nomposte = 'NDLP1520'
+            poste = POSTE.objects.get(CODE_POSTE=nomposte)
+            
+            
+            ins = INSTAN.objects.filter(POSTE=poste).order_by('-DATJ')
+            
+            hr_pre = 600
+            
+            for value_ins in ins:
+                if value_ins.DATJ.minute == 0:
+                    derniere_date = datetime.datetime(value_ins.DATJ.year,
+                                value_ins.DATJ.month,value_ins.DATJ.day,
+                                value_ins.DATJ.hour,0)
+                    hr_pre = derniere_date - datetime.timedelta(hours=1)
+                    deb = hr_pre - datetime.timedelta(seconds=300)
+                    fin = hr_pre + datetime.timedelta(seconds=300)
+                    deb = deb.replace(tzinfo=pytz.UTC)
+                    fin = fin.replace(tzinfo=pytz.UTC)
+                    init.initH(nom_poste=nomposte,datedeb=deb,datefin=fin)
+                    break
+            
+            
+            print(hr_pre)  
+             
                 
                 
-                init.initH(nom_poste=postes[i].CODE_POSTE,datedeb=deb,datefin=fin)
+                
+                
             
             
             

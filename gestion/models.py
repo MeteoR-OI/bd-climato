@@ -50,6 +50,8 @@ class POSTE(models.Model):
     MEL = models.CharField(null=True, max_length = 40,default=None) 
     TEL = models.CharField(null=True,max_length = 10,default=None)
     COMM = models.TextField(null=True,default=None)  
+    PASDETEMPS = models.IntegerField(null=False, verbose_name = "Pas de temps d'envoie (min)",default=5)
+    INIT = models.IntegerField(null=True, verbose_name = "Etat d'initialisation",default=None)
     def __str__(self):
         return self.CODE_POSTE
     
