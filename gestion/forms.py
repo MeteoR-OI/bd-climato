@@ -63,7 +63,7 @@ class InitFormPays(forms.Form):
     lien = forms.FileField(label='Selectionnez le fichier d\'archives',required=False)
     REFERENCE_METEO_FRANCE = forms.CharField(label='Référence Météo France',max_length =10,required=False)
     NOM_PUBLIQUE = forms.CharField(label="Nom d'affichage public*",max_length = 50, help_text ='Nom qui sera affiché au grand public')
-    PASDETEMPS = forms.IntegerField(label="Intervalle d'envoie des données (min)*")
+    PDT = forms.IntegerField(label="Intervalle d'envoie des données (min)*")
     LATITUDE = forms.FloatField(label="Latitude*",help_text='En degrés')
     LONGITUDE = forms.FloatField(label="Longitude*", help_text='En degrés')
     ALTITUDE = forms.FloatField(label="Altitude*", help_text='En mètres')

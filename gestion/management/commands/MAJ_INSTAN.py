@@ -60,20 +60,20 @@ class Command(BaseCommand):
             minn = datas['time'][-2:]
             print(outTemp)
             
+            dateTime = datetime.datetime(int(annee),int(mois),int(jour),int(heure),int(minn))
+            
             
             poste = POSTE.objects.get(CODE_POSTE=nomposte)
             recu,created = INSTAN.objects.get_or_create(POSTE=poste,
-                    DATJ=datetime.datetime(int(annee)
-                            ,int(mois),int(jour),int(heure),int(minn)))
-            INSTAN.objects.filter(POSTE=poste,DATJ=datetime.datetime(int(annee)
-                            ,int(mois),int(jour),int(heure),int(minn))).update(
+                    DATJ=dateTime)
+            INSTAN.objects.filter(POSTE=poste,DATJ=dateTime).update(
                             PMER=float(barometer),IC=float(heatIndex),
                             WINDCHILL=float(windchill),ETP=float(ET),
-                            RAD=float(solarRadiation),RRI=float(rainRate)*10,
+                            RAD=float(solarRadiation),RRI=float(rainRate),
                             FF=float(windSpeed),DD=float(windDir),
                             FXI=float(windGust),DXI=float(windGustDir),
                             T=float(outTemp),TD=float(dewpoint),
-                            U=float(humidity),RR=float(rain)*10)
+                            U=float(humidity),RR=float(rain))
         #----------------------------------------------------------------------   
         #------------LISTING DES DIFFERENTS POSTES DANS LA BDD-----------------
         #----------------------------------------------------------------------

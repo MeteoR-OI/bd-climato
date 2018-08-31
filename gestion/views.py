@@ -209,7 +209,7 @@ def initPays(request):
         lien = form.cleaned_data['lien']
         REF_MF = form.cleaned_data['REFERENCE_METEO_FRANCE']
        
-        PASDETEMPS = form.cleaned_data['PASDETEMPS']
+        PDT = form.cleaned_data['PDT']
         NOM = form.cleaned_data['NOM_PUBLIQUE']
         LAT = form.cleaned_data['LATITUDE']
         LON = form.cleaned_data['LONGITUDE']
@@ -233,7 +233,7 @@ def initPays(request):
                   DATEOUV = DATEOUV, NOM = NOM, LAT = LAT, LON = LON, ALT = ALT, 
                   POS = POS, AUT = AUT, PROP = PROP, MAINT = MAINT, TYPE = TYPE, 
                   TYPINFO = TYPINFO, ADRESSE = ADRESSE, LIEU_DIT = LIEU_DIT, 
-                  MEL = MEL, TEL = TEL, COMM = COMM, COMMUNE = commune,INIT=0,PASDETEMPS=PASDETEMPS).save()
+                  MEL = MEL, TEL = TEL, COMM = COMM, COMMUNE = commune,INIT=0,PDT=PDT).save()
             poste = POSTE.objects.get(CODE_POSTE = CODE_POSTE)
             c = Files(POSTE = poste, lien = lien)
             c.save()
@@ -247,6 +247,7 @@ def initPays(request):
             init.initH(CODE_POSTE)
             init.initQ(CODE_POSTE)
             init.initMensQ(CODE_POSTE)
+            #init = 1 autorise l'automatisation de la récupération
             poste.INIT = 1
             poste.save()
             #Une fois que toutes les tables seront initialisées, on redirige
@@ -458,9 +459,9 @@ def releve(request):
             date_lastdonnees = datetime.datetime(int(date_lastdonnee.year),int(date_lastdonnee.month),
                                                 int(date_lastdonnee.day),
                                        int(date_lastdonnee.hour),int(date_lastdonnee.minute))
-            delta = ((date_senddonnee-date_lastdonnees).days)*24
+            delta = ((date_senddonnee-date_lastdonnees).total_seconds())/3600
             
-            delta += ((date_senddonnee-date_lastdonnees).seconds)/3600
+            
             delta= int(delta) 
             for hours in range(1,delta):
                 newdate = date_lastdonnee+datetime.timedelta(hours=hours)
@@ -642,7 +643,7 @@ def reactualisation(request):
         #on parcourt les dates de la BDD
         ins = INSTAN.objects.filter(POSTE = code).order_by('DATJ')
         for i in range(0,ins.count()-1): 
-            if (ins[i+1].DATJ - ins[i].DATJ).seconds != 600 :
+            if (ins[i+1].DATJ - ins[i].DATJ).total_seconds() != 600 :
                 premiere_date_manquante+=[ins[i].DATJ]
                 derniere_date_manquante+=[ins[i+1].DATJ] 
         #Creneau manquant   
@@ -1028,6 +1029,7 @@ def affichage(request,codeposte):
                     if value.DD != None:
                         DDlist+=[value.DD] 
                         flist += [value.FF]
+                
                 ax = WindroseAxes.from_ax() 
                 ax.bar(DDlist, flist, bins=np.arange(0, max(flist), 10),
                        normed=True, opening=0.8, edgecolor='white')
@@ -1042,23 +1044,34 @@ def affichage(request,codeposte):
                 plt.close()
                 
                 #Fréquences de direction
-#                 table = ax._info['table']
-#                 wd_freq = np.sum(table, axis=0)
-#                 direction = ax._info['dir']
-#                 wd_freq = np.sum(table, axis=0)
-#                 plt.bar(np.arange(16), wd_freq, align='center')
-#                 xlabels = ('N','','N-E','','E','','S-E','',
-#                            'S','','S-O','','O','','N-O','')
-#                 xticks=np.arange(16)
-#                 plt.ylabel('Fréquence (%)')
-#                 
-#                 plt.gca().set_xticks(xticks)
-#                 #draw()
-#                 plt.gca().set_xticklabels(xlabels)
-#                 plt.savefig('TEEEST.png', 
-#                             bbox_inches="tight")
-#                 #draw()
-#                 plt.close()
+                table = ax._info['table']
+                wd_freq = np.sum(table, axis=0)
+                direction = ax._info['dir']
+                wd_freq = np.sum(table, axis=0)
+                plt.bar(np.arange(16), wd_freq, align='center')
+                xlabels = ('N','','N-E','','E','','S-E','',
+                           'S','','S-O','','O','','N-O','')
+                max_freq = 0
+                indice_max = 0
+                for i in range(0,len(wd_freq)):
+                    if wd_freq[i] >= max_freq:
+                        max_freq = wd_freq[i]
+                        indice_max = i
+                        
+                listedirfreq = ['N','NNE','NE','ENE','E','ESE','SE','SSE',
+                            'S','SSO','SO','OSO','O','ONO','NO','NNO']
+                dir_freqmax = listedirfreq[indice_max]
+
+                xticks=np.arange(16)
+                plt.ylabel('Fréquence (%)')
+                 
+                plt.gca().set_xticks(xticks)
+                
+                plt.gca().set_xticklabels(xlabels)
+                plt.savefig('TEEEST.png', 
+                            bbox_inches="tight")
+                #draw()
+                plt.close()
                 
     else:
             carte = False
@@ -1560,14 +1573,9 @@ def recapMensuel(request,codeposte):
     plt.close()
 
      #On traite les données DD
-    DD = []
-    for value in jour:
-        if value.DXY==None:
-            DD+=[np.nan]
-        else:
-            DD+=[value.DXY] 
+    
     ax = WindroseAxes.from_ax() 
-    ax.bar(DD, f, normed=True, bins=np.arange(0, max(f), 10), opening=0.8, edgecolor='white')
+    ax.bar(dir, f, normed=True, bins=np.arange(0, max(f), 10), opening=0.8, edgecolor='white')
   
     ax.set_legend()
     link = codeposte+'/recapM/'+str(moischoisi)+str(anneechoisi)+'/' 
@@ -1576,6 +1584,10 @@ def recapMensuel(request,codeposte):
     plt.savefig('static/'+link+'DD.png', bbox_inches="tight")
     linkDD = link+'DD.png'
     plt.close()
+    
+    
+    
+    
      #On traite les données humidité
     fig, ax = plt.subplots(figsize=(5, 3))
     UM = []
@@ -2229,6 +2241,38 @@ def rapport(request,codeposte,date):
             DD+=[value.DD] 
     DDmoy = np.nanmean(DD)
     DDmoy = Decimal(str(round(float(DDmoy),2))) 
+    
+    ax = WindroseAxes.from_ax() 
+    ax.bar(DD, FF, normed=True, bins=np.arange(0, max(FF), 10), opening=0.8, edgecolor='white')
+   
+    ax.set_legend()
+     
+     
+    link = codeposte+'/rapportM/'+str(annee)+'/' 
+    if not os.path.exists('static/'+link):
+            os.makedirs('static/'+link)
+    plt.savefig('static/'+link+'DD.png', bbox_inches="tight")
+    linkDD = link+'DD.png'
+    plt.close()    
+#     
+#     
+#     #Fréquences de direction
+#     table = ax._info['table']
+#     wd_freq = np.sum(table, axis=0)
+#     direction = ax._info['dir']
+#     wd_freq = np.sum(table, axis=0)
+#     max_freq = 0
+#     indice_max = 0
+#     for i in range(0,len(wd_freq)):
+#         if wd_freq[i] >= max_freq:
+#             max_freq = round(wd_freq[i],2)
+#             indice_max = i
+#             
+#     listedirfreq = ['N','NNE','NE','ENE','E','ESE','SE','SSE',
+#                 'S','SSO','SO','OSO','O','ONO','NO','NNO']
+#     dir_freqmax = listedirfreq[indice_max]
+    
+    
     FFmoy = np.nanmean(FF)
     FFmoy = Decimal(str(round(float(FFmoy),2))) 
     
@@ -2666,13 +2710,36 @@ def rapportannuel(request,codeposte,date):
     ax.bar(DD, FF, normed=True, bins=np.arange(0, max(FF), 10), opening=0.8, edgecolor='white')
   
     ax.set_legend()
+    
+    
     link = codeposte+'/rapportA/'+str(annee)+'/' 
     if not os.path.exists('static/'+link):
             os.makedirs('static/'+link)
     plt.savefig('static/'+link+'DD.png', bbox_inches="tight")
     linkDD = link+'DD.png'
     plt.close()    
-                                   
+    
+    
+    #Fréquences de direction
+    table = ax._info['table']
+    wd_freq = np.sum(table, axis=0)
+    direction = ax._info['dir']
+    wd_freq = np.sum(table, axis=0)
+    max_freq = 0
+    indice_max = 0
+    for i in range(0,len(wd_freq)):
+        if wd_freq[i] >= max_freq:
+            max_freq = round(wd_freq[i],2)
+            indice_max = i
+            
+    listedirfreq = ['N','NNE','NE','ENE','E','ESE','SE','SSE',
+                'S','SSO','SO','OSO','O','ONO','NO','NNO']
+    dir_freqmax = listedirfreq[indice_max]
+
+         
+    
+    
+                             
     #Histo nb de jours FF + FXI
     fig, ax = plt.subplots(figsize=(5, 2))
     plt.bar(mois_liste,list_NBJFF10, width=0.5,color='black',label='Rafales > 36km/h')

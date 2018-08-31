@@ -79,8 +79,9 @@ def initDonnees(nom, CODE_POSTE):
                 
                 
                 #Traitement des données
-                dateTime = datetime.datetime.fromtimestamp(dateTime) \
-                .strftime('%Y-%m-%d %H:%M:%S') #Conversion du temps unix
+                dateTime = datetime.datetime.fromtimestamp(dateTime) #Conversion du temps unix
+                dateTime = (dateTime + datetime.timedelta(hours=4)) \
+                .strftime('%Y-%m-%d %H:%M:%S')
                 #Injection de toutes les donnees dans la table INS
                 postes = POSTE.objects.get(CODE_POSTE = CODE_POSTE)
                 INSTAN.objects.get_or_create(POSTE = postes, 
@@ -125,7 +126,7 @@ def initH(nom_poste, datedeb=0, datefin=0,perte=0):
         creneau = True
         
     
-        
+       
         
     
     #On parcourt toutes les données instantanées
@@ -149,7 +150,15 @@ def initH(nom_poste, datedeb=0, datefin=0,perte=0):
                                 ins[i].DATJ + 
                                     datetime.timedelta(hours=1)) 
              
-            PDT = int(poste.PASDETEMPS)
+            
+            #Pour les premieres données
+            if i <= ins.count()-2:
+                PDT = ((ins[i].DATJ-ins[i+1].DATJ).total_seconds())/60
+#                 print(ins[i-1].DATJ,ins[i].DATJ,(ins[i-1].DATJ-ins[i].DATJ).total_seconds())
+            else: 
+                PDT = ((ins[ins.count()-2].DATJ - ins[ins.count()-1].DATJ).total_seconds())/60
+            
+            
             #On parcourt les données de l'heure voulue en les traitant  
             Ventmoyen = filtreVent.order_by('-FF')[0]
             FXY, DXY, HXY = Ventmoyen.FF, Ventmoyen.DD, Ventmoyen.DATJ
