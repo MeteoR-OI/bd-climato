@@ -206,7 +206,14 @@ def initPays(request):
         COMMUNE.objects.get_or_create(NOMCOMMUNE=nomcommune,PAYS=pays)
         CP = form.cleaned_data['CODE_POSTAL']
         CODE_POSTE = form.cleaned_data['CODE_POSTE']
+        
         lien = form.cleaned_data['lien']
+        if lien == None :
+            archive = False
+        else:
+            archive = True
+            
+        print(archive)
         REF_MF = form.cleaned_data['REFERENCE_METEO_FRANCE']
        
         PDT = form.cleaned_data['PDT']
@@ -227,8 +234,8 @@ def initPays(request):
         TEL = form.cleaned_data['TEL']
         COMM = form.cleaned_data['COMMS']
         commune = COMMUNE.objects.get(NOMCOMMUNE=nomcommune)
-        if TYPE != 'SPIEA':
-        
+        if TYPE != 'SPIEA' and archive == True:
+            print('jsuis la')
             POSTE(CP = CP, CODE_POSTE = CODE_POSTE, REF_MF = REF_MF, 
                   DATEOUV = DATEOUV, NOM = NOM, LAT = LAT, LON = LON, ALT = ALT, 
                   POS = POS, AUT = AUT, PROP = PROP, MAINT = MAINT, TYPE = TYPE, 
