@@ -41,8 +41,9 @@ class Command(BaseCommand):
 #         
 #        for i in range(0,postes.count()): #On parcourt tous les postes de la BDD
 #             type = postes[i].TYPE 
+#             init = postes[i].INIT
 #             
-#             if type != 'SPIEA':
+#             if type != 'SPIEA' and init == 1:
 #                 jr_pre = datetime.datetime.now() - datetime.timedelta(days=1)
 #                 jr_pre = datetime.datetime(jr_pre.year,jr_pre.month,jr_pre.day,
 #                                            0,0)

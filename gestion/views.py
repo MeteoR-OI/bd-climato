@@ -266,7 +266,7 @@ def initPays(request):
                   DATEOUV = DATEOUV, NOM = NOM, LAT = LAT, LON = LON, ALT = ALT, 
                   POS = POS, AUT = AUT, PROP = PROP, MAINT = MAINT, TYPE = TYPE, 
                   TYPINFO = TYPINFO, ADRESSE = ADRESSE, LIEU_DIT = LIEU_DIT, 
-                  MEL = MEL, TEL = TEL, COMM = COMM, COMMUNE = commune).save()
+                  MEL = MEL, TEL = TEL, COMM = COMM, COMMUNE = commune, INIT=1, PDT = PDT).save()
             
         envoi = True
     # Quoiqu'il arrive, on affiche la page du formulaire.
@@ -1347,13 +1347,13 @@ def recap(request,codeposte):
         
         hRAD,mRAD=divmod(cumultotalRAD,60)
         mRAD = int(mRAD)
-        UVmax = H.objects.filter(POSTE=posteob,DATJ__gt=journee,
-                                  DATJ__lte=finjournee) \
-                                  .aggregate(Max('UV'))['UV__max']
-        UVmax = Decimal(str(round(UVmax,2)))
+        #UVmax = H.objects.filter(POSTE=posteob,DATJ__gt=journee,
+        #                          DATJ__lte=finjournee) \
+        #                          .order_by('-UV')
+        #UVmax = Decimal(str(round(UVmax[0].UV,2)))
     #Tracé des données vent   
         plt.plot(x,RAD,'y',label='Ensoleillement',linewidth=1)
-
+    
         ax.set_xticklabels([])
         ax.xaxis.set_minor_locator(dates.HourLocator(interval=2))   
         ax.xaxis.set_minor_formatter(dates.DateFormatter('%Hh'))  
@@ -1648,9 +1648,9 @@ def recapMensuel(request,codeposte):
         
         hRAD,mRAD=divmod(cumultotalRAD,60)
         mRAD = int(mRAD)
-        UVmax = H.objects.filter(POSTE=posteob,DATJ__gte=debutmois,
-                                  DATJ__lt=finmois).aggregate(Max('UV'))['UV__max']
-        UVmax = Decimal(str(round(UVmax,2)))
+        #UVmax = H.objects.filter(POSTE=posteob,DATJ__gte=debutmois,
+        #                          DATJ__lt=finmois).aggregate(Max('UV'))['UV__max']
+        #UVmax = Decimal(str(round(UVmax,2)))
     #Tracé des données vent   
         plt.plot(x,RAD,'y',label='Ensoleillement',linewidth=1)
 

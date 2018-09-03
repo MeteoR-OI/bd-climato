@@ -85,9 +85,10 @@ class Command(BaseCommand):
 #         for i in range(0,postes.count()):
 #             poste = postes[i].CODE_POSTE
 #             type = postes[i].TYPE 
+#             init = postes[i].INIT
             
 #             
-#             if type != 'SPIEA':  
+#             if type != 'SPIEA' and init == 1:  
 #            
 #                 with codecs.open('data/'+poste+'.json',encoding='utf-8') as json_data: #PARTIE A SUPPRIMER 
 #                     datas = json.load(json_data)  

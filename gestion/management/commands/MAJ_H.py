@@ -42,8 +42,9 @@ class Command(BaseCommand):
 #         #AVANT DE FAIRE L'INITIALISATION HORAIRE - VERIFIER LA PRESENCE DE TOUS LES INSTAN 
 #         for i in range(0,postes.count()): 
 #              type = postes[i].TYPE 
+#              init = postes[i].INIT
 #             
-#             if type != 'SPIEA':
+#             if type != 'SPIEA' and init == 1:
             
             
             #On définit l'heure à laquelle doit s'initialiser les tables
