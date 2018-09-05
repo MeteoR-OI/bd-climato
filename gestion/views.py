@@ -22,6 +22,7 @@ def home(request):
     choixevenement = False
     postes = POSTE.objects.all()
     liste = []
+    liste_type_ev = ['Cyclone','Front froid','Pluvio-orageux','Canicule','Autre']
     for p in postes:
         liste+=[p.CODE_POSTE]
         
@@ -67,6 +68,7 @@ def home(request):
     #ajout d'evenements
     try:
         nom_evenement = request.POST['nom_evenement']
+        type_evenement = request.POST['type_evenement']
         date_debut = request.POST['debut_evenement']
         date_debut = date_debut.split(' ')
         jour_debut = date_debut[1].split('/')
@@ -76,7 +78,7 @@ def home(request):
         jour_fin = date_fin[1].split('/')
         hr_fin = date_fin[0].split(':')
         
-        EVENEMENTS(NOM_EVENEMENT=nom_evenement,DEBUT=datetime.datetime(int(jour_debut[2]),int(jour_debut[1]),int(jour_debut[0]),int(hr_debut[0]),int(hr_debut[1])),
+        EVENEMENTS(NOM_EVENEMENT=nom_evenement,TYPE_EVENEMENT = type_evenement, DEBUT=datetime.datetime(int(jour_debut[2]),int(jour_debut[1]),int(jour_debut[0]),int(hr_debut[0]),int(hr_debut[1])),
                    FIN=datetime.datetime(int(jour_fin[2]),int(jour_fin[1]),int(jour_fin[0]),int(hr_fin[0]),int(hr_fin[1]))
                    ).save()
         
@@ -1953,7 +1955,7 @@ def recapevenement(request,codeposte,codeevenement):
             liste_RRI += [[Decimal(str(round(float(values.RRI),2))),values.HRRI.strftime('%d/%m à %Hh%M'),poste.POSTE.CODE_POSTE]]
        
     #Top des RR1
-    print(liste_cumul1h)
+  
     liste_cumul1h = sorted(liste_cumul1h,reverse=True)
     liste_cumul1h = liste_cumul1h[0:10]
     for i in range(0,10):

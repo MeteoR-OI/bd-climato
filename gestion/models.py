@@ -64,6 +64,7 @@ class PANNE(models.Model):
     
 class EVENEMENTS(models.Model):
     NOM_EVENEMENT = models.CharField(null=True,max_length = 100)
+    TYPE_EVENEMENT = models.CharField(null=True,max_length = 100)
     DEBUT = models.DateTimeField(null= True)
     FIN = models.DateTimeField(null=True)
 
