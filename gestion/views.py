@@ -1425,7 +1425,8 @@ def recapMensuel(request,codeposte):
     link = codeposte+'/recapM/'+str(moischoisi)+str(anneechoisi)+'/' 
     jour = Q.objects.filter(POSTE=posteob,
             DATJ__gte=debutmois,DATJ__lt=finmois).order_by('DATJ')   
-
+    donneevent = INSTAN.objects.filter(POSTE=posteob,
+            DATJ__gte=debutmois,DATJ__lt=finmois).order_by('DATJ') 
         
     #On traite les données températures
     MoyT = jour.aggregate(Avg('TM'))['TM__avg']
@@ -1580,9 +1581,18 @@ def recapMensuel(request,codeposte):
     plt.close()
 
      #On traite les données DD
+    DIRINSTAN = []
+    FFINSTAN = [] 
+    for vent in donneevent:
+        if vent.DD != None and vent.FF != None:
+            DIRINSTAN += [vent.DD]
+            FFINSTAN += [vent.FF]
+        else: 
+            DIRINSTAN += [np.NaN]
+            FFINSTAN += [np.NaN]
     
     ax = WindroseAxes.from_ax() 
-    ax.bar(dir, f, normed=True, bins=np.arange(0, max(f), 10), opening=0.8, edgecolor='white')
+    ax.bar(DIRINSTAN, FFINSTAN, normed=True, bins=np.arange(0, max(f), 10), opening=0.8, edgecolor='white')
   
     ax.set_legend()
     link = codeposte+'/recapM/'+str(moischoisi)+str(anneechoisi)+'/' 
@@ -2372,6 +2382,10 @@ def rapportannuel(request,codeposte,date):
     FiltreQ = Q.objects.filter(POSTE=poste, 
                         DATJ__gte=datetime.datetime(annee,1,1),
                         DATJ__lte=datetime.datetime(annee,12,31)).order_by('DATJ')
+                        
+    donneevent = INSTAN.objects.filter(POSTE=poste, 
+                        DATJ__gte=datetime.datetime(annee,1,1),
+                        DATJ__lte=datetime.datetime(annee,12,31)).order_by('DATJ')
   
     #Graphs sur l'année
     
@@ -2712,9 +2726,19 @@ def rapportannuel(request,codeposte,date):
     
     DirDXY=fonction_direction(DXY)
    
-    DirDD = fonction_direction(DDmoy)            
+    DirDD = fonction_direction(DDmoy)     
+    
+    DIRINSTAN = []
+    FFINSTAN = [] 
+    for vent in donneevent:
+        if vent.DD != None and vent.FF != None:
+            DIRINSTAN += [vent.DD]
+            FFINSTAN += [vent.FF]
+        else: 
+            DIRINSTAN += [np.NaN]
+            FFINSTAN += [np.NaN]       
     ax = WindroseAxes.from_ax() 
-    ax.bar(DD, FF, normed=True, bins=np.arange(0, max(FF), 10), opening=0.8, edgecolor='white')
+    ax.bar(DIRINSTAN, FFINSTAN, normed=True, bins=np.arange(0, max(FF), 10), opening=0.8, edgecolor='white')
   
     ax.set_legend()
     
