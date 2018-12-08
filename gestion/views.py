@@ -178,7 +178,7 @@ def home(request):
         
     
         
-    return render(request, 'accueil.html', locals())
+    return render(request, 'gestion/accueil.html', locals())
     
     
 
@@ -276,7 +276,7 @@ def initPays(request):
             
         envoi = True
     # Quoiqu'il arrive, on affiche la page du formulaire.
-    return render(request, 'initialisation.html', locals())
+    return render(request, 'gestion/initialisation.html', locals())
 
 
 
@@ -428,7 +428,7 @@ VENTILATION = VENTILATION, SEUILMIN = seuilmin, SEUILMAX = seuilmax,
 PRECISION = precision, PASDETEMPS = pasdetemps, TYPE_TERRAIN = TYPE_TERRAIN,
 UNITE = unite, COMM = COMM)
            
-    return render(request, 'InfoPoste', locals())
+    return render(request, 'gestion/InfoPoste.html', locals())
 
 
 
@@ -628,7 +628,7 @@ def releve(request):
         
         
           
-    return render(request, 'Releve.html', locals())
+    return render(request, 'gestion/Releve.html', locals())
 
 
 #-------------------------------------------------------------------------------
@@ -738,7 +738,7 @@ def reactualisation(request):
         init.initH(code.CODE_POSTE,datedeb,datefin) #on réinitialise la période
         
     #INCREMENTATION DES DATES DE PANNE
-    return render(request, 'Reactualisation.html', locals())
+    return render(request, 'gestion/Reactualisation.html', locals())
 
 #------------------------------------------------------------------------------
 #----------------------------------------AFFICHAGE DES DONNEES-----------------
@@ -1089,7 +1089,7 @@ def affichage(request,codeposte):
     else:
             carte = False
        
-    return render(request, 'station.html', locals())
+    return render(request, 'gestion/station.html', locals())
 
 def format_date(delta,ax):
     
@@ -1377,7 +1377,7 @@ def recap(request,codeposte):
         plt.close()
     except:
         pass
-    return render(request, 'recap.html', locals())
+    return render(request, 'gestion/recap.html', locals())
 
 
 
@@ -1729,7 +1729,7 @@ def recapMensuel(request,codeposte):
 
     
          
-    return render(request, 'recapMensuel.html', locals())
+    return render(request, 'gestion/recapMensuel.html', locals())
 
 def recapevenement(request,codeposte,codeevenement):
     #Récupération des données
@@ -2001,7 +2001,7 @@ def recapevenement(request,codeposte,codeevenement):
     liste_cumul = liste_cumul[0:3]
     for i in range(0,len(liste_cumul)):
         liste_cumul[i] += [couleur_intensite[i]]
-    return render(request, 'recapEvenement.html', locals())
+    return render(request, 'gestion/recapEvenement.html', locals())
 
 
 def rapport(request,codeposte,date):   
@@ -2356,7 +2356,7 @@ def rapport(request,codeposte,date):
     WCMAX,dateWCMAX = donneesWCMAX.WINDCHILL,donneesWCMAX.DATJ.strftime('%d/%m')
     donneesWCMIN = FiltreDD.order_by('WINDCHILL')[0]
     WCMIN,dateWCMIN = donneesWCMIN.WINDCHILL,donneesWCMIN.DATJ.strftime('%d/%m')
-    return render(request, 'rapport.html', locals())
+    return render(request, 'gestion/rapport.html', locals())
  
 
 def rapportannuel(request,codeposte,date):   
@@ -2860,7 +2860,7 @@ def rapportannuel(request,codeposte,date):
     indicePMERMIN = list_PMERMIN.index(PMERMIN)
     DATEPMERMIN = list_DATEPMERMIN[indicePMERMIN].strftime('%d/%m')
     PMERMIN =Decimal(str(round(float(PMERMIN),2)))
-    return render(request, 'rapportannuel.html', locals())
+    return render(request, 'gestion/rapportannuel.html', locals())
 
 
 #EXTRACTION DE DONNEES EN CSV : CHOIX DE STATION + CHOIX DE PERIODE
