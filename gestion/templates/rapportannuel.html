@@ -25,7 +25,7 @@ Localisation:
 <h2>Température</h2>
 <table width="100%">
 <tr><td>
-<img src="{% static linkT  %}" />    
+<img src="/{{ linkT }}" />    
     
 </td><td>
 <div style="padding:3px; border:2px dotted #a5a5a5; background-color:#e3e3e3;">
@@ -70,7 +70,7 @@ La journée la plus pluvieuse était la journée du {{Datecumul1jmax}} avec <b>{
 {% endfor %}
 
 </div>
-</td><td><img src="{% static linkRR  %}" align="right"/></td></tr>
+</td><td><img src="/{{ linkRR }}" align="right"/></td></tr>
     <tr><td colspan = 2>{% if divRR %}
         <div style="padding:5px; background-color:#ffaca3; border:2px solid #ff3924; -moz-border-radius:9px; -khtml-border-radius:9px; -webkit-border-radius:9px; border-radius:9px;">
 <strong><big>/!\</big> Record</strong>: {% for recordRR in Record_RR %}
@@ -90,7 +90,7 @@ La journée la plus pluvieuse était la journée du {{Datecumul1jmax}} avec <b>{
 <h2>Vent</h2>
 <table width="100%">
 <tr><td>
-<img src="{% static linkDD  %}" />
+<img src="/{{ linkDD }}" />
 </td><td><div style="padding:3px; border:2px dotted #a5a5a5; background-color:#e3e3e3;">
 <strong>Commentaire :</strong></br> 
 Le vent était majoritairement de secteur {{dir_freqmax}} ({{max_freq}}%).</br>
@@ -98,7 +98,7 @@ Le vent moyen maximal a été relevé le {{HXY}}, il provenait du secteur {{DirD
 La rafale maximale de {{FXI}}km/h a été relevé le {{HXI}}.</br>
 
 </div></td></tr><tr><td colspan=2>
-<table width="100%"><tr><td width="50%"><center><img src="{% static linkFFAB  %}" /></center></td><td width="50%"><center><img src="{% static linkNBJFXI  %}" /></center></td></tr></table>
+<table width="100%"><tr><td width="50%"><center><img src="/{{ linkFFAB }}" /></center></td><td width="50%"><center><img src="/{{ linkNBJFXI }}" /></center></td></tr></table>
     {% if divFF%}
 <div style="padding:5px; background-color:#ffaca3; border:2px solid #ff3924; -moz-border-radius:9px; -khtml-border-radius:9px; -webkit-border-radius:9px; border-radius:9px;">
 <strong><big>/!\</big> Record</strong>: {{RecordFF}}.
@@ -109,7 +109,7 @@ La rafale maximale de {{FXI}}km/h a été relevé le {{HXI}}.</br>
  
 <table width="100%">
 <tr><td>
-<img src="{% static linkPMER  %}" />
+<img src="/{{ linkPMER }}" />
 </td><td><div style="padding:3px; border:2px dotted #a5a5a5; background-color:#e3e3e3;">
 <strong>Commentaire :</strong></br> 
 La pression minimale de {{PMERMIN}}hPa a été relevée le {{DATEPMERMIN}}.</br>

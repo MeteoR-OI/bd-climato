@@ -51,12 +51,12 @@
     {% endfor %}
     </SELECT> <input type="submit" value="Submit" />
 </form>
-<table><tr><td> <img src="{% static linkJ  %}" /></td><td>
+<table><tr><td> <img src="/{{ linkJ }}" /></td><td>
  Cumul journalier : {{cumulj}}mm </br>
 Cumul max sur 1h: {{cumul1hmax}}mm</td></tr></table>
 </br>
 <h3>Du mois : {{mois_choisi}}/{{annee_choisi}}</h3>
-<table><tr><td><img src="{% static linkM  %}" /></td><td>
+<table><tr><td><img src="/{{ linkM }}" /></td><td>
  Cumul mensuel : {{cumulm}}mm</br>
  Cumul max sur 1h : {{cumul1hmaxmois}}mm</br>
  Cumul journalier max  : {{cumuljmaxmois}}mm

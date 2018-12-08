@@ -25,7 +25,7 @@ Période de mesure possible : Du {{debutmesure}} au {{finmesure}}
 <table rules=cols border=5 ><tr><td>
 
 <table><tr><td colspan=2>
-<img src="{% static linkT  %}" />
+<img src="/{{ linkT }}" />
 </td></tr><tr><td>
 <li>T moyenne : {{MoyTemp}}°C </br>
 <li>Tx absolu : {{Tx}}°C le {{datTx}}</br>
@@ -38,7 +38,7 @@ Période de mesure possible : Du {{debutmesure}} au {{finmesure}}
     
 
 <table><tr><td>
-<img src="{% static linkRR1  %}" />
+<img src="/{{ linkRR1 }}" />
 </td></tr><tr><td>
 <li>Cumul : {{cumultotal}}mm en {{hDRR}}h{{mDRR}}</br>
 <li>Intensité max : {{RRI}}mm/h le  {{datRRI}}  </br>
@@ -48,7 +48,7 @@ Période de mesure possible : Du {{debutmesure}} au {{finmesure}}
   
  
 <table><tr><td>
- <img src="{% static linkPMER  %}" />  
+ <img src="/{{ linkPMER }}" />  
  </td></tr><tr><td>
 <li>Pression moyenne : {{pmoy}}hPa</br>
  <li>Pression max : {{pmax}}hPa</br>
@@ -61,7 +61,7 @@ Période de mesure possible : Du {{debutmesure}} au {{finmesure}}
 
 
 <table><tr><td>
-<img src="{% static linkFF  %}" />
+<img src="/{{ linkFF }}" />
 </td></tr><tr><td>
 <li>Vent moyen max:  {{ventmoyenmax}}km/h le {{datventmoyenmax}}</br>
 <li>Rafale max : {{rafmax}}km/h le {{datrafmax}}</br>
@@ -73,7 +73,7 @@ Période de mesure possible : Du {{debutmesure}} au {{finmesure}}
 
 
 <table><tr><td>
-<center><img src="{% static linkDD  %}" /></center>
+<center><img src="/{{ linkDD }}" /></center>
 </td></tr><tr><td>
 </td></tr>    
 </table>
@@ -81,7 +81,7 @@ Période de mesure possible : Du {{debutmesure}} au {{finmesure}}
 </td><td>
     
 <table><tr><td>
-<img src="{% static linkH  %}" />
+<img src="/{{ linkH }}" />
 </td></tr><tr><td>
 <li>Humidité max :  {{UX}}%  le {{hUX}}</br>
 <li>Humidité min :  {{UN}}%  le {{hUN}} 

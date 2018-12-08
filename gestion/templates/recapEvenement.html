@@ -10,7 +10,7 @@
 <table rules=cols border=5 ><tr><td>
 
 <table><tr><td colspan=2>
-<img src="{% static linkT  %}" />
+<img src="/{{ linkT }}" />
 </td></tr><tr><td>
 <li>T moyenne : {{MoyTemp}}°C </br>
 <li>Tx : {{Tx}}°C à {{DateTx}}</br>
@@ -23,7 +23,7 @@
     
 
 <table><tr><td>
-<img src="{% static linkRR  %}" />
+<img src="/{{ linkRR }}" />
 </td></tr><tr><td>
 <li>Cumul : {{cumultotal}}mm </br>
 <li>Cumul 1h max : {{cumulmax}}mm à {{cumulmaxH}}</br>
@@ -34,7 +34,7 @@
   
  
 <table><tr><td>
- <img src="{% static linkPMER  %}" />  
+ <img src="/{{ linkPMER }}" />  
  </td></tr><tr><td>
 <li>Pression moyenne : {{pmoy}}hPa</br>
  <li>Pression max : {{pmax}}hPa</br>
@@ -47,7 +47,7 @@
 
 
 <table><tr><td>
-<img src="{% static linkFF  %}" />
+<img src="/{{ linkFF }}" />
 </td></tr><tr><td>
 <li>Vent moyen max:  {{ventmoyenmax}}km/h</br>
 <li>Rafale max : {{rafmax}}km/h à {{hrrafmax}}</br>
@@ -59,7 +59,7 @@
 
 
 <table><tr><td>
-<img src="{% static linkDD2  %}" />
+<img src="/{{ linkDD2 }}" />
 </td></tr><tr><td>
 </td></tr>    
 </table>

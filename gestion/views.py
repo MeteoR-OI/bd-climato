@@ -1,23 +1,26 @@
-from django.http import HttpResponse
-from django.shortcuts import render
-from gestion.models import INSTAN,POSTE,PAYS,COMMUNE,H,Q,INSTRUMENT,MENSQ,Files,RECMENS,EVENEMENTS,POSTE_EVENEMENTS
+
+
+import datetime, os
 import matplotlib 
 import matplotlib.dates as dates
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
 import numpy as np
-from .forms import InitFormPays,InitPoste,UploadFileForm,InitPosteTotal
-from django.db.models import Sum,Count,Min,Max,Avg
-from django.shortcuts import redirect
-from django.urls import path
-import datetime
-from windrose import WindroseAxes
-import matplotlib.cm as cm
-import webbrowser
+
 from decimal import Decimal
-import os
+from windrose import WindroseAxes
+
+from django.conf import settings
+from django.db.models import Sum, Min, Max, Avg
+from django.shortcuts import render, redirect
+
 from gestion.management.commands import init
-from django import forms
+from gestion.models import INSTAN,POSTE,PAYS,COMMUNE,H,Q,INSTRUMENT,MENSQ,Files,RECMENS,EVENEMENTS,POSTE_EVENEMENTS
+from .forms import InitFormPays,InitPoste,UploadFileForm,InitPosteTotal
+
+
+data_dir = 'media/data/'
+
 def home(request):
     choixevenement = False
     postes = POSTE.objects.all()
@@ -129,7 +132,7 @@ def home(request):
         jrfin = finextraction[1].split('/')
         fin = datetime.datetime(int(jrfin[2]),int(jrfin[1]),int(jrfin[0]),int(hrfin[0]),int(hrfin[1]))
         
-        link = 'static/export'+codeposte_extraction+"_"+str(jrdebut[0])+str(jrdebut[1])+str(jrdebut[2])+"-"+str(jrfin[0])+str(jrfin[1])+str(jrfin[2])+'.csv'
+        link = '%s/export'+codeposte_extraction+"_"+str(jrdebut[0])+str(jrdebut[1])+str(jrdebut[2])+"-"+str(jrfin[0])+str(jrfin[1])+str(jrfin[2])+'.csv' % settings.MEDIAT_ROOT
         
         
         
@@ -550,9 +553,9 @@ def releve(request):
         
         plt.grid()
         link = code+'/SPIEA/'+str(j_lastdonnee.day)+str(j_lastdonnee.month)+str(j_lastdonnee.year)+'/'  
-        if not os.path.exists('static/'+link):
-                        os.makedirs('static/'+link)
-        plt.savefig('static/'+link+'J.png', bbox_inches="tight")
+        if not os.path.exists(data_dir+link):
+                        os.makedirs(data_dir+link)
+        plt.savefig(data_dir+link+'J.png', bbox_inches="tight")
         linkJ = link+'J.png'
         plt.close()
     except:
@@ -610,9 +613,9 @@ def releve(request):
          
         plt.grid()
         link = code+'/SPIEA/'+str(mois_choisi)+str(annee_choisi)+'/'  
-        if not os.path.exists('static/'+link):
-                        os.makedirs('static/'+link)
-        plt.savefig('static/'+link+'M.png', bbox_inches="tight")
+        if not os.path.exists(data_dir+link):
+                        os.makedirs(data_dir+link)
+        plt.savefig(data_dir+link+'M.png', bbox_inches="tight")
         linkM = link+'M.png'
         plt.close()
     
@@ -1022,10 +1025,10 @@ def affichage(request,codeposte):
                         plt.ylabel(labelX2[liste_champ2.index(champchoisi2)] + ' - ' + unite2)
                 plt.grid()
                 fig.legend()    
-                if not os.path.exists('static/nonpermanent/'+codeposte+'/'+champchoisi+'/'):
-                    os.makedirs('static/nonpermanent/'+codeposte+'/'+champchoisi+'/')
+                if not os.path.exists(data_dir+'nonpermanent/'+codeposte+'/'+champchoisi+'/'):
+                    os.makedirs(data_dir+'nonpermanent/'+codeposte+'/'+champchoisi+'/')
                 link = 'nonpermanent/'+codeposte+'/'+champchoisi+'/'+nom+'.png'
-                plt.savefig('static/'+link, 
+                plt.savefig(data_dir+link, 
                             bbox_inches="tight")  #choisir un nom unique
                 plt.close(fig)
             else:
@@ -1044,11 +1047,11 @@ def affichage(request,codeposte):
                        normed=True, opening=0.8, edgecolor='white')
                 
                 ax.set_legend()
-                if not os.path.exists('static/nonpermanent/'+codeposte+'/'+champchoisi+'/'):
-                    os.makedirs('static/nonpermanent/'+codeposte+'/'+champchoisi+'/')
+                if not os.path.exists(data_dir+'nonpermanent/'+codeposte+'/'+champchoisi+'/'):
+                    os.makedirs(data_dir+'nonpermanent/'+codeposte+'/'+champchoisi+'/')
                 #link : chemin d'accès de l'image la page station    
                 link = 'nonpermanent/'+codeposte+'/RDV/'+nom+'.png'
-                plt.savefig('static/'+link, 
+                plt.savefig(data_dir+link, 
                             bbox_inches="tight")  #choisir un nom unique
                 plt.close()
                 
@@ -1125,7 +1128,8 @@ def format_date(delta,ax):
         ax.xaxis.set_minor_formatter(dates.DateFormatter('%Hh'))    
         
     return  
- #Récapitulatif des différentes périodes : journalier   
+
+#Récapitulatif des différentes périodes : journalier   
 def recap(request,codeposte):
     
 
@@ -1204,9 +1208,9 @@ def recap(request,codeposte):
     plt.grid()
     
     link = codeposte+'/recapJ/'+str(jourchoisi)+str(moischoisi)+str(anneechoisi)+'/'  
-    if not os.path.exists('static/'+link):
-                    os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'T.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+                    os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'T.png', bbox_inches="tight")
     linkT = link+'T.png'
     plt.close()
     
@@ -1245,9 +1249,9 @@ def recap(request,codeposte):
     plt.legend()
     plt.grid()
     link = codeposte+'/recapJ/'+str(jourchoisi)+str(moischoisi)+str(anneechoisi)+'/'  
-    if not os.path.exists('static/'+link):
-                    os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'RR.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+                    os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'RR.png', bbox_inches="tight")
     linkRR = link+'RR.png'
     plt.close()
     
@@ -1279,9 +1283,9 @@ def recap(request,codeposte):
     plt.ylabel('Direction °')
     plt.legend()
     link = codeposte+'/recapJ/'+str(jourchoisi)+str(moischoisi)+str(anneechoisi)+'/'  
-    if not os.path.exists('static/'+link):
-                    os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'FF.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+                    os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'FF.png', bbox_inches="tight")
     linkFF = link+'FF.png'
     plt.close()
     
@@ -1307,9 +1311,9 @@ def recap(request,codeposte):
     plt.ylabel('Pression mer hpa')
     plt.legend()
     link = codeposte+'/recapJ/'+str(jourchoisi)+str(moischoisi)+str(anneechoisi)+'/'  
-    if not os.path.exists('static/'+link):
-                    os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'PMER.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+                    os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'PMER.png', bbox_inches="tight")
     linkPMER = link+'PMER.png'
     plt.close()
 
@@ -1326,9 +1330,9 @@ def recap(request,codeposte):
 
     ax.set_legend()
     link = codeposte+'/recapJ/'+str(jourchoisi)+str(moischoisi)+str(anneechoisi)+'/'  
-    if not os.path.exists('static/'+link):
-                    os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'DD2.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+                    os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'DD2.png', bbox_inches="tight")
     linkDD2 = link+'DD2.png'
     plt.close()
     enso = False
@@ -1365,9 +1369,9 @@ def recap(request,codeposte):
         plt.ylabel('Ensoleillement W/m²')
         plt.legend()
         link = codeposte+'/recapJ/'+str(jourchoisi)+str(moischoisi)+str(anneechoisi)+'/'  
-        if not os.path.exists('static/'+link):
-                    os.makedirs('static/'+link)
-        plt.savefig('static/'+link+'RAD.png', bbox_inches="tight")
+        if not os.path.exists(data_dir+link):
+                    os.makedirs(data_dir+link)
+        plt.savefig(data_dir+link+'RAD.png', bbox_inches="tight")
         linkRAD = link+'RAD.png'
         plt.close()
     except:
@@ -1471,9 +1475,9 @@ def recapMensuel(request,codeposte):
     plt.grid()
     
     link = codeposte+'/recapM/'+str(moischoisi)+str(anneechoisi)+'/' 
-    if not os.path.exists('static/'+link):
-            os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'T.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+            os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'T.png', bbox_inches="tight")
     linkT = link+'T.png'
     plt.close()
     
@@ -1512,9 +1516,9 @@ def recapMensuel(request,codeposte):
     plt.legend()
     plt.grid()
     link = codeposte+'/recapM/'+str(moischoisi)+str(anneechoisi)+'/' 
-    if not os.path.exists('static/'+link):
-            os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'RR1.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+            os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'RR1.png', bbox_inches="tight")
     linkRR1 = link+'RR1.png'
     plt.close()
     
@@ -1544,9 +1548,9 @@ def recapMensuel(request,codeposte):
     plt.ylabel('Vent km/h')
     plt.legend()
     link = codeposte+'/recapM/'+str(moischoisi)+str(anneechoisi)+'/' 
-    if not os.path.exists('static/'+link):
-            os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'FF.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+            os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'FF.png', bbox_inches="tight")
     linkFF = link+'FF.png'
     plt.close()
     
@@ -1576,9 +1580,9 @@ def recapMensuel(request,codeposte):
     plt.ylabel('Pression mer hpa')
     plt.legend()
     link = codeposte+'/recapM/'+str(moischoisi)+str(anneechoisi)+'/' 
-    if not os.path.exists('static/'+link):
-            os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'PMER.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+            os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'PMER.png', bbox_inches="tight")
     linkPMER = link+'PMER.png'
     plt.close()
 
@@ -1598,9 +1602,9 @@ def recapMensuel(request,codeposte):
   
     ax.set_legend()
     link = codeposte+'/recapM/'+str(moischoisi)+str(anneechoisi)+'/' 
-    if not os.path.exists('static/'+link):
-            os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'DD.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+            os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'DD.png', bbox_inches="tight")
     linkDD = link+'DD.png'
     plt.close()
     
@@ -1636,9 +1640,9 @@ def recapMensuel(request,codeposte):
     annee = debutmois.year
     mois = debutmois.month
     link = codeposte+'/recapM/'+str(moischoisi)+str(anneechoisi)+'/' 
-    if not os.path.exists('static/'+link):
-            os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'H.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+            os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'H.png', bbox_inches="tight")
     linkH = link+'H.png'
     plt.close()
 
@@ -1676,12 +1680,12 @@ def recapMensuel(request,codeposte):
         plt.ylabel('Ensoleillement W/m²')
         plt.legend()
         link = codeposte+'/recapM/'+str(moischoisi)+str(anneechoisi)+'/' 
-        if not os.path.exists('static/'+link):
-            os.makedirs('static/'+link)
-        plt.savefig('static/'+link+'RAD.png', bbox_inches="tight")
+        if not os.path.exists(data_dir+link):
+            os.makedirs(data_dir+link)
+        plt.savefig(data_dir+link+'RAD.png', bbox_inches="tight")
         linkRAD = link+'RAD.png'
         
-        #'static/'+codeposte+'/Mensuel/'+mois+'/RAD
+        #data_dir+codeposte+'/Mensuel/'+mois+'/RAD
         plt.close()
     except:
         pass
@@ -1772,9 +1776,9 @@ def recapevenement(request,codeposte,codeevenement):
     plt.grid()
     
     link = codeposte+'/recap/ev/'+codeposte+'/'+codeevenement +'/' 
-    if not os.path.exists('static/'+link):
-                    os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'T.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+                    os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'T.png', bbox_inches="tight")
     linkT = link+'T.png'
     plt.close()
     #Affichage des données
@@ -1826,9 +1830,9 @@ def recapevenement(request,codeposte,codeevenement):
     plt.legend()
     plt.grid()
     link = codeposte+'/recap/ev/'+codeposte+'/'+codeevenement +'/' 
-    if not os.path.exists('static/'+link):
-                    os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'RR.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+                    os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'RR.png', bbox_inches="tight")
     linkRR = link+'RR.png'
     plt.close()
     
@@ -1853,9 +1857,9 @@ def recapevenement(request,codeposte,codeevenement):
     plt.ylabel('Pression mer hpa')
     plt.legend()
     link = codeposte+'/recap/ev/'+codeposte+'/'+codeevenement +'/' 
-    if not os.path.exists('static/'+link):
-                    os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'PMER.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+                    os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'PMER.png', bbox_inches="tight")
     linkPMER = link+'PMER.png'
     plt.close()
     
@@ -1886,9 +1890,9 @@ def recapevenement(request,codeposte,codeevenement):
     plt.ylabel('Vent km/h')
     plt.legend()
     link = codeposte+'/recap/ev/'+codeposte+'/'+codeevenement +'/' 
-    if not os.path.exists('static/'+link):
-                    os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'FF.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+                    os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'FF.png', bbox_inches="tight")
     linkFF = link+'FF.png'
     plt.close()
     
@@ -1905,9 +1909,9 @@ def recapevenement(request,codeposte,codeevenement):
 
     ax.set_legend()
     link = codeposte+'/recap/ev/'+codeposte+'/'+codeevenement +'/' 
-    if not os.path.exists('static/'+link):
-                    os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'DD2.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+                    os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'DD2.png', bbox_inches="tight")
     linkDD2 = link+'DD2.png'
     plt.close()
     
@@ -2152,12 +2156,12 @@ def rapport(request,codeposte,date):
     plt.ylabel('T moyenne - °C', size=7)
     plt.title('Moyenne des températures du mois de '+mois_entier, size=7)
     plt.xlim(2013,derniereannee.year)
-    plt.savefig('static/RapportT.png', bbox_inches="tight")
+    plt.savefig(data_dir+'RapportT.png', bbox_inches="tight")
     
     link = codeposte+'/recapM/'+str(mois)+str(annee)+'/' 
-    if not os.path.exists('static/'+link):
-            os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'compT.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+            os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'compT.png', bbox_inches="tight")
     linkcompT = link+'compT.png'
     
     plt.close()
@@ -2239,9 +2243,9 @@ def rapport(request,codeposte,date):
     plt.title('Précipitations du mois de '+mois_entier, size=7)
     plt.xlim(2013,derniereannee.year)
     link = codeposte+'/recapM/'+str(mois)+str(annee)+'/' 
-    if not os.path.exists('static/'+link):
-            os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'compRR.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+            os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'compRR.png', bbox_inches="tight")
     linkcompRR = link+'compRR.png'
     
     plt.close()
@@ -2268,9 +2272,9 @@ def rapport(request,codeposte,date):
      
      
     link = codeposte+'/rapportM/'+str(annee)+'/' 
-    if not os.path.exists('static/'+link):
-            os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'DD.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+            os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'DD.png', bbox_inches="tight")
     linkDD = link+'DD.png'
     plt.close()    
 #     
@@ -2489,9 +2493,9 @@ def rapportannuel(request,codeposte,date):
     fig.legend(loc="upper right")
     
     link = codeposte+'/rapportA/'+str(annee)+'/' 
-    if not os.path.exists('static/'+link):
-            os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'T.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+            os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'T.png', bbox_inches="tight")
     linkT = link+'T.png'
     plt.close()   
     
@@ -2624,9 +2628,9 @@ def rapportannuel(request,codeposte,date):
    
     fig.legend(loc="upper right")
     link = codeposte+'/rapportA/'+str(annee)+'/' 
-    if not os.path.exists('static/'+link):
-            os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'RR.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+            os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'RR.png', bbox_inches="tight")
     linkRR = link+'RR.png'
     plt.close()      
     
@@ -2746,9 +2750,9 @@ def rapportannuel(request,codeposte,date):
     
     
     link = codeposte+'/rapportA/'+str(annee)+'/' 
-    if not os.path.exists('static/'+link):
-            os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'DD.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+            os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'DD.png', bbox_inches="tight")
     linkDD = link+'DD.png'
     plt.close()    
     
@@ -2784,9 +2788,9 @@ def rapportannuel(request,codeposte,date):
     plt.xticks([0,1,2,3,4,5,6,7,8,9,10,11,12,13])
     fig.legend(loc="upper right")
     link = codeposte+'/rapportA/'+str(annee)+'/' 
-    if not os.path.exists('static/'+link):
-            os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'NBJFXI.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+            os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'NBJFXI.png', bbox_inches="tight")
     linkNBJFXI = link+'NBJFXI.png'
     plt.close() 
     #Histo FXYAB FXIAB  
@@ -2799,9 +2803,9 @@ def rapportannuel(request,codeposte,date):
     plt.xticks([0,1,2,3,4,5,6,7,8,9,10,11,12,13])
     fig.legend(loc="upper right")
     link = codeposte+'/rapportA/'+str(annee)+'/' 
-    if not os.path.exists('static/'+link):
-            os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'FFAB.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+            os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'FFAB.png', bbox_inches="tight")
     linkFFAB = link+'FFAB.png'
     plt.close()  
     
@@ -2828,9 +2832,9 @@ def rapportannuel(request,codeposte,date):
                     text.set_rotation(50)  
     fig.legend(loc="upper right")
     link = codeposte+'/rapportA/'+str(annee)+'/' 
-    if not os.path.exists('static/'+link):
-            os.makedirs('static/'+link)
-    plt.savefig('static/'+link+'PMER.png', bbox_inches="tight")
+    if not os.path.exists(data_dir+link):
+            os.makedirs(data_dir+link)
+    plt.savefig(data_dir+link+'PMER.png', bbox_inches="tight")
     linkPMER = link+'PMER.png'
     plt.close()  
     #Commentaires : PMIN / PMAX
