@@ -247,6 +247,7 @@ def initPays(request):
                   TYPINFO = TYPINFO, ADRESSE = ADRESSE, LIEU_DIT = LIEU_DIT, 
                   MEL = MEL, TEL = TEL, COMM = COMM, COMMUNE = commune,INIT=0,PDT=PDT).save()
             poste = POSTE.objects.get(CODE_POSTE = CODE_POSTE)
+
             c = Files(POSTE = poste, lien = lien)
             c.save()
             #link servira à récupérer le fichier archive de la station

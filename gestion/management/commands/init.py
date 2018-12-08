@@ -1,12 +1,13 @@
 import datetime
-from django.db.models import Sum,Count,Min,Max,Avg
-from gestion.models import POSTE,INSTAN,H,Q,MENSQ,RECMENS
-import numpy as np
-from decimal import Decimal
-#On initialise la table INSTAN
+
+from django.db.models import Sum,Avg
+
+from gestion.models import POSTE,INSTAN,H,Q,MENSQ
+
+
+# On initialise la table INSTAN
 def initDonnees(nom, CODE_POSTE):
-    
-        #On récupère le fichier enregistré
+        # On récupère le fichier enregistré
         link =  nom + ".csv"
         #On l'ouvre, on le lit ligne par ligne et on injecte les données dans 
         #la table INSTAN
@@ -82,7 +83,8 @@ def initDonnees(nom, CODE_POSTE):
                 dateTime = datetime.datetime.fromtimestamp(dateTime) #Conversion du temps unix
                 dateTime = (dateTime + datetime.timedelta(hours=4)) \
                 .strftime('%Y-%m-%d %H:%M:%S')
-                #Injection de toutes les donnees dans la table INS
+
+                # Injection de toutes les donnees dans la table INS
                 postes = POSTE.objects.get(CODE_POSTE = CODE_POSTE)
                 INSTAN.objects.get_or_create(POSTE = postes, 
                                              DATJ = dateTime, RR = rain*10,
@@ -124,11 +126,7 @@ def initH(nom_poste, datedeb=0, datefin=0,perte=0):
         deb = datedeb
         fin = datefin
         creneau = True
-        
-    
-       
-        
-    
+
     #On parcourt toutes les données instantanées
     for i in range(0,ins.count()):
         #Lorsqu'une nouvelle heure est rencontrée
@@ -255,10 +253,9 @@ def initH(nom_poste, datedeb=0, datefin=0,perte=0):
 #                  
 #                 recu.save()
 #                     
- 
-    
+
 def initQ(nom_poste, datedeb=0, datefin=0,perte=0):
-    
+
     #Récupération des données 
     poste = POSTE.objects.get(CODE_POSTE=nom_poste)
     ins = H.objects.filter(POSTE=poste).order_by('-DATJ') 

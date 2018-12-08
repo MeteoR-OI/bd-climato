@@ -1,9 +1,15 @@
+
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 from django.db import models
 from django.utils import timezone
-import numpy as np
+
 # Create your models here.
 
 #PAYS,COMMUNE,POSTE,PANNE,INSTRUMENT,MAINTENANCE,INS,H,Q,DECADQ,MENSQ,RECMENS,HISTMAINT,HISTPOST
+
+
+data_fs = FileSystemStorage(location=settings.DATA_FS_PATH)
 
 #Données 5min 
 class PAYS(models.Model):
@@ -403,7 +409,7 @@ class Files(models.Model):
     POSTE = models.ForeignKey('POSTE',on_delete=models.CASCADE)
 
 
-    lien = models.FileField(help_text="Contenant les données complètes (.csv)",upload_to="data/")
+    lien = models.FileField(help_text="Contenant les données complètes (.csv)",storage=data_fs)
     
     
 

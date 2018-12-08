@@ -6,4 +6,6 @@ Clim_MeteoR/settings.py
 static/**/*.png
 data/**/*.csv
 *.pyc
+/static/
+/media/data/
 
