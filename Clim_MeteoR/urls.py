@@ -20,11 +20,11 @@ from gestion import views
 from django.conf.urls.static import static
 
 urlpatterns = [
+    path('', views.home),
     path('admin/', admin.site.urls),
-    path('accueil', views.home),
-    path('initialisation/', views.initPays),#Initialisation d'une station
+    path('initialisation/', views.initPays, name="stations_ajout"),#Initialisation d'une station
     path('InfoPoste/<str:code>/<str:typestation>/<str:capteur>/', views.infoposte),#Initialisation des capteurs d'une station
-    path('Releve/',views.releve), #Soumission de données manuelles SPIEA
+    path('releve/',views.releve, name='donnees_manuel_ajout'), #Soumission de données manuelles SPIEA
     path('Reactualisation/',views.reactualisation), #Reactualisation des donnees en cas de perte/panne
     path('station/<str:codeposte>/',views.affichage), 
     path('recap/ev/<str:codeevenement>/<str:codeposte>/',views.recapevenement),
