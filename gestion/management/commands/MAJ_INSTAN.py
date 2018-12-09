@@ -68,8 +68,8 @@ class Command(BaseCommand):
                     DATJ=dateTime)
             INSTAN.objects.filter(POSTE=poste,DATJ=dateTime).update(
                             PMER=float(barometer),IC=float(heatIndex),
-                            WINDCHILL=float(windchill),ETP=float(ET),
-                            RAD=float(solarRadiation),RRI=float(rainRate),
+                            WINDCHILL=float(windchill),ETP=ET,
+                            RAD=solarRadiation,RRI=float(rainRate),
                             FF=float(windSpeed),DD=float(windDir),
                             FXI=float(windGust),DXI=float(windGustDir),
                             T=float(outTemp),TD=float(dewpoint),
