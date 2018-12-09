@@ -1,4 +1,4 @@
- * * * * * root cd /srv/bd-climato/env-prod && source bin/activate && cd ../prod && python manage.py get_data_INSTAN &> /srv/bd-climato/prod/cron.log
+ * * * * * root cd /srv/beta_data/meteor_oi/bd_climato/ && source bin/activate && cd bd_climato/ && python manage.py MAJ_INSTAN &> ../cron.log
 
 
 
