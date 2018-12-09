@@ -59,7 +59,7 @@
             <label class="my-1 mr-2" for="stationRecapJ">Récapitulatif journalier :</label>
                 <select name="codeposte_recapj" size="1" class="custom-select my-1 mr-sm-2" id="stationRecapJ">
                     {% for station in liste %}
-                        <option>{{station}}
+                        <option>{{station}}</option>
                     {% endfor %}
                 </select>
                 <input type="submit" value="Envoyer" class="btn btn-primary my-1" />
@@ -71,7 +71,7 @@
             <label class="my-1 mr-2" for="stationRecapM">Récapitulatif mensuel :</label>
                 <select name="codeposte_recapm" size="1" class="custom-select my-1 mr-sm-2" id="stationRecapM">
                     {% for station in liste %}
-                        <option>{{station}}
+                        <option>{{station}}</option>
                     {% endfor %}
                 </select>
             <input type="submit" value="Envoyer" class="btn btn-primary my-1" />
@@ -87,31 +87,51 @@
     <h2>Rapport périodique</h2>
 
     <ul>
-        <form method="post">
-            {% csrf_token %}
-            <li>Rapport mensuel :
-                <select name="codeposte_rapportm" size="1">
+        <li>
+            <form method="post" class="form-inline">
+                {% csrf_token %}
+                <label class="my-1 mr-2" for="stationRapportMensuel">Rapport mensuel :</label>
+                <select name="codeposte_rapportm" size="1" id="stationRapportMensuel" class="custom-select my-1 mr-sm-2">
                     {% for station in liste %}
-                        <option>{{station}}
+                        <option>{{station}}</option>
                     {% endfor %}
                 </select>
-                - Mois <input id="rapportmois" name="rapportmois" type="text" />
-                - Année <input id="rapportmoisannee" name="rapportmoisannee" type="text" />
-                <input type="submit" value="Envoyer" />
-            </li>
-        </form>
+                <label class="my-1 mr-2 ml-2" for="stationRapportMensuelMois">Mois : </label>
+                <select name="rapportmois" size="1" id="stationRapportMensuelMois" class="custom-select my-1 mr-sm-2">
+                        <option value="1">Janvier</option>
+                        <option value="2">Février</option>
+                        <option value="3">Mars</option>
+                        <option value="4">Avril</option>
+                        <option value="5">Mai</option>
+                        <option value="6">Juin</option>
+                        <option value="7">Juillet</option>
+                        <option value="8">Août</option>
+                        <option value="9">Septembre</option>
+                        <option value="10">Octobre</option>
+                        <option value="11">Novembre</option>
+                        <option value="12">Décembre</option>
+                </select>
 
-        <form method="post">
-            {% csrf_token %}
-            <li> Rapport annuel :
-                <select name="codeposte_rapporta" size="1">
+                <label class="my-1 mr-2 ml-2" for="stationRapportMensuelAnnee">Année : </label>
+                    <input id="stationRapportMensuelAnnee" name="rapportmoisannee" type="text" class="form-control" />
+                <input type="submit" value="Envoyer" class="btn btn-primary my-1 ml-2" />
+            </form>
+        </li>
+
+        <li>
+            <form method="post" class="form-inline">
+                {% csrf_token %}
+                <label class="my-1 mr-2" for="stationRapportAnnuel">Rapport annuel : </label> 
+                <select name="codeposte_rapporta" size="1" id="stationRapportAnnuel" class="custom-select my-1 mr-sm-2">
                     {% for station in liste %}
-                        <option>{{station}}
+                        <option>{{station}}</option>
                     {% endfor %}
                 </select>
-                - Année <input id="rapportannee" name="rapportannee" type="text" />
-                <input type="submit" value="Envoyer" />
-        </form>
+                <label class="my-1 mr-2 ml-2" for="stationRapportAnnuelAnnee">Année : </label>
+                    <input id="stationRapportAnnuelAnnee" name="rapportannee" type="text" class="form-control" />
+                <input type="submit" value="Envoyer" class="btn btn-primary my-1 ml-2" />
+            </form>
+        </li>
     </ul>
 
     <p class="small">
@@ -121,27 +141,34 @@
 
     <h2>Extraction de données</h2>
 
-    <ul>
     <form method="post">
         {% csrf_token %}
-        <li>Station:
-            <select name="codeposte_extraction" size="1">
-                {% for station in liste %}
-                    <option>{{station}}
-                {% endfor %}
-            </select>
-        </li>
-        <li>Période: Début
-            <input id="debutextraction" name="debutextraction" type="text" value="HH:MM JJ/MM/AAAA"/>
-             - Fin <input id="finextraction" name="finextraction" type="text" value="HH:MM JJ/MM/AAAA"/>
-             <input type="submit" value="Envoyer" />
-        </li>
+        <div class="form-row mb-2">
+            <div class="col-2 mx-3">
+                <label class="my-1 mx-3" for="extractionStation">Station : </label>
+                <select name="codeposte_extraction" id="extractionStation" size="1" class="custom-select mr-sm-2">
+                    {% for station in liste %}
+                        <option>{{station}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-3">
+                <label class="my-1 mr-2 ml-2" for="extractionStationDebut">Date de début : </label>
+                <input id="extractionStationDebut" name="debutextraction" type="text" value="HH:MM JJ/MM/AAAA"  class="form-control"/>
+            </div>
+            <div class="col-3">
+                <label class="my-1 mr-2 ml-2" for="extractionStationFin">Date de fin : </label>
+                <input id="extractionStationFin" name="finextraction" type="text" value="HH:MM JJ/MM/AAAA"  class="form-control"/>
+            </div>
+            <div class="col">
+                <input type="submit" value="Extraire" class="btn btn-primary mt-4 ml-2 px-5" />
+             </div>
+        </div>
     </form>
 
     {% if converti %}
         Votre fichier a été conveti. Le <a href="{{link}}" download="{{codeposte_extraction}}">télécharger.</a>
     {% endif %}
-    </ul>
 
     <h2>Ajout et affichage graphique d'évènements </h2>
 
@@ -156,7 +183,7 @@
                 Type de l'évènement :
                 <select name="type_evenement" size="1">
                     {% for ev in liste_type_ev %}
-                        <option>{{ev}}
+                        <option>{{ev}}</option>
                     {% endfor %}
                 </select>
         
@@ -169,13 +196,13 @@
                 Nom de l'évènement:
                 <select name="nom_evenementposte" size="1">
                     {% for ev in liste_evenement %}
-                        <option>{{ev}}
+                        <option>{{ev}}</option>
                     {% endfor %}
                 </select>
                 -  Nom du poste: 
                 <select name="codeposte_evenement" size="1">
                     {% for station in liste %}
-                        <option>{{station}}
+                        <option>{{station}}</option>
                     {% endfor %}
                 </select>
                 <input type="submit" value="Envoyer" />
@@ -188,7 +215,7 @@
                 {% csrf_token %}
                 <select name="affichage_evenement" size="1">
                     {% for ev in liste_evenement %}
-                        <option>{{ev}}
+                        <option>{{ev}}</option>
                     {% endfor %}
                 </select>
                 <input type="submit" value="Envoyer" />
