@@ -27,7 +27,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
        
-        nomposte = 'NDLP1520'
+        nomposte = 'GDC030'
             
         with urllib.request.urlopen("http://stations.meteor-oi.re/"+nomposte+"/json/daily.json") as url:
             datas = json.loads(url.read().decode())
