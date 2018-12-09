@@ -2360,16 +2360,11 @@ def rapport(request,codeposte,date):
  
 
 def rapportannuel(request,codeposte,date):   
-    
-   
     annee = int(date)
-   
-    
-    
-    
+
     date_rapport =  str(annee)
     poste = POSTE.objects.get(CODE_POSTE=codeposte)
-    
+
     nomposte = poste.NOM
     ville = poste.COMMUNE.NOMCOMMUNE
     lat = poste.LAT
@@ -2502,19 +2497,19 @@ def rapportannuel(request,codeposte,date):
     
     #Commentaires
     TMmax = np.nanmax(T)
-    indiceTMmax = T.index(TMmax)+1
+    indiceTMmax = T.index(TMmax)
     TMmaxdate = liste_mois[indiceTMmax]
     
     TMmin = np.nanmin(T)
-    indiceTMmin = T.index(TMmin)+1
+    indiceTMmin = T.index(TMmin)
     TMmindate = liste_mois[indiceTMmin]
     
     TXabs = np.nanmax(TX)
-    indiceTXabs = TX.index(TXabs)+1
+    indiceTXabs = TX.index(TXabs)
     dateTX = liste_mois[indiceTXabs]
     
     TNabs = np.nanmax(TN)
-    indiceTNabs = TN.index(TNabs)+1
+    indiceTNabs = TN.index(TNabs)
     dateTN = liste_mois[indiceTNabs]
     Comm_T=[]
     if np.nanmax(liste_NBJTX35) > 0:
@@ -2862,5 +2857,3 @@ def rapportannuel(request,codeposte,date):
     PMERMIN =Decimal(str(round(float(PMERMIN),2)))
     return render(request, 'gestion/rapportannuel.html', locals())
 
-
-#EXTRACTION DE DONNEES EN CSV : CHOIX DE STATION + CHOIX DE PERIODE
