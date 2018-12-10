@@ -71,13 +71,13 @@ class Command(BaseCommand):
                     recu,created = INSTAN.objects.get_or_create(POSTE=poste,
                             DATJ=dateTime)
                     INSTAN.objects.filter(POSTE=poste,DATJ=dateTime).update(
-                                    PMER=float(barometer),IC=float(heatIndex),
-                                    WINDCHILL=float(windchill),ETP=ET,
-                                    RAD=solarRadiation,RRI=float(rainRate),
-                                    FF=float(windSpeed),DD=float(windDir),
-                                    FXI=float(windGust),DXI=float(windGustDir),
-                                    T=float(outTemp),TD=float(dewpoint),
-                                    U=float(humidity),RR=float(rain))
+                                    PMER=convert(barometer),IC=convert(heatIndex),
+                                    WINDCHILL=convert(windchill),ETP=ET,
+                                    RAD=solarRadiation,RRI=convert(rainRate),
+                                    FF=convert(windSpeed),DD=convert(windDir),
+                                    FXI=convert(windGust),DXI=convert(windGustDir),
+                                    T=convert(outTemp),TD=convert(dewpoint),
+                                    U=convert(humidity),RR=convert(rain))
         #----------------------------------------------------------------------   
         #------------LISTING DES DIFFERENTS POSTES DANS LA BDD-----------------
         #----------------------------------------------------------------------
@@ -113,7 +113,11 @@ class Command(BaseCommand):
   
   
         
-
+def convert(value):
+    if type(value) == float:
+        return round(float(value),2)
+    else:
+        return None 
 
      
      
