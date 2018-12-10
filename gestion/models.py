@@ -409,7 +409,7 @@ class Files(models.Model):
     POSTE = models.ForeignKey('POSTE',on_delete=models.CASCADE)
 
 
-    lien = models.FileField(help_text="Contenant les données complètes (.csv)",storage=data_fs)
+    lien = models.FileField(help_text="Contenant les données complètes (.csv)",storage=data_fs, null = True)
     
     
 
