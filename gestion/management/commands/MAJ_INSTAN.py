@@ -1,17 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from django.core.management.base import BaseCommand
-import sys
-from gestion.models import PAYS,COMMUNE,POSTE,PANNE,INSTRUMENT,MAINTENANCE,INSTAN,H,Q,DECADQ,MENSQ,RECMENS,HISTMAINT,HISTPOST
 import datetime
 import json
-import csv
-import math
-import urllib.request, json 
-import encodings    
-    
-import codecs
+import urllib.request
+
+from django.core.management.base import BaseCommand
+
+from gestion.models import POSTE,INSTAN
     
 class Command(BaseCommand):
     help = 'Closes the specified poll for voting'
@@ -23,11 +19,9 @@ class Command(BaseCommand):
     #    )
 
 
-
-
     def handle(self, *args, **options):
        
-        nomposte = 'NDLP1520'
+        nomposte = 'GDC030'
             
         with urllib.request.urlopen("http://stations.meteor-oi.re/"+nomposte+"/json/daily.json") as url:
             datas = json.loads(url.read().decode())
@@ -68,8 +62,8 @@ class Command(BaseCommand):
                     DATJ=dateTime)
             INSTAN.objects.filter(POSTE=poste,DATJ=dateTime).update(
                             PMER=float(barometer),IC=float(heatIndex),
-                            WINDCHILL=float(windchill),ETP=float(ET),
-                            RAD=float(solarRadiation),RRI=float(rainRate),
+                            WINDCHILL=float(windchill),ETP=ET,
+                            RAD=solarRadiation,RRI=float(rainRate),
                             FF=float(windSpeed),DD=float(windDir),
                             FXI=float(windGust),DXI=float(windGustDir),
                             T=float(outTemp),TD=float(dewpoint),
