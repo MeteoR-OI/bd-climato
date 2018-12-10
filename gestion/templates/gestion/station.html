@@ -99,7 +99,7 @@ Altitude : {{Altitude}}m
 </form>
 {% if carte %}
 {% load static %}
-<img src="{{MEDIA_PREFIX}}{{ link }}" /><br/>
+<img src="{{MEDIA_PREFIX}}/data/{{ link }}" /><br/>
 {% if RDV == False %}
 <u>Sur la période pour la paramètre 1</u> :<br/> <b>Max</b> = {{Maxx}}{{unite}} - <b>Min</b> = {{Minx}}{{unite}} - <b>Moyenne</b> = {{Avgx}}{{unite}} {% if cumul %}- <b>Cumul</b> = {{Sumx}}{{unite}}<br/>
 <b> Cumul max en 1h:</b><br/>
