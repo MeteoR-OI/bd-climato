@@ -26,11 +26,11 @@ class Command(BaseCommand):
           
         for i in range(0,postes.count()):
             nomposte = postes[i].CODE_POSTE
-            type = postes[i].TYPE 
+            types = postes[i].TYPE 
 #             init = postes[i].INIT
             
 #             
-            if type != 'SPIEA':  
+            if types != 'SPIEA':  
 #         nomposte = 'GDC030'
             
                 with urllib.request.urlopen("http://stations.meteor-oi.re/"+nomposte+"/json/daily.json") as url:
