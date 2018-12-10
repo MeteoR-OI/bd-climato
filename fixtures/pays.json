@@ -1,0 +1,66 @@
+[
+{
+    "model": "gestion.pays",
+    "pk": 1,
+    "fields": {
+        "CODPAYS": 1,
+        "NOMPAYS": "France"
+    }
+},
+{
+    "model": "gestion.pays",
+    "pk": 2,
+    "fields": {
+        "CODPAYS": 2,
+        "NOMPAYS": "Réunion"
+    }
+},
+{
+    "model": "gestion.pays",
+    "pk": 3,
+    "fields": {
+        "CODPAYS": 3,
+        "NOMPAYS": "Maurice"
+    }
+},
+{
+    "model": "gestion.pays",
+    "pk": 4,
+    "fields": {
+        "CODPAYS": 4,
+        "NOMPAYS": "Madagascar"
+    }
+},
+{
+    "model": "gestion.pays",
+    "pk": 5,
+    "fields": {
+        "CODPAYS": 5,
+        "NOMPAYS": "Mayotte"
+    }
+},
+{
+    "model": "gestion.pays",
+    "pk": 6,
+    "fields": {
+        "CODPAYS": 6,
+        "NOMPAYS": "Comores"
+    }
+},
+{
+    "model": "gestion.pays",
+    "pk": 7,
+    "fields": {
+        "CODPAYS": 7,
+        "NOMPAYS": "Rodrigues"
+    }
+},
+{
+    "model": "gestion.pays",
+    "pk": 8,
+    "fields": {
+        "CODPAYS": 8,
+        "NOMPAYS": "Seychelles"
+    }
+}
+]

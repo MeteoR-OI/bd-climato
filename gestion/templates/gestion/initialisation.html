@@ -1,3 +1,9 @@
+{% extends 'gestion/base.html' %}
+
+{% block title %}Initialisation d'un poste{% endblock %}
+
+{% block content %}
+
 {% if envoi %}Vos données de "{{CODE_POSTE}}" ont bien été envoyées !<br/>
 {% endif %}
 
@@ -7,18 +13,29 @@ Veuillez entrer toutes les informations sur la station : <br/>
 Les champs précédés par un * sont obligatoires.
 
 
+<div class="container mb-4">
+  <div class="row">
+    <div class="col">
 
-<form action="." method="post" enctype="multipart/form-data">
-    
-    {% csrf_token %}
-    
-    {{ form.as_p }}
+    </div>
+    <div class="col-8">
+        {{form.errors}}
+        {{form.non_form_errors}}
+        <form action="." method="post" enctype="multipart/form-data">
+            
+            {% csrf_token %}
+            
+            {{ form.as_boostrap }}
+        
+            <input type="submit" value="Créer le poste" class="btn btn-primary" />
+        
+        </form>
+    </div>
+    <div class="col">
 
-    <input type="submit" value="Submit" />
+    </div>
+  </div>
+</div>
 
-</form>
 
-
-
-{{form.errors}}
-{{form.non_form_errors}}
+{% endblock %}

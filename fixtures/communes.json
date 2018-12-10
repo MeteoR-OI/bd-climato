@@ -1,0 +1,218 @@
+[
+{
+    "model": "gestion.commune",
+    "pk": 1,
+    "fields": {
+        "NOMCOMMUNE": "Saint-André",
+        "PAYS": 2,
+        "CP": 97440
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 2,
+    "fields": {
+        "NOMCOMMUNE": "Saint-Denis",
+        "PAYS": 2,
+        "CP": 97400
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 3,
+    "fields": {
+        "NOMCOMMUNE": "Etang Sale",
+        "PAYS": 2,
+        "CP": 97427
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 4,
+    "fields": {
+        "NOMCOMMUNE": "Petite-Ile",
+        "PAYS": 2,
+        "CP": 97429
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 5,
+    "fields": {
+        "NOMCOMMUNE": "Le Tampon",
+        "PAYS": 2,
+        "CP": 97430
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 6,
+    "fields": {
+        "NOMCOMMUNE": "La Plaine des Palmistes",
+        "PAYS": 2,
+        "CP": 97431
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 7,
+    "fields": {
+        "NOMCOMMUNE": "Salazie",
+        "PAYS": 2,
+        "CP": 97433
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 8,
+    "fields": {
+        "NOMCOMMUNE": "Saint-Leu",
+        "PAYS": 2,
+        "CP": 97436
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 9,
+    "fields": {
+        "NOMCOMMUNE": "Sainte-Marie",
+        "PAYS": 2,
+        "CP": 97438
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 10,
+    "fields": {
+        "NOMCOMMUNE": "Sainte-Rose",
+        "PAYS": 2,
+        "CP": 97439
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 11,
+    "fields": {
+        "NOMCOMMUNE": "Sainte-Suzanne",
+        "PAYS": 2,
+        "CP": 97441
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 12,
+    "fields": {
+        "NOMCOMMUNE": "Saint-Philippe",
+        "PAYS": 2,
+        "CP": 97442
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 13,
+    "fields": {
+        "NOMCOMMUNE": "Saint-Louis",
+        "PAYS": 2,
+        "CP": 97450
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 14,
+    "fields": {
+        "NOMCOMMUNE": "Saint-Paul",
+        "PAYS": 2,
+        "CP": 97460
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 15,
+    "fields": {
+        "NOMCOMMUNE": "Saint-Benoît",
+        "PAYS": 2,
+        "CP": 97470
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 16,
+    "fields": {
+        "NOMCOMMUNE": "Saint-Joseph",
+        "PAYS": 2,
+        "CP": 97480
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 17,
+    "fields": {
+        "NOMCOMMUNE": "Trois-Bassins",
+        "PAYS": 2,
+        "CP": 97426
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 18,
+    "fields": {
+        "NOMCOMMUNE": "Les Avirons",
+        "PAYS": 2,
+        "CP": 97425
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 19,
+    "fields": {
+        "NOMCOMMUNE": "Le Port",
+        "PAYS": 2,
+        "CP": 97420
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 20,
+    "fields": {
+        "NOMCOMMUNE": "La Possession",
+        "PAYS": 2,
+        "CP": 97419
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 21,
+    "fields": {
+        "NOMCOMMUNE": "Entre-Deux",
+        "PAYS": 2,
+        "CP": 97414
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 22,
+    "fields": {
+        "NOMCOMMUNE": "Cilaos",
+        "PAYS": 2,
+        "CP": 97413
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 23,
+    "fields": {
+        "NOMCOMMUNE": "Bras Panon",
+        "PAYS": 2,
+        "CP": 97412
+    }
+},
+{
+    "model": "gestion.commune",
+    "pk": 24,
+    "fields": {
+        "NOMCOMMUNE": "Saint-Pierre",
+        "PAYS": 2,
+        "CP": 97410
+    }
+}
+]

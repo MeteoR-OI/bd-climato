@@ -15,17 +15,18 @@ data_fs = FileSystemStorage(location=settings.DATA_FS_PATH)
 class PAYS(models.Model):
     #id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
     CODPAYS = models.IntegerField(default=None)
-    NOMPAYS = models.CharField(null=False, max_length =20,default=None) 
+    NOMPAYS = models.CharField(null=False, max_length =20,default=None)
 
     class Meta:
         verbose_name = "Pays"
         
-    #def __str__(self):
-        #return self.NOMPAYS
+    def __str__(self):
+        return self.NOMPAYS
     
 class COMMUNE(models.Model):
     NOMCOMMUNE = models.CharField(null=False, max_length=25,default=None)
     PAYS = models.ForeignKey('PAYS', on_delete=models.CASCADE,default=None) #Pour chaque commune on a qu'un seul pays
+    CP = models.IntegerField(null=False, verbose_name = "Code postal",default=None) 
     
     def __str__(self):
         return self.NOMCOMMUNE

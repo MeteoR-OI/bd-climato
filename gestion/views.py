@@ -197,19 +197,11 @@ def initPays(request):
     form = InitFormPays(request.POST or None, request.FILES or None)
     # Nous vérifions que les données envoyées sont valides.
     if form.is_valid(): 
-        nompays = form.cleaned_data['NOM_DU_PAYS']
-        if nompays == 'France':
-            codpays = 1
-        elif nompays == 'Reunion' :
-            codpays = 2
-        else:
-            codpays = 0
-        #Si le pays existe déjà, on ne le recrée pas.    
-        PAYS.objects.get_or_create(NOMPAYS=nompays,CODPAYS=codpays)
-        nomcommune = form.cleaned_data['NOM_DE_LA_COMMUNE']
-        pays = PAYS.objects.get(NOMPAYS=nompays)
-        COMMUNE.objects.get_or_create(NOMCOMMUNE=nomcommune,PAYS=pays)
-        CP = form.cleaned_data['CODE_POSTAL']
+
+
+        commune = form.cleaned_data['NOM_DE_LA_COMMUNE']
+        pays = form.cleaned_data['NOM_DU_PAYS']
+
         CODE_POSTE = form.cleaned_data['CODE_POSTE']
         
 #         lien = form.cleaned_data['lien']
@@ -219,7 +211,7 @@ def initPays(request):
 #             archive = True
 
         REF_MF = form.cleaned_data['REFERENCE_METEO_FRANCE']
-       
+
         PDT = form.cleaned_data['PDT']
         NOM = form.cleaned_data['NOM_PUBLIQUE']
         LAT = form.cleaned_data['LATITUDE']
@@ -237,9 +229,9 @@ def initPays(request):
         MEL = form.cleaned_data['MEL']
         TEL = form.cleaned_data['TEL']
         COMM = form.cleaned_data['COMMS']
-        commune = COMMUNE.objects.get(NOMCOMMUNE=nomcommune)
+        
         if TYPE != 'SPIEA':
-            POSTE(CP = CP, CODE_POSTE = CODE_POSTE, REF_MF = REF_MF, 
+            POSTE(CP = commune.CP, CODE_POSTE = CODE_POSTE, REF_MF = REF_MF, 
                   DATEOUV = DATEOUV, NOM = NOM, LAT = LAT, LON = LON, ALT = ALT, 
                   POS = POS, AUT = AUT, PROP = PROP, MAINT = MAINT, TYPE = TYPE, 
                   TYPINFO = TYPINFO, ADRESSE = ADRESSE, LIEU_DIT = LIEU_DIT, 
@@ -265,7 +257,7 @@ def initPays(request):
             return redirect("../InfoPoste/" + CODE_POSTE + '/' + 
                             TYPE + '/T/', code=302)
         else: 
-            POSTE(CP = CP, CODE_POSTE = CODE_POSTE, REF_MF = REF_MF, 
+            POSTE(CP = commune.CP, CODE_POSTE = CODE_POSTE, REF_MF = REF_MF, 
                   DATEOUV = DATEOUV, NOM = NOM, LAT = LAT, LON = LON, ALT = ALT, 
                   POS = POS, AUT = AUT, PROP = PROP, MAINT = MAINT, TYPE = TYPE, 
                   TYPINFO = TYPINFO, ADRESSE = ADRESSE, LIEU_DIT = LIEU_DIT, 

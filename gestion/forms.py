@@ -1,11 +1,11 @@
 from django import forms
 from .models import PAYS,COMMUNE,INSTRUMENT,POSTE
-
+from .tools import BootStrapForm
 
     
 
 
-class InitFormPays(forms.Form):
+class InitFormPays(BootStrapForm):
     PAYS_CHOICES = (
     ('France', 'France'),
     ('Reunion', 'Réunion'),
@@ -56,9 +56,9 @@ class InitFormPays(forms.Form):
 #         return message
     
     #CODE_PAYS = forms.IntegerField(label='Code du pays*',help_text='Ex : 1(France-Reunion)',widget=forms.Select(choices=PAYS_CHOICES))
-    NOM_DU_PAYS = forms.CharField(label='Nom du pays*',widget=forms.Select(choices=PAYS_CHOICES))
-    NOM_DE_LA_COMMUNE = forms.CharField(label='Nom de la commune*',max_length=25)
-    CODE_POSTAL = forms.IntegerField(label='Code postal*')
+    NOM_DU_PAYS = forms.ModelChoiceField(label='Nom du pays*',initial=2, queryset = PAYS.objects.all())
+    NOM_DE_LA_COMMUNE = forms.ModelChoiceField(label='Nom de la commune*', queryset = COMMUNE.objects.all().order_by('NOMCOMMUNE'))
+#    CODE_POSTAL = forms.IntegerField(label='Code postal*')
     CODE_POSTE = forms.CharField(label='Nom du poste*',max_length =50,help_text = 'Ex : GDC030 ')
     REFERENCE_METEO_FRANCE = forms.CharField(label='Référence Météo France',max_length =10,required=False)
     NOM_PUBLIQUE = forms.CharField(label="Nom d'affichage public*",max_length = 50, help_text ='Nom qui sera affiché au grand public')
@@ -79,7 +79,15 @@ class InitFormPays(forms.Form):
     MEL = forms.CharField(max_length = 40,required=False) 
     TEL = forms.CharField(max_length = 10,required=False)
     COMMS = forms.CharField(widget=forms.Textarea,required=False)  
-    
+
+    def __init__(self, *args, **kwargs):
+        super(forms.Form, self).__init__(*args, **kwargs)
+
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
+#         self.fields['NOM_DE_LA_COMMUNE'].queryset = COMMUNE.objects.all()
+
+
 class InitPoste(forms.ModelForm):
     class Meta:
 
