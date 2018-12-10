@@ -1,17 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from django.core.management.base import BaseCommand
-import sys
-from gestion.models import PAYS,COMMUNE,POSTE,PANNE,INSTRUMENT,MAINTENANCE,INSTAN,H,Q,DECADQ,MENSQ,RECMENS,HISTMAINT,HISTPOST
 import datetime
 import json
-import csv
-import math
-import urllib.request, json 
-import encodings    
-    
-import codecs
+import urllib.request
+
+from django.core.management.base import BaseCommand
+
+from gestion.models import POSTE,INSTAN
     
 class Command(BaseCommand):
     help = 'Closes the specified poll for voting'
@@ -21,8 +17,6 @@ class Command(BaseCommand):
     #        '-r', '--rain', action='store', dest='rain', default=0,
     #        type=int
     #    )
-
-
 
 
     def handle(self, *args, **options):

@@ -1,24 +1,4 @@
- * * * * *  root cd /srv/beta_data/meteor_oi/bd_climato/ && source py_env/bin/activate && cd bd-climato/ && python manage.py MAJ_INSTAN &> ../cron.log
+SHELL=/bin/bash
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ */1 * * * *  root cd /srv/beta_data/meteor_oi/bd_climato/ && source py_env/bin/activate && cd bd-climato/ && python manage.py MAJ_INSTAN && deactivate &> ../cron.log
 
