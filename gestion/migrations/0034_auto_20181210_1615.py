@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='commune',
             name='CP',
-            field=models.IntegerField(default=None, verbose_name='Code postal'),
+            field=models.IntegerField(default=0000, verbose_name='Code postal'),
         ),
         migrations.DeleteModel(
             name='Files',
