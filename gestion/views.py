@@ -212,11 +212,11 @@ def initPays(request):
         CP = form.cleaned_data['CODE_POSTAL']
         CODE_POSTE = form.cleaned_data['CODE_POSTE']
         
-        lien = form.cleaned_data['lien']
-        if lien == None :
-            archive = False
-        else:
-            archive = True
+#         lien = form.cleaned_data['lien']
+#         if lien == None :
+#             archive = False
+#         else:
+#             archive = True
 
         REF_MF = form.cleaned_data['REFERENCE_METEO_FRANCE']
        
@@ -238,7 +238,7 @@ def initPays(request):
         TEL = form.cleaned_data['TEL']
         COMM = form.cleaned_data['COMMS']
         commune = COMMUNE.objects.get(NOMCOMMUNE=nomcommune)
-        if TYPE != 'SPIEA' and archive == True:
+        if TYPE != 'SPIEA':
             POSTE(CP = CP, CODE_POSTE = CODE_POSTE, REF_MF = REF_MF, 
                   DATEOUV = DATEOUV, NOM = NOM, LAT = LAT, LON = LON, ALT = ALT, 
                   POS = POS, AUT = AUT, PROP = PROP, MAINT = MAINT, TYPE = TYPE, 
@@ -246,17 +246,17 @@ def initPays(request):
                   MEL = MEL, TEL = TEL, COMM = COMM, COMMUNE = commune,INIT=0,PDT=PDT).save()
             poste = POSTE.objects.get(CODE_POSTE = CODE_POSTE)
 
-            c = Files(POSTE = poste, lien = lien)
-            c.save()
+#             c = Files(POSTE = poste, lien = lien)
+#             c.save()
             #link servira à récupérer le fichier archive de la station
             #dans les dossiers
-            link = str(c.lien.path)
-            link = link.split('\\')[-1]
+#             link = str(c.lien.path)
+#             link = link.split('\\')[-1]
             #Initialisation des tables       
-            init.initDonnees(link,CODE_POSTE) 
-            init.initH(CODE_POSTE)
-            init.initQ(CODE_POSTE)
-            init.initMensQ(CODE_POSTE)
+#             init.initDonnees(link,CODE_POSTE) 
+#             init.initH(CODE_POSTE)
+#             init.initQ(CODE_POSTE)
+#             init.initMensQ(CODE_POSTE)
             #init = 1 autorise l'automatisation de la récupération
             poste.INIT = 1
             poste.save()
