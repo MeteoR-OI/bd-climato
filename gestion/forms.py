@@ -60,7 +60,6 @@ class InitFormPays(forms.Form):
     NOM_DE_LA_COMMUNE = forms.CharField(label='Nom de la commune*',max_length=25)
     CODE_POSTAL = forms.IntegerField(label='Code postal*')
     CODE_POSTE = forms.CharField(label='Nom du poste*',max_length =50,help_text = 'Ex : GDC030 ')
-    lien = forms.FileField(label='Selectionnez le fichier d\'archives',required=False)
     REFERENCE_METEO_FRANCE = forms.CharField(label='Référence Météo France',max_length =10,required=False)
     NOM_PUBLIQUE = forms.CharField(label="Nom d'affichage public*",max_length = 50, help_text ='Nom qui sera affiché au grand public')
     PDT = forms.IntegerField(label="Intervalle d'envoie des données (min)*")
