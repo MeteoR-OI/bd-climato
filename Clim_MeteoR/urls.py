@@ -20,7 +20,7 @@ from gestion import views
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('', views.home),
+    path('', views.home, name="home"),
     path('admin/', admin.site.urls),
     path('initialisation/', views.initPays, name="stations_ajout"),#Initialisation d'une station
     path('InfoPoste/<str:code>/<str:typestation>/<str:capteur>/', views.infoposte),#Initialisation des capteurs d'une station
