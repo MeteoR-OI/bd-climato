@@ -8,4 +8,4 @@ data/**/*.csv
 *.pyc
 /static/
 /media/data/
-
+__pycache__/
