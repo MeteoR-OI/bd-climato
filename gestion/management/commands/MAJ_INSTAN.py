@@ -109,7 +109,7 @@ class Command(BaseCommand):
 
                 
     
-        #Ajouter les capteurs SOL
+        #Ajouter les capteurs SOL 
   
   
         
