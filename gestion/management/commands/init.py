@@ -8,7 +8,7 @@ from gestion.models import POSTE,INSTAN,H,Q,MENSQ
 # On initialise la table INSTAN
 def initDonnees(nom, CODE_POSTE):
         # On récupère le fichier enregistré
-        link =  nom + ".csv"
+        link =  nom
         #On l'ouvre, on le lit ligne par ligne et on injecte les données dans 
         #la table INSTAN
         with open(link, "r") as f:

@@ -217,8 +217,7 @@ def initPays(request):
             archive = False
         else:
             archive = True
-            
-        print(archive)
+
         REF_MF = form.cleaned_data['REFERENCE_METEO_FRANCE']
        
         PDT = form.cleaned_data['PDT']
@@ -240,7 +239,6 @@ def initPays(request):
         COMM = form.cleaned_data['COMMS']
         commune = COMMUNE.objects.get(NOMCOMMUNE=nomcommune)
         if TYPE != 'SPIEA' and archive == True:
-            print('jsuis la')
             POSTE(CP = CP, CODE_POSTE = CODE_POSTE, REF_MF = REF_MF, 
                   DATEOUV = DATEOUV, NOM = NOM, LAT = LAT, LON = LON, ALT = ALT, 
                   POS = POS, AUT = AUT, PROP = PROP, MAINT = MAINT, TYPE = TYPE, 
@@ -254,7 +252,6 @@ def initPays(request):
             #dans les dossiers
             link = str(c.lien.path)
             link = link.split('\\')[-1]
-            link = link.split('.')[0]             
             #Initialisation des tables       
             init.initDonnees(link,CODE_POSTE) 
             init.initH(CODE_POSTE)
@@ -839,25 +836,30 @@ def affichage(request,codeposte):
             champchoisi = request.POST['champchoisi']
             champchoisi2 = request.POST['champchoisi2']
             
-            try : 
-                datedebuts = request.POST['datedeb']
-                datedebut=datedebuts.split(' ')
-                datedeb = datedebut[0].split('-')
-                hrdeb = datedebut[1].split(':')
-         
-                dateends = request.POST['datefin']
-                dateend=dateends.split(' ')
-                datefin = dateend[0].split('-')
-                hrfin = dateend[1].split(':')
-                nom = datedebut[0]+'_'+dateend[0]
-                datedebut = datetime.datetime(int(datedeb[2]),int(datedeb[1]),
-                                              int(datedeb[0]),int(hrdeb[0]),
-                                              int(hrdeb[1]))
-                datefin = datetime.datetime(int(datefin[2]),int(datefin[1]),
-                                            int(datefin[0]),int(hrfin[0]),
-                                            int(hrfin[1]))
-            except:
-                pass
+            datedebuts = request.POST['datedeb']
+            datedebut=datedebuts.split(' ')
+            datedeb = datedebut[0].split('-')
+            hrdeb = datedebut[1].split(':')
+     
+            dateends = request.POST['datefin']
+            dateend=dateends.split(' ')
+            datefin = dateend[0].split('-')
+            hrfin = dateend[1].split(':')
+
+            datedebut = datetime.datetime(int(datedeb[2]),int(datedeb[1]),
+                                          int(datedeb[0]),int(hrdeb[0]),
+                                          int(hrdeb[1]))
+            datefin = datetime.datetime(int(datefin[2]),int(datefin[1]),
+                                        int(datefin[0]),int(hrfin[0]),
+                                        int(hrfin[1]))
+
+            part_nom_champ = champchoisi
+            if champchoisi2:
+                part_nom_champ = "%s_%s" % (part_nom_champ, champchoisi2)
+            nom = '%s_%s_%s' % (part_nom_champ,
+                                datedebut.isoformat().replace(':',''),
+                                datefin.isoformat().replace(':',''))
+
             carte = True
             
             #Sélection des données instantanées, comme RDV n'existe pas dans la 
