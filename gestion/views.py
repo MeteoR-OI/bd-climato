@@ -15,7 +15,7 @@ from django.db.models import Sum, Min, Max, Avg
 from django.shortcuts import render, redirect
 
 from gestion.management.commands import init
-from gestion.models import INSTAN,POSTE,PAYS,COMMUNE,H,Q,INSTRUMENT,MENSQ,Files,RECMENS,EVENEMENTS,POSTE_EVENEMENTS
+from gestion.models import INSTAN,POSTE,PAYS,COMMUNE,H,Q,INSTRUMENT,MENSQ,RECMENS,EVENEMENTS,POSTE_EVENEMENTS
 from .forms import InitFormPays,InitPoste,UploadFileForm,InitPosteTotal
 
 
