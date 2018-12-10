@@ -8,7 +8,13 @@ import urllib.request
 from django.core.management.base import BaseCommand
 
 from gestion.models import POSTE,INSTAN
-    
+
+def convert(value):
+    try:
+        return float(value)
+    except:
+        return None 
+        
 class Command(BaseCommand):
     help = 'Closes the specified poll for voting'
 
@@ -113,11 +119,7 @@ class Command(BaseCommand):
   
   
         
-def convert(value):
-    if type(value) == float:
-        return round(float(value),2)
-    else:
-        return None 
+
 
      
      
