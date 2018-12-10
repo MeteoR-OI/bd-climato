@@ -1,5 +1,5 @@
 from django import forms
-from .models import PAYS,COMMUNE,INSTRUMENT,Files,POSTE
+from .models import PAYS,COMMUNE,INSTRUMENT,POSTE
 
 
     
