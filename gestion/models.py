@@ -404,13 +404,13 @@ class HISTPOST(models.Model):
     TEL = models.CharField(null=True,max_length = 10)
     COMM = models.TextField(null=True)  
     
-class Files(models.Model):
-
-    POSTE = models.ForeignKey('POSTE',on_delete=models.CASCADE)
-
-
-    lien = models.FileField(help_text="Contenant les données complètes (.csv)",storage=data_fs, null = True)
-    
+# class Files(models.Model):
+# 
+#     POSTE = models.ForeignKey('POSTE',on_delete=models.CASCADE)
+# 
+# 
+#     lien = models.FileField(help_text="Contenant les données complètes (.csv)",storage=data_fs, null = True)
+#     
     
 
     

@@ -93,8 +93,8 @@ class InitPosteTotal(forms.ModelForm):
         model = INSTRUMENT
         exclude = ['POSTE','DATFIN','CAPTEUR']
         
-class UploadFileForm(forms.ModelForm):
-    class Meta:
-        model = Files
-        fields = '__all__'
+# class UploadFileForm(forms.ModelForm):
+#     class Meta:
+#         model = Files
+#         fields = '__all__'
         
