@@ -51,7 +51,7 @@ class Command(BaseCommand):
             
             #recherche du premier créneau horaire complet puis mise à jour
             
-            nomposte = 'NDLP1520'
+            nomposte = 'GDC030'
             poste = POSTE.objects.get(CODE_POSTE=nomposte)
             
             
