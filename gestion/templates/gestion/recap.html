@@ -1,63 +1,73 @@
+{% extends 'gestion/base.html' %}
+
+{% block title %}Données quotidienne de {{nom_public}}{% endblock %}
+
+{% block content %}
+
 {% load static %}
+{% get_media_prefix as MEDIA_PREFIX %}
+
 <h1>MeteoR-OI</h1>
 <h2>Affichage graphique - Récapitulatif</h2>
 
 <h2>De la journée du {{jourchoisi}}/{{moischoisi}}/{{anneechoisi}}</h2>
 Période de mesure possible : Du {{debutmesure}} au {{finmesure}}
-</br>
+<br/>
 <form action="." method="post" enctype="multipart/form-data">
     {% csrf_token %}
     
     Choix de la journée :
-    <SELECT name="jour" size="1">
+    <select name="jour" size="1">
     {% for jour in jour_dispo %}
-    <OPTION>{{jour}}
+    <option>{{jour}}</option>
     {% endfor %}
-    </SELECT>
-    <SELECT name="mois" size="1">
+    </select>
+    <select name="mois" size="1">
     {% for mois in mois_dispo %}
-    <OPTION>{{mois}}
+    <option>{{mois}}</option>
     {% endfor %}
-    </SELECT>
-    <SELECT name="annee" size="1">
+    </select>
+    <select name="annee" size="1">
     {% for annee in annee_dispo %}
-    <OPTION>{{annee}}
+    <option>{{annee}}</option>
     {% endfor %}
-    </SELECT> <input type="submit" value="Submit" />
+    </select>
+
+    <input type="submit" value="Submit" />
 </form>
 
-    </br>
+<br/>
  
 <table rules=cols border=5 ><tr><td>
 
 <table><tr><td colspan=2>
-<img src="/{{ linkT }}" />
+<img src="{{MEDIA_PREFIX}}/data/{{ linkT }}" />
 </td></tr><tr><td>
-<li>T moyenne : {{MoyTemp}}°C </br>
-<li>Tx : {{Tx}}°C à {{DateTx}}</br>
+<li>T moyenne : {{MoyTemp}}°C <br/>
+<li>Tx : {{Tx}}°C à {{DateTx}}<br/>
 <li>Tn : {{Tn}}°C à {{DateTn}}</td><td>
-<li>IC max : {{ICmax}}°C </br>
-<li>Windchill absolu : {{WINDCHILLmax}}°C </br>
+<li>IC max : {{ICmax}}°C <br/>
+<li>Windchill absolu : {{WINDCHILLmax}}°C <br/>
 </td></tr></table>
 
 </td><td>
     
 
 <table><tr><td>
-<img src="/{{ linkRR }}" />
+<img src="{{MEDIA_PREFIX}}/data/{{ linkRR }}" />
 </td></tr><tr><td>
-<li>Cumul : {{cumultotal}}mm </br>
-<li>Intensité max : {{maxRRI}}mm/h à  {{hrmaxRRI}}  </br>
+<li>Cumul : {{cumultotal}}mm <br/>
+<li>Intensité max : {{maxRRI}}mm/h à  {{hrmaxRRI}}  <br/>
 </td></tr> </table>
 
 </td><td>
   
  
 <table><tr><td>
- <img src="/{{ linkPMER }}" />  
+ <img src="{{MEDIA_PREFIX}}/data/{{ linkPMER }}" />  
  </td></tr><tr><td>
-<li>Pression moyenne : {{pmoy}}hPa</br>
- <li>Pression max : {{pmax}}hPa</br>
+<li>Pression moyenne : {{pmoy}}hPa<br/>
+ <li>Pression max : {{pmax}}hPa<br/>
  <li>Pression min : {{pmin}}hPa à {{hpmin}}
  </td></tr></table>  
   
@@ -67,11 +77,11 @@ Période de mesure possible : Du {{debutmesure}} au {{finmesure}}
 
 
 <table><tr><td>
-<img src="/{{ linkFF }}" />
+<img src="{{MEDIA_PREFIX}}/data/{{ linkFF }}" />
 </td></tr><tr><td>
-<li>Vent moyen :  {{MoyFF}}km/h</br>
-<li>Vent moyen max:  {{ventmoyenmax}}km/h</br>
-<li>Rafale max : {{rafmax}}km/h à {{hrrafmax}}</br>
+<li>Vent moyen :  {{MoyFF}}km/h<br/>
+<li>Vent moyen max:  {{ventmoyenmax}}km/h<br/>
+<li>Rafale max : {{rafmax}}km/h à {{hrrafmax}}<br/>
 </td></tr>    
 </table>
 
@@ -80,7 +90,7 @@ Période de mesure possible : Du {{debutmesure}} au {{finmesure}}
 
 
 <table><tr><td>
-<img src="/{{ linkDD2 }}" />
+<img src="{{MEDIA_PREFIX}}/data/{{ linkDD2 }}" />
 </td></tr><tr><td>
 </td></tr>    
 </table>
@@ -90,17 +100,17 @@ Période de mesure possible : Du {{debutmesure}} au {{finmesure}}
 {% if enso %}  
 <table><tr><td>
 
-<img src="/{{ linkRAD }}" />
+<img src="{{MEDIA_PREFIX}}/data/{{ linkRAD }}" />
 </td></tr><tr><td>
-<li>Durée ensoleillement :  {{hRAD}}h{{mRAD}} min  </br>
-<li>UV max :  {{UVmax}}  </br>
+<li>Durée ensoleillement :  {{hRAD}}h{{mRAD}} min  <br/>
+<li>UV max :  {{UVmax}}  <br/>
 </td></tr>    
 </table>
 {% endif %}  
 </td></tr></table>
 
 
-  <a href ="../../../accueil">Accueil</a>
-    
-    
+<a href ="{% url 'home' %}">Accueil</a>
 
+
+{% endblock %}
