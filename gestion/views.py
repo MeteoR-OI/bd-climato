@@ -114,67 +114,67 @@ def home(request):
     except: 
         pass
     
-    try:
-        converti = False
-       
-        codeposte_extraction = request.POST['codeposte_extraction']
-        poste = POSTE.objects.get(CODE_POSTE=codeposte_extraction)
+#     try:
+    converti = False
+   
+    codeposte_extraction = request.POST['codeposte_extraction']
+    poste = POSTE.objects.get(CODE_POSTE=codeposte_extraction)
+    
+    debutextraction = request.POST['debutextraction']
+    debutextraction = debutextraction.split(' ')
+    hrdebut = debutextraction[0].split(':')
+    jrdebut = debutextraction[1].split('/')
+    debut = datetime.datetime(int(jrdebut[2]),int(jrdebut[1]),int(jrdebut[0]),int(hrdebut[0]),int(hrdebut[1]))
+    
+    finextraction = request.POST['finextraction']
+    finextraction = finextraction.split(' ')
+    hrfin = finextraction[0].split(':')
+    jrfin = finextraction[1].split('/')
+    fin = datetime.datetime(int(jrfin[2]),int(jrfin[1]),int(jrfin[0]),int(hrfin[0]),int(hrfin[1]))
+    
+    link = '%s/export'+codeposte_extraction+"_"+str(jrdebut[0])+str(jrdebut[1])+str(jrdebut[2])+"-"+str(jrfin[0])+str(jrfin[1])+str(jrfin[2])+'.csv' % settings.MEDIA_ROOT
+    
+    
+    
+    inst = INSTAN.objects.filter(POSTE=poste,DATJ__gte=debut,DATJ__lte=fin)
+    entetes = [
+             u'DAT',
+             u'RR',
+             u'RRI',
+             u'FF',
+             u'DD',
+             u'FXI',
+             u'DXI',
+             u'T',
+             u'TD',
+             u'U',
+             u'PMER',
+             u'UV',
+             u'RAD',
+             u'IC',
+             u'WINDCHILL',
+    
+        ]
+    
+    
+    f = open(link, 'w')
+    ligneEntete = ";".join(entetes) + "\n"
+    f.write(ligneEntete)
+    
+    
+    for ins in inst:
+        valeurs = [ins.DATJ.strftime('%d/%m/%Y-%H:%M'), str(ins.RR)
+                   , str(ins.RRI), str(ins.FF), str(ins.DD), str(ins.FXI)
+                   , str(ins.DXI), str(ins.T), str(ins.TD), str(ins.U)
+                   , str(ins.PMER), str(ins.UV), str(ins.RAD), str(ins.IC)
+                   , str(ins.WINDCHILL)]
         
-        debutextraction = request.POST['debutextraction']
-        debutextraction = debutextraction.split(' ')
-        hrdebut = debutextraction[0].split(':')
-        jrdebut = debutextraction[1].split('/')
-        debut = datetime.datetime(int(jrdebut[2]),int(jrdebut[1]),int(jrdebut[0]),int(hrdebut[0]),int(hrdebut[1]))
-        
-        finextraction = request.POST['finextraction']
-        finextraction = finextraction.split(' ')
-        hrfin = finextraction[0].split(':')
-        jrfin = finextraction[1].split('/')
-        fin = datetime.datetime(int(jrfin[2]),int(jrfin[1]),int(jrfin[0]),int(hrfin[0]),int(hrfin[1]))
-        
-        link = '%s/export'+codeposte_extraction+"_"+str(jrdebut[0])+str(jrdebut[1])+str(jrdebut[2])+"-"+str(jrfin[0])+str(jrfin[1])+str(jrfin[2])+'.csv' % settings.MEDIA_ROOT
-        
-        
-        
-        inst = INSTAN.objects.filter(POSTE=poste,DATJ__gte=debut,DATJ__lte=fin)
-        entetes = [
-                 u'DAT',
-                 u'RR',
-                 u'RRI',
-                 u'FF',
-                 u'DD',
-                 u'FXI',
-                 u'DXI',
-                 u'T',
-                 u'TD',
-                 u'U',
-                 u'PMER',
-                 u'UV',
-                 u'RAD',
-                 u'IC',
-                 u'WINDCHILL',
-        
-            ]
-        
-        
-        f = open(link, 'w')
-        ligneEntete = ";".join(entetes) + "\n"
-        f.write(ligneEntete)
-        
-        
-        for ins in inst:
-            valeurs = [ins.DATJ.strftime('%d/%m/%Y-%H:%M'), str(ins.RR)
-                       , str(ins.RRI), str(ins.FF), str(ins.DD), str(ins.FXI)
-                       , str(ins.DXI), str(ins.T), str(ins.TD), str(ins.U)
-                       , str(ins.PMER), str(ins.UV), str(ins.RAD), str(ins.IC)
-                       , str(ins.WINDCHILL)]
-            
-            ligne = ";".join(valeurs) + "\n"
-            f.write(ligne)
-        f.close()
-        converti = True
-    except: 
-        pass
+        ligne = ";".join(valeurs) + "\n"
+        f.write(ligne)
+    f.close()
+    converti = True
+#     except: 
+#         pass
         
     
         
