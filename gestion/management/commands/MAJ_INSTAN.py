@@ -9,6 +9,7 @@ from django.core.management.base import BaseCommand
 
 from gestion.models import POSTE,INSTAN
 
+# si la valeur n'existe pas --> none 
 def convert(value):
     try:
         return float(value)
@@ -84,28 +85,7 @@ class Command(BaseCommand):
                                     FXI=convert(windGust),DXI=convert(windGustDir),
                                     T=convert(outTemp),TD=convert(dewpoint),
                                     U=convert(humidity),RR=convert(rain))
-        #----------------------------------------------------------------------   
-        #------------LISTING DES DIFFERENTS POSTES DANS LA BDD-----------------
-        #----------------------------------------------------------------------
-        
-        
-          
-#         postes = POSTE.objects.all()
-#          
-#         for i in range(0,postes.count()):
-#             poste = postes[i].CODE_POSTE
-#             type = postes[i].TYPE 
-#             init = postes[i].INIT
-            
-#             
-#             if type != 'SPIEA' and init == 1:  
-#            
-#                 with codecs.open('data/'+poste+'.json',encoding='utf-8') as json_data: #PARTIE A SUPPRIMER 
-#                     datas = json.load(json_data)  
-#                     data = datas['stats']
-#                     data = data['current']
-#                               
-                    
+
 #                          
 #                
 #                                                       
