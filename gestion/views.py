@@ -1215,8 +1215,8 @@ def recap(request,codeposte):
     RR1 = []
     RRI = []
     hr=[]
-#     cumultotal =Precip.aggregate(Sum('RR1'))['RR1__sum']
-#     cumultotal = Decimal(str(round(cumultotal,2)))
+    cumultotal =Precip.aggregate(Sum('RR1'))['RR1__sum']
+    cumultotal = Decimal(str(round(cumultotal,2)))
     for value in Precip:
         RR1+=[value.RR1]
         hr+=[value.DATJ]
