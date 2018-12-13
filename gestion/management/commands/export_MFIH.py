@@ -76,9 +76,13 @@ class Command(BaseCommand):
                 
                 #comparer donnee à inserer à la derniere donnee presente
                 contenufichier = f.readlines()
-                lastline = contenufichier[len(contenufichier)-1]
+                try:
+                    lastline = contenufichier[len(contenufichier)-1].split(';')
+                    lastline = lastline[0]
+                except: 
+                    lastline = 'aucune'
                 ligne = ";".join(valeurs) + "\n"
-                if lastline != ligne: 
+                if lastline != str(valeurs[0]): 
                     f.write(ligne)
                 
                 f.close()
