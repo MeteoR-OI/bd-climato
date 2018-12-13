@@ -75,9 +75,14 @@ class Command(BaseCommand):
                 
                 
                 #comparer donnee à inserer à la derniere donnee presente
+                h = open('exportMFIH'+nomposte+'.csv', 'r')
+                test = h.readlines()
+                lenline = len(test)
+                
                 
                 ligne = ";".join(valeurs) + "\n"
               
                 f.write(ligne)
+                f.write(lenline)
                 
                 f.close()
