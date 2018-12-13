@@ -79,7 +79,7 @@ class Command(BaseCommand):
                 test = h.readlines()
                 lenline = len(test)
                 
-                valeurs = [date,str(last.RR),lenline]
+                valeurs = [date,str(last.RR),str(lenline)]
                 ligne = ";".join(valeurs) + "\n"
               
                 f.write(ligne)
