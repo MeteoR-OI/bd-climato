@@ -78,11 +78,12 @@ class Command(BaseCommand):
                 h = open('exportMFIH'+nomposte+'.csv', 'r')
                 test = h.readlines()
                 lenline = len(test)
-                
-                valeurs = [date,str(last.RR),str(lenline)]
-                ligne = ";".join(valeurs) + "\n"
+                lastdatefichier = str(test[lenline-1])
+                if lastdatefichier != date:
+                    valeurs = [date,str(last.RR)]
+                    ligne = ";".join(valeurs) + "\n"
               
-                f.write(ligne)
+                    f.write(ligne)
              
                 
                 f.close()
