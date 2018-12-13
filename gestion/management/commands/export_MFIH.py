@@ -85,8 +85,11 @@ class Command(BaseCommand):
                 except:
                     lastdatefichier = 'aucun'
                     
-             
-                valeurs = [date,str(last.RR),str(lastdatefichier)]
+                if lastdatefichier == date:
+                    res = 'yes'
+                else: 
+                    res = 'no'
+                valeurs = [date,str(last.RR),str(lastdatefichier),str(res)]
                 ligne = ";".join(valeurs) + "\n"
               
                 f.write(ligne)
