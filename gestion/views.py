@@ -147,7 +147,7 @@ def home(request):
                                             str_date_end)
         data_fs.save(link, ContentFile(''))
         
-        inst = INSTAN.objects.filter(POSTE=poste,DATJ__gte=debut,DATJ__lte=fin)
+        inst = INSTAN.objects.filter(POSTE=poste,DATJ__gte=debut,DATJ__lte=fin).order_by('-DATJ')
         entetes = [
                  u'DAT',
                  u'RR',
