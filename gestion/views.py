@@ -3,6 +3,7 @@
 import datetime, os
 import matplotlib 
 import matplotlib.dates as dates
+from django.core.files.storage import FileSystemStorage
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
@@ -114,7 +115,12 @@ def home(request):
     except: 
         pass
     
-    try:
+#     try:
+    if 'codeposte_extraction' in request.POST:
+        
+        from django.core.files.base import ContentFile
+        data_fs = FileSystemStorage(location=settings.DATA_FS_PATH)
+
         converti = False
        
         codeposte_extraction = request.POST['codeposte_extraction']
@@ -132,9 +138,14 @@ def home(request):
         jrfin = finextraction[1].split('/')
         fin = datetime.datetime(int(jrfin[2]),int(jrfin[1]),int(jrfin[0]),int(hrfin[0]),int(hrfin[1]))
         
-        link = '%s/export'+codeposte_extraction+"_"+str(jrdebut[0])+str(jrdebut[1])+str(jrdebut[2])+"-"+str(jrfin[0])+str(jrfin[1])+str(jrfin[2])+'.csv' % settings.MEDIA_ROOT
+        str_date_deb = str(jrdebut[0])+str(jrdebut[1])+str(jrdebut[2])
+        str_date_end = str(jrfin[0])+str(jrfin[1])+str(jrfin[2])
         
-        
+        link = '%s/export_%s_%s-%s.csv' % (poste.CODE_POSTE,
+                                            poste.CODE_POSTE,
+                                            str_date_deb,
+                                            str_date_end)
+        data_fs.save(link, ContentFile(''))
         
         inst = INSTAN.objects.filter(POSTE=poste,DATJ__gte=debut,DATJ__lte=fin)
         entetes = [
@@ -156,8 +167,8 @@ def home(request):
         
             ]
         
+        f = data_fs.open(link, 'w')
         
-        f = open(link, 'w')
         ligneEntete = ";".join(entetes) + "\n"
         f.write(ligneEntete)
         
@@ -173,8 +184,8 @@ def home(request):
             f.write(ligne)
         f.close()
         converti = True
-    except: 
-        pass
+#     except: 
+#         pass
         
     
         

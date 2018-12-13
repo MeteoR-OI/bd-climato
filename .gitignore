@@ -8,5 +8,6 @@ static/**/*.png
 data/**/*.csv
 *.pyc
 /static/
+/media/
 /media/data/
 __pycache__/

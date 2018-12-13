@@ -2,6 +2,9 @@
 
 {% block title %}Accueil{% endblock %}
 
+{% load static %}
+{% get_media_prefix as MEDIA_PREFIX %}
+
 {% block content %}
     <h1>Accueil - MétéoR OI</h1>
 
@@ -167,7 +170,7 @@
     </form>
 
     {% if converti %}
-        Votre fichier a été conveti. Le <a href="{{link}}" download="{{codeposte_extraction}}">télécharger.</a>
+        Votre fichier a été conveti. Le <a href="/media/data/{{link}}" download="{{codeposte_extraction}}.csv">télécharger.</a>
     {% endif %}
 
     <h2>Ajout et affichage graphique d'évènements </h2>
