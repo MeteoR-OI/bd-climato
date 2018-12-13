@@ -38,39 +38,44 @@ class Command(BaseCommand):
         postes = POSTE.objects.all()
          
         for i in range(0,postes.count()):
-            nomposte = postes[i].CODE_POSTE
-            poste = POSTE.objects.get(CODE_POSTE = nomposte)
-            ins = INSTAN.objects.filter(POSTE = poste).order_by('-DATJ')
-            last = ins[0]
-            
-       
-            entetes = [
-                 u'H',
-                 u'RR', # /!\ sur l'heure passée
+            types = postes[i].TYPE 
+
                 
-                 
-            ]
-            date= str(last.DATJ.day)+'/'+str(last.DATJ.month)+'/'+str(last.DATJ.year)+ \
-                            ' '+str(last.DATJ.hour)+'-'+str(last.DATJ.minute)
-            
+    #             
+            if types != 'SPIEA':
+                nomposte = postes[i].CODE_POSTE
+                poste = POSTE.objects.get(CODE_POSTE = nomposte)
+                ins = INSTAN.objects.filter(POSTE = poste).order_by('-DATJ')
+                last = ins[0]
+                
            
-            valeurs = [date,str(last.RR)]
-            
-            # /!\ RR dépend de la station
-            
-         
-       
-            ligneEntete = ";".join(entetes) + "\n"
-            if not os.path.exists('exportMFIH'+nomposte+'.csv'):
-                f = open('exportMFIH'+nomposte+'.csv', 'w')
-                f.write(ligneEntete)
-            else : 
-                f = open('exportMFIH'+nomposte+'.csv', 'a')
+                entetes = [
+                     u'H',
+                     u'RR', # /!\ sur l'heure passée
+                    
+                     
+                ]
+                date= str(last.DATJ.day)+'/'+str(last.DATJ.month)+'/'+str(last.DATJ.year)+ \
+                                ' '+str(last.DATJ.hour)+'-'+str(last.DATJ.minute)
                 
-            
-            
-          
-            ligne = ";".join(valeurs) + "\n"
-            f.write(ligne)
-            
-            f.close()
+               
+                valeurs = [date,str(last.RR)]
+                
+                # /!\ RR dépend de la station
+                
+             
+           
+                ligneEntete = ";".join(entetes) + "\n"
+                if not os.path.exists('exportMFIH'+nomposte+'.csv'):
+                    f = open('exportMFIH'+nomposte+'.csv', 'w')
+                    f.write(ligneEntete)
+                else : 
+                    f = open('exportMFIH'+nomposte+'.csv', 'a')
+                    
+                
+                
+              
+                ligne = ";".join(valeurs) + "\n"
+                f.write(ligne)
+                
+                f.close()
