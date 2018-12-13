@@ -89,10 +89,12 @@ class Command(BaseCommand):
                     res = 'yes'
                 else: 
                     res = 'no'
-                valeurs = [date,str(last.RR),str(lastdatefichier),str(res)]
-                ligne = ";".join(valeurs) + "\n"
+                    
+                if res == 'no':
+                    valeurs = [date,str(last.RR),str(lastdatefichier),str(res)]
+                    ligne = ";".join(valeurs) + "\n"
               
-                f.write(ligne)
+                    f.write(ligne)
              
                 
                 f.close()
