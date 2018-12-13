@@ -59,7 +59,7 @@ class Command(BaseCommand):
                                 ' '+str(last.DATJ.hour)+'-'+str(last.DATJ.minute)
                 
                
-                valeurs = [date,str(last.RR)]
+                
                 
                 # /!\ RR dépend de la station
                 
@@ -79,10 +79,10 @@ class Command(BaseCommand):
                 test = h.readlines()
                 lenline = len(test)
                 
-                
+                valeurs = [date,str(last.RR),lenline]
                 ligne = ";".join(valeurs) + "\n"
               
                 f.write(ligne)
-                f.write(lenline)
+             
                 
                 f.close()
