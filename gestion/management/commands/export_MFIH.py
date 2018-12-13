@@ -80,7 +80,8 @@ class Command(BaseCommand):
                 lenline = len(test)
                 
                 try:
-                    lastdatefichier = str(test[lenline-1])
+                    lastdatefichier = str((test[lenline-1].split(';'))[0])
+                    
                 except:
                     lastdatefichier = 'aucun'
                     
