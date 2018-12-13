@@ -91,7 +91,7 @@ class Command(BaseCommand):
                     res = 'no'
                     
                 if res == 'no':
-                    valeurs = [date,str(last.RR),str(lastdatefichier),str(res)]
+                    valeurs = [date,str(last.RR)]
                     ligne = ";".join(valeurs) + "\n"
               
                     f.write(ligne)
