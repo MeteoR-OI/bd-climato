@@ -85,7 +85,7 @@ class Command(BaseCommand):
                            ,str(h.T),str(h.DD)
                            ,str(h.FF),str(h.DXI),str(h.FXI),str(
                             HXI),str(h.DXY),str(h.FXY),str(h.RAD),str(h.PMER),
-                           str(H.PMERMIN),
+                           str(h.PMERMIN),
                            str(HPERMIN),str(h.U),str(h.UX),str(h.UN)]
                 
                 # /!\ RR dépend de la station
