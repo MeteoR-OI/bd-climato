@@ -11,6 +11,14 @@ from gestion.models import POSTE,INSTAN
 
 # si la valeur n'existe pas --> none 
 def convert(value):
+    try: 
+        return value.replace('"','')
+    except:
+        return value
+    try:
+        return value.replace(',','.')
+    except: 
+        return value
     try:
         return float(value)
     except:
@@ -46,24 +54,39 @@ class Command(BaseCommand):
                        
                     data = datas['stats']
                     data = data['current']
-                    outTemp = data['outTemp'].replace('"','').replace(',','.')
-                    windchill = data['windchill'].replace('"','').replace(',','.')
-                    heatIndex = data['heatIndex'].replace('"','').replace(',','.')
-                    dewpoint = data['dewpoint'].replace('"','').replace(',','.')
-                    humidity = data['humidity'].replace('"','').replace(',','.')
-                    barometer = data['barometer'].replace('"','').replace(',','.')
-                    windSpeed = data['windSpeed'].replace('"','').replace(',','.')
-                    windDir = data['windDir'].replace('"','').replace(',','.')
-                    windGust = data['windGust'].replace('"','').replace(',','.')
-                    windGustDir = data['windGustDir'].replace('"','').replace(',','.')
-                    rainRate = data['rainRate'].replace('"','').replace(',','.')
-                    rain = data['rainSum'].replace('"','').replace(',','.')
-                    try :            
-                        ET = data['ET'].replace('"','').replace(',','.')
-                        solarRadiation = data['solarRadiation'].replace('"','').replace(',','.')
-                    except:
-                        ET = None
-                        solarRadiation = None
+                    outTemp = convert(data['outTemp'])
+                    windchill = convert(data['windchill'])
+                    heatIndex = convert(data['heatIndex'])
+                    dewpoint = convert(data['dewpoint'])
+                    humidity = convert(data['humidity'])
+                    barometer = convert(data['barometer'])
+                    windSpeed = convert(data['windSpeed'])
+                    windDir = convert(data['windDir'])
+                    windGust = convert(data['windGust'])
+                    windGustDir = convert(['windGustDir'])
+                    rainRate = convert(data['rainRate'])
+                    rain = convert(data['rainSum'])
+                    ET = convert(data['ET'])
+                    solarRadiation = convert(data['solarRadiation'])
+#                     outTemp = data['outTemp'].replace('"','').replace(',','.')
+#                     windchill = data['windchill'].replace('"','').replace(',','.')
+#                     heatIndex = data['heatIndex'].replace('"','').replace(',','.')
+#                     dewpoint = data['dewpoint'].replace('"','').replace(',','.')
+#                     humidity = data['humidity'].replace('"','').replace(',','.')
+#                     barometer = data['barometer'].replace('"','').replace(',','.')
+#                     windSpeed = data['windSpeed'].replace('"','').replace(',','.')
+#                     windDir = data['windDir'].replace('"','').replace(',','.')
+#                     windGust = data['windGust'].replace('"','').replace(',','.')
+#                     windGustDir = data['windGustDir'].replace('"','').replace(',','.')
+#                     rainRate = data['rainRate'].replace('"','').replace(',','.')
+#                     rain = data['rainSum'].replace('"','').replace(',','.')
+
+#                     try :            
+#                         ET = data['ET'].replace('"','').replace(',','.')
+#                         solarRadiation = data['solarRadiation'].replace('"','').replace(',','.')
+#                     except:
+#                         ET = None
+#                         solarRadiation = None
                     jour = datas['time'][0:2]
                     mois = datas['time'][3:5]
                     annee = datas['time'][6:10]
@@ -78,13 +101,13 @@ class Command(BaseCommand):
                     recu,created = INSTAN.objects.get_or_create(POSTE=poste,
                             DATJ=dateTime)
                     INSTAN.objects.filter(POSTE=poste,DATJ=dateTime).update(
-                                    PMER=convert(barometer),IC=convert(heatIndex),
-                                    WINDCHILL=convert(windchill),ETP=ET,
-                                    RAD=solarRadiation,RRI=convert(rainRate),
-                                    FF=convert(windSpeed),DD=convert(windDir),
-                                    FXI=convert(windGust),DXI=convert(windGustDir),
-                                    T=convert(outTemp),TD=convert(dewpoint),
-                                    U=convert(humidity),RR=convert(rain))
+                                    PMER=barometer,IC=heatIndex,
+                                    WINDCHILL=windchill,ETP=ET,
+                                    RAD=solarRadiation,RRI=rainRate,
+                                    FF=windSpeed,DD=windDir
+                                    FXI=windGust,DXI=windGustDir,
+                                    T=outTemp,TD=dewpoint,
+                                    U=humidity,RR=rain)
 
 #                          
 #                

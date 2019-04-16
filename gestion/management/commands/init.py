@@ -4,6 +4,9 @@ from django.db.models import Sum,Avg
 
 from gestion.models import POSTE,INSTAN,H,Q,MENSQ
 
+def conversion_donnees(value):
+    try:
+        
 
 # On initialise la table INSTAN
 def initDonnees(nom, CODE_POSTE):
