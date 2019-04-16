@@ -104,7 +104,7 @@ class Command(BaseCommand):
                                     PMER=barometer,IC=heatIndex,
                                     WINDCHILL=windchill,ETP=ET,
                                     RAD=solarRadiation,RRI=rainRate,
-                                    FF=windSpeed,DD=windDir
+                                    FF=windSpeed,DD=windDir,
                                     FXI=windGust,DXI=windGustDir,
                                     T=outTemp,TD=dewpoint,
                                     U=humidity,RR=rain)
