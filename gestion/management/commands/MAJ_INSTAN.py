@@ -63,8 +63,14 @@ class Command(BaseCommand):
                     windGustDir = convert(['windGustDir'])
                     rainRate = convert(data['rainRate'])
                     rain = convert(data['rainSum'])
-                    ET = convert(data['ET'])
-                    solarRadiation = convert(data['solarRadiation'])
+                    try:
+                        ET = convert(data['ET'])
+                    except: 
+                        ET = None
+                    try : 
+                        solarRadiation = convert(data['solarRadiation'])
+                    except:
+                        solarRadiation = None 
 #                     outTemp = data['outTemp'].replace('"','').replace(',','.')
 #                     windchill = data['windchill'].replace('"','').replace(',','.')
 #                     heatIndex = data['heatIndex'].replace('"','').replace(',','.')
