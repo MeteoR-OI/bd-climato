@@ -11,11 +11,7 @@ from gestion.models import POSTE,INSTAN
 
 # si la valeur n'existe pas --> none 
 def convert(value):
-    try: 
-        value = value.replace('"','')
-        value = value.replace(',','.')
-    except:
-        value = value
+ 
     try:
         value= float(value)
     except:
@@ -51,18 +47,18 @@ class Command(BaseCommand):
                        
                     data = datas['stats']
                     data = data['current']
-                    outTemp = convert(data['outTemp'])
-                    windchill = convert(data['windchill'])
-                    heatIndex = convert(data['heatIndex'])
-                    dewpoint = convert(data['dewpoint'])
-                    humidity = convert(data['humidity'])
-                    barometer = convert(data['barometer'])
-                    windSpeed = convert(data['windSpeed'])
-                    windDir = convert(data['windDir'])
-                    windGust = convert(data['windGust'])
-                    windGustDir = convert(['windGustDir'])
-                    rainRate = convert(data['rainRate'])
-                    rain = convert(data['rainSum'])
+                    outTemp = data['outTemp']
+                    windchill = data['windchill']
+                    heatIndex = data['heatIndex']
+                    dewpoint = data['dewpoint']
+                    humidity = data['humidity']
+                    barometer = data['barometer']
+                    windSpeed = data['windSpeed']
+                    windDir = data['windDir']
+                    windGust = data['windGust']
+                    windGustDir = ['windGustDir']
+                    rainRate = data['rainRate']
+                    rain = data['rainSum']
                     try:
                         ET = convert(data['ET'])
                     except: 
@@ -104,13 +100,13 @@ class Command(BaseCommand):
                     recu,created = INSTAN.objects.get_or_create(POSTE=poste,
                             DATJ=dateTime)
                     INSTAN.objects.filter(POSTE=poste,DATJ=dateTime).update(
-                                    PMER=barometer,IC=heatIndex,
-                                    WINDCHILL=windchill,ETP=ET,
-                                    RAD=solarRadiation,RRI=rainRate,
-                                    FF=windSpeed,DD=windDir,
-                                    FXI=windGust,DXI=windGustDir,
-                                    T=outTemp,TD=dewpoint,
-                                    U=humidity,RR=rain)
+                                    PMER=convert(barometer),IC=convert(heatIndex),
+                                    WINDCHILL=convert(windchill),ETP=ET,
+                                    RAD=solarRadiation,RRI=convert(rainRate),
+                                    FF=convert(windSpeed),DD=convert(windDir),
+                                    FXI=convert(windGust),DXI=convert(windGustDir),
+                                    T=convert(outTemp),TD=convert(dewpoint),
+                                    U=convert(humidity),RR=convert(rain))
 
 #                          
 #                
