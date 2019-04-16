@@ -12,15 +12,12 @@ from gestion.models import POSTE,INSTAN
 # si la valeur n'existe pas --> none 
 def convert(value):
     try: 
-        return value.replace('"','')
+        value = value.replace('"','')
+        value = value.replace(',','.')
     except:
-        return value
+        value = value
     try:
-        return value.replace(',','.')
-    except: 
-        return value
-    try:
-        return float(value)
+        value= float(value)
     except:
         return None 
         
