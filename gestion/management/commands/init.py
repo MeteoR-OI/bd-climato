@@ -163,7 +163,10 @@ def initH(nom_poste, datedeb=0, datefin=0, perte=0):
                 PDT = ((ins[i].DATJ-ins[i+1].DATJ).total_seconds())/60
 #                 print(ins[i-1].DATJ,ins[i].DATJ,(ins[i-1].DATJ-ins[i].DATJ).total_seconds())
             else: 
-                PDT = ((ins[ins.count()-2].DATJ - ins[ins.count()-1].DATJ).total_seconds())/60
+                try:
+                    PDT = ((ins[ins.count()-2].DATJ - ins[ins.count()-1].DATJ).total_seconds())/60
+                except AssertionError:
+                    PDT = 0
             
             
             #On parcourt les données de l'heure voulue en les traitant  
