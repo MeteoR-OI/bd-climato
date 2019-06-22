@@ -136,7 +136,7 @@ def initH(nom_poste, datedeb=0, datefin=0, perte=0):
         creneau = True
 
         ins_query_options.update({
-            'DATJ__gte' : deb,
+            'DATJ__gte' : deb - datetime.timedelta(minute=poste.PDT*2),
             'DATJ__lte' : fin
         })
 
