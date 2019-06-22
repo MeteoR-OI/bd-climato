@@ -108,49 +108,54 @@ def convert(value):
     except:
         return None 
           
-def initH(nom_poste, datedeb=0, datefin=0,perte=0):
+def initH(nom_poste, datedeb=0, datefin=0, perte=0):
     #code = 0 : initialisation / perte de donnees
     #code = 1 : MAJ automatique des dernieres donnees
-    
-    
+
     #Récupération des données 
     poste = POSTE.objects.get(CODE_POSTE = nom_poste)
-    ins = INSTAN.objects.filter(POSTE = poste).order_by('-DATJ')
-    
-    #Datedeb est utilisée pour la récupération des données afin d'éviter
-    #le traitement de données non indispensables.
+
+    # Préparer les options pour la requête
+    ins_query_options = {
+        'POSTE'         : poste,
+        'DATJ__minute'  : 0,
+    }
+
+    ins = INSTAN.objects.filter(**ins_query_options)
+
+    # Datedeb est utilisée pour la récupération des données afin d'éviter
+    #   le traitement de données non indispensables.
     if datedeb==0:
-        #Par défaut, ce code est appelé pour l'initialisation
-        fin = ins[0].DATJ
-        deb = ins[ins.count()-1].DATJ
+        # Par défaut, ce code est appelé pour l'initialisation
+        fin = ins.order_by('-DATJ')[0].DATJ
+        deb = ins.order_by('DATJ')[0].DATJ
         creneau = False
     else:
         deb = datedeb
         fin = datefin
         creneau = True
 
+        ins_query_options.update({
+            'DATJ__gte' : deb,
+            'DATJ__lte' : fin
+        })
+
+    # Filter sur les heures fixes (1h00, 2h00, ....) et l'intervalle voulu
+    ins = INSTAN.objects.filter(**ins_query_options).order_by('-DATJ')
+
     #On parcourt toutes les données instantanées
     for i in range(0,ins.count()):
         #Lorsqu'une nouvelle heure est rencontrée
         if ins[i].DATJ.time().minute == 0 and ins[i].DATJ <= fin \
             and ins[i].DATJ >= deb:
-            
-            
-            filtre = ins.filter(DATJ__gte = ins[i].DATJ, 
-                                DATJ__lt = 
-                                ins[i].DATJ + 
-                                datetime.timedelta(hours=1))
-            filtreRR = ins.filter(DATJ__gt = ins[i].DATJ - 
-                                  datetime.timedelta(hours=1), 
-                                DATJ__lte = 
-                                ins[i].DATJ) 
-            filtreVent = ins.filter(DATJ__gte = ins[i].DATJ  + 
-                                    datetime.timedelta(seconds=600), 
-                                DATJ__lte = 
-                                ins[i].DATJ + 
-                                    datetime.timedelta(hours=1)) 
-             
-            
+
+            filtre = ins.filter(DATJ__gte = ins[i].DATJ,
+                                DATJ__lt =  ins[i].DATJ + datetime.timedelta(hours=1))
+            filtreRR = ins.filter(DATJ__gt = ins[i].DATJ - datetime.timedelta(hours=1),
+                                  DATJ__lte = ins[i].DATJ)
+            filtreVent = ins.filter(DATJ__gte = ins[i].DATJ  + datetime.timedelta(seconds=600),
+                                    DATJ__lte = ins[i].DATJ + datetime.timedelta(hours=1))
+
             #Pour les premieres données
             if i <= ins.count()-2:
                 PDT = ((ins[i].DATJ-ins[i+1].DATJ).total_seconds())/60

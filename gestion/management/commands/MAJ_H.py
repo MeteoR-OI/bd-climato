@@ -75,6 +75,10 @@ class Command(BaseCommand):
                     instant_per_page = 200
                     page_index = 1
 
+                    INSTANT_options.update({
+                        'DATJ__minute' : 0
+                    })
+
                     while page_index*instant_per_page-1 < instant_count:
                         first_inst = page_index*instant_per_page-instant_per_page
                         last_inst = page_index*instant_per_page-1
@@ -82,18 +86,17 @@ class Command(BaseCommand):
                         ins = INSTAN.objects.filter(**INSTANT_options).order_by('-DATJ')[first_inst:last_inst]
 
                         for value_ins in ins:
-                            if value_ins.DATJ.minute == 0:
-                                derniere_date = datetime.datetime(value_ins.DATJ.year,
-                                            value_ins.DATJ.month,value_ins.DATJ.day,
-                                            value_ins.DATJ.hour,0)
-                                hr_pre = derniere_date - datetime.timedelta(hours=1)
-                                deb = hr_pre - datetime.timedelta(seconds=300)
-                                fin = hr_pre + datetime.timedelta(seconds=300)
-                                deb = deb.replace(tzinfo=pytz.UTC)
-                                fin = fin.replace(tzinfo=pytz.UTC)
-                                print(nomposte, deb, fin)
-                                init.initH(nom_poste=nomposte,datedeb=deb,datefin=fin)
-                                break
+                            derniere_date = datetime.datetime(value_ins.DATJ.year,
+                                        value_ins.DATJ.month,value_ins.DATJ.day,
+                                        value_ins.DATJ.hour,0)
+                            hr_pre = derniere_date - datetime.timedelta(hours=1)
+                            deb = hr_pre - datetime.timedelta(seconds=300)
+                            fin = hr_pre + datetime.timedelta(seconds=300)
+                            deb = deb.replace(tzinfo=pytz.UTC)
+                            fin = fin.replace(tzinfo=pytz.UTC)
+                            print(nomposte, deb, fin)
+                            init.initH(nom_poste=nomposte,datedeb=deb,datefin=fin)
+
 
                         page_index+=1
              
