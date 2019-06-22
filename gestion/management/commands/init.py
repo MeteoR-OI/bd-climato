@@ -151,10 +151,12 @@ def initH(nom_poste, datedeb=0, datefin=0, perte=0):
 
             filtre = ins.filter(DATJ__gte = ins[i].DATJ,
                                 DATJ__lt =  ins[i].DATJ + datetime.timedelta(hours=1))
-            filtreRR = ins.filter(DATJ__gt = ins[i].DATJ - datetime.timedelta(hours=1),
-                                  DATJ__lte = ins[i].DATJ)
-            filtreVent = ins.filter(DATJ__gte = ins[i].DATJ  + datetime.timedelta(seconds=600),
-                                    DATJ__lte = ins[i].DATJ + datetime.timedelta(hours=1))
+#             filtreRR = ins.filter(DATJ__gt = ins[i].DATJ - datetime.timedelta(hours=1),
+#                                   DATJ__lte = ins[i].DATJ)
+#             filtreVent = ins.filter(DATJ__gte = ins[i].DATJ  + datetime.timedelta(seconds=600),
+#                                     DATJ__lte = ins[i].DATJ + datetime.timedelta(hours=1))
+            filtreRR = filtre
+            filtreVent = filtre
 
             #Pour les premieres données
             if i <= ins.count()-2:
