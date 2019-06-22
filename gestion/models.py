@@ -190,6 +190,9 @@ class H(models.Model):
     TSX = models.FloatField(null=True, default = None)
     TSN = models.FloatField(null=True, default = None)
     INST = models.FloatField(null=True, default = None)
+
+    def __str__(self):
+        return "%s / %s" % (self.POSTE, self.DATJ)
    
 class Q(models.Model):   
     POSTE = models.ForeignKey('POSTE',on_delete=models.CASCADE)
