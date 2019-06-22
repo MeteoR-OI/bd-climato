@@ -118,7 +118,7 @@ def initH(nom_poste, datedeb=0, datefin=0, perte=0):
     # Préparer les options pour la requête
     ins_query_options = {
         'POSTE'         : poste,
-        'DATJ__minute'  : 0,
+#        'DATJ__minute'  : 0,
     }
 
     ins = INSTAN.objects.filter(**ins_query_options)
