@@ -91,8 +91,8 @@ class Command(BaseCommand):
                                 fin = hr_pre + datetime.timedelta(seconds=300)
                                 deb = deb.replace(tzinfo=pytz.UTC)
                                 fin = fin.replace(tzinfo=pytz.UTC)
-                                init.initH(nom_poste=nomposte,datedeb=deb,datefin=fin)
                                 print(nomposte, deb, fin)
+                                init.initH(nom_poste=nomposte,datedeb=deb,datefin=fin)
                                 break
 
                         page_index+=1

@@ -7,4 +7,6 @@ from .models import PAYS,COMMUNE,POSTE,PANNE,INSTRUMENT,MAINTENANCE,INSTAN,H,Q,D
 
 admin.site.register(POSTE)
 admin.site.register(COMMUNE)
+admin.site.register(INSTAN)
+admin.site.register(H)
 
