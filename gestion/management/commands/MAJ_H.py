@@ -67,9 +67,9 @@ class Command(BaseCommand):
                     }
 
                     if H.objects.filter(POSTE = poste).count() > 0:
-                        last_h_data = H.objects.filter(POSTE = poste).order_by('-DATJ')
+                        last_h_data = H.objects.filter(POSTE = poste).order_by('-DATJ')[0]
 
-                        INSTANT_options['DATJ__gte'] = last_h_data - datetime.timedelta(hours=1)
+                        INSTANT_options['DATJ__gte'] = last_h_data.DATJ - datetime.timedelta(hours=1)
 
                     instant_count = INSTAN.objects.filter(**INSTANT_options).count()
                     instant_per_page = 200
@@ -92,6 +92,7 @@ class Command(BaseCommand):
                                 deb = deb.replace(tzinfo=pytz.UTC)
                                 fin = fin.replace(tzinfo=pytz.UTC)
                                 init.initH(nom_poste=nomposte,datedeb=deb,datefin=fin)
+                                print(nomposte, deb, fin)
                                 break
 
                         page_index+=1
