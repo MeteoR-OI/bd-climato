@@ -83,7 +83,7 @@ class Command(BaseCommand):
                         first_inst = page_index*instant_per_page-instant_per_page
                         last_inst = page_index*instant_per_page-1
 
-                        ins = INSTAN.objects.filter(**INSTANT_options).order_by('-DATJ')[first_inst:last_inst]
+                        ins = INSTAN.objects.filter(**INSTANT_options).order_by('DATJ')[first_inst:last_inst]
 
                         for value_ins in ins:
                             derniere_date = datetime.datetime(value_ins.DATJ.year,
