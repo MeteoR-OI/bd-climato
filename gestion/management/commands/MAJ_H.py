@@ -50,18 +50,15 @@ class Command(BaseCommand):
             #On définit l'heure à laquelle doit s'initialiser les tables
             
             #recherche du premier créneau horaire complet puis mise à jour
-            
-            postes = POSTE.objects.all()
-          
-            for i in range(0,postes.count()):
-                nomposte = postes[i].CODE_POSTE
-                types = postes[i].TYPE 
-    #             init = postes[i].INIT
-                
-    #             
-                if types != 'SPIEA': 
-                    poste = POSTE.objects.get(CODE_POSTE=nomposte)
 
+            postes = POSTE.objects.all()
+
+            for poste in postes:
+                nomposte = poste.CODE_POSTE
+                types = poste.TYPE
+                print("Post %s" % nomposte)
+
+                if types != 'SPIEA':
                     INSTANT_options = {
                         "POSTE" :   poste
                     }
@@ -82,6 +79,7 @@ class Command(BaseCommand):
                     while page_index*instant_per_page-1 < instant_count:
                         first_inst = page_index*instant_per_page-instant_per_page
                         last_inst = page_index*instant_per_page-1
+                        print("\t Index: %s, First: %s, Last: %s" % (nomposte, first_inst, last_inst))
 
                         ins = INSTAN.objects.filter(**INSTANT_options).order_by('DATJ')[first_inst:last_inst]
 
