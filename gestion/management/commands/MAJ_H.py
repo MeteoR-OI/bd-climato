@@ -56,7 +56,7 @@ class Command(BaseCommand):
             for poste in postes:
                 nomposte = poste.CODE_POSTE
                 types = poste.TYPE
-                print("Post %s" % nomposte)
+                print("Poste %s" % nomposte)
 
                 if types != 'SPIEA':
                     INSTANT_options = {
@@ -76,7 +76,7 @@ class Command(BaseCommand):
                         'DATJ__minute' : 0
                     })
 
-                    while page_index*instant_per_page-1 < instant_count:
+                    while "Executer une fois puis les suivantes.":
                         first_inst = page_index*instant_per_page-instant_per_page
                         last_inst = page_index*instant_per_page-1
                         print("\t Index: %s, First: %s, Last: %s" % (nomposte, first_inst, last_inst))
@@ -95,6 +95,8 @@ class Command(BaseCommand):
                             print(nomposte, deb, fin)
                             init.initH(nom_poste=nomposte,datedeb=deb,datefin=fin)
 
+                        if page_index*instant_per_page-1 > instant_count:
+                            break
 
                         page_index+=1
              
