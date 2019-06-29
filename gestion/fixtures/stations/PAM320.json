@@ -1,0 +1,31 @@
+[
+{
+    "model": "gestion.poste",
+    "pk": 6,
+    "fields": {
+        "CP": 97480,
+        "CODE_POSTE": "PAM320",
+        "REF_MF": "97412A008",
+        "NOM": "École de Parc à Moutons",
+        "COMMUNE": 16,
+        "LAT": -21.357375,
+        "LON": 55.657588,
+        "ALT": 320.0,
+        "POS": 1,
+        "AUT": 1,
+        "PROP": "Mickaël Hoareau / Trophée St-Joseph 2018",
+        "DATEOUV": "2019-06-12T00:00:00Z",
+        "DATEFERM": null,
+        "MAINT": 0,
+        "TYPE": "Vantage Pro 2 Sans Fils",
+        "TYPINFO": "Météo, Pédagogique",
+        "ADRESSE": "110 chemin Terrain Galet",
+        "LIEU_DIT": "Parc à Moutons",
+        "MEL": "mickael.hoareau@gmail.com",
+        "TEL": "+262.692.70.66.99",
+        "COMM": "",
+        "PDT": 5,
+        "INIT": 1
+    }
+}
+]

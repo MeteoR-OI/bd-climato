@@ -1,0 +1,31 @@
+[
+{
+    "model": "gestion.poste",
+    "pk": 3,
+    "fields": {
+        "CP": 97480,
+        "CODE_POSTE": "MAT315",
+        "REF_MF": "97412A005",
+        "NOM": "École de Matouta",
+        "COMMUNE": 16,
+        "LAT": -21.36022875902868,
+        "LON": 55.701520442962654,
+        "ALT": 315.0,
+        "POS": 1,
+        "AUT": 1,
+        "PROP": "Mickaël Hoareau / Trophée St-Joseph 2018",
+        "DATEOUV": "2019-06-12T00:00:00Z",
+        "DATEFERM": null,
+        "MAINT": 0,
+        "TYPE": "Vantage Pro 2 Filaire",
+        "TYPINFO": "Météo, Pédagogique",
+        "ADRESSE": "8 chemin Cascavelles",
+        "LIEU_DIT": "Matouta",
+        "MEL": "mickael.hoareau@gmail.com",
+        "TEL": "+262.692.70.66.99",
+        "COMM": "",
+        "PDT": 5,
+        "INIT": 1
+    }
+}
+]
