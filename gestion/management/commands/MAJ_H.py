@@ -85,8 +85,10 @@ class Command(BaseCommand):
 
                         for value_ins in ins:
                             derniere_date = datetime.datetime(value_ins.DATJ.year,
-                                        value_ins.DATJ.month,value_ins.DATJ.day,
-                                        value_ins.DATJ.hour,0)
+                                                              value_ins.DATJ.month,
+                                                              value_ins.DATJ.day,
+                                                              value_ins.DATJ.hour,0)
+
                             hr_pre = derniere_date - datetime.timedelta(hours=1)
                             deb = hr_pre - datetime.timedelta(seconds=300)
                             fin = hr_pre + datetime.timedelta(seconds=300)

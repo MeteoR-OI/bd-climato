@@ -2051,7 +2051,7 @@ def rapport(request,codeposte,date):
     FiltreDD = INSTAN.objects.filter(POSTE=poste, 
                         DATJ__gte=datetime.datetime(annee,mois,1),
                         DATJ__lt=datetime.datetime(nextannee,nextmois,1)).order_by('DATJ')
-    
+
     TM = Filtre.aggregate(Avg('TM'))['TM__avg']
     TM = Decimal(str(round(float(TM),2)))
     #FILTRE DONNEES MENSUEL DU MOIS

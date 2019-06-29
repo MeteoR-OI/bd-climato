@@ -14,7 +14,7 @@ data_fs = FileSystemStorage(location=settings.DATA_FS_PATH)
 #Données 5min 
 class PAYS(models.Model):
     #id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
-    CODPAYS = models.IntegerField(default=None)
+    CODPAYS = models.IntegerField(primary_key=True, default=None)
     NOMPAYS = models.CharField(null=False, max_length =20,default=None)
 
     class Meta:
@@ -26,7 +26,7 @@ class PAYS(models.Model):
 class COMMUNE(models.Model):
     NOMCOMMUNE = models.CharField(null=False, max_length=25,default=None)
     PAYS = models.ForeignKey('PAYS', on_delete=models.CASCADE,default=None) #Pour chaque commune on a qu'un seul pays
-    CP = models.IntegerField(null=False, verbose_name = "Code postal",default=None) 
+    CP = models.IntegerField(primary_key=True, null=False, verbose_name = "Code postal",default=None, unique=True) 
     
     def __str__(self):
         return self.NOMCOMMUNE
@@ -37,8 +37,8 @@ class COMMUNE(models.Model):
 class POSTE(models.Model):
     NUM_POSTE = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID Numero de poste')
     CP = models.IntegerField(null=False, verbose_name = "Code postal",default=None)
-    CODE_POSTE = models.CharField(null=False, max_length = 50,default=None)
-    REF_MF = models.CharField(null=True,max_length = 10,default=None)
+    CODE_POSTE = models.CharField(null=False, max_length = 50, default=None, unique=True)
+    REF_MF = models.CharField(null=True,max_length = 10,default=None, unique=True)
     NOM = models.CharField(null=False, verbose_name="Nom du poste (ex : NDLP)", max_length = 50,default=None)
     COMMUNE =  models.ForeignKey('COMMUNE', on_delete=models.CASCADE) #Pour chaque poste on a qu'une commune
     LAT = models.FloatField(null=False,default=None)

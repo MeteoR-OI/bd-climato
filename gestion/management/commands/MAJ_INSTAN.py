@@ -4,7 +4,9 @@
 import datetime
 import json
 import urllib.request
+from pytz import timezone
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from gestion.models import POSTE,INSTAN
@@ -28,23 +30,18 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
-        
-        
         postes = POSTE.objects.all()
           
         for i in range(0,postes.count()):
             nomposte = postes[i].CODE_POSTE
             types = postes[i].TYPE 
-#             init = postes[i].INIT
-            
+
 #             
             if types != 'SPIEA':  
-#         nomposte = 'GDC030'
-            
-                with urllib.request.urlopen("http://stations.meteor-oi.re/"+nomposte+"/json/daily.json") as url:
+
+                with urllib.request.urlopen(settings.STATIONS_URL % nomposte) as url:
                     datas = json.loads(url.read().decode())
-        
-                       
+
                     data = datas['stats']
                     data = data['current']
                     outTemp = data['outTemp'].replace('"','').replace(',','.')
@@ -70,15 +67,24 @@ class Command(BaseCommand):
                     annee = datas['time'][6:10]
                     heure = datas['time'][-5:-3]
                     minn = datas['time'][-2:]
-                    print(outTemp)
-                    
-                    dateTime = datetime.datetime(int(annee),int(mois),int(jour),int(heure),int(minn))
-                    
-                    
+                    #print(datas['time'], jour, mois, annee, heure, minn)
+
+                    utc = timezone('UTC')
+
+                    naive_dateTime = datetime.datetime(year = int(annee),
+                                                 month = int(mois),
+                                                 day = int(jour),
+                                                 hour = int(heure),
+                                                 minute = int(minn))
+                    utc_dateTime = naive_dateTime - datetime.timedelta(hours=4)
+                    utc_dateTime = utc.localize(utc_dateTime)
+
+                    print(nomposte, utc_dateTime, naive_dateTime)
+
                     poste = POSTE.objects.get(CODE_POSTE=nomposte)
                     recu,created = INSTAN.objects.get_or_create(POSTE=poste,
-                            DATJ=dateTime)
-                    INSTAN.objects.filter(POSTE=poste,DATJ=dateTime).update(
+                                                                DATJ=utc_dateTime)
+                    INSTAN.objects.filter(POSTE=poste,DATJ=utc_dateTime).update(
                                     PMER=convert(barometer),IC=convert(heatIndex),
                                     WINDCHILL=convert(windchill),ETP=ET,
                                     RAD=solarRadiation,RRI=convert(rainRate),
@@ -87,23 +93,3 @@ class Command(BaseCommand):
                                     T=convert(outTemp),TD=convert(dewpoint),
                                     U=convert(humidity),RR=convert(rain))
 
-#                          
-#                
-#                                                       
-
-#                       
-#                      
-
-                
-    
-        #Ajouter les capteurs SOL 
-  
-  
-        
-
-
-     
-     
-     
-        
-            
