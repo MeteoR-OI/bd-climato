@@ -1,25 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from django.core.management.base import BaseCommand
-import sys
-from gestion.models import PAYS,COMMUNE,POSTE,PANNE,INSTRUMENT,MAINTENANCE,INSTAN,H,Q,DECADQ,MENSQ,RECMENS,HISTMAINT,HISTPOST
+import codecs
 import datetime
 import json
-import csv
 import math
-import urllib
-import math
-try:
-    # For Python 3.0 and later
-    from urllib.request import urlopen
-except ImportError:
-    # Fall back to Python 2's urllib2
-    from urllib2 import urlopen
-import encodings    
-    
-import codecs
-from gestion.management.commands import init    
+
+from django.core.management.base import BaseCommand
+
+from gestion import init_data
+from gestion.models import POSTE,INSTAN
+
+
 class Command(BaseCommand):
     help = 'Closes the specified poll for voting'
 
@@ -130,10 +122,10 @@ class Command(BaseCommand):
                             dateTime = datetime.datetime(int(annee),int(mois),int(jour),int(heure),int(minn))
                             dateTime = dateTime + datetime.timedelta(hours=4) 
                             poste = POSTE.objects.get(CODE_POSTE=nomposte)
-                            
-                            recu,created = INSTAN.objects.get_or_create(POSTE=poste,
-                        DATJ=dateTime)
-                            
+
+                            INSTAN.objects.get_or_create(POSTE=poste,
+                                                         DATJ=dateTime)
+
                             INSTAN.objects.filter(POSTE=poste,DATJ=dateTime).update(
                                 PMER=float(barometer),IC=float(heatIndex),
                                 WINDCHILL=float(windchill),ETP=float(ET),
@@ -146,9 +138,9 @@ class Command(BaseCommand):
                     pass          
             #On réinitialise la table H
                  
-            init.initH(nom_poste=nomposte,datedeb = Deb,
+            init_data.initH(nom_poste=nomposte,datedeb = Deb,
                        datefin = Fin)
-            init.initQ(nom_poste=nomposte,datedeb = Deb,
+            init_data.initQ(nom_poste=nomposte,datedeb = Deb,
                        datefin = Fin)
-            init.initMensQ(nom_poste=nomposte,datedeb = Deb,
+            init_data.initMensQ(nom_poste=nomposte,datedeb = Deb,
                        datefin = Fin)

@@ -2,24 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from django.core.management.base import BaseCommand
-import sys
-from gestion.models import PAYS,COMMUNE,POSTE,PANNE,INSTRUMENT,MAINTENANCE,INSTAN,H,Q,DECADQ,MENSQ,RECMENS,HISTMAINT,HISTPOST
+from gestion.models import POSTE,INSTAN,H
+from gestion import init_data
 import datetime
-import json
-import csv
-import math
-import urllib
 import pytz
-from gestion.management.commands import init
-try:
-    # For Python 3.0 and later
-    from urllib.request import urlopen
-except ImportError:
-    # Fall back to Python 2's urllib2
-    from urllib2 import urlopen
-import encodings    
-
-import codecs
 
 class Command(BaseCommand):
     help = 'Closes the specified poll for voting'
@@ -95,7 +81,7 @@ class Command(BaseCommand):
                             deb = deb.replace(tzinfo=pytz.UTC)
                             fin = fin.replace(tzinfo=pytz.UTC)
                             print(nomposte, deb, fin)
-                            init.initH(nom_poste=nomposte,datedeb=deb,datefin=fin)
+                            init_data.initH(nom_poste=nomposte,datedeb=deb,datefin=fin)
 
                         if page_index*instant_per_page-1 > instant_count:
                             break

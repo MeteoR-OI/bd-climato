@@ -1,25 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from django.core.management.base import BaseCommand
-import sys
-from gestion.models import PAYS,COMMUNE,POSTE,PANNE,INSTRUMENT,MAINTENANCE,INSTAN,H,Q,DECADQ,MENSQ,RECMENS,HISTMAINT,HISTPOST
 import datetime
-import json
-import csv
-import math
-import urllib
-from gestion.management.commands import init
-try:
-    # For Python 3.0 and later
-    from urllib.request import urlopen
-except ImportError:
-    # Fall back to Python 2's urllib2
-    from urllib2 import urlopen
-import encodings    
-import pytz    
-import codecs
-    
+import pytz
+
+from django.core.management.base import BaseCommand
+
+from gestion.models import POSTE,H
+from gestion import init_data
+
+
 class Command(BaseCommand):
     help = 'Closes the specified poll for voting'
 
@@ -78,7 +68,7 @@ class Command(BaseCommand):
                         fin = jr_pre + datetime.timedelta(seconds=300)
                         deb = deb.replace(tzinfo=pytz.UTC)
                         fin = fin.replace(tzinfo=pytz.UTC)
-                        init.initQ(nom_poste=nomposte,datedeb=deb,datefin=fin)
+                        init_data.initQ(nom_poste=nomposte,datedeb=deb,datefin=fin)
                         break
                 
                 

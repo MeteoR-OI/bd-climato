@@ -1,25 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from django.core.management.base import BaseCommand
-import sys
 import os
-from gestion.models import PAYS,COMMUNE,POSTE,PANNE,INSTRUMENT,MAINTENANCE,INSTAN,H,Q,DECADQ,MENSQ,RECMENS,HISTMAINT,HISTPOST
-import datetime
-import json
-import csv
-import math
-import urllib
-try:
-    # For Python 3.0 and later
-    from urllib.request import urlopen
-except ImportError:
-    # Fall back to Python 2's urllib2
-    from urllib2 import urlopen
-import encodings    
-    
-import codecs
-    
+
+from django.core.management.base import BaseCommand
+
+from gestion.models import POSTE,INSTAN
+
+
 class Command(BaseCommand):
     help = 'Closes the specified poll for voting'
 

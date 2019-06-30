@@ -2,23 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from django.core.management.base import BaseCommand
-import sys
-from gestion.models import PAYS,COMMUNE,POSTE,PANNE,INSTRUMENT,MAINTENANCE,INSTAN,H,Q,DECADQ,MENSQ,RECMENS,HISTMAINT,HISTPOST
-import datetime
-import json
-import csv
-import math
-import urllib
-try:
-    # For Python 3.0 and later
-    from urllib.request import urlopen
-except ImportError:
-    # Fall back to Python 2's urllib2
-    from urllib2 import urlopen
-import encodings    
-    
-import codecs
-    
+from gestion.models import POSTE,MENSQ,RECMENS
+
+
 class Command(BaseCommand):
     help = 'Closes the specified poll for voting'
 
@@ -32,13 +18,13 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
-       
-       #-----------------------------------------------------------------------------
-       #------------------EXECUTION HORAIRE------------------------------------------
-       #-----------------------------------------------------------------------------
-       postes = POSTE.objects.all()
         
-       for i in range(0,postes.count()): #On parcourt tous les postes de la BDD
+        #-----------------------------------------------------------------------------
+        #------------------EXECUTION HORAIRE------------------------------------------
+        #-----------------------------------------------------------------------------
+        postes = POSTE.objects.all()
+        
+        for i in range(0,postes.count()): #On parcourt tous les postes de la BDD
             
             poste = POSTE.objects.get(CODE_POSTE=postes[i].CODE_POSTE) #On sélectionne un poste
             mensq = MENSQ.objects.filter(POSTE=poste).order_by('DATJ') #on ordonne les données selon DATJ

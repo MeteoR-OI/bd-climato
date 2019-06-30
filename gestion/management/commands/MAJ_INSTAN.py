@@ -82,8 +82,8 @@ class Command(BaseCommand):
                     print(nomposte, utc_dateTime, naive_dateTime)
 
                     poste = POSTE.objects.get(CODE_POSTE=nomposte)
-                    recu,created = INSTAN.objects.get_or_create(POSTE=poste,
-                                                                DATJ=utc_dateTime)
+                    INSTAN.objects.get_or_create(POSTE=poste,
+                                                 DATJ=utc_dateTime)
                     INSTAN.objects.filter(POSTE=poste,DATJ=utc_dateTime).update(
                                     PMER=convert(barometer),IC=convert(heatIndex),
                                     WINDCHILL=convert(windchill),ETP=ET,
