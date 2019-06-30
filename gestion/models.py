@@ -1,8 +1,10 @@
 
+
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.db import models
 from django.utils import timezone
+from gestion.tools import fonction_direction
 
 # Create your models here.
 
@@ -118,7 +120,8 @@ class MAINTENANCE(models.Model):
     ACTEUR = models.CharField(max_length=15,null=True, verbose_name="Personne s'occupant de la maintenance")
     TELACTEUR = models.IntegerField(null=True)
     COMM = models.CharField(null=True,max_length=100)
-    
+
+
 class INSTAN(models.Model): #Classe de données instantanées
     POSTE = models.ForeignKey('POSTE',on_delete=models.CASCADE)
     DATJ = models.DateTimeField(verbose_name="AAAA-MM-JJ HH-MM de la mesure")
@@ -141,7 +144,36 @@ class INSTAN(models.Model): #Classe de données instantanées
     HF = models.FloatField(null=True, verbose_name="Humidite du feuillage", default = None)
     HS = models.FloatField(null=True,verbose_name="Humidite du sol", default = None)
     TS = models.FloatField(null=True,verbose_name="Temperature du sol", default = None)
-    
+
+    def wind_dir(self):
+        import numpy as np
+        if self.DD:
+            return self.DD
+ 
+        return np.NaN
+ 
+    def windgust_dir(self):
+        import numpy as np
+        if self.DXI:
+            return self.DXI
+ 
+        return np.NaN
+ 
+    def wind_dir_cardinal(self):
+        return fonction_direction(self.DD)
+ 
+    def windgust_dir_cardinal(self):
+        return fonction_direction(self.DXI)
+     
+    def rain(self):
+        from decimal import Decimal
+        return Decimal(str(round(self.RR,2)))
+ 
+    def rain_rate(self):
+        from decimal import Decimal
+        return Decimal(str(round(self.RRI,2)))
+
+
 class H(models.Model):
     POSTE = models.ForeignKey('POSTE',on_delete=models.CASCADE)
     DATJ = models.DateTimeField(null=False,default=timezone.now,verbose_name="AAAA-MM-JJ HH-MM de la mesure")

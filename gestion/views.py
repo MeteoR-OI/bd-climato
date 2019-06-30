@@ -1,5 +1,5 @@
 
-
+ 
 import datetime, os
 import matplotlib 
 import matplotlib.dates as dates
@@ -7,18 +7,18 @@ from django.core.files.storage import FileSystemStorage
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-
+ 
 from decimal import Decimal
 from windrose import WindroseAxes
-
+ 
 from django.conf import settings
 from django.db.models import Sum, Min, Max, Avg
 from django.shortcuts import render, redirect
-
-from gestion.management.commands import init
-from gestion.models import INSTAN,POSTE,PAYS,COMMUNE,H,Q,INSTRUMENT,MENSQ,RECMENS,EVENEMENTS,POSTE_EVENEMENTS
-from .forms import InitFormPays,InitPoste,InitPosteTotal
-
+ 
+from gestion.models import INSTAN,POSTE,H,Q,INSTRUMENT,MENSQ,RECMENS,EVENEMENTS,POSTE_EVENEMENTS
+from gestion.forms import FormPosteInit, FormInstrumentsInit, InitPosteTotal, tracerInstantanees
+from .tools import fonction_direction, format_date
+from gestion import init_data
 
 data_dir = 'media/data/'
 
@@ -202,10 +202,10 @@ def home(request):
 
 
 
-def initPays(request): 
+def initPoste(request): 
     
     #On initialise le formulaire   
-    form = InitFormPays(request.POST or None, request.FILES or None)
+    form = FormPosteInit(request.POST or None, request.FILES or None)
     # Nous vérifions que les données envoyées sont valides.
     if form.is_valid(): 
 
@@ -325,12 +325,12 @@ def initRecMens(nom_poste):
 
 #Fonction permettant d'initialiser les données des instruments des 
 #différents postes. Champs pré-remplis.
-def infoposte(request,code=None,typestation='Autre',capteur='T'):
+def initInstruments(request,code=None,typestation='Autre',capteur='T'):
     
     #Formulaire pré-rempli
     if typestation == 'VP2' or typestation == 'VP2P': 
         formAutre = False
-        form = InitPoste(request.POST or None)
+        form = FormInstrumentsInit(request.POST or None)
         liste_capteur = ['T','P','A','Pl','Ray','UV']
         liste_nomcapteur = ['Température','Pression','Anéomètre',
                             'Pluviomètre','Rayonnement','UV']
@@ -735,7 +735,7 @@ def reactualisation(request):
                 
                        
                
-        init.initH(code.CODE_POSTE,datedeb,datefin) #on réinitialise la période
+        init_data.initH(code.CODE_POSTE,datedeb,datefin) #on réinitialise la période
         
     #INCREMENTATION DES DATES DE PANNE
     return render(request, 'gestion/Reactualisation.html', locals())
@@ -743,397 +743,47 @@ def reactualisation(request):
 #------------------------------------------------------------------------------
 #----------------------------------------AFFICHAGE DES DONNEES-----------------
 #------------------------------------------------------------------------------
-def fonction_direction(DD):
-    liste_dir_inf = [11.25,33.75,65.25,78.75,101.25,123.75,146.25,168.75,191.25,
-                     213.75,236.25,258.75,281.25,303.75,326.25]
-    liste_dir_sup = [33.75,65.25,78.75,101.25,123.75,146.25,168.75,191.25,
-                     213.75,236.25,258.75,281.25,303.75,326.25,348.75]
-    dirs = ['NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO'
-           ,'NO','NNO']
-    try:
-        if DD >= 348.75 or DD <= 11.25:
-            Dir = 'N'
-        else:
-            for i in range(0,len(liste_dir_inf)):
-                if DD >= liste_dir_inf[i] and DD <= liste_dir_sup[i]:
-                    Dir = dirs[i]
-    except:
-        Dir = 'None'
-    
-    return(Dir)
-    
-#Affichage spécifique, données instantanées + graphique avec période modifiable
-def affichage(request,codeposte):
 
-                
-    liste_champ=['T','TD','U','PMER','RR','RRI','FF','DD','FXI','DXI','IC',
-                 'WINDCHILL','UV','RAD','RDV'] 
-    labelunite=['°C','°C','%','hPa','mm','mm/h','km/h','°','km/h','°',
-                '°C','°C','','W/m²',''] 
-    labelX=['Temperature','T de rosée','Humidite','Pression mer',
-            'Précipitations cumul 5min','Intensité de précipitations',
-            'Force du vent moyenné 10min','Direction vent moyen',
-            'Rafales 2.5sec','Direction rafales','Indice Chaleur','Windchill',
-            'Indice UV','Rayonnement','Rose des vents'] 
-    
-    liste_champ2=['Aucun','T','TD','U','PMER','RR','RRI','FF','DD','FXI','DXI','IC',
-                 'WINDCHILL','UV','RAD'] 
-    labelX2=['Aucun','Temperature','T de rosée','Humidite','Pression mer',
-            'Précipitations cumul 5min','Intensité de précipitations',
-            'Force du vent moyenné 10min','Direction vent moyen',
-            'Rafales 2.5sec','Direction rafales','Indice Chaleur','Windchill',
-            'Indice UV','Rayonnement'] 
-    labelunite2=['Aucun','°C','°C','%','hPa','mm','mm/h','km/h','°','km/h','°',
-                '°C','°C','','W/m²'] 
-    
-    Affichage = True   
+#Affichage spécifique, données instantanées + graphique avec période modifiable
+def instants_view(request,codeposte):
+
     # Affichage des données instantanées
-    posteob = POSTE.objects.get(CODE_POSTE=codeposte)
-    inst = INSTAN.objects.filter(POSTE=posteob).order_by('-DATJ')
+    poste = POSTE.objects.get(CODE_POSTE=codeposte)
+    inst = INSTAN.objects.filter(POSTE=poste).order_by('-DATJ')
     ins = inst[0]
-     
-    Altitude = posteob.ALT
-    Lat = posteob.LAT
-    Lon = posteob.LON
-    nom_public = posteob.NOM
+
+    nom_public = poste.NOM
     date_premiere_mesure = inst[inst.count()-1].DATJ.strftime('%d/%m/%Y à %Hh%M')
     date_derniere_mesure = ins.DATJ.strftime('%d/%m/%Y à %Hh%M')
-    #On récupère la toute dernière données instantanées
-    T = ins.T
-    TD = ins.TD
-    U = ins.U
-    PMER = ins.PMER
-    FF = ins.FF
-    DD = ins.DD
-    FXI = ins.FXI
-    if ins.DXI != None:
-        DXI = ins.DXI
+    # On récupère la toute dernière données instantanées
+
+    view_context = {
+        'nom_public'            : nom_public,
+        'date_premiere_mesure'  : date_premiere_mesure,
+        'date_derniere_mesure'  : date_derniere_mesure,
+        'poste'                 : poste,
+        'last_instant'          : ins,
+        'display_graph'         : False,
+        'is_windrose'           : False,
+    }
+
+    if request.method == "POST":
+        form = tracerInstantanees(data=request.POST)
+
+        if form.is_valid():
+            calculated_context = form.draw_graph()
+            view_context.update({
+                'display_graph' : True,
+                'is_windrose'   : form.is_RDV()
+            }, **calculated_context)
+
     else:
-        DXI = np.NaN
-    RDV = False
-    
-    DirDD = fonction_direction(DD)
-    liste_dir_inf = [11.25,33.75,65.25,78.75,101.25,123.75,146.25,168.75,191.25,
-                     213.75,236.25,258.75,281.25,303.75,326.25]
-    liste_dir_sup = [33.75,65.25,78.75,101.25,123.75,146.25,168.75,191.25,
-                     213.75,236.25,258.75,281.25,303.75,326.25,348.75]
-   
-    dirs = ['NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO'
-           ,'NO','NNO']
-    if DXI >= 348.75 or DXI <= 11.25:
-        DirDXI = 'N'
-    else:
-        for i in range(0,len(liste_dir_inf)):
-            if DXI >= liste_dir_inf[i] and DXI <= liste_dir_sup[i]:
-                DirDXI = dirs[i]
-    RR = Decimal(str(round(ins.RR,2)))
-    RRI = Decimal(str(round(ins.RRI,2)))
-    
-    
-    
-    #Affichage graphique : choix paramètre + période
-    datedebuts = "JJ-MM-AAAA HH:MM"
-    dateends = "JJ-MM-AAAA HH:MM"  
-    if request.method=="POST":
-            choix = True
-            champchoisi = request.POST['champchoisi']
-            champchoisi2 = request.POST['champchoisi2']
-            
-            datedebuts = request.POST['datedeb']
-            datedebut=datedebuts.split(' ')
-            datedeb = datedebut[0].split('-')
-            hrdeb = datedebut[1].split(':')
-     
-            dateends = request.POST['datefin']
-            dateend=dateends.split(' ')
-            datefin = dateend[0].split('-')
-            hrfin = dateend[1].split(':')
+        form = tracerInstantanees(initial={'station':poste.NUM_POSTE})
 
-            datedebut = datetime.datetime(int(datedeb[2]),int(datedeb[1]),
-                                          int(datedeb[0]),int(hrdeb[0]),
-                                          int(hrdeb[1]))
-            datefin = datetime.datetime(int(datefin[2]),int(datefin[1]),
-                                        int(datefin[0]),int(hrfin[0]),
-                                        int(hrfin[1]))
+    view_context['form'] = form
 
-            part_nom_champ = champchoisi
-            if champchoisi2:
-                part_nom_champ = "%s_%s" % (part_nom_champ, champchoisi2)
-            nom = '%s_%s_%s' % (part_nom_champ,
-                                datedebut.isoformat().replace(':',''),
-                                datefin.isoformat().replace(':',''))
+    return render(request, 'gestion/station/instants_view.html', context=view_context)
 
-            carte = True
-            
-            #Sélection des données instantanées, comme RDV n'existe pas dans la 
-            #table INSTAN, il faut la traiter séparément
-            if champchoisi != 'RDV': 
-                values = INSTAN.objects.filter(POSTE = posteob, DATJ__lt = datefin,
-                                           DATJ__gte = datedebut) \
-                                           .values_list('DATJ',champchoisi) \
-                                           .order_by('DATJ')
-                if champchoisi2 != 'Aucun':
-                    values2 = INSTAN.objects.filter(POSTE = posteob, DATJ__lt = datefin,
-                                           DATJ__gte = datedebut) \
-                                           .values_list('DATJ',champchoisi2) \
-                                           .order_by('DATJ')
-            #On plot les données demandées
-            if champchoisi != 'RDV':
-                fig, ax = plt.subplots()
-                x=[]
-                y=[]
-                y2 = []
-                delta_date = datefin-datedebut
-                
-                for value in values:
-                    if value[1] != None:
-                        x += [value[0]]
-                        y += [value[1]]
-                    else : 
-                        x += [value[0]]
-                        y += [np.nan]
-                        
-                if champchoisi2  != 'Aucun':
-                    for value in values2:
-                        if value[1] != None:
-                            y2 += [value[1]]
-                        else : 
-                            y2 += [np.nan]
-                
-                Maxx = values.aggregate(Max(champchoisi))[champchoisi+'__max']
-                Maxx = Decimal(str(round(float(Maxx),2)))
-                Minx = values.aggregate(Min(champchoisi))[champchoisi+'__min']
-                Minx = Decimal(str(round(float(Minx),2)))
-                Avgx = values.aggregate(Avg(champchoisi))[champchoisi+'__avg']
-                Avgx = Decimal(str(round(float(Avgx),2)))
-             
-                #Le cumul n'est pas nécessaire pour les valeurs de T,TD,PMER..
-                liste_cumul = ['RR','RAD']
-                if champchoisi in liste_cumul:
-                    if champchoisi == 'RR': 
-                        liste_cumul1 = []
-                        Cumulmax = H.objects.filter(POSTE=posteob,DATJ__lt=datefin,
-                                                  DATJ__gte=datedebut) \
-                                                  .order_by('-RR1')
-                        if Cumulmax.count() >= 3:                          
-                            for i in range(0,3):
-                                                         
-                                Cumul1 = Decimal(str(round(float(Cumulmax[i].RR1),2)))
-                                datecumulmax = (Cumulmax[i].DATJ-
-                                                datetime.timedelta(hours=1)).strftime('%d/%m %Hh%M')
-                                liste_cumul1+=['- '+str(Cumul1)+'mm '+str(datecumulmax)] 
-                        Sumx = values.values_list('DATJ',champchoisi) \
-                            .aggregate(Sum(champchoisi))[champchoisi+'__sum']
-                        Sumx = Decimal(str(round(float(Sumx),2)))
-                    elif champchoisi == 'RAD': 
-                        Sumx = values.values_list('DATJ',champchoisi) \
-                            .aggregate(Sum(champchoisi))[champchoisi+'__sum']
-                        Sumx = Decimal(str(round(float(Sumx),2)))
-                    cumul = True
-                else:
-                    cumul = False
-                Comm=False
-                commentaire= []
-                
-                #Traitement des données vent
-                if champchoisi == 'FF' or champchoisi == 'FXI' or champchoisi == 'PMER': 
-                    
-                    Comm = True
-              
-                    if champchoisi == 'FF':
-                        commentaire += ['Top 5 des vents moyens sur la période : ']
-                        FiltreTop = INSTAN.objects.filter(POSTE=posteob,DATJ__lt=datefin,
-                                            DATJ__gte=datedebut).order_by('-FF')
-                        for i in range(0,5):
-                            #Il n'y aura pas forcément 5 valeurs
-                            try:
-                                commentaire += [str(FiltreTop[i].FF) +'km/h le ' \
-                                + str(FiltreTop[i].DATJ.strftime('%d/%m %Hh%M'))]
-                            except: 
-                                pass
-                    elif champchoisi == 'FXI':
-                        #Durée où la rafale est supérieure à une valeur
-                        Filtre50 = INSTAN.objects.filter(POSTE=posteob,DATJ__lt=datefin,
-                                            DATJ__gte=datedebut,FXI__gte=50).count()
-                        Filtre70 = INSTAN.objects.filter(POSTE=posteob,DATJ__lt=datefin,
-                                            DATJ__gte=datedebut,FXI__gte=70).count()
-                        Filtre90 = INSTAN.objects.filter(POSTE=posteob,DATJ__lt=datefin,
-                                            DATJ__gte=datedebut,FXI__gte=90).count()
-                        Filtre120 = INSTAN.objects.filter(POSTE=posteob,DATJ__lt=datefin,
-                                            DATJ__gte=datedebut,FXI__gte=120).count()
-                        Filtre50, Filtre70, Filtre90, Filtre120 = Filtre50*5, Filtre70*5, Filtre90*5,Filtre120*5
-                        commentaire += ['Durée rafales: >50 '+
-                                        str(Filtre50) +'min, >70 '
-                                        +str(Filtre70)+'min, >90 '
-                                        +str(Filtre90)+'min, >120 '
-                                        +str(Filtre120)+'min']
-                
-                        commentaire += ['Top 5 des rafales sur la période : ']
-                        FiltreTop = INSTAN.objects.filter(POSTE=posteob,
-                                            DATJ__lt=datefin,
-                                            DATJ__gte=datedebut).order_by('-FXI')
-                        for i in range(0,5):
-                            try:
-                                commentaire += [str(FiltreTop[i].FXI) +'km/h le ' \
-                                + str(FiltreTop[i].DATJ.strftime('%d/%m %Hh%M'))]
-                            except:
-                                pass
-                    elif champchoisi == 'PMER':
-                        FiltrePMER = INSTAN.objects.filter(POSTE=posteob,DATJ__lt=datefin,
-                                            DATJ__gte=datedebut).order_by('DATJ')
-                        gradmoyen=[]  
-                                        
-                        for i in range(0,FiltrePMER.count()-1): 
-                            gradmoyen+=[(FiltrePMER[i+1].PMER-FiltrePMER[i].PMER)/5] 
-                      
-                        moygrad = Decimal(str(round(np.mean(gradmoyen),2)))
-                        posgrad = Decimal(str(round(max(gradmoyen),2)))
-                        neggrad = Decimal(str(round(min(gradmoyen),2)))
-                        commentaire+=['(5min) Gradient maximal : ('+
-                                      str(posgrad)+'hPa/min) / ('+ 
-                                      str(neggrad)+'hPa/min)']   
-                        commentaire+=['Gradient moyen sur la période: '+
-                                      str(moygrad)+'hPa/min']               
-                       
-                        
-                plt.plot(x,y,label=str(labelX[liste_champ.index(champchoisi)]))
-                ax.set_xticklabels([])
-                
-                
-                    
-                #Changement de légende axe x selon la période choisie
-                format_date(delta_date.days,ax)
-                
-                
-                    
-                for text in ax.get_xminorticklabels():
-                    text.set_rotation(50)    
-                
-                #Récupération de l'unité du paramètre choisi
-                unite = labelunite[liste_champ.index(champchoisi)]
-                unite2 = labelunite2[liste_champ2.index(champchoisi2)]
-                
-                plt.ylabel(labelX[liste_champ.index(champchoisi)] + ' - ' + unite)
-               
-                if champchoisi2 != "Aucun":
-                    if (champchoisi == 'T' and champchoisi2 == 'TD') or \
-                        (champchoisi == 'RR' and champchoisi2 == 'RRI') or \
-                        (champchoisi == 'TD' and champchoisi2 == 'T')or \
-                        (champchoisi == 'RRI' and champchoisi2 == 'RR')or \
-                        (champchoisi == 'FF' and champchoisi2 == 'FXI')or \
-                        (champchoisi == 'FXI' and champchoisi2 == 'FF'):
-                        plt.plot(x,y2,'r',label=str(labelX2[liste_champ2.index(champchoisi2)]),alpha =0.5)
-                        
-                    else:
-                        ax2 = ax.twinx()
-                        ax2.plot(x,y2,'r',label=str(labelX2[liste_champ2.index(champchoisi2)]),alpha =0.5)
-                        ax2.set_xticklabels([])
-                        plt.ylabel(labelX2[liste_champ2.index(champchoisi2)] + ' - ' + unite2)
-                plt.grid()
-                fig.legend()    
-                if not os.path.exists(data_dir+'nonpermanent/'+codeposte+'/'+champchoisi+'/'):
-                    os.makedirs(data_dir+'nonpermanent/'+codeposte+'/'+champchoisi+'/')
-                link = 'nonpermanent/'+codeposte+'/'+champchoisi+'/'+nom+'.png'
-                plt.savefig(data_dir+link, 
-                            bbox_inches="tight")  #choisir un nom unique
-                plt.close(fig)
-            else:
-                RDV= True
-                DDlist = []
-                flist=[]
-                values = INSTAN.objects.filter(POSTE = posteob, DATJ__lt = datefin,
-                                           DATJ__gte = datedebut)
-                for value in values:
-                    if value.DD != None:
-                        DDlist+=[value.DD] 
-                        flist += [value.FF]
-                
-                ax = WindroseAxes.from_ax() 
-                ax.bar(DDlist, flist, bins=np.arange(0, max(flist), 10),
-                       normed=True, opening=0.8, edgecolor='white')
-                
-                ax.set_legend()
-                if not os.path.exists(data_dir+'nonpermanent/'+codeposte+'/'+champchoisi+'/'):
-                    os.makedirs(data_dir+'nonpermanent/'+codeposte+'/'+champchoisi+'/')
-                #link : chemin d'accès de l'image la page station    
-                link = 'nonpermanent/'+codeposte+'/RDV/'+nom+'.png'
-                plt.savefig(data_dir+link, 
-                            bbox_inches="tight")  #choisir un nom unique
-                plt.close()
-                
-                #Fréquences de direction
-                table = ax._info['table']
-                wd_freq = np.sum(table, axis=0)
-                direction = ax._info['dir']
-                wd_freq = np.sum(table, axis=0)
-                plt.bar(np.arange(16), wd_freq, align='center')
-                xlabels = ('N','','N-E','','E','','S-E','',
-                           'S','','S-O','','O','','N-O','')
-                max_freq = 0
-                indice_max = 0
-                for i in range(0,len(wd_freq)):
-                    if wd_freq[i] >= max_freq:
-                        max_freq = wd_freq[i]
-                        indice_max = i
-                        
-                listedirfreq = ['N','NNE','NE','ENE','E','ESE','SE','SSE',
-                            'S','SSO','SO','OSO','O','ONO','NO','NNO']
-                dir_freqmax = listedirfreq[indice_max]
-
-                xticks=np.arange(16)
-                plt.ylabel('Fréquence (%)')
-                 
-                plt.gca().set_xticks(xticks)
-                
-                plt.gca().set_xticklabels(xlabels)
-                plt.savefig('TEEEST.png', 
-                            bbox_inches="tight")
-                #draw()
-                plt.close()
-                
-    else:
-            carte = False
-       
-    return render(request, 'gestion/station.html', locals())
-
-def format_date(delta,ax):
-    
-    if delta >= 90:
-        ax.xaxis.set_minor_locator(dates.DayLocator(interval=31))   
-        ax.xaxis.set_minor_formatter(dates.DateFormatter('%d/%m/%Y'))
-    elif delta >= 62:
-        ax.xaxis.set_minor_locator(dates.DayLocator(interval=15))   
-        ax.xaxis.set_minor_formatter(dates.DateFormatter('%d/%m')) 
-    elif delta >= 31:
-        ax.xaxis.set_minor_locator(dates.DayLocator(interval=5))   
-        ax.xaxis.set_minor_formatter(dates.DateFormatter('%d/%m')) 
-    elif delta >= 20 : 
-        ax.xaxis.set_minor_locator(dates.DayLocator(interval=2))   
-        ax.xaxis.set_minor_formatter(dates.DateFormatter('%d/%m')) 
-    elif delta >= 10 : 
-        ax.xaxis.set_minor_locator(dates.DayLocator(interval=1))   
-        ax.xaxis.set_minor_formatter(dates.DateFormatter('%d/%m'))  
-        
-    elif delta >= 5 : 
-        ax.xaxis.set_minor_locator(dates.HourLocator(interval=12))   
-        ax.xaxis.set_minor_formatter(dates.DateFormatter('%Hh'))  
-        ax.xaxis.set_major_locator(dates.DayLocator(interval=1))   
-        ax.xaxis.set_major_formatter(dates.DateFormatter('\n\n%d'))   
-    elif delta >= 3 : 
-        ax.xaxis.set_minor_locator(dates.HourLocator(interval=6))   
-        ax.xaxis.set_minor_formatter(dates.DateFormatter('%Hh'))  
-        ax.xaxis.set_major_locator(dates.DayLocator(interval=1))   
-        ax.xaxis.set_major_formatter(dates.DateFormatter('\n\n%d'))     
-    elif delta >= 1 : 
-        ax.xaxis.set_minor_locator(dates.HourLocator(interval=3))   
-        ax.xaxis.set_minor_formatter(dates.DateFormatter('%Hh'))  
-        ax.xaxis.set_major_locator(dates.DayLocator(interval=1))   
-        ax.xaxis.set_major_formatter(dates.DateFormatter('\n\n%d')) 
-    else: 
-        ax.xaxis.set_minor_locator(dates.HourLocator(interval=1))   
-        ax.xaxis.set_minor_formatter(dates.DateFormatter('%Hh'))    
-        
-    return  
 
 #Récapitulatif des différentes périodes : journalier   
 def recap(request,codeposte):
@@ -1294,8 +944,8 @@ def recap(request,codeposte):
     plt.savefig(data_dir+link+'FF.png', bbox_inches="tight")
     linkFF = link+'FF.png'
     plt.close()
-    
-     #On traite les données PMER
+
+    # On traite les données PMER
     fig, ax = plt.subplots(figsize=(5, 3))
     PMER = []
     for value in jour:
@@ -1323,7 +973,7 @@ def recap(request,codeposte):
     linkPMER = link+'PMER.png'
     plt.close()
 
-     #On traite les données DD
+    # On traite les données DD
     DD = []
     for value in jour:
         if value.DD==None:
@@ -1342,7 +992,7 @@ def recap(request,codeposte):
     linkDD2 = link+'DD2.png'
     plt.close()
     enso = False
-     #On traite les données ensoleillement
+    # On traite les données ensoleillement
     try: 
         
         fig, ax = plt.subplots(figsize=(5, 3))
@@ -1386,12 +1036,9 @@ def recap(request,codeposte):
 
 
 
- #Récapitulatif des différentes périodes : mensuel   
+# Récapitulatif des différentes périodes : mensuel   
 def recapMensuel(request,codeposte):
-    
-    
-    
-      
+
     posteob = POSTE.objects.get(CODE_POSTE=codeposte) 
     inst = INSTAN.objects.filter(POSTE=posteob).order_by('-DATJ')
     
@@ -1433,8 +1080,7 @@ def recapMensuel(request,codeposte):
             nextannee = anneechoisi
         debutmois = datetime.datetime(anneechoisi,moischoisi,1) 
         finmois = datetime.datetime(nextannee,nextmois,1) 
-    
-    link = codeposte+'/recapM/'+str(moischoisi)+str(anneechoisi)+'/' 
+
     jour = Q.objects.filter(POSTE=posteob,
             DATJ__gte=debutmois,DATJ__lt=finmois).order_by('DATJ')   
     donneevent = INSTAN.objects.filter(POSTE=posteob,
@@ -1493,7 +1139,6 @@ def recapMensuel(request,codeposte):
     PrecipINSTAN = H.objects.filter(POSTE=posteob,DATJ__gt=debutmois
                               ,DATJ__lte=finmois).order_by('DATJ')
     RR1 = []
-    RRI = []
     hr=[]
     cumultotal = Precip.aggregate(Sum('RR'))['RR__sum']
     cumultotal = Decimal(str(round(float(cumultotal),2)))
@@ -1559,8 +1204,8 @@ def recapMensuel(request,codeposte):
     plt.savefig(data_dir+link+'FF.png', bbox_inches="tight")
     linkFF = link+'FF.png'
     plt.close()
-    
-     #On traite les données PMER
+
+    # On traite les données PMER
     fig, ax = plt.subplots(figsize=(5, 3))
     PMER = []
     for value in jour:
@@ -1592,7 +1237,7 @@ def recapMensuel(request,codeposte):
     linkPMER = link+'PMER.png'
     plt.close()
 
-     #On traite les données DD
+    # On traite les données DD
     DIRINSTAN = []
     FFINSTAN = [] 
     for vent in donneevent:
@@ -1613,11 +1258,8 @@ def recapMensuel(request,codeposte):
     plt.savefig(data_dir+link+'DD.png', bbox_inches="tight")
     linkDD = link+'DD.png'
     plt.close()
-    
-    
-    
-    
-     #On traite les données humidité
+
+    # On traite les données humidité
     fig, ax = plt.subplots(figsize=(5, 3))
     UM = []
     UXabs = []
@@ -1652,7 +1294,7 @@ def recapMensuel(request,codeposte):
     linkH = link+'H.png'
     plt.close()
 
-     #On traite les données ensoleillement
+    # On traite les données ensoleillement
     enso = False
     try: 
         
@@ -1841,8 +1483,8 @@ def recapevenement(request,codeposte,codeevenement):
     plt.savefig(data_dir+link+'RR.png', bbox_inches="tight")
     linkRR = link+'RR.png'
     plt.close()
-    
-     #On traite les données PMER
+
+    # On traite les données PMER
     fig, ax = plt.subplots(figsize=(5, 3))
     PMER = []
     for value in ins:
@@ -1901,8 +1543,8 @@ def recapevenement(request,codeposte,codeevenement):
     plt.savefig(data_dir+link+'FF.png', bbox_inches="tight")
     linkFF = link+'FF.png'
     plt.close()
-    
-     #On traite les données DD
+
+    # On traite les données DD
     DD = []
     for value in ins:
         if value.DD==None:

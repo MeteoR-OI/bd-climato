@@ -1,0 +1,121 @@
+{% extends 'gestion/base.html' %}
+
+{% block title %}Station {{poste.NOM}}{% endblock %}
+
+{% block content %}
+
+{% load static %}
+{% get_media_prefix as MEDIA_PREFIX %}
+
+<h1>MeteoR-OI</h1>
+<h2>Affichage graphique</h2>
+
+<table border="1" width="90%">
+    <tr>
+        <td colspan="2">
+            <center><h1>Informations sur la station {{poste.NOM}}</h1></center>
+            <table width="100%">
+                <tr>
+                    <td>
+                        Date de la 1ère mesure  : {{date_premiere_mesure}}<br/>
+                        Date de la dernière mesure : {{date_derniere_mesure}}<br/>
+                    </td>
+                    <td>
+                        Latitude : {{poste.LAT}}°<br/>
+                        Longitude : {{poste.LON}}°<br/>
+                        Altitude : {{poste.ALT}}m
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <center><h2>Données instantanées</h2></center>
+        </td>
+        <td><center><h2>Graphique</h2></center></td>
+    </tr>
+    <tr>
+        <td>
+            <table border="1">
+            <tr>
+            <td colspan="2"><center>{{date_derniere_mesure}}</center></td>
+            </tr>
+            <tr>
+            <td><b>Température</b></td><td>{{last_instant.T}} °C</td>
+            </tr>
+            <tr>
+            <td><b>TD</b></td><td>{{last_instant.TD}} °C</td>
+            </tr>
+            <tr>
+            <td><b>Humidité</b></td><td>{{last_instant.U}} %</td>
+            </tr>
+            <tr>
+            <td><b>Pression</b></td><td>{{last_instant.PMER}} hPa</td>
+            </tr>
+            <tr>
+            <td><b>Vent moyen</b></td><td>{{last_instant.FF}} km/h - {{last_instant.wind_dir}}° ({{last_instant.wind_dir_cardinal}})</td>
+            </tr>
+            <tr>
+            <td><b>Rafales</b></td><td>{{last_instant.FXI}} km/h - {{last_instant.windgust_dir}}° ({{last_instant.windgust_dir_cardinal}})</td>
+            </tr>
+            <tr>
+            <td><b>Précipitations</b></td><td>{{last_instant.rain}} mm</td>
+            </tr>
+            <tr>
+            <td><b>Intensité</b></td><td>{{last_instant.rain_rate}} mm/h</td>
+            </tr>
+            </table>
+
+        </td>
+        <td>
+            {% if display_graph %}
+                {% load static %}
+                <img src="{{MEDIA_PREFIX}}/data/{{ graph_link }}" /><br/>
+                {% if is_windrose == False %}
+                    <u>Sur la période pour le paramètre 1</u> :<br/>
+                        <b>Max</b> = {{parameter_max}}{{parameter_unit}} - 
+                        <b>Min</b> = {{parameter_min}}{{parameter_unit}} - 
+                        <b>Moyenne</b> = {{parameter_avg}}{{parameter_unit}}
+                    {% if is_rain %}
+                        - <b>Cumul</b> = {{parameter_sum}}{{parameter_unit}}<br/>
+                        <b> Cumul max en 1h:</b><br/>
+                        {% for rain_top_item in rain_top_list %}
+                            {{rain_top_item}}<br/>
+                        {% endfor %}
+                    {% endif %}<br/>
+                        
+                    {% if has_comment %}
+                        <div style="padding:3px; border:2px dotted #a5a5a5; background-color:#e3e3e3;">
+                            <strong>Commentaire :</strong><br/>
+
+                        {% for comment in comments %}
+                            {{comment}}<br/>
+                        {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endif %}
+            {% else %}
+                Sélectionnez un paramètre et une période pour afficher un graphique
+            {% endif %}
+            <form action="." method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                {{ form.as_boostrap }}
+
+                <p class="center">
+
+                {% for hidden in form.hidden_fields %}
+                    {{ hidden }}
+                {% endfor %}
+                <input type="submit" value="Submit" />
+                </p>
+            </form>
+        </td>
+
+    </tr>
+</table>
+<a href ="{% url 'home' %}">Accueil</a><br/>
+<a href="../../recap/J/{{codeposte}}">Récapitulatif de la journée en cours</a><br/>
+<a href="../../recap/M/{{codeposte}}">Récapitulatif du mois en cours</a>
+{% endblock %}

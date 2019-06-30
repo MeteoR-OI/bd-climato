@@ -3,94 +3,125 @@ Created on 10 déc. 2018
 
 @author: mhoareau
 '''
-from django import forms
-from django.utils.html import conditional_escape
-from django.utils.safestring import mark_safe
 
-class BootStrapForm(forms.Form):
-    def _html_output(self, normal_row, error_row, row_ender, help_text_html, errors_on_separate_row):
-        "Output HTML. Used by as_table(), as_ul(), as_p()."
-        top_errors = self.non_field_errors()  # Errors that should be displayed above all fields.
-        output, hidden_fields = [], []
+def fonction_direction(DD):
+    liste_dir_inf = [11.25,33.75,65.25,78.75,101.25,123.75,146.25,168.75,191.25,
+                     213.75,236.25,258.75,281.25,303.75,326.25]
+    liste_dir_sup = [33.75,65.25,78.75,101.25,123.75,146.25,168.75,191.25,
+                     213.75,236.25,258.75,281.25,303.75,326.25,348.75]
+    dirs = ['NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO'
+           ,'NO','NNO']
+    try:
+        if DD >= 348.75 or DD <= 11.25:
+            Dir = 'N'
+        else:
+            for i in range(0,len(liste_dir_inf)):
+                if DD >= liste_dir_inf[i] and DD <= liste_dir_sup[i]:
+                    Dir = dirs[i]
+    except:
+        Dir = 'None'
+    
+    return(Dir)
 
-        for name, field in self.fields.items():
-            html_class_attr = ''
-            bf = self[name]
-            bf_errors = self.error_class(bf.errors)
-            if bf.is_hidden:
-                if bf_errors:
-                    top_errors.extend(
-                        [_('(Hidden field %(name)s) %(error)s') % {'name': name, 'error': str(e)}
-                         for e in bf_errors])
-                hidden_fields.append(str(bf))
-            else:
-                # Create a 'class="..."' attribute if the row should have any
-                # CSS classes applied.
-                css_classes = bf.css_classes('form-group row')
-                if css_classes:
-                    html_class_attr = ' class="%s"' % css_classes
+def format_date(delta,ax):
+    import matplotlib.dates as dates
 
-                if errors_on_separate_row and bf_errors:
-                    output.append(error_row % str(bf_errors))
+    if delta >= 90:
+        ax.xaxis.set_minor_locator(dates.DayLocator(interval=31))   
+        ax.xaxis.set_minor_formatter(dates.DateFormatter('%d/%m/%Y'))
+    elif delta >= 62:
+        ax.xaxis.set_minor_locator(dates.DayLocator(interval=15))   
+        ax.xaxis.set_minor_formatter(dates.DateFormatter('%d/%m')) 
+    elif delta >= 31:
+        ax.xaxis.set_minor_locator(dates.DayLocator(interval=5))   
+        ax.xaxis.set_minor_formatter(dates.DateFormatter('%d/%m')) 
+    elif delta >= 20 : 
+        ax.xaxis.set_minor_locator(dates.DayLocator(interval=2))   
+        ax.xaxis.set_minor_formatter(dates.DateFormatter('%d/%m')) 
+    elif delta >= 10 : 
+        ax.xaxis.set_minor_locator(dates.DayLocator(interval=1))   
+        ax.xaxis.set_minor_formatter(dates.DateFormatter('%d/%m'))  
+        
+    elif delta >= 5 : 
+        ax.xaxis.set_minor_locator(dates.HourLocator(interval=12))   
+        ax.xaxis.set_minor_formatter(dates.DateFormatter('%Hh'))  
+        ax.xaxis.set_major_locator(dates.DayLocator(interval=1))   
+        ax.xaxis.set_major_formatter(dates.DateFormatter('\n\n%d'))   
+    elif delta >= 3 : 
+        ax.xaxis.set_minor_locator(dates.HourLocator(interval=6))   
+        ax.xaxis.set_minor_formatter(dates.DateFormatter('%Hh'))  
+        ax.xaxis.set_major_locator(dates.DayLocator(interval=1))   
+        ax.xaxis.set_major_formatter(dates.DateFormatter('\n\n%d'))     
+    elif delta >= 1 : 
+        ax.xaxis.set_minor_locator(dates.HourLocator(interval=3))   
+        ax.xaxis.set_minor_formatter(dates.DateFormatter('%Hh'))  
+        ax.xaxis.set_major_locator(dates.DayLocator(interval=1))   
+        ax.xaxis.set_major_formatter(dates.DateFormatter('\n\n%d')) 
+    else: 
+        ax.xaxis.set_minor_locator(dates.HourLocator(interval=1))   
+        ax.xaxis.set_minor_formatter(dates.DateFormatter('%Hh'))    
 
-                if bf.label:
-                    label = conditional_escape(bf.label)
-                    label = bf.label_tag(label) or ''
-                else:
-                    label = ''
+    return
 
-                if field.help_text:
-                    help_text = help_text_html % field.help_text
-                else:
-                    help_text = ''
 
-                output.append(normal_row % {
-                    'errors': bf_errors,
-                    'label': label,
-                    'field': bf,
-                    'help_text': help_text,
-                    'html_class_attr': html_class_attr,
-                    'css_classes': css_classes,
-                    'field_name': bf.html_name,
-                })
+class ParamatersList(object):
+    _parameters = {
+        'T'         : 'Température (T)',
+        'TD'        : 'Point de rosée (TD)',
+        'U'         : 'Humidité relative (U)',
+        'PMER'      : 'Pression mer (PMER)',
+        'RR'        : 'Précipitations (RR)',
+        'RRI'       : 'Intensité pluviométrique (RRI)',
+        'FF'        : 'Vent moyen (FF)',
+        'DD'        : 'Direction du vent moyen (DD)',
+        'FXI'       : 'Rafale max (FXI)',
+        'DXI'       : 'Direction de la rafale (DXI)',
+        'IC'        : 'Indice de chaleur',
+        'WINDCHILL' : 'Refroidissement éolien (WINDCHILL)',
+        'UV'        : 'Indice UV',
+        'RAD'       : 'Rayonnement (RAD)'
+    }
 
-        if top_errors:
-            output.insert(0, error_row % top_errors)
+    _unit_label = {
+        'T'         : '°C',
+        'TD'        : '°C',
+        'U'         : '%',
+        'PMER'      : 'hPa',
+        'RR'        : 'mm',
+        'RRI'       : 'mm/h',
+        'FF'        : 'km/h',
+        'DD'        : '°',
+        'FXI'       : 'km/h',
+        'DXI'       : '°',
+        'IC'        : '°C',
+        'WINDCHILL' : '°C',
+        'UV'        : '',
+        'RAD'       : 'W/m²',
+        'RDV'       : ''
+    }
 
-        if hidden_fields:  # Insert any hidden fields in the last row.
-            str_hidden = ''.join(hidden_fields)
-            if output:
-                last_row = output[-1]
-                # Chop off the trailing row_ender (e.g. '</td></tr>') and
-                # insert the hidden fields.
-                if not last_row.endswith(row_ender):
-                    # This can happen in the as_p() case (and possibly others
-                    # that users write): if there are only top errors, we may
-                    # not be able to conscript the last row for our purposes,
-                    # so insert a new, empty row.
-                    last_row = (normal_row % {
-                        'errors': '',
-                        'label': '',
-                        'field': '',
-                        'help_text': '',
-                        'html_class_attr': html_class_attr,
-                        'css_classes': '',
-                        'field_name': '',
-                    })
-                    output.append(last_row)
-                output[-1] = last_row[:-len(row_ender)] + str_hidden + row_ender
-            else:
-                # If there aren't any rows in the output, just append the
-                # hidden fields.
-                output.append(str_hidden)
-        return mark_safe('\n'.join(output))
+    @staticmethod
+    def get_choices(with_rdv=False, with_none=False):
+        choices = list(ParamatersList._parameters.items())
+        if with_rdv:
+            choices.append(('RDV', 'Rose des vents'))
+        if with_none:
+            choices.insert(0, ('', 'Aucun'))
+        return choices
 
-    def as_boostrap(self):
-        "Return this form rendered as HTML <div>s. Bootstrap style"
-        return self._html_output(
-            normal_row='<div%(html_class_attr)s><div class="col-sm-5 col-form-label">%(label)s</div> <div class="col-sm-7">%(field)s%(help_text)s</div></div>',
-            error_row='%s',
-            row_ender='</p>',
-            help_text_html=' <span class="helptext">%s</span>',
-            errors_on_separate_row=True,
-        )
+    @staticmethod
+    def get_list(with_rdv=False):
+        keys = list(ParamatersList._parameters.keys())
+        if with_rdv:
+            keys.append('RDV')
+        return keys
+
+    @staticmethod
+    def get_unit_label(parameter):
+        return ParamatersList._unit_label[parameter]
+
+    @staticmethod
+    def get_parameter_label(parameter):
+        if parameter not in ParamatersList._parameters.keys():
+            return "Aucun"
+        return ParamatersList._parameters[parameter]
