@@ -37,12 +37,12 @@ def home(request):
          
     try:
         code = request.POST['codeposte_instrument']
-        return redirect("InfoPoste/"+code+"/Autre/T/",code=302)
+        return redirect("sensor_edit", code=code, typestation="Autre", capteur="T")
     except: 
         pass
     try:
         code = request.POST['codeposte_instan']
-        return redirect("station/"+code,code=302)
+        return redirect("station_instants_detail", codeposte=code)
     except: 
         pass    
     try:

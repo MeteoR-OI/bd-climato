@@ -28,7 +28,9 @@ urlpatterns = [
     path('initialisation/', views.initPoste, name="stations_ajout"),
 
     # Initialisation des capteurs d'une station
-    path('InfoPoste/<str:code>/<str:typestation>/<str:capteur>/', views.initInstruments),
+    path('InfoPoste/<str:code>/<str:typestation>/<str:capteur>/',
+         views.initInstruments,
+         name="sensor_edit"),
 
     # Soumission de données manuelles SPIEA
     path('releve/',views.releve, name='donnees_manuel_ajout'),
@@ -36,7 +38,7 @@ urlpatterns = [
     # Reactualisation des donnees en cas de perte/panne
     path('Reactualisation/',views.reactualisation),
 
-    path('station/<str:codeposte>/',views.instants_view), 
+    path('station/<str:codeposte>/',views.instants_view, name="station_instants_detail"), 
     path('recap/ev/<str:codeevenement>/<str:codeposte>/',views.recapevenement),
     path('recap/J/<str:codeposte>/',views.recap),
     path('recap/M/<str:codeposte>/',views.recapMensuel),
