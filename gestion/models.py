@@ -50,7 +50,7 @@ class POSTE(models.Model):
     AUT = models.IntegerField(null=False,verbose_name = "Autorisation de stockage/diffusion",default=None)
     PROP = models.CharField(null=False, verbose_name = "Nom du propriétaire/entreprise", max_length =20,default=None)
     DATEOUV = models.DateTimeField(null=False,default=None)
-    DATEFERM = models.DateTimeField(null=True,default=None)
+    DATEFERM = models.DateTimeField(null=True,default=None, blank=True)
     MAINT = models.IntegerField(null=True, verbose_name = "Code maintenance (tableau)",default=None)
     TYPE = models.CharField(null=False, verbose_name = "Modèle de station", max_length=20,default=None) 
     TYPINFO = models.CharField(null=False,verbose_name = "Type de donnees (route,agricole,pédagogique,..)", max_length=20,default=None)
