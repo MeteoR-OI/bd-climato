@@ -1,6 +1,8 @@
 .project
 .pydevproject
 .settings
+.DS_Store
+.venv
 db.sqlite3
 db.sqlite3-journal
 Clim_MeteoR/settings.py

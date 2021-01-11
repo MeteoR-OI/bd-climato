@@ -11,14 +11,14 @@
   - [a. **Terminal**](#a-terminal)
   - [b. **git**](#b-git)
   - [c. **Python update**](#c-python-update)
-  - [d. **Django**](#d-django)
-- [4.	VSCode](#4vscode)
+- [4.	VSCode et extensions](#4vscode-et-extensions)
   - [a.	**VS-Code**](#avs-code)
   - [b.	**Extensions Markdown Preview Enhanced**](#bextensions-markdown-preview-enhanced)
   - [b.	**Extensions Python**](#bextensions-python)
-  - [c.	**Autre extension,,,**](#cautre-extension)
 - [5.	Postgres v 13.1](#5postgres-v-131)
   - [a.	**Postgres - Mac OS**](#apostgres-mac-os)
+  - [b. Création d'une base de test](#b-création-dune-base-de-test)
+- [6.	**Lancer VS Code sur le projet**](#6lancer-vs-code-sur-le-projet)
 
 <!-- /code_chunk_output -->
 
@@ -33,7 +33,7 @@ Installation d’un environnement de developpement pour le projet **BD Climato**
 Cette documentation est écrite pour un mac sous MacOs Big Sur (v11.1)
 
 # 3.	Installation des outils de dévelopement
-
+Il est recommandé de faire les installations dans l'ordre de ce tutorial
 
 ## a. **Terminal**
 Il est recommandé d'utiliser le terminal avancé iTerm2. A télécharger à partir de : [iTerm2](https://iterm2.com)
@@ -50,14 +50,10 @@ git clone https://github.com/MeteoR-OI/bd-climato.git
 
 ## c. **Python update**
 [Download](https://www.python.org/downloads/)
-ou brew upgrade ???
+ou brew install/upgrade ???
 
 
-## d. **Django**
-??
-
-
-# 4.	VSCode
+# 4.	VSCode et extensions
 ## a.	**VS-Code**
 Installation suivre la doc : [Visual Studio Code Install - Mac](https://code.visualstudio.com/docs/setup/mac)
 
@@ -67,14 +63,16 @@ Suivre la procédure indiqué dans le chapitre **Launching from the command line
    code .
 ```
 
+Avant que l'extension Python soit installée, ou pour faire des tests ou tuto, il est préférable d'être dans un répertoire différent que celui du projet BD Climato.
+
 
 Introduction pour les nouveaux utilisateurs :
--  [visual studio tutorial](https://code.visualstudio.com/docs/getstarted/introvideos)
+-  [visual studio tutorial](https://code.visualstudio.com/docs/getstarted/introvideos).
 -  Nombreux **tutos** à partir de google… 
 
 ## b.	**Extensions Markdown Preview Enhanced**
 
-**Trés utile pour visualiser ce fichier a partir de VS Code**
+**=> Très utile pour visualiser ce fichier à partir de VS Code**
 
 Permet sur un fichier markdown (.md) d'afficher un preview de la doc, via le raccourci command-k v
 
@@ -83,23 +81,18 @@ Pour installer: racourci Shift-Command-P, puis **Extensions:Install Extensions**
 
 ## b.	**Extensions Python**
 Python, l'extension principale de Python
+@import "pythonextenstion.png"
 
 Il est recommandé de lire les deux documents suivants, et pour les novices en Django de faire le tutorial de la doc **Django-VS Code**
 
 
-[**Lien vers doc: Extension python/VS Code**](https://code.visualstudio.com/docs/python/python-tutorial#_prerequisites)
+[**Lien vers doc: Extension python/VS Code**](https://code.visualstudio.com/docs/python/python-tutorial#_prerequisites). Explique bien la notion d'environnement, et comment VS Code l'active automatiquement
 
 
 [**Lien vers doc: Utilisation Django-VS Code**](https://code.visualstudio.com/docs/python/tutorial-django)
 
 
-## c.	**Autre extension,,,**
-A completer
-
-
 # 5.	Postgres v 13.1
-
-
 ## a.	**Postgres - Mac OS**
 Install Postgres en suivant la procédure : [Install Postgres](https://postgresapp.com)
 
@@ -117,3 +110,23 @@ Relancer le terminal, et tester que Postgres fonctionne :
    -> doit afficher la version du serveur
    \q    (pour sortir)
 ```
+
+## b. Création d'une base de test
+?? Comment creer, et charger une base de donnees de test ??
+
+
+# 6.	**Lancer VS Code sur le projet**
+Aller dans le repertoire du projet, et lancer VS Code.
+```
+code .
+```
+Activer l'environnement python si cela est demandé.
+@import "selectPython.png"
+
+
+Activer la version de python installée, v3.9.1 au moment d'ecrire ce tutorial)
+(voir coment faire dans la doc de l'extension)
+@import "pyver.png"
+
+
+?? Faire un test sur le projet pour verifier que tout est ok ??
