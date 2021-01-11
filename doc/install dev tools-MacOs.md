@@ -49,9 +49,9 @@ git clone https://github.com/MeteoR-OI/bd-climato.git
 
 
 ## c. **Python update**
-[Download](https://www.python.org/downloads/)
-ou brew install/upgrade ???
+brew install python3
 
+lancer la commande pip3 --list, pour vérifier s'il est nécessaire de faire une mise à jour du programme pip3. Si cela est le cas, exécuter la commande indiquée.
 
 # 4.	VSCode et extensions
 ## a.	**VS-Code**
@@ -65,8 +65,7 @@ Suivre la procédure indiqué dans le chapitre **Launching from the command line
 
 Avant que l'extension Python soit installée, ou pour faire des tests ou tuto, il est préférable d'être dans un répertoire différent que celui du projet BD Climato.
 
-
-Introduction pour les nouveaux utilisateurs :
+vIntroduction pour les nouveaux utilisateurs :
 -  [visual studio tutorial](https://code.visualstudio.com/docs/getstarted/introvideos).
 -  Nombreux **tutos** à partir de google… 
 

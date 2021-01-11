@@ -11,12 +11,14 @@ Class-based views
     2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
 Including another URLconf
     1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))  {% url "initialisationPAYS"   %}   , name='initialisationPAYS' 
+    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+        {% url "initialisationPAYS"   %}   , name='initialisationPAYS'
 """
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path
+# from django.urls import include, path
+from django.urls import path
 
 from gestion import views
 
@@ -33,21 +35,23 @@ urlpatterns = [
          name="sensor_edit"),
 
     # Soumission de données manuelles SPIEA
-    path('releve/',views.releve, name='donnees_manuel_ajout'),
+    path('releve/', views.releve, name='donnees_manuel_ajout'),
 
     # Reactualisation des donnees en cas de perte/panne
-    path('Reactualisation/',views.reactualisation),
+    path('Reactualisation/', views.reactualisation),
 
-    path('station/<str:codeposte>/',views.instants_view, name="station_instants_detail"), 
-    path('recap/ev/<str:codeevenement>/<str:codeposte>/',views.recapevenement),
-    path('recap/J/<str:codeposte>/',views.recap),
-    path('recap/M/<str:codeposte>/',views.recapMensuel),
-    path('rapport/M/<str:date>/<str:codeposte>/',views.rapport),
-    path('rapport/A/<str:date>/<str:codeposte>/',views.rapportannuel),
+    path('station/<str:codeposte>/',
+         views.instants_view,
+         name="station_instants_detail"),
+    path('recap/ev/<str:codeevenement>/<str:codeposte>/',
+         views.recapevenement),
+    path('recap/J/<str:codeposte>/', views.recap),
+    path('recap/M/<str:codeposte>/', views.recapMensuel),
+    path('rapport/M/<str:date>/<str:codeposte>/', views.rapport),
+    path('rapport/A/<str:date>/<str:codeposte>/', views.rapportannuel),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-# 
 # if settings.DEBUG:
 #     import debug_toolbar
 #     urlpatterns = [

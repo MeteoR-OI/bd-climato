@@ -207,9 +207,7 @@ def initPoste(request):
     #On initialise le formulaire   
     form = FormPosteInit(request.POST or None, request.FILES or None)
     # Nous vérifions que les données envoyées sont valides.
-    if form.is_valid(): 
-
-
+    if form.is_valid():
         commune = form.cleaned_data['NOM_DE_LA_COMMUNE']
         pays = form.cleaned_data['NOM_DU_PAYS']
 

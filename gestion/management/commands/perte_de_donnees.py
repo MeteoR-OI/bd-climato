@@ -9,37 +9,31 @@ import math
 from django.core.management.base import BaseCommand
 
 from gestion import init_data
-from gestion.models import POSTE,INSTAN
+from gestion.models import POSTE, INSTAN
 
 
 class Command(BaseCommand):
     help = 'Closes the specified poll for voting'
 
-    #def add_arguments(self, parser):
+    # def add_arguments(self, parser):
     #    parser.add_argument(
     #        '-r', '--rain', action='store', dest='rain', default=0,
     #        type=int
     #    )
 
-
-
-
     def handle(self, *args, **options):
-       
-      
-        
-        #Recherche des données manquantes
-#         postes = POSTE.objects.all()
-#         for i in range(0,postes.count()): 
-#             if postes[i].TYPE != 'SPIEA':
+        # Recherche des données manquantes
+        #         postes = POSTE.objects.all()
+        #         for i in range(0,postes.count()): 
+        #             if postes[i].TYPE != 'SPIEA':
         nomposte = 'NDLP1520'
-#         codeposte = POSTE.objects.get(CODE_POSTE=postes[i].CODE_POSTE)
+        #  codeposte = POSTE.objects.get(CODE_POSTE=postes[i].CODE_POSTE)
         codeposte = POSTE.objects.get(CODE_POSTE=nomposte)
         now = datetime.datetime.now()
-        #CONTROLE : période sur laquelle les données sont controlées
-        #jours avant la date d'aujourd'hui
+        # CONTROLE : période sur laquelle les données sont controlées
+        # jours avant la date d'aujourd'hui
         CONTROLE = 60
-        #TIMEDELTA : Temps habituel entre 2 relevés
+        # TIMEDELTA : Temps habituel entre 2 relevés
         TIMEDELTA = codeposte.PDT
         datecontrole = now-datetime.timedelta(days=CONTROLE)
         ins = INSTAN.objects.filter(POSTE=codeposte,
@@ -54,10 +48,10 @@ class Command(BaseCommand):
             timedelta = ((ins[i+1].DATJ - ins[i].DATJ).total_seconds())/60
             
             if timedelta != TIMEDELTA:
-                PERTE=True
-                #On rajoute le crenéau de perte dans les listes
-                Creneau_deb+=[ins[i].DATJ]
-                Creneau_fin+=[ins[i+1].DATJ]
+                PERTE = True
+                # On rajoute le crenéau de perte dans les listes
+                Creneau_deb += [ins[i].DATJ]
+                Creneau_fin += [ins[i+1].DATJ]
     
        
     #2 possibilités de traitement de ces créneaux :
