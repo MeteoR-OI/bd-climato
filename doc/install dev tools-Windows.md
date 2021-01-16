@@ -4,27 +4,6 @@ To be done...
 Qq remarques:
 
 
-- [1.	Historique mises à jour](#1historique-mises-à-jour)
-- [2.	Introduction](#2introduction)
-- [3.	Quelques outils recommandés](#3quelques-outils-recommandés)
-  - [a. MacOs - **iTerm2**](#a-macos---iterm2)
-  - [b. MacOs - **Python update**](#b-macos---python-update)
-  - [c. MacOs - **Django**](#c-macos---django)
-  - [d. Windows - **Ubuntu subsystem v2**](#d-windows---ubuntu-subsystem-v2)
-- [4.	VSCode](#4vscode)
-  - [a.	**VS-Code**](#avs-code)
-  - [b.	**Extensions Markdown Preview Enhanced**](#bextensions-markdown-preview-enhanced)
-  - [b.	**Extensions Python**](#bextensions-python)
-  - [b.	**Extensions Python**](#bextensions-python-1)
-- [5.	Postgres v 13.1](#5postgres-v-131)
-  - [a.	**Postgres - Mac OS**](#apostgres---mac-os)
-- [6.	Python](#6python)
-  - [a.	Python update](#apython-update)
-  - [b.	Django](#bdjango)
-  - [c.	Other tools](#cother-tools)
-- [7.	VSCode](#7vscode)
-  - [a.	VS-Code](#avs-code-1)
-  - [b.	Extensions](#bextensions)
 
 # 1.	Historique mises à jour
 - V1.0 : 10/01/2021. Version initiale couvrant l’installation sur **Mac OS**.
@@ -38,12 +17,10 @@ Cette documentation est écrite pour un mac sous MacOs Big Sur (v11.1)
 
 
 ## a. **Terminal**
-Il est recommandé d'utiliser le terminal avancé iTerm2. A télécharger à partir de : [iTerm2](https://iterm2.com)
-
 Sous **Windows**, avec le sous système Linux, il est recommandé de telecharger à partir du store le nouveau terminal Windows: [**Download Windows Terminal**](https://www.microsoft.com/en-mu/p/windows-terminal-preview/9n0dx20hk701?SilentAuth=1&wa=wsignin1.0&rtc=1&activetab=pivot:overviewtab)
 
 
-## b. MacOs - **Python update**
+## b. Windows - **Python update**
 [Download](https://www.python.org/downloads/)
 ou brew upgrade ???
 
