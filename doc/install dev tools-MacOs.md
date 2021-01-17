@@ -56,6 +56,7 @@ Ensuite il faut cloner le projet (= recuperer les sources), pour cela allez dans
 
 ```shell
 git clone https://github.com/MeteoR-OI/bd-climato.git
+git checkout developpement    # Activer la branche developpement
 ```
 
 
