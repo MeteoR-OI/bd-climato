@@ -20,7 +20,7 @@ class POSTE(models.Model):
     CODE_POSTE = models.CharField(null=False, max_length=50, default=None, unique=True)
     REF_MF = models.CharField(null=True, max_length=10, default=None, unique=True)
     NOM = models.CharField(null=False, verbose_name="Nom du poste (ex : NDLP)", max_length=50, default=None)
-    COMMUNE = models.CharField(null=False, verbose_name="Nom de lacommune", max_length=60, default=None)
+    COMMUNE = models.ForeignKey('COMMUNE', on_delete=models.CASCADE)  # Pour chaque poste on a qu'une commune
     LAT = models.FloatField(null=False, default=None)
     LON = models.FloatField(null=False, default=None)
     ALT = models.FloatField(null=False, verbose_name="Altitude du poste en m", default=None)
@@ -98,9 +98,6 @@ class INSTAN(models.Model):         # Classe de données instantanées
         from decimal import Decimal
         return Decimal(str(round(self.RRI, 2)))
 
-    class Meta:
-        db_table = "mesure"
-
 
 class H(models.Model):
     POSTE = models.ForeignKey('POSTE', on_delete=models.CASCADE)
@@ -154,9 +151,6 @@ class H(models.Model):
     def __str__(self):
         return "%s / %s" % (self.POSTE, self.DATJ)
 
-    class Meta:
-        db_table = "agg_heure"
-
 
 class Q(models.Model):
     POSTE = models.ForeignKey('POSTE', on_delete=models.CASCADE)
@@ -196,9 +190,6 @@ class Q(models.Model):
     TSX = models.FloatField(null=True, default=None)
     TSN = models.FloatField(null=True, default=None)
     INST = models.IntegerField(null=True, verbose_name="Duree d'insolation quotidienne (min)", default=None)
-
-    class Meta:
-        db_table = "agg_jour"
 
 
 class DECADQ(models.Model):
@@ -272,9 +263,6 @@ class DECADQ(models.Model):
     TSX = models.FloatField(null=True, default=None)
     TSN = models.FloatField(null=True, default=None)
 
-    class Meta:
-        db_table = "agg_decad"
-
 
 class MENSQ(models.Model):
     POSTE = models.ForeignKey('POSTE', on_delete=models.CASCADE)
@@ -346,9 +334,6 @@ class MENSQ(models.Model):
     TSX = models.FloatField(null=True, default=None)
     TSN = models.FloatField(null=True, default=None)
 
-    class Meta:
-        db_table = "agg_mois"
-
 
 class RECMENS(models.Model):
     POSTE = models.ForeignKey('POSTE', on_delete=models.CASCADE)
@@ -359,9 +344,6 @@ class RECMENS(models.Model):
     DATFIN = models.DateTimeField(null=True)
     RECORD = models.FloatField(null=True)
     DATERECORD = models.DateTimeField(null=True)
-
-    class Meta:
-        db_table = "record_mois"
 
 
 # Données 5min
