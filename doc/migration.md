@@ -1,4 +1,4 @@
-@import "meteoi.re-logo_mini.png"
+![logo](https://raw.githubusercontent.com/MeteoR-OI/bd-climato/master/doc/images/meteoi.re-logo_mini.png)
 **Doc migration**
 
 <!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
@@ -6,7 +6,6 @@
 <!-- code_chunk_output -->
 
 - [1. Historique mises à jour](#1-historique-mises-à-jour)
-- [2. Mettre à jour un modèle](#2-mettre-à-jour-un-modèle)
 
 <!-- /code_chunk_output -->
 
