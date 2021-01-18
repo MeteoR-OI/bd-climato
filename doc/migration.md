@@ -6,6 +6,7 @@
 <!-- code_chunk_output -->
 
 - [1. Historique mises à jour](#1-historique-mises-à-jour)
+- [2. Mettre à jour un modèle](#2-mettre-à-jour-un-modèle)
 
 <!-- /code_chunk_output -->
 
@@ -15,9 +16,7 @@
 # 1. Historique mises à jour
 - V0.5 : 10/01/2021. Version initiale
 
-#2. Mettre à jour un modèle
-
-
+# 2. Mettre à jour un modèle
 lancer les commandes suivantes pour faire un refresh de la base de données
 
 

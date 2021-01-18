@@ -31,13 +31,13 @@
 Le schema de la base de donnees va etre profondement revu...
 
 # 3.1 Django Tables 
-[lien](doc/images/bd%20schema/django%20tables.png)
+[lien](doc/bd%20schema/django%20tables.png)
 
 # 3.2 Climato données météo
-[lien](doc/images/bd%20schema/climato-data.png)
+[lien](doc/bd%20schema/climato_data.png)
 
 # 3.3 Climato autre data
-[lien](doc/images/bd%20schema/climato-autre%20donnees.png)
+[lien](doc/bd%20schema/climato-autre%20donnees.png)
 
 # 4. Problemes courants
 [lien](doc/problemes%20courant.md)

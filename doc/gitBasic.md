@@ -24,10 +24,10 @@ La commande est:
 
 (Attention pour installer correctement le projet, il faut suivre la doc d'installation du projet dans MacOs)
 
-A partir de ce moment toutes les modifications faites en locale sont gardees dans le workspace local, et l'icone a gauche de git ![logo git](https://raw.githubusercontent.com/MeteoR-OI/bd-climato/master/doc/images/images/gitIcone.png)
+A partir de ce moment toutes les modifications faites en locale sont gardees dans le workspace local, et l'icone a gauche de git ![logo git](https://raw.githubusercontent.com/MeteoR-OI/bd-climato/master/doc/images/gitIcone.png)
 va indiquer le nombre de fichiers modifiés.
 L'icone en haut permet de visualiser les modifications dans un code source
-![icone Visu Change](https://raw.githubusercontent.com/MeteoR-OI/bd-climato/master/doc/images/images/gitVisuChange.png)
+![icone Visu Change](https://raw.githubusercontent.com/MeteoR-OI/bd-climato/master/doc/images/gitVisuChange.png)
 
 
 Pour recevoir les modifications faites par un autre membre de l'equipe:

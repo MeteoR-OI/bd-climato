@@ -29,7 +29,7 @@
 # 1.	Historique mises à jour
 - V 0.5 : 10/01/2021. Version initiale, partielle couvrant l’installation sur **Mac OS**.
 - v 0.51: 16/01/2021. Images well displayed on github.com 
-- v 0.52: 17/01/2021. Ajout de la copie du settings.py lors de l'installation
+- v 0.52: 17/01/2021. Ajout de la copie du settings.py lors de l'installation, et init git
 
 # 2.	Introduction
 Installation d’un environnement de developpement pour le projet **BD Climato**
@@ -59,6 +59,12 @@ git clone https://github.com/MeteoR-OI/bd-climato.git
 git checkout developpement    # Activer la branche developpement
 ```
 
+Si c'est la premiere fois que git est utilisé, il faut définir le nom et l'email:
+```git
+    git config --global user.name "Votre Nom"
+    git config --global user.email "email@server.com"
+    git config --global --list  # pour voir les donnees saisies
+```
 
 ## c. **Python update**
 brew install python3  (Version doit etre >= 3.9.1)
