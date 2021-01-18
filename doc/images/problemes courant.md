@@ -1,4 +1,4 @@
-![logo](https://raw.githubusercontent.com/MeteoR-OI/bd-climato/master/doc/meteoi.re-logo_mini.png)
+![logo](https://raw.githubusercontent.com/MeteoR-OI/bd-climato/master/doc/images/meteoi.re-logo_mini.png)
 **Projet BD Climato**
 
 - [1.	Historique mises à jour](#1historique-mises-à-jour)
