@@ -1,4 +1,4 @@
-![logo](https://raw.githubusercontent.com/MeteoR-OI/bd-climato/master/doc/meteoi.re-logo_mini.png)
+![logo](https://raw.githubusercontent.com/MeteoR-OI/bd-climato/master/doc/images/meteoi.re-logo_mini.png)
 **Projet BD Climato**
 
 <!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
@@ -108,7 +108,7 @@ Pour installer: racourci Shift-Command-P, puis **Extensions:Install Extensions**
 
 ## b.	**Extensions Python**
 Python, l'extension principale de Python
-![logo](https://raw.githubusercontent.com/MeteoR-OI/bd-climato/master/doc/pythonextenstion.png)
+![logo](https://raw.githubusercontent.com/MeteoR-OI/bd-climato/master/doc/images/pythonextenstion.png)
 
 Il est recommandé de lire les deux documents suivants, et pour les novices en Django de faire le tutorial de la doc **Django-VS Code**
 
@@ -125,7 +125,7 @@ Install Postgres en suivant la procédure : [Install Postgres](https://postgresa
 
 Un nouvel icone est ajouté, permettant de gérer la version, le paramétrage du serveur (démarrage automatique, utilisation de plusieurs versions, mise à jour, ports utilisés…)
 
-![logo](https://raw.githubusercontent.com/MeteoR-OI/bd-climato/master/doc/postgresAppAdmin.png)
+![logo](https://raw.githubusercontent.com/MeteoR-OI/bd-climato/master/doc/images/postgresAppAdmin.png)
 
 Sur MacOs BigSur, mettre à jour le fichier .zshrc (Sur des versions antérieures, vérifier le shell utilisé, et au besoin passer sous zsh). Ajouter les lignes suivantes (commande: **sudo code .zshrc**) :
 ```shell
@@ -163,12 +163,12 @@ code .
 ```
 
 Activer l'environnement python si cela est demandé.
-![logo](https://raw.githubusercontent.com/MeteoR-OI/bd-climato/master/doc/selectPython.png)
+![logo](https://raw.githubusercontent.com/MeteoR-OI/bd-climato/master/doc/images/selectPython.png)
 
 S
 Activer la version de python installée, v3.9.1 au moment d'ecrire ce tutorial)
 (voir coment faire dans la doc de l'extension)
-![logo](https://raw.githubusercontent.com/MeteoR-OI/bd-climato/master/doc/pyver.png)
+![logo](https://raw.githubusercontent.com/MeteoR-OI/bd-climato/master/doc/images/pyver.png)
 
 Pour initialiser la base de données (a faire qu'une fois): dans le terminal de VS Code, tapez la commande:
 ```shell
