@@ -19,16 +19,17 @@
 - [5.	Postgres v 13.1](#5postgres-v-131)
   - [a.	**Postgres - Mac OS**](#apostgres---mac-os)
   - [b. Création de la base de données locale vide](#b-création-de-la-base-de-données-locale-vide)
-- [6.	**Lancer VS Code sur le projet**](#6lancer-vs-code-sur-le-projet)
+- [6. Activer le setting local](#6-activer-le-setting-local)
+- [7.	**Lancer VS Code sur le projet**](#7lancer-vs-code-sur-le-projet)
 
 <!-- /code_chunk_output -->
 
-**Doc v 0.51**
+**Doc v 0.52**
 
 # 1.	Historique mises à jour
-- V0.5 : 10/01/2021. Version initiale, partielle couvrant l’installation sur **Mac OS**.
-- v.0.51: 16/01/2021. Images well displayed on github.com 
-
+- V 0.5 : 10/01/2021. Version initiale, partielle couvrant l’installation sur **Mac OS**.
+- v 0.51: 16/01/2021. Images well displayed on github.com 
+- v 0.52: 17/01/2021. Ajout de la copie du settings.py lors de l'installation
 
 # 2.	Introduction
 Installation d’un environnement de developpement pour le projet **BD Climato**
@@ -55,6 +56,7 @@ Ensuite il faut cloner le projet (= recuperer les sources), pour cela allez dans
 
 ```shell
 git clone https://github.com/MeteoR-OI/bd-climato.git
+git checkout developpement    # Activer la branche developpement
 ```
 
 
@@ -146,8 +148,15 @@ create database bd_climato;
 exit
 ```
 
+# 6. Activer le setting local
+Dans le repertoire **Clim_MeteoR** lancer la commande:
+```shell
+cp settings.local.py settings.py
+```
+Le fichier settings.py n'est pas inclus dans le depot Git.
+Il est donc possible de le personnaliser pour chaque machine.
 
-# 6.	**Lancer VS Code sur le projet**
+# 7.	**Lancer VS Code sur le projet**
 Aller dans le repertoire du projet, et lancer VS Code.
 ```
 code .
@@ -169,7 +178,7 @@ Pour initialiser la base de données (a faire qu'une fois): dans le terminal de 
 Le programme peut etre lancé, ou debug
 python3 manage.py runserver
 
-# 7. Debug code Django
+# 8. Debug code Django
 Pour ajouter Django comme commande du debugger, il faut ajouter les lignes suivantes dans le fichier .vscode/lanunch.json:
 
 ```JSON
