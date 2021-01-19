@@ -24,12 +24,13 @@
 
 <!-- /code_chunk_output -->
 
-**Doc v 0.52**
+**Doc v 0.53**
 
 # 1.	Historique mises à jour
 - V 0.5 : 10/01/2021. Version initiale, partielle couvrant l’installation sur **Mac OS**.
 - v 0.51: 16/01/2021. Images well displayed on github.com 
 - v 0.52: 17/01/2021. Ajout de la copie du settings.py lors de l'installation, et init git
+- v 0.53: 19/01/2021. Ajout info login postgres, et variable d'environnement
 
 # 2.	Introduction
 Installation d’un environnement de developpement pour le projet **BD Climato**
@@ -143,6 +144,17 @@ Relancer le terminal, et tester que Postgres fonctionne :
    -> doit afficher la version du serveur
    \q    (pour sortir)
 ```
+
+Le login vers postgres est gere de la façon suivante:
+- User: Variable d'environnement PGUSER, ou 'bd_clim'
+- Password: Variable d'environnement PGPASS, ou mot de passe dans settings.py
+- Host name: 'localhost'
+
+Pour initialiser les variables d'environnement, mettre un export dans le fichier
+~/.zshrc (big Sur, ou shell zsc), ~/.bashrc (version plus ancienne, shell bash)
+exemple:
+    export PGUSER=postgres
+    export PGPASS=votre_mot_de_passe
 
 ## b. Création de la base de données locale vide
 Tapez les commandes suivantes dans un terminal:
