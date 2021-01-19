@@ -93,7 +93,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'bd_climato',
-        'USER': os.getenv('PG_USER', 'bd_clim'),
+        'USER': os.getenv('PGUSER', 'bd_clim'),
         'PASSWORD': os.getenv('PGPASS', 'K6-fh7-d::dU'),
         'HOST': 'localhost',
         'PORT': '',
