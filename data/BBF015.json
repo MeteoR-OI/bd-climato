@@ -1,0 +1,44 @@
+{
+  "title":"MÃ©tÃ©o en direct",
+  "location":"Bain Boeuf, Cap Malheureux / Maurice",
+  "time": "2021-02-08 05:10:05",
+  "lat":"19&deg; 59.22' S",
+  "lon":"057&deg; 36.30' E",
+  "alt":"40",
+  "alt_unit": "meter",
+  "hardware":"Vantage Pro2",
+  "uptime":"92 jours, 18 heures, 22 minutes",
+  "serverUptime":"92 jours, 18 heures, 22 minutes",
+  "weewxVersion":"3.9.2",
+  "monitors": {
+    "signal_quality": "100%",
+    "txBatteryStatus": "OK",
+    "consBatteryVoltage" : "3,9 V"
+  },
+  "poste_id": "BBF015",
+  "duration": "300",
+  "stats": {
+    "current": {
+      "outTemp":"30,3",
+      "inTemp":"30,1",
+      "windchill":"30,3",
+      "heatIndex":"35,9",
+      "dewpoint":"24,2",
+      "humidity":"70",
+      "inHumidity":"62",
+      "barometer":"1014,4",
+      "pressure": "1014,2",
+      "windSpeed":"4,4",
+      "windDir":"270",
+      "windGust":"5,5",
+      "windGustDir":"295",
+      "windGustTime":"2021-02-08 05:10:07",
+      "rainRateMax":"1,2",
+      "rainRateMaxTime":"2021-02-08 05:10:09",
+      "rainSum": "3,3",
+      "UV":"7,2",
+      "ETP":"0,0",
+      "solarRadiation":"831"
+    }
+  }
+}

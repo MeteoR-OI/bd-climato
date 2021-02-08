@@ -6,6 +6,7 @@
 - [2.1 suppression des modules installés en global](#21-suppression-des-modules-installés-en-global)
 - [2.2 Reactivation de l'environnement](#22-reactivation-de-lenvironnement)
 - [3. Postgres ne demarre pas](#3-postgres-ne-demarre-pas)
+- [4. Info sur manage.py et migration](#4-info-sur-managepy-et-migration)
 
 
 **Doc v 0.5**
@@ -49,4 +50,6 @@ Click sur *start**
 
 Si ce n'est pas cela, regarder les dernieres lignes du log...
 
+# 4. Info sur manage.py et migration
+https://docs.djangoproject.com/fr/3.1/ref/django-admin/
 

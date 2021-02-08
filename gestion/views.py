@@ -1,7 +1,8 @@
 
  
-import datetime, os
-import matplotlib 
+import datetime
+import os
+import matplotlib
 import matplotlib.dates as dates
 from django.core.files.storage import FileSystemStorage
 matplotlib.use('Agg')
