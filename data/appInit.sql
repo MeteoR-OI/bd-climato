@@ -21,6 +21,17 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 
+-- type_data
+COPY public.type_data (id, name, model_value) FROM stdin;
+1	Temp	{}
+2	Pression	{}
+3	Rain	{}
+4	Wind	{}
+5	Solar	{}
+6	Divers	{}
+\.
+SELECT pg_catalog.setval('public.agg_day_id_seq', 1, true);
+
 
 -- Poste
 COPY public.poste (id, meteor, meteofr, title, cas_gestion_extreme, agg_min_extreme, owner, email, phone, address, zip, city, country, latitude, longitude, start, "end", comment) FROM stdin;

@@ -1,6 +1,10 @@
 from django.contrib import admin
 
-from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global
+from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, TypeData, Exclusion
+
+admin.site.register(TypeData)
+
+admin.site.register(Exclusion)
 
 class PosteAdmin(admin.ModelAdmin):
     fieldsets = [
