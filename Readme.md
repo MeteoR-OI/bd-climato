@@ -11,9 +11,9 @@
 - [3. Database Schema](#3-database-schema)
 - [3.1 Django Tables](#31-django-tables)
 - [3.2 Climato données météo](#32-climato-données-météo)
-- [3.3 Climato autre data](#33-climato-autre-data)
-- [4. Problemes courants](#4-problemes-courants)
-- [5. Demarrer avec GIT](#5-demarrer-avec-git)
+- [4. app test Initialisation](#4-app-test-initialisation)
+- [5. Problemes courants](#5-problemes-courants)
+- [6. Demarrer avec GIT](#6-demarrer-avec-git)
 
 <!-- /code_chunk_output -->
 
@@ -36,11 +36,11 @@ Le schema de la base de donnees va etre profondement revu...
 # 3.2 Climato données météo
 [lien](doc/bd%20schema/climato_data.png)
 
-# 3.3 Climato autre data
-[lien](doc/bd%20schema/climato-autre%20donnees.png)
+# 4. app test Initialisation 
+[lien](doc/install%20app%20test.md)
 
-# 4. Problemes courants
+# 5. Problemes courants
 [lien](doc/problemes%20courant.md)
 
-# 5. Demarrer avec GIT
+# 6. Demarrer avec GIT
 [lien](doc/gitBasic.md)
