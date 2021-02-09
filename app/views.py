@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 import json
-from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global    #
+from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, Exclusion, TypeData   #
 
 
 def index(request):
