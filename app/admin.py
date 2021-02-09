@@ -23,10 +23,31 @@ class PosteAdmin(admin.ModelAdmin):
 admin.site.register(Poste, PosteAdmin)
 
 
-# class ObservationAdmin(admin.ModelAdmin):
+class ObservationAdmin(admin.ModelAdmin):
+    fields = (
+        ('dat', 'last_rec_dat'),
+        ('duration'),
+        ('qa_modifications', 'qa_incidents', 'qa_check_done'),
+        ('poste_id'),
+        ('barometer', 'barometer_max', 'barometer_max_time', 'barometer_min', 'barometer_min_time', 'pressure'),
+        ('dewpoint', 'etp', 'heat_index'),
+        ('humidity', 'inHumidity'),
+        ('humidity_max', 'humidity_max_time'),
+        ('humidity_min', 'humidity_min_time'),
+        ('insolation_duration'),
+        ('out_temp', 'in_temp'),
+        ('out_temp_max', 'out_temp_max_time'),
+        ('out_temp_min', 'out_temp_min_time'),
+        ('rain_rate_max', 'rain_rate_max_time', 'rain_sum'),
+        ('soil_temp'),
+        ('soil_temp_min', 'soil_temp_min_time'),
+        ('solar_radiation', 'uv', 'uv_indixe'),
+        ('wind_dir', 'wind_speed', 'windchill'),
+        ('wind_gust', 'wind_gust_dir', 'wind_gust_time'),
+        ('rx', 'voltage')
+    )
 
-
-admin.site.register(Observation)
+admin.site.register(Observation, ObservationAdmin)
 
 
 class Agg_hourAdmin(admin.ModelAdmin):
