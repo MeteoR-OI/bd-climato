@@ -2,33 +2,7 @@ from django.db import models
 from django.utils import timezone
  
 
-class OBSERVATION(models.Model):
-    name = models.CharField(max_length=200)
-    preferences = models.JSONField(verbose_name="JsonB")
- 
-    def __str__(self):
-        return self.name
-
-
-    class Meta:
-        db_table = "observation"
-
-class AGG_HOUR(models.Model):
-    name = models.CharField(max_length=200)
-    preferences = models.JSONField(verbose_name="JsonB")
- 
-    def __str__(self):
-        return self.name
-
-
-    class Meta:
-        db_table = "agg_hour"
-
-
-# from django.contrib.postgres.fields import JSONField
-# Create your models here.
-
-class POSTE(models.Model):
+class Poste(models.Model):
     GESTION_EXTREME = (
         ('0', 'Unconnu'),
         ('1', 'Auto dans observation'),
@@ -46,10 +20,10 @@ class POSTE(models.Model):
 # timezone.now
 #    id = models.AutoField(primary_key=True)
     meteor = models.CharField(max_length=10, verbose_name="Code MeteoR.OI")
-    meteofr = models.CharField(max_length=10, verbose_name="Code Meteo France")
+    meteofr = models.CharField(null=True, max_length=10, verbose_name="Code Meteo France")
     title = models.CharField(max_length=50, verbose_name="Nom clair de la station")
     cas_gestion_extreme = models.CharField(default='0', max_length=1, choices=GESTION_EXTREME, verbose_name="Gestion des extrêmes")
-    agg_min_extreme = models.CharField(max_length=1, default='', choices=NIVEAU_AGGREGATION, verbose_name="Niveau Agregation, Auto dans agregation")
+    agg_min_extreme = models.CharField(null=True, max_length=1, default='', choices=NIVEAU_AGGREGATION, verbose_name="Niveau Agregation, Auto dans agregation")
     owner = models.CharField(max_length=50, verbose_name="Station Owner Name")
     email = models.CharField(max_length=50, verbose_name="E-Mail")
     phone = models.CharField(max_length=50, verbose_name="Phone")
@@ -61,11 +35,117 @@ class POSTE(models.Model):
     latitude = models.FloatField(default=0, verbose_name="Latitude")
     longitude = models.FloatField(default=0, verbose_name="Longitude")
     start = models.DateTimeField(default=timezone.now, verbose_name="Date d'entrée dans le réseau")
-    end = models.DateTimeField( verbose_name="Date de sortie du réseau")
+    end = models.DateTimeField(null=True, verbose_name="Date de sortie du réseau")
     comment = models.TextField(null=True, default=None)
 
     def __str__(self):
-        return self.meteor
+        return self.meteor + ", id: " + str(self.id)
 
     class Meta:
         db_table = "poste"
+
+
+class Observation(models.Model):
+    poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
+    dat = models.DateTimeField()
+    last_rec_dat = models.DateTimeField(default=timezone.now)
+    duration = models.IntegerField()
+    qa_modifications = models.IntegerField(default='0')
+    qa_incidents = models.IntegerField(default='0')
+    qa_check_done = models.BooleanField(default=False)
+    j = models.JSONField(verbose_name="JsonB")
+ 
+    def __str__(self):
+        return "observation id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
+
+    class Meta:
+        db_table = "obs"
+        unique_together = (("poste_id", "dat"))
+
+
+class Agg_hour(models.Model):
+    poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
+    dat = models.DateTimeField()
+    last_rec_dat = models.DateTimeField(default=timezone.now)
+    duration = models.IntegerField()
+    qa_modifications = models.IntegerField(default='0')
+    qa_incidents = models.IntegerField(default='0')
+    qa_check_done = models.BooleanField(default=False)
+    j = models.JSONField(verbose_name="JsonB")
+ 
+    def __str__(self):
+        return "agg_hour id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
+
+    class Meta:
+        db_table = "agg_hour"
+
+
+class Agg_day(models.Model):
+    poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
+    dat = models.DateTimeField()
+    last_rec_dat = models.DateTimeField(default=timezone.now)
+    duration = models.IntegerField()
+    qa_modifications = models.IntegerField(default='0')
+    qa_incidents = models.IntegerField(default='0')
+    qa_check_done = models.BooleanField(default=False)
+    j = models.JSONField(verbose_name="JsonB")
+ 
+    def __str__(self):
+        return "agg_day id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
+
+    class Meta:
+        db_table = "agg_day"
+
+
+
+class Agg_month(models.Model):
+    poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
+    dat = models.DateTimeField()
+    last_rec_dat = models.DateTimeField(default=timezone.now)
+    duration = models.IntegerField()
+    qa_modifications = models.IntegerField(default='0')
+    qa_incidents = models.IntegerField(default='0')
+    qa_check_done = models.BooleanField(default=False)
+    j = models.JSONField(verbose_name="JsonB")
+ 
+    def __str__(self):
+        return "agg_month id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
+
+    class Meta:
+        db_table = "agg_month"
+
+
+class Agg_year(models.Model):
+    poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
+    dat = models.DateTimeField()
+    last_rec_dat = models.DateTimeField(default=timezone.now)
+    duration = models.IntegerField()
+    qa_modifications = models.IntegerField(default='0')
+    qa_incidents = models.IntegerField(default='0')
+    qa_check_done = models.BooleanField(default=False)
+    j = models.JSONField(verbose_name="JsonB")
+ 
+    def __str__(self):
+        return "agg_year id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
+
+    class Meta:
+        db_table = "agg_year"
+
+
+
+class Agg_global(models.Model):
+    poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
+    dat = models.DateTimeField()
+    last_rec_dat = models.DateTimeField(default=timezone.now)
+    duration = models.IntegerField()
+    qa_modifications = models.IntegerField(default='0')
+    qa_incidents = models.IntegerField(default='0')
+    qa_check_done = models.BooleanField(default=False)
+    j = models.JSONField(verbose_name="JsonB")
+ 
+    def __str__(self):
+        return "agg_global id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
+
+    class Meta:
+        db_table = "agg_global"
+

@@ -1,6 +1,67 @@
 from django.http import HttpResponse
+import json
+from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global    #
 
 
 def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
-    
+
+
+def view_poste(request, poste_id):
+    p = Poste.objects.get(id=poste_id)
+    data_details = {'function': 'last_obs', 'poste_id': p.id, 'meteor': p.meteor, 'owner': p.owner}
+    return HttpResponse(json.dumps(data_details))
+
+
+def view_last_obs(request, poste_id):
+    p = Poste.objects.get(id=poste_id)
+    o = Observation.objects.filter(poste_id=poste_id).order_by("dat").last()
+    data_details = {'poste_id': p.id, 'meteor': p.meteor, 'dat': str(o.dat), 'rain': str(o.j['rain'])}
+    return HttpResponse(json.dumps(data_details))
+
+
+def view_agg_hour(request, poste_id):
+    return view_agg(request, "H", poste_id)
+
+
+def view_agg_day(request, poste_id):
+    return view_agg(request, "D", poste_id)
+
+
+def view_agg_month(request, poste_id):
+    return view_agg(request, "M", poste_id)
+
+
+def view_agg_year(request, poste_id):
+    return view_agg(request, "Y", poste_id)
+
+
+def view_agg_all(request, poste_id):
+    return view_agg(request, "A", poste_id)
+
+
+def view_agg(request, agg_niveau, poste_id):
+    data_details = {}
+    if agg_niveau == "H":
+        p = Poste.objects.get(id=poste_id)
+        ah = Agg_hour.objects.filter(poste_id=poste_id).order_by("dat").last()
+        data_details = {'poste_id': p.id, 'meteor': p.meteor, 'by': 'hour', 'dat': str(ah.dat), 'rain': str(ah.j['rain'])}
+    elif agg_niveau == "D":
+        p = Poste.objects.get(id=poste_id)
+        ah = Agg_day.objects.filter(poste_id=poste_id).order_by("dat").last()
+        data_details = {'poste_id': p.id, 'meteor': p.meteor, 'by': 'day', 'dat': str(ah.dat), 'rain': str(ah.j['rain'])}
+    elif agg_niveau == "M":
+        p = Poste.objects.get(id=poste_id)
+        ah = Agg_month.objects.filter(poste_id=poste_id).order_by("dat").last()
+        data_details = {'poste_id': p.id, 'meteor': p.meteor, 'by': 'month', 'dat': str(ah.dat), 'rain': str(ah.j['rain'])}
+    elif agg_niveau == "Y":
+        p = Poste.objects.get(id=poste_id)
+        ah = Agg_year.objects.filter(poste_id=poste_id).order_by("dat").last()
+        data_details = {'poste_id': p.id, 'meteor': p.meteor, 'by': 'year', 'dat': str(ah.dat), 'rain': str(ah.j['rain'])}
+    elif agg_niveau == "A":
+        p = Poste.objects.get(id=poste_id)
+        ah = Agg_global.objects.filter(poste_id=poste_id).order_by("dat").last()
+        data_details = {'poste_id': p.id, 'meteor': p.meteor, 'by': 'all', 'dat': str(ah.dat), 'rain': str(ah.j['rain'])}
+    else:
+        data_details = {'poste_id': p.id, 'meteor': p.meteor, 'by': 'Aggregation Level Error ' + agg_niveau}
+    return HttpResponse(json.dumps(data_details))
