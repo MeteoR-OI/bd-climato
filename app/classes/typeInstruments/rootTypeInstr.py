@@ -1,8 +1,11 @@
+from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, Exclusion, TypeInstrument   #
+from app.tools.agg_tools import round_datetime_per_aggregation, get_agg_object
+import datetime
 
 
-class type_temp:
+class root_type_instr:
 
-    def process_observation(self, poste_obj, json_obs: json, obs_dataset: Observation, flag: bool):
+    def process_observation(self, poste_obj: Poste, json_obs: json, obs_dataset: Observation, flag: bool):
         """process observation data into obs_dataset. flag is True for insert, False for delete"""
         # dans le cas de suppression, le obs_dataset va etre supprime, il faut juste ajuster les agg/extremes
         if flag is False:
@@ -11,7 +14,7 @@ class type_temp:
         # Si existe json_obs['context']
         #   load values si definie dans json
 
-    def process_aggregation(self, poste_obj, json_obs, agg_all_dataset, flag):
+    def process_aggregation(self, poste_obj: Poste, json_obs: json, agg_all_dataset, flag: bool):
         """process observation data into al aggregation dataset. flag is True for insert, False for delete"""
 
         # bDonnesElementaires si existe donnees elementaires

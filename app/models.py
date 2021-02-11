@@ -82,8 +82,8 @@ class Observation(models.Model):
     out_temp = models.DecimalField(max_digits=3, decimal_places=1, null=True, verbose_name="out temp")
     out_temp_max = models.DecimalField(max_digits=3, decimal_places=1, null=True, verbose_name="out temp max")
     out_temp_max_time = models.DateTimeField(null=True, verbose_name="out temp max time")
-    out_temp_min = models.DecimalField(max_digits=3, decimal_places=1, null=True)
-    out_temp_min_time = models.DateTimeField(null=True)
+    out_temp_hour_min = models.DecimalField(max_digits=3, decimal_places=1, null=True)
+    out_temp_hour_min_time = models.DateTimeField(null=True)
     in_temp = models.DecimalField(max_digits=3, decimal_places=1, null=True)
     windchill = models.DecimalField(max_digits=3, decimal_places=1, null=True)
     heat_index = models.DecimalField(max_digits=3, decimal_places=1, null=True) # check data type

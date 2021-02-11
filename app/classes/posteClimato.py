@@ -2,9 +2,6 @@ from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_yea
 from app.tools.agg_tools import round_datetime_per_aggregation, get_agg_object
 import datetime
 
-# from app.classes.posteClimato import poste_meteor
-# o=poste_meteor.get_unik_instance(1)
-# o.get_agg(datetime.datetime.now(datetime.timezone.utc))
 
 class poste_meteor:
     """Objet climato poste"""
