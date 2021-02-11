@@ -45,20 +45,20 @@ class Poste(models.Model):
         db_table = "poste"
 
 
-class TypeData(models.Model):
+class TypeInstrument(models.Model):
     name = models.CharField(max_length=10, verbose_name="Type de Donnees")
     model_value = models.JSONField(verbose_name="JsonB")
 
     def __str__(self):
-        return "type_data id: " + str(self.id) + ", name: " + self.name
+        return "type_instrument id: " + str(self.id) + ", name: " + self.name
 
     class Meta:
-        db_table = "type_data"
+        db_table = "type_instrument"
 
 
 class Exclusion(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
-    type_data = models.ForeignKey(to="TypeData", on_delete=models.CASCADE)
+    type_instrument = models.ForeignKey(to="TypeInstrument", on_delete=models.CASCADE)
     start_x = models.DateTimeField(default=timezone.now)
     end_x = models.DateTimeField(default=timezone.datetime(2100, 12, 21))
     value = models.JSONField(verbose_name="JsonB")

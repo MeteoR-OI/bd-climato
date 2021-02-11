@@ -1,8 +1,8 @@
 from django.contrib import admin
 
-from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, TypeData, Exclusion
+from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, TypeInstrument, Exclusion
 
-admin.site.register(TypeData)
+admin.site.register(TypeInstrument)
 
 admin.site.register(Exclusion)
 
