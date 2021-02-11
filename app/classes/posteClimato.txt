@@ -1,0 +1,14 @@
+from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, Exclusion, TypeInstrument   #
+from app.tools.agg_tools import round_datetime_per_aggregation, get_agg_object
+import datetime
+from app.classes.posteClimato import poste_meteor
+p=poste_meteor.get_cached(1)
+p.me
+agg=p.get_agg(datetime.datetime.now(datetime.timezone.utc))
+for oneagg in agg:
+    print(oneagg)
+dtdt = datetime.datetime(2021, 2, 11, 13, 0, 0, 0, datetime.timezone.utc)
+obs=p.get_obs(dtdt)
+print(obs)
+obs2 = p.get_obs(datetime.datetime.now(datetime.timezone.utc))
+print(obs2)

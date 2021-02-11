@@ -64,7 +64,7 @@ class Exclusion(models.Model):
     value = models.JSONField(verbose_name="JsonB")
  
     def __str__(self):
-        return "observation id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
+        return "exclusion id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.type_instrument)
 
     class Meta:
         db_table = "exclusion"
@@ -74,9 +74,9 @@ class Observation(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     dat = models.DateTimeField()
     last_rec_dat = models.DateTimeField(default=timezone.now)
-    duration = models.IntegerField()
-    qa_modifications = models.IntegerField(default='0')
-    qa_incidents = models.IntegerField(default='0')
+    duration = models.IntegerField(verbose_name="duration", default=0)
+    qa_modifications = models.IntegerField(default=0)
+    qa_incidents = models.IntegerField(default=0)
     qa_check_done = models.BooleanField(default=False)
 
     out_temp = models.DecimalField(max_digits=3, decimal_places=1, null=True, verbose_name="out temp")
@@ -132,9 +132,9 @@ class Agg_hour(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     dat = models.DateTimeField()
     last_rec_dat = models.DateTimeField(default=timezone.now)
-    duration = models.IntegerField(verbose_name="duration")
-    qa_modifications = models.IntegerField(default='0')
-    qa_incidents = models.IntegerField(default='0')
+    duration = models.IntegerField(verbose_name="duration", default=0)
+    qa_modifications = models.IntegerField(default=0)
+    qa_incidents = models.IntegerField(default=0)
     qa_check_done = models.BooleanField(default=False)
     
     out_temp_avg = models.DecimalField(max_digits=3, decimal_places=1, null=True)
@@ -251,9 +251,9 @@ class Agg_day(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     dat = models.DateTimeField()
     last_rec_dat = models.DateTimeField(default=timezone.now)
-    duration = models.IntegerField()
-    qa_modifications = models.IntegerField(default='0')
-    qa_incidents = models.IntegerField(default='0')
+    duration = models.IntegerField(default=0)
+    qa_modifications = models.IntegerField(default=0)
+    qa_incidents = models.IntegerField(default=0)
     qa_check_done = models.BooleanField(default=False)
 
     out_temp_avg = models.DecimalField(max_digits=3, decimal_places=1, null=True)
@@ -371,9 +371,9 @@ class Agg_month(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     dat = models.DateTimeField()
     last_rec_dat = models.DateTimeField(default=timezone.now)
-    duration = models.IntegerField()
-    qa_modifications = models.IntegerField(default='0')
-    qa_incidents = models.IntegerField(default='0')
+    duration = models.IntegerField(default=0)
+    qa_modifications = models.IntegerField(default=0)
+    qa_incidents = models.IntegerField(default=0)
     qa_check_done = models.BooleanField(default=False)
 
     out_temp_avg = models.DecimalField(max_digits=3, decimal_places=1, null=True)
@@ -490,9 +490,9 @@ class Agg_year(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     dat = models.DateTimeField()
     last_rec_dat = models.DateTimeField(default=timezone.now)
-    duration = models.IntegerField()
-    qa_modifications = models.IntegerField(default='0')
-    qa_incidents = models.IntegerField(default='0')
+    duration = models.IntegerField(default=0)
+    qa_modifications = models.IntegerField(default=0)
+    qa_incidents = models.IntegerField(default=0)
     qa_check_done = models.BooleanField(default=False)
 
     out_temp_avg = models.DecimalField(max_digits=3, decimal_places=1, null=True)
@@ -610,9 +610,9 @@ class Agg_global(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     dat = models.DateTimeField()
     last_rec_dat = models.DateTimeField(default=timezone.now)
-    duration = models.IntegerField()
-    qa_modifications = models.IntegerField(default='0')
-    qa_incidents = models.IntegerField(default='0')
+    duration = models.IntegerField(default=0)
+    qa_modifications = models.IntegerField(default=0)
+    qa_incidents = models.IntegerField(default=0)
     qa_check_done = models.BooleanField(default=False)
 
     out_temp_avg = models.DecimalField(max_digits=3, decimal_places=1, null=True)
