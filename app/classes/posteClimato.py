@@ -18,12 +18,14 @@ class poste_meteor:
 
     def __del__(self):
         """destructor need to clean up all list"""
+        print("destructor: id " + str(self.id))
         for one_poste in self.all:
-            if one_poste.me.id == self.me.id:
-                self.all.remove(one_poste)
+            if one_poste.__dict__.__contains__('me'):
+                if one_poste.me.id == self.me.id:
+                    self.all.remove(one_poste)
 
     @staticmethod
-    def get_cached(poste_id):
+    def get(poste_id):
         """manage a singleton per poste instance, and load active exclusions"""
         tmp_poste = poste_meteor()
         for one_poste in tmp_poste.all:
@@ -38,6 +40,18 @@ class poste_meteor:
         tmp_poste.all.append(tmp_poste)
         return tmp_poste
 
+    def convert_relative_hour(self, mesure_dt: datetime, hour_deca: int):
+        """retourne le numero de l'heure relative pour une certaine mesure (hour_deca est une propriete de la mesure)"""
+        local_delta_hour = hour_deca
+        if hour_deca <= 0:
+            return mesure_dt.datetime.hour - hour_deca
+        elif hour_deca == 99:
+            hour_deca = 0
+        # todo
+        # transform time to TU time
+        # return hour + hour_deca
+        return local_delta_hour
+
     def cas_gestion_extreme(self):
         """ in future could get the information from values in db """
         return self.me.cas_gestion_extreme
@@ -45,6 +59,13 @@ class poste_meteor:
     def agg_min_extreme(self):
         """ in future could get the information from values in db """
         return self.me.agg_min_extreme
+
+    def get_exclusion(self, type_intrument_id):
+        """ retourne la premiere exclusion active pour le type instrument """
+        for anExclu in self.exclus:
+            if anExclu['type_instrument'] == type_intrument_id:
+                return anExclu['value']
+        return {}
 
     def get_agg(self, my_datetime):
         """return an array of aggregation per hour/day/month/year/all for the given datetime. create them if needed"""

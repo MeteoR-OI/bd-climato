@@ -46,4 +46,3 @@ def get_agg_object(niveau_agg):
         print(type(inst))    # the exception instance
         print(inst.args)     # arguments stored in .args
         print(inst)          # __str__ allows args to be printed directly,
-

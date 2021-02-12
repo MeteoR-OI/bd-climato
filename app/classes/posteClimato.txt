@@ -2,7 +2,7 @@ from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_yea
 from app.tools.agg_tools import round_datetime_per_aggregation, get_agg_object
 import datetime
 from app.classes.posteClimato import poste_meteor
-p=poste_meteor.get_cached(1)
+p=poste_meteor.get(1)
 p.me
 agg=p.get_agg(datetime.datetime.now(datetime.timezone.utc))
 for oneagg in agg:
@@ -12,3 +12,37 @@ obs=p.get_obs(dtdt)
 print(obs)
 obs2 = p.get_obs(datetime.datetime.now(datetime.timezone.utc))
 print(obs2)
+
+
+lire json file:
+
+import json
+
+with open('path_to_file/person.json') as f:
+  data = json.load(f)
+
+# Output: {'name': 'Bob', 'languages': ['English', 'Fench']}
+print(data)
+
+writing json file:
+
+import json
+
+person_dict = {"name": "Bob",
+"languages": ["English", "Fench"],
+"married": True,
+"age": 32
+}
+
+with open('person.txt', 'w') as json_file:
+  json.dump(person_dict, json_file)
+
+  
+
+  constantes:
+
+class MetaConst(type):
+def __getattr__(cls, key):
+        return cls[key]
+    def __setattr__(cls, key, value):
+        raise TypeError

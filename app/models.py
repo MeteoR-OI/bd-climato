@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
- 
+
 
 class Poste(models.Model):
     GESTION_EXTREME = (
@@ -31,9 +31,9 @@ class Poste(models.Model):
     zip = models.CharField(default="", max_length=10, verbose_name="Zip")
     city = models.CharField(max_length=50, default="", verbose_name="City")
     country = models.CharField(max_length=50, default="", verbose_name="Country")
-
     latitude = models.FloatField(default=0, verbose_name="Latitude")
     longitude = models.FloatField(default=0, verbose_name="Longitude")
+    fuseau_horaire = models.CharField(max_length=10, default="??", verbose_name="timezone de la station")
     start = models.DateTimeField(default=timezone.now, verbose_name="Date d'entrée dans le réseau")
     end = models.DateTimeField(null=True, verbose_name="Date de sortie du réseau")
     comment = models.TextField(null=True, default=None)
@@ -62,7 +62,7 @@ class Exclusion(models.Model):
     start_x = models.DateTimeField(default=timezone.now)
     end_x = models.DateTimeField(default=timezone.datetime(2100, 12, 21))
     value = models.JSONField(verbose_name="JsonB")
- 
+
     def __str__(self):
         return "exclusion id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.type_instrument)
 
@@ -86,7 +86,7 @@ class Observation(models.Model):
     out_temp_hour_min_time = models.DateTimeField(null=True)
     in_temp = models.DecimalField(max_digits=3, decimal_places=1, null=True)
     windchill = models.DecimalField(max_digits=3, decimal_places=1, null=True)
-    heat_index = models.DecimalField(max_digits=3, decimal_places=1, null=True) # check data type
+    heat_index = models.DecimalField(max_digits=3, decimal_places=1, null=True)  # check data type
     dewpoint = models.DecimalField(max_digits=3, decimal_places=1, null=True)
     humidity = models.SmallIntegerField(null=True)
     humidity_max = models.SmallIntegerField(null=True)
@@ -136,7 +136,7 @@ class Agg_hour(models.Model):
     qa_modifications = models.IntegerField(default=0)
     qa_incidents = models.IntegerField(default=0)
     qa_check_done = models.BooleanField(default=False)
-    
+
     out_temp_avg = models.DecimalField(max_digits=3, decimal_places=1, null=True)
     out_temp_sum = models.IntegerField(null=True)
     out_temp_duration = models.IntegerField(null=True)
@@ -150,8 +150,8 @@ class Agg_hour(models.Model):
     in_temp_max_time = models.DateTimeField(null=True)
     in_temp_min = models.DecimalField(max_digits=3, decimal_places=1, null=True)
     in_temp_min_time = models.DateTimeField(null=True)
-    
-    heat_index_max = models.DecimalField(max_digits=3, decimal_places=1, null=True) # check data type
+
+    heat_index_max = models.DecimalField(max_digits=3, decimal_places=1, null=True)  # check data type
     heat_index_max_time = models.DateTimeField(null=True)
 
     windchill_max = models.DecimalField(max_digits=3, decimal_places=1, null=True)
@@ -238,7 +238,7 @@ class Agg_hour(models.Model):
     voltage_min_time = models.DateTimeField(null=True)
 
     # solar_radiation = models.SmallIntegerField(null=True)  # check data type
-    # insolation_duration = models.SmallIntegerField(null=True) # check data type, and what is that measure...
+    # insolation_duration = models.SmallIntegerField(null=True)  # check data type, and what is that measure...
 
     def __str__(self):
         return "agg_hour id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
@@ -269,8 +269,8 @@ class Agg_day(models.Model):
     in_temp_max_time = models.DateTimeField(null=True)
     in_temp_min = models.DecimalField(max_digits=3, decimal_places=1, null=True)
     in_temp_min_time = models.DateTimeField(null=True)
-    
-    heat_index_max = models.DecimalField(max_digits=3, decimal_places=1, null=True) # check data type
+
+    heat_index_max = models.DecimalField(max_digits=3, decimal_places=1, null=True)  # check data type
     heat_index_max_time = models.DateTimeField(null=True)
 
     windchill_max = models.DecimalField(max_digits=3, decimal_places=1, null=True)
@@ -357,14 +357,13 @@ class Agg_day(models.Model):
     voltage_min_time = models.DateTimeField(null=True)
 
     # solar_radiation = models.SmallIntegerField(null=True)  # check data type
-    # insolation_duration = models.SmallIntegerField(null=True) # check data type, and what is that measure...
- 
+    # insolation_duration = models.SmallIntegerField(null=True)  # check data type, and what is that measure...
+
     def __str__(self):
         return "agg_day id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
 
     class Meta:
         db_table = "agg_day"
-
 
 
 class Agg_month(models.Model):
@@ -389,8 +388,8 @@ class Agg_month(models.Model):
     in_temp_max_time = models.DateTimeField(null=True)
     in_temp_min = models.DecimalField(max_digits=3, decimal_places=1, null=True)
     in_temp_min_time = models.DateTimeField(null=True)
-    
-    heat_index_max = models.DecimalField(max_digits=3, decimal_places=1, null=True) # check data type
+
+    heat_index_max = models.DecimalField(max_digits=3, decimal_places=1, null=True)  # check data type
     heat_index_max_time = models.DateTimeField(null=True)
 
     windchill_max = models.DecimalField(max_digits=3, decimal_places=1, null=True)
@@ -477,8 +476,8 @@ class Agg_month(models.Model):
     voltage_min_time = models.DateTimeField(null=True)
 
     # solar_radiation = models.SmallIntegerField(null=True)  # check data type
-    # insolation_duration = models.SmallIntegerField(null=True) # check data type, and what is that measure...
- 
+    # insolation_duration = models.SmallIntegerField(null=True)  # check data type, and what is that measure...
+
     def __str__(self):
         return "agg_month id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
 
@@ -508,8 +507,8 @@ class Agg_year(models.Model):
     in_temp_max_time = models.DateTimeField(null=True)
     in_temp_min = models.DecimalField(max_digits=3, decimal_places=1, null=True)
     in_temp_min_time = models.DateTimeField(null=True)
-    
-    heat_index_max = models.DecimalField(max_digits=3, decimal_places=1, null=True) # check data type
+
+    heat_index_max = models.DecimalField(max_digits=3, decimal_places=1, null=True)  # check data type
     heat_index_max_time = models.DateTimeField(null=True)
 
     windchill_max = models.DecimalField(max_digits=3, decimal_places=1, null=True)
@@ -596,14 +595,13 @@ class Agg_year(models.Model):
     voltage_min_time = models.DateTimeField(null=True)
 
     # solar_radiation = models.SmallIntegerField(null=True)  # check data type
-    # insolation_duration = models.SmallIntegerField(null=True) # check data type, and what is that measure...
- 
+    # insolation_duration = models.SmallIntegerField(null=True)  # check data type, and what is that measure...
+
     def __str__(self):
         return "agg_year id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
 
     class Meta:
         db_table = "agg_year"
-
 
 
 class Agg_global(models.Model):
@@ -628,8 +626,8 @@ class Agg_global(models.Model):
     in_temp_max_time = models.DateTimeField(null=True)
     in_temp_min = models.DecimalField(max_digits=3, decimal_places=1, null=True)
     in_temp_min_time = models.DateTimeField(null=True)
-    
-    heat_index_max = models.DecimalField(max_digits=3, decimal_places=1, null=True) # check data type
+
+    heat_index_max = models.DecimalField(max_digits=3, decimal_places=1, null=True)  # check data type
     heat_index_max_time = models.DateTimeField(null=True)
 
     windchill_max = models.DecimalField(max_digits=3, decimal_places=1, null=True)
@@ -716,11 +714,10 @@ class Agg_global(models.Model):
     voltage_min_time = models.DateTimeField(null=True)
 
     # solar_radiation = models.SmallIntegerField(null=True)  # check data type
-    # insolation_duration = models.SmallIntegerField(null=True) # check data type, and what is that measure...
- 
+    # insolation_duration = models.SmallIntegerField(null=True)  # check data type, and what is that measure...
+
     def __str__(self):
         return "agg_global id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
 
     class Meta:
         db_table = "agg_global"
-
