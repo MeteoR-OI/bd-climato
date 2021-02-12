@@ -10,7 +10,7 @@ mapping = [
     {'type_id': 1, 'name': 'Temp', 'object': typeTemp()},
 ]
 
-
+# modif
 class all_instruments_meteor:
     """Objet climato type_instrument """
 
