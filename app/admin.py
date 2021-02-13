@@ -8,14 +8,9 @@ admin.site.register(Exclusion)
 
 class PosteAdmin(admin.ModelAdmin):
     fields = (
-        ('meteor', 'meteofr'),
-        'title',
-        'owner',
-        ('email', 'phone'),
-        ('address', 'zip'),
-        ('city', 'country'),
-        ('latitude', 'longitude'),
-        ('start', 'end'),
+        'meteor',
+        'meteofr',
+        'fuseau',
         ('cas_gestion_extreme', 'agg_min_extreme'),
         'comment'
     )
@@ -24,27 +19,29 @@ admin.site.register(Poste, PosteAdmin)
 
 
 class ObservationAdmin(admin.ModelAdmin):
+    # all fields:
+    # ('poste_id'),
+    # ('dat', 'last_rec_dat'),
+    # ('duration'),
+    # ('qa_modifications', 'qa_incidents', 'qa_check_done'),
+    # ('out_temp', 'out_temp_max', 'out_temp_max_time', 'out_temp_min', 'out_temp_min_time',
+    #  'windchill', 'heat_index', 'dewpoint', 'soil_temp', 'soil_temp_min', 'soil_temp_min_time'),
+    # ('humidity', 'humidity_max', 'humidity_max_time', 'humidity_min', 'humidity_min_time'),
+    # ('barometer', 'barometer_max', 'barometer_max_time', 'barometer_min', 'barometer_min_time', 'pressure'),
+    # ('wind_i', 'wind_i_dir', 'wind', 'wind_dir', 'wind_max', 'wind_max_dir', 'wind_max_time', 'wind10'),
+    # ('rain', 'rain_rate', 'rain_rate_max', 'rain_rate_max_time'),
+    # ('uv_indice', 'radiation', 'etp'),
+    # ('in_temp', 'in_humidity'),
+    # ('rx', 'voltage')
     fields = (
-        ('dat', 'last_rec_dat'),
+        ('poste_id', 'dat'),
         ('duration'),
-        ('qa_modifications', 'qa_incidents', 'qa_check_done'),
-        ('poste_id'),
-        ('barometer', 'barometer_max', 'barometer_max_time', 'barometer_min', 'barometer_min_time', 'pressure'),
-        ('dewpoint', 'etp', 'heat_index'),
-        ('humidity', 'inHumidity'),
-        ('humidity_max', 'humidity_max_time'),
-        ('humidity_min', 'humidity_min_time'),
-        ('insolation_duration'),
-        ('out_temp', 'in_temp'),
-        ('out_temp_max', 'out_temp_max_time'),
-        ('out_temp_min', 'out_temp_min_time'),
-        ('rain_rate_max', 'rain_rate_max_time', 'rain_sum'),
-        ('soil_temp'),
-        ('soil_temp_min', 'soil_temp_min_time'),
-        ('solar_radiation', 'uv', 'uv_indixe'),
-        ('wind_dir', 'wind_speed', 'windchill'),
-        ('wind_gust', 'wind_gust_dir', 'wind_gust_time'),
-        ('rx', 'voltage')
+        ('out_temp'),
+        ('humidity'),
+        ('barometer'),
+        ('wind', 'wind_dir'),
+        ('rain', 'rain_rate'),
+        ('uv_indice', 'radiation', 'etp')
     )
 
 admin.site.register(Observation, ObservationAdmin)

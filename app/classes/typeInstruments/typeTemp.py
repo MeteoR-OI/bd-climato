@@ -18,12 +18,11 @@ class TypeTemp(RootTypeInstrument):
             #                                      0 -> TU
             #                                      n -> decallage de n heures par rapport a heure locale
             #                                     -n -> decalage de n heures par rapport a heure GMT
-            # si hour_deca != 0 -> ajoute "field"_duration_non_gmt dans les tables d'agregation, car la duration de la
-            #    field est different de la duration de l'agregation basee sur TU
             # special: special processing (like "field"_dir)
-            {'key': 'temp_out', 'field': 'temp_out', 'avg': True, 'Min': True, 'max': True, 'hour_deca': 99, 'special': 0},
-            {'key': 'windchill', 'field': 'windchill', 'avg': False, 'min': False, 'max': False, 'hour_deca': 99, 'special': 0},
-            {'key': 'heatindex', 'field': 'heatindex', 'avg': False, 'min': False, 'max': True, 'hour_deca': 99, 'special': 0},
-            {'key': 'dewpoint', 'field': 'dewpoint', 'avg': False, 'min': True, 'max': True, 'hour_deca': 99, 'special': 0},
-            {'key': 'soiTemp', 'field': 'soil_temp', 'avg': False, 'min': True, 'max': False, 'hour_deca': 99, 'special': 0}
+            {'key': 'temp_out', 'field': 'temp_out', 'avg': True, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
+            {'key': 'temp_out', 'field': 'temp_out_non_gmt', 'avg': True, 'min': True, 'max': True, 'hour_deca': 7, 'special': 0},
+            {'key': 'windchill', 'field': 'windchill', 'avg': False, 'min': False, 'max': False, 'hour_deca': 0, 'special': 0},
+            {'key': 'heatindex', 'field': 'heatindex', 'avg': False, 'min': False, 'max': True, 'hour_deca': 0, 'special': 0},
+            {'key': 'dewpoint', 'field': 'dewpoint', 'avg': False, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
+            {'key': 'soilTemp', 'field': 'soil_temp', 'avg': False, 'min': True, 'max': False, 'hour_deca': 0, 'special': 0}
         ]

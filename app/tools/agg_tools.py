@@ -3,27 +3,25 @@ from app.models import Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global   #
 # import sys
 import datetime
 
+def convert_relative_hour(mesure_dt: datetime, hour_deca: int):
+    """
+        convert_relative_hour
 
-def round_datetime_per_aggregation(dt, niveau_agg):
-    """arrondi la date, suivant le niveau d'agreggation"""
-    try:
-        if niveau_agg == "H":
-            return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, 0, 0, 0, datetime.timezone.utc)
-        elif niveau_agg == "D":
-            return datetime.datetime(dt.year, dt.month, dt.day, 0, 0, 0, 0, datetime.timezone.utc)
-        elif niveau_agg == "M":
-            return datetime.datetime(dt.year, dt.month, 1, 0, 0, 0, 0, datetime.timezone.utc)
-        elif niveau_agg == "Y":
-            return datetime.datetime(dt.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc)
-        elif niveau_agg == "A":
-            return datetime.datetime(1900, 1, 1, 0, 0, 0, 0, datetime.timezone.utc)
-        else:
-            raise Exception("round_datetime_per_aggregation", "wrong niveau_agg: " + niveau_agg)
+        retourne le numero de l'heure relative pour une certaine mesure
+        hour_deca est une propriete de la mesure
+        
+        le numero est negatif pour le jour precedent.
+        le numero est > 24 pour le jour suivant
+    """
 
-    except Exception as inst:
-        print(type(inst))    # the exception instance
-        print(inst.args)     # arguments stored in .args
-        print(inst)          # __str__ allows args to be printed directly,
+    tmp_hour = mesure_dt.datetime.hour + hour_deca
+    if tmp_hour >= 0:
+        return tmp_hour
+
+    # retoune le no de l'heure en negatif
+    if tmp_hour < -24:
+        raise Exception("convert_relative_hour", "tmp_hour:" + str(tmp_hour))
+    return -24 - tmp_hour
 
 
 def get_agg_object(niveau_agg):

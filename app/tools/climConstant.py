@@ -7,10 +7,14 @@ class ClimConstants(Constants):
     JSON_AGGREGATE = 'aggregate'
 
 
-class AggLevel(Constants):
+class AggLevelConstant(Constants):
     """ code agregation """
     Hour = 'H'
     Day = 'D'
     Month = 'M'
     Year = 'Y'
     All = 'A'
+
+
+AggLevel = ['H', 'D', 'M', 'Y', 'A']
+

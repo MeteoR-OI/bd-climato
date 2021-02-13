@@ -1,6 +1,6 @@
 from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, Exclusion, TypeInstrument   #
-from app.tools.agg_tools import round_datetime_per_aggregation, get_agg_object
-from app.tools.climConstant import ClimConstants, AggLevel
+from app.tools.agg_tools import round_datetime_per_aggregation, get_agg_object, convert_relative_hour
+from app.tools.climConstant import ClimConstants, AggLevelConstant
 import datetime
 import json
 
@@ -39,7 +39,7 @@ class RootTypeInstrument:
                 if exclusion.__contains__ is True and exclusion[aMap.field] != 'null':
                     obs_dataset.__setattr__[aMap.field] = exclusion[aMap.field]
 
-    def process_aggregation(self, poste_obj: Poste, json_obs: json, agg_all_dataset, flag: bool):
+    def process_aggregation(self, poste_obj: Poste, json_obs: json, agg_all_dataset, flag: bool) -> None:
         """process observation data into al aggregation dataset. flag is True for insert, False for delete"""
 
         b_donnee_elementaire = json_obs.__contains__(ClimConstants.JSON_CURRENT) and json_obs[ClimConstants.JSON_CURRENT] != {} and json_obs[ClimConstants.JSON_CURRENT] != []
@@ -49,7 +49,7 @@ class RootTypeInstrument:
             if json_obs[ClimConstants.JSON_AGGREGATE].__contains__(ClimConstants.JSON_AGGREGATE) is False:
                 raise Exception("Instrument_calculator.process_aggregation", "no " + ClimConstants.JSON_AGGREGATE + " key")
             niveau_agg_json = json_obs[ClimConstants.JSON_AGGREGATE]['agregation']
-            if niveau_agg_json in AggLevel is False:
+            if niveau_agg_json in AggLevelConstant is False:
                 raise Exception("Instrument_calculator.process_aggregation", "invalid value in " + ClimConstants.JSON_AGGREGATE + ": " + niveau_agg_json)
         else:
             # no aggregation data

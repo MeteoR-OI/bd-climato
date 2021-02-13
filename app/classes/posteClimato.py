@@ -1,5 +1,6 @@
 from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, Exclusion, TypeInstrument   #
 from app.tools.agg_tools import round_datetime_per_aggregation, get_agg_object
+from app.tools.climConstant import AggLevel
 import datetime
 
 
@@ -40,18 +41,6 @@ class poste_meteor:
         tmp_poste.all.append(tmp_poste)
         return tmp_poste
 
-    def convert_relative_hour(self, mesure_dt: datetime, hour_deca: int):
-        """retourne le numero de l'heure relative pour une certaine mesure (hour_deca est une propriete de la mesure)"""
-        local_delta_hour = hour_deca
-        if hour_deca <= 0:
-            return mesure_dt.datetime.hour - hour_deca
-        elif hour_deca == 99:
-            hour_deca = 0
-        # todo
-        # transform time to TU time
-        # return hour + hour_deca
-        return local_delta_hour
-
     def cas_gestion_extreme(self):
         """ in future could get the information from values in db """
         return self.me.cas_gestion_extreme
@@ -67,12 +56,61 @@ class poste_meteor:
                 return anExclu['value']
         return {}
 
-    def get_agg(self, my_datetime):
-        """return an array of aggregation per hour/day/month/year/all for the given datetime. create them if needed"""
+    def get_date_fuseau(self, dt: datetime) -> datetime:
+        """ retoune la datetime fuseau de la station """
+        return dt + datetime.timedelta(hours=self.fuseau)
+
+    def round_datetime_per_aggregation(dt: datetime, niveau_agg: str, delta: int = 0):
+        """ round_datetime_per_aggregation
+
+            arrondi la date, suivant le niveau d'agreggation.
+            delta ajoute un nombre de heure/jour/... au resultat
+            
+            l'heure dans l'agregation heure est l'heure UTC
+
+            les heures dans les agregations superieures sont calculees a partir de l'heure fuseau
+        """
+        try:
+            if niveau_agg == "H":
+                return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, 0, 0, 0, datetime.timezone.utc) + datetime.timedelta(hours=delta)
+            elif niveau_agg == "D":
+                return datetime.datetime(dt.year, dt.month, dt.day, 0, 0, 0, 0, datetime.timezone.utc) + datetime.timedelta(days=delta)
+            elif niveau_agg == "M":
+                return datetime.datetime(dt.year, dt.month, 1, 0, 0, 0, 0, datetime.timezone.utc) + datetime.timedelta(months=delta)
+            elif niveau_agg == "Y":
+                return datetime.datetime(dt.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc) + datetime.timedelta(years=delta)
+            elif niveau_agg == "A":
+                return datetime.datetime(1900, 1, 1, 0, 0, 0, 0, datetime.timezone.utc)
+            else:
+                raise Exception("round_datetime_per_aggregation", "wrong niveau_agg: " + niveau_agg)
+
+        except Exception as inst:
+            print(type(inst))    # the exception instance
+            print(inst.args)     # arguments stored in .args
+            print(inst)          # __str__ allows args to be printed directly,
+
+    def get_agg(self, my_datetime_utc):
+        """
+        get_agg
+
+        my_datetime_utc: date en UTC.
+
+        return an array of aggregation to be used by our process_xxx methods
+            [0] -> Agg_hour
+            [1] -> Agg_day
+            [2] -> Agg_month
+            [3] -> Agg-year
+            [4] -> Agg_all
+            [5] -> Agg_day for day - 1
+            [6] -> Agg_day for day + 1
+
+        create them if needed
+        """
         try:
             ret = []
-            for agg_niveau in ['H', 'D', 'M', 'Y', 'A']:
-                tmp_dt = round_datetime_per_aggregation(my_datetime, agg_niveau)
+            # push aggregations of all levels for the given date
+            for agg_niveau in AggLevel:
+                tmp_dt = round_datetime_per_aggregation(my_datetime_utc, agg_niveau)
                 agg_object = get_agg_object(agg_niveau)
                 if agg_object.objects.filter(poste_id_id=self.me.id).filter(dat=tmp_dt).exists():
                     ret.append(agg_object.objects.filter(poste_id_id=self.me.id).filter(dat=tmp_dt).first)
@@ -80,20 +118,29 @@ class poste_meteor:
                     new_val = agg_object(poste_id=self.me, dat=tmp_dt, last_rec_dat=tmp_dt, duration=0)
                     new_val.save()
                     ret.append(new_val)
+
+            # get aggregation of day - 1 for measures that will aggregate yesteray
+            tmp_dt = round_datetime_per_aggregation(my_datetime_utc, 'D', -1)
+            ret.append(Agg_day.objects.filter(poste_id_id=self.me.id).filter(dat=tmp_dt).first)
+
+            # get aggregation of day + 1 for measures that will aggregate the day after
+            tmp_dt = round_datetime_per_aggregation(my_datetime_utc, 'D', +1)
+            ret.append(Agg_day.objects.filter(poste_id_id=self.me.id).filter(dat=tmp_dt).first)
             return ret
         except Exception as inst:
             print(type(inst))    # the exception instance
             print(inst.args)     # arguments stored in .args
             print(inst)          # __str__ allows args to be printed directly,
 
-    def get_obs(self, my_datetime):
+    def get_obs(self, my_datetime_utc):
         """get or create an observation at a given datetime"""
-        # todo : check that my_datetime > previous dat + duration pour le poste_id
-        # todo: put a warning somewhere if my_datetime > previous dat+duration
+        # todo : check that my_datetime_utc > previous dat + duration pour le poste_id
+        # todo: put a warning somewhere if my_datetime_utc > previous dat+duration
+        # todo: what is happening if the date given is at the middle of an existing period ?
         try:
-            if Observation.objects.filter(poste_id_id=self.me.id).filter(dat=my_datetime).exists():
-                return Observation.objects.filter(poste_id_id=self.me.id).filter(dat=my_datetime).first
-            new_obs = Observation(poste_id=self.me, dat=my_datetime, last_rec_dat=my_datetime, duration=0)
+            if Observation.objects.filter(poste_id_id=self.me.id).filter(dat=my_datetime_utc).exists():
+                return Observation.objects.filter(poste_id_id=self.me.id).filter(dat=my_datetime_utc).first
+            new_obs = Observation(poste_id=self.me, dat=my_datetime_utc, last_rec_dat=my_datetime_utc, duration=0)
             new_obs.save()
             return new_obs
         except Exception as inst:
