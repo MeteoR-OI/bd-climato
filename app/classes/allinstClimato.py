@@ -10,9 +10,15 @@ mapping = [
     {'type_id': 1, 'name': 'Temp', 'object': typeTemp()},
 ]
 
-# modif
-class all_instruments_meteor:
-    """Objet climato type_instrument """
+
+class AllInstrumentsMeteor:
+    """
+        AllInstrumentsMeteor
+
+        Objet climato type_instrument
+
+
+    """
 
     # def __init(self):
 
@@ -21,7 +27,8 @@ class all_instruments_meteor:
         for aType in self.mapping:
             if aType['type_id'] == type_instrument_id:
                 return aType.object
-        raise Exception("all_instrument_meteor.get", "invalid type_instrument_id: " + str(type_instrument_id))
+        raise Exception("all_instrument_meteor.get",
+                        "invalid type_instrument_id: " + str(type_instrument_id))
 
     def process_observation(self, json_obs: json, obs_dataset: Observation, flag: bool):
         """process observation data for all our TypeInstrument"""
@@ -31,7 +38,8 @@ class all_instruments_meteor:
     def process_aggregation(self, json_obs: json, agg_all_dataset, flag: bool):
         """process aggregation data for all our TypeInstrument"""
         for aType in self.mapping:
-            aType['objects'].process_aggregation(json_obs, agg_all_dataset, flag)
+            aType['objects'].process_aggregation(
+                json_obs, agg_all_dataset, flag)
 
     def process_extreme(self, json_obs: json, agg_all_dataset, flag: bool):
         """process aggregation data for all our TypeInstrument"""

@@ -1,18 +1,26 @@
 from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, Exclusion, TypeInstrument   #
-from app.tools.agg_tools import round_datetime_per_aggregation, get_agg_object
+from app.tools.agg_tools import get_agg_object
 import datetime
-from app.classes.posteClimato import poste_meteor
-p=poste_meteor.get(1)
+from app.classes.posteMeteor import PosteMeteor
+p=PosteMeteor.get(1)
 p.me
-agg=p.get_agg(datetime.datetime.now(datetime.timezone.utc))
-for oneagg in agg:
-    print(oneagg)
+o1=p.observation(datetime.datetime(2021, 2, 13, 12, 49, 55, 0, datetime.timezone.utc))
+o1
 dtdt = datetime.datetime(2021, 2, 11, 13, 0, 0, 0, datetime.timezone.utc)
 obs=p.get_obs(dtdt)
 print(obs)
-obs2 = p.get_obs(datetime.datetime.now(datetime.timezone.utc))
-print(obs2)
 
+dt=datetime.datetime.now(datetime.timezone.utc)
+agg=p.aggregations(dt)
+for oneagg in agg:
+    print(oneagg)
+
+d_loc=p.date_fuseau(dt)
+datetime.datetime(d_loc.year, d_loc.month, 1, 0, 0, 0, 0, datetime.timezone.utc) + datetime.timedelta(months=0)
+
+
+
+o=Observation.objects.filter(poste_id_id=1).filter(dat=datetime.datetime(2021, 2, 13, 12, 49, 55, 0, datetime.timezone.utc)).first()
 
 lire json file:
 

@@ -3,13 +3,14 @@ from app.models import Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global   #
 # import sys
 import datetime
 
+
 def convert_relative_hour(mesure_dt: datetime, hour_deca: int):
     """
         convert_relative_hour
 
         retourne le numero de l'heure relative pour une certaine mesure
         hour_deca est une propriete de la mesure
-        
+
         le numero est negatif pour le jour precedent.
         le numero est > 24 pour le jour suivant
     """
@@ -38,7 +39,8 @@ def get_agg_object(niveau_agg):
         elif niveau_agg == "A":
             return Agg_global
         else:
-            raise Exception("get_agg_object", "wrong niveau_agg: " + niveau_agg)
+            raise Exception("get_agg_object",
+                            "wrong niveau_agg: " + niveau_agg)
 
     except Exception as inst:
         print(type(inst))    # the exception instance

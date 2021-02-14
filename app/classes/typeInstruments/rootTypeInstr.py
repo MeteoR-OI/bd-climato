@@ -11,15 +11,20 @@ class RootTypeInstrument:
     def __init(self):
         self.me = TypeInstrument.objects.get(id=self.my_type_instr_id)
 
-    def process_observation(self, poste_obj: Poste, json_obs: json, obs_dataset: Observation, flag: bool):
-        """process observation data into obs_dataset. flag is True for insert, False for delete"""
+    def process_observation(self, poste_obj: poste_meteor, json_obs: json, obs_dataset: Observation, flag: bool) -> json:
+        """
+            process_observation
+            parameters:
+                poste_object -
+            data into obs_dataset. flag is True for insert, False for delete"""
 
         # dans le cas de suppression, le obs_dataset va etre supprime, il faut juste ajuster les agg/extremes
         if flag is False:
             return
 
         # if not key ClimConstants.JSON_CURRENT, just return
-        b_donnee_elementaire = json_obs.__contains__(ClimConstants.JSON_CURRENT) and json_obs[ClimConstants.JSON_CURRENT] != {} and json_obs[ClimConstants.JSON_CURRENT] != []
+        b_donnee_elementaire = json_obs.__contains__(ClimConstants.JSON_CURRENT) and json_obs[ClimConstants.JSON_CURRENT] != {
+        } and json_obs[ClimConstants.JSON_CURRENT] != []
         if b_donnee_elementaire is False:
             return
 
@@ -42,15 +47,19 @@ class RootTypeInstrument:
     def process_aggregation(self, poste_obj: Poste, json_obs: json, agg_all_dataset, flag: bool) -> None:
         """process observation data into al aggregation dataset. flag is True for insert, False for delete"""
 
-        b_donnee_elementaire = json_obs.__contains__(ClimConstants.JSON_CURRENT) and json_obs[ClimConstants.JSON_CURRENT] != {} and json_obs[ClimConstants.JSON_CURRENT] != []
-        b_donnee_aggregee = json_obs.__contains__(ClimConstants.JSON_AGGREGATE) and json_obs[ClimConstants.JSON_AGGREGATE] != {} and json_obs[ClimConstants.JSON_AGGREGATE] != []
+        b_donnee_elementaire = json_obs.__contains__(ClimConstants.JSON_CURRENT) and json_obs[ClimConstants.JSON_CURRENT] != {
+        } and json_obs[ClimConstants.JSON_CURRENT] != []
+        b_donnee_aggregee = json_obs.__contains__(ClimConstants.JSON_AGGREGATE) and json_obs[ClimConstants.JSON_AGGREGATE] != {
+        } and json_obs[ClimConstants.JSON_AGGREGATE] != []
         if b_donnee_aggregee:
             # get niveau_agg_json
             if json_obs[ClimConstants.JSON_AGGREGATE].__contains__(ClimConstants.JSON_AGGREGATE) is False:
-                raise Exception("Instrument_calculator.process_aggregation", "no " + ClimConstants.JSON_AGGREGATE + " key")
+                raise Exception("Instrument_calculator.process_aggregation",
+                                "no " + ClimConstants.JSON_AGGREGATE + " key")
             niveau_agg_json = json_obs[ClimConstants.JSON_AGGREGATE]['agregation']
             if niveau_agg_json in AggLevelConstant is False:
-                raise Exception("Instrument_calculator.process_aggregation", "invalid value in " + ClimConstants.JSON_AGGREGATE + ": " + niveau_agg_json)
+                raise Exception("Instrument_calculator.process_aggregation",
+                                "invalid value in " + ClimConstants.JSON_AGGREGATE + ": " + niveau_agg_json)
         else:
             # no aggregation data
             niveau_agg_json = "?"
