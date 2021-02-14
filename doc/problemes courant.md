@@ -7,6 +7,7 @@
 - [2.2 Reactivation de l'environnement](#22-reactivation-de-lenvironnement)
 - [3. Postgres ne demarre pas](#3-postgres-ne-demarre-pas)
 - [4. Info sur manage.py et migration](#4-info-sur-managepy-et-migration)
+- [5. Regeneration de la base de données](#5-regeneration-de-la-base-de-données)
 
 
 **Doc v 0.5**
@@ -53,3 +54,21 @@ Si ce n'est pas cela, regarder les dernieres lignes du log...
 # 4. Info sur manage.py et migration
 https://docs.djangoproject.com/fr/3.1/ref/django-admin/
 
+# 5. Regeneration de la base de données
+lancer les commandes suivantes:
+``` code
+psql
+    drop database climatest;
+    create database climatest;
+    \q
+python3 manage.py migrate
+python3 manage.py createsuperuser
+psql -d climatest < data/appInit.sql
+python3 manage.py runserver
+=> Aller dans http://localhost/admin. Toutes les tables (sauf agg_xxx) ont qq donnees.
+```
+
+Si psql refuse de se connecter, mettre les noms utilisateurs et mot de passe comme suit:
+export PGUSER=toto     (nom utilisateur)
+export PGPASS=titi     (mot de passe)
+(Pas d'espace de chaque cote du signe =)
