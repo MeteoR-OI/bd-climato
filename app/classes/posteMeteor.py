@@ -1,7 +1,7 @@
 from app.models import Poste
 from app.tools.climConstant import AggLevel
 import datetime
-from dateutil.relativedelta import relativedelta
+from app.tools.climConstant import calc_agg_date
 import json
 from app.classes.obsMeteor import ObsMeteor
 from app.classes.aggMeteor import AggMeteor
@@ -82,8 +82,7 @@ class PosteMeteor:
     def round_datetime_per_aggregation(self, dt: datetime, niveau_agg: str, delta: int = 0):
         """ round_datetime_per_aggregation
 
-            arrondi la date, suivant le niveau d'agreggation.
-            delta ajoute un nombre de heure/jour/... au resultat
+            retourne la date/heure du debut d'agregation pour le poste
 
             l'heure pour le niveau d'agregation heure est basée sur l'heure UTC
 
@@ -92,21 +91,11 @@ class PosteMeteor:
         """
         try:
             if niveau_agg == "H":
-                return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, 0, 0, 0, datetime.timezone.utc) + datetime.timedelta(hours=delta)
+                return calc_agg_date(niveau_agg, dt)
 
             # on passe sur la date/heure fuseau
             d_loc = self.date_fuseau(dt)
-            if niveau_agg == "D":
-                return datetime.datetime(d_loc.year, d_loc.month, d_loc.day, 0, 0, 0, 0, datetime.timezone.utc) + datetime.timedelta(days=delta)
-            elif niveau_agg == "M":
-                return datetime.datetime(d_loc.year, d_loc.month, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(months=delta)
-            elif niveau_agg == "Y":
-                return datetime.datetime(d_loc.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(years=delta)
-            elif niveau_agg == "A":
-                return datetime.datetime(1900, 1, 1, 0, 0, 0, 0, datetime.timezone.utc)
-            else:
-                raise Exception("round_datetime_per_aggregation",
-                                "wrong niveau_agg: " + niveau_agg)
+            return calc_agg_date(niveau_agg, d_loc)
 
         except Exception as inst:
             print(type(inst))    # the exception instance
@@ -144,7 +133,7 @@ class PosteMeteor:
             # get aggregation of day + 1 for measures that will aggregate the day after
             tmp_dt = self.round_datetime_per_aggregation(my_datetime_utc, 'D', +1)
             ret.append(AggMeteor(self.me, 'D', tmp_dt))
- 
+
             return ret
         except Exception as inst:
             print(type(inst))    # the exception instance
