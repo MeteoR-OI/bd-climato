@@ -1,8 +1,11 @@
-from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, Exclusion, TypeInstrument   #
-from app.tools.agg_tools import get_agg_object
+from app.models import Poste
 from app.tools.climConstant import AggLevel
 import datetime
+from dateutil.relativedelta import relativedelta
 import json
+from app.classes.obsMeteor import ObsMeteor
+from app.classes.aggMeteor import AggMeteor
+from app.classes.ExcluMeteor import ExcluMeteor
 
 
 class PosteMeteor:
@@ -32,7 +35,7 @@ class PosteMeteor:
     #         print(inst)          # __str__ allows args to be printed directly,
 
     @staticmethod
-    def get(poste_id):
+    def get(poste_id: int):
         """manage a singleton per poste instance, and load active exclusions"""
         tmp_poste = PosteMeteor()
         for one_poste in tmp_poste.all:
@@ -40,8 +43,7 @@ class PosteMeteor:
                 return one_poste
         if Poste.objects.filter(id=poste_id).exists():
             tmp_poste.me = Poste.objects.get(id=poste_id)
-            tmp_poste.exclus = Exclusion.objects.filter(poste_id_id=poste_id).filter(
-                end_x__gt=datetime.datetime.now(datetime.timezone.utc)).values('type_instrument', 'value')
+            tmp_poste.exclus = ExcluMeteor.getAllForAPoste(tmp_poste.me.id)
         else:
             tmp_poste.me = Poste()
             tmp_poste.exclus = []
@@ -49,12 +51,9 @@ class PosteMeteor:
         return tmp_poste
 
     def save(self):
-        """ save Poste and Exclusions """
+        """ save Poste """
         try:
             self.me.save()
-            # see if we need to update exclusions from here...
-            for anEx in self.exclus:
-                anEx.save()
 
         except Exception as inst:
             print(type(inst))    # the exception instance
@@ -100,9 +99,9 @@ class PosteMeteor:
             if niveau_agg == "D":
                 return datetime.datetime(d_loc.year, d_loc.month, d_loc.day, 0, 0, 0, 0, datetime.timezone.utc) + datetime.timedelta(days=delta)
             elif niveau_agg == "M":
-                return datetime.datetime(d_loc.year, d_loc.month, 1, 0, 0, 0, 0, datetime.timezone.utc) + datetime.timedelta(months=delta)
+                return datetime.datetime(d_loc.year, d_loc.month, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(months=delta)
             elif niveau_agg == "Y":
-                return datetime.datetime(d_loc.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc) + datetime.timedelta(years=delta)
+                return datetime.datetime(d_loc.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(years=delta)
             elif niveau_agg == "A":
                 return datetime.datetime(1900, 1, 1, 0, 0, 0, 0, datetime.timezone.utc)
             else:
@@ -114,13 +113,13 @@ class PosteMeteor:
             print(inst.args)     # arguments stored in .args
             print(inst)          # __str__ allows args to be printed directly,
 
-    def aggregations(self, my_datetime_utc):
+    def aggregations(self, my_datetime_utc: datetime):
         """
         get_agg
 
         my_datetime_utc: date en UTC.
 
-        return an array of aggregation to be used by our process_xxx methods
+        return an array of AggMeteor to be used by our process_xxx methods
             [0] -> Agg_hour
             [1] -> Agg_day
             [2] -> Agg_month
@@ -135,52 +134,27 @@ class PosteMeteor:
             ret = []
             # push aggregations of all levels for the given date
             for agg_niveau in AggLevel:
-                print("niveau: " + agg_niveau)
-                tmp_dt = self.round_datetime_per_aggregation(
-                    my_datetime_utc, agg_niveau)
-                agg_object = get_agg_object(agg_niveau)
-                if agg_object.objects.filter(poste_id_id=self.me.id).filter(dat=tmp_dt).exists():
-                    print("found...")
-                    ret.append(agg_object.objects.filter(
-                        poste_id_id=self.me.id).filter(dat=tmp_dt).first())
-                else:
-                    print("not found - new")
-                    new_val = agg_object(
-                        poste_id=self.me, dat=tmp_dt, last_rec_dat=tmp_dt, duration=0)
-                    new_val.save()
-                    ret.append(new_val)
+                tmp_dt = self.round_datetime_per_aggregation(my_datetime_utc, agg_niveau)
+                ret.append(AggMeteor(self.me, agg_niveau, tmp_dt))
 
             # get aggregation of day - 1 for measures that will aggregate yesteray
-            print("agg d-1")
-            tmp_dt = self.round_datetime_per_aggregation(
-                my_datetime_utc, 'D', -1)
-            ret.append(Agg_day.objects.filter(
-                poste_id_id=self.me.id).filter(dat=tmp_dt).first())
+            tmp_dt = self.round_datetime_per_aggregation(my_datetime_utc, 'D', -1)
+            ret.append(AggMeteor(self.me, 'D', tmp_dt))
 
             # get aggregation of day + 1 for measures that will aggregate the day after
-            print("agg d+1")
-            tmp_dt = self.round_datetime_per_aggregation(
-                my_datetime_utc, 'D', +1)
-            ret.append(Agg_day.objects.filter(
-                poste_id_id=self.me.id).filter(dat=tmp_dt).first())
+            tmp_dt = self.round_datetime_per_aggregation(my_datetime_utc, 'D', +1)
+            ret.append(AggMeteor(self.me, 'D', tmp_dt))
+ 
             return ret
         except Exception as inst:
             print(type(inst))    # the exception instance
             print(inst.args)     # arguments stored in .args
             print(inst)          # __str__ allows args to be printed directly,
 
-    def observation(self, my_datetime_utc):
+    def observation(self, my_datetime_utc: datetime) -> ObsMeteor:
         """get or create an observation at a given datetime"""
-        # todo : check that my_datetime_utc > previous dat + duration pour le poste_id
-        # todo: put a warning somewhere if my_datetime_utc > previous dat+duration
-        # todo: what is happening if the date given is at the middle of an existing period ?
         try:
-            if Observation.objects.filter(poste_id_id=self.me.id).filter(dat=my_datetime_utc).exists():
-                return Observation.objects.filter(poste_id_id=self.me.id).filter(dat=my_datetime_utc).first()
-            new_obs = Observation(
-                poste_id=self.me, dat=my_datetime_utc, last_rec_dat=my_datetime_utc, duration=0)
-            new_obs.save()
-            return new_obs
+            return ObsMeteor(self.me, my_datetime_utc)
         except Exception as inst:
             print(type(inst))    # the exception instance
             print(inst.args)     # arguments stored in .args
@@ -188,4 +162,4 @@ class PosteMeteor:
 
     def __str__(self):
         """print myself"""
-        return "poste id: " + str(self.me.id) + ", meteor: " + self.me.meteor
+        return "PosteMeteor id: " + str(self.me.id) + ", meteor: " + self.me.meteor + ", #exclu: " + str(self.exclus.__len__())
