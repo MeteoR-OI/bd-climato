@@ -9,7 +9,7 @@ class ExcluMeteor():
         gere les objets Observation metier
 
         o=ExcluMeteor(poste, dat)
-        o.me -> Observation object (data, methods...)
+        o.data -> Observation object (data, methods...)
 
     """
 
@@ -18,10 +18,12 @@ class ExcluMeteor():
 
         try:
             if Exclusion.objects.filter(poste_id_id=poste.id).filter(type_instrument=type_instrument).exists():
-                self.me = Exclusion.objects.filter(poste_id_id=poste.id).filter(type_instrument=type_instrument).first()
+                self.data = Exclusion.objects.filter(poste_id_id=poste.id).filter(
+                    type_instrument=type_instrument).first()
             else:
-                self.me = Exclusion(poste_id=poste, type_instrument=type_instrument)
-                self.me.save()
+                self.data = Exclusion(
+                    poste_id=poste, type_instrument=type_instrument)
+                self.data.save()
 
         except Exception as inst:
             print(type(inst))    # the exception instance
@@ -31,12 +33,12 @@ class ExcluMeteor():
     @staticmethod
     def getAllForAPoste(poste_id):
         return Exclusion.objects.filter(poste_id_id=poste_id).filter(
-                end_x__gt=datetime.datetime.now(datetime.timezone.utc)).values('type_instrument', 'value')
+            end_x__gt=datetime.datetime.now(datetime.timezone.utc)).values('type_instrument', 'value')
 
     def save(self):
         """ save Poste and Exclusions """
         try:
-            self.me.save()
+            self.data.save()
 
         except Exception as inst:
             print(type(inst))    # the exception instance
@@ -45,4 +47,4 @@ class ExcluMeteor():
 
     def __str__(self):
         """print myself"""
-        return "ExcluMeteor id: " + str(self.me.id) + ", poste_id: " + str(self.me.poste_id.id) + ", typeInstrument: " + str(self.me.type_instrument.id)
+        return "ExcluMeteor id: " + str(self.data.id) + ", poste_id: " + str(self.data.poste_id.id) + ", typeInstrument: " + str(self.data.type_instrument.id)

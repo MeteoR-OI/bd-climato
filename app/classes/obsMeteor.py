@@ -9,7 +9,7 @@ class ObsMeteor():
         gere les objets Observation metier
 
         o=Meteor(poste, dat)
-        o.me -> Observation object (data, methods...)
+        o.data -> Observation object (data, methods...)
 
     """
 
@@ -20,10 +20,12 @@ class ObsMeteor():
         # todo: what is happening if the date given is at the middle of an existing period ?
         try:
             if Observation.objects.filter(poste_id_id=poste.id).filter(dat=dt_utc).exists():
-                self.me = Observation.objects.filter(poste_id_id=poste.id).filter(dat=dt_utc).first()
+                self.data = Observation.objects.filter(
+                    poste_id_id=poste.id).filter(dat=dt_utc).first()
             else:
-                self.me = Observation(poste_id=poste, dat=dt_utc, last_rec_dat=dt_utc, duration=0)
-                self.me.save()
+                self.data = Observation(
+                    poste_id=poste, dat=dt_utc, last_rec_dat=dt_utc, duration=0)
+                self.data.save()
 
         except Exception as inst:
             print(type(inst))    # the exception instance
@@ -33,7 +35,7 @@ class ObsMeteor():
     def save(self):
         """ save Poste and Exclusions """
         try:
-            self.me.save()
+            self.data.save()
 
         except Exception as inst:
             print(type(inst))    # the exception instance
@@ -42,4 +44,4 @@ class ObsMeteor():
 
     def __str__(self):
         """print myself"""
-        return "ObsMeteor id: " + str(self.me.id) + ", poste_id: " + str(self.me.poste_id.id) + ", date: " + str(self.me.dat)
+        return "ObsMeteor id: " + str(self.data.id) + ", poste_id: " + str(self.data.poste_id.id) + ", date: " + str(self.data.dat)

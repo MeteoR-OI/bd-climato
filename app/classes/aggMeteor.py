@@ -12,7 +12,7 @@ class AggMeteor():
         Act as a super Class for all aggregation objects
 
         o=AggMeteor(poste, dat)
-        o.me -> Aggregation object (data, methods...)
+        o.data -> Aggregation object (data, methods...)
 
     """
 
@@ -28,10 +28,12 @@ class AggMeteor():
             self.agg_niveau = agg_niveau
             agg_object = get_agg_object(agg_niveau)
             if agg_object.objects.filter(poste_id_id=poste.id).filter(dat=dt_agg_utc).exists():
-                self.me = agg_object.objects.filter(poste_id_id=poste.id).filter(dat=dt_agg_utc).first()
+                self.data = agg_object.objects.filter(
+                    poste_id_id=poste.id).filter(dat=dt_agg_utc).first()
             else:
-                self.me = agg_object(poste_id=poste, dat=dt_agg_utc, last_rec_dat=dt_agg_utc, duration=0)
-                self.me.save()
+                self.data = agg_object(
+                    poste_id=poste, dat=dt_agg_utc, last_rec_dat=dt_agg_utc, duration=0)
+                self.data.save()
 
         except Exception as inst:
             print(type(inst))    # the exception instance
@@ -41,7 +43,7 @@ class AggMeteor():
     def save(self):
         """ save Poste and Exclusions """
         try:
-            self.me.save()
+            self.data.save()
 
         except Exception as inst:
             print(type(inst))    # the exception instance
@@ -50,4 +52,4 @@ class AggMeteor():
 
     def __str__(self):
         """print myself"""
-        return "AggMeteor id: " + str(self.me.id) + ", poste_id: " + str(self.me.poste_id.id) + ", date: " + str(self.me.dat) + ", level: " + self.agg_niveau
+        return "AggMeteor id: " + str(self.data.id) + ", poste_id: " + str(self.data.poste_id.id) + ", date: " + str(self.data.dat) + ", level: " + self.agg_niveau

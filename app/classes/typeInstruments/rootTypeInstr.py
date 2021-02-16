@@ -13,7 +13,7 @@ class RootTypeInstrument:
 
     def __init(self):
         tmpI = TypeInstrumentMeteor(self.my_type_instr_id)
-        self.type_instrument = tmpI.me
+        self.type_instrument = tmpI.data
 
     def process_observation(self, poste_metor: PosteMeteor, json_obs: json, obs_dataset: ObsMeteor, flag: bool) -> json:
         """
@@ -21,37 +21,11 @@ class RootTypeInstrument:
             parameters:
                 poste_metor: PosteMeteor
                 json_obs: json of the new mesure to process
-            data into obs_dataset. flag is True for insert, False for delete"""
+            data into obs_dataset. flag is True for insert, False for delete
 
-        # dans le cas de suppression, le obs_dataset va etre supprime, il faut juste ajuster les agg/extremes
-        if flag is False:
-            return
+        """
 
-        # if no key ClimConstants.JSON_CURRENT, just return
-        b_donnee_elementaire = json_obs.__contains__(ClimConstants.JSON_CURRENT) and json_obs[ClimConstants.JSON_CURRENT] != {} and json_obs[ClimConstants.JSON_CURRENT] != []
-        if b_donnee_elementaire is False:
-            return
-
-        # get exclusion
-        exclusion = poste_metor.get_exclusion(self.my_type_instr_id)
-
-        for aMap in self.mapping:
-            if exclusion == {}:
-
-                # todo filtre en entree et trigger
-
-                # no exclusion, load the value
-                if aMap.key in json_obs:
-                    obs_dataset.__setattr__[aMap.field] = json_obs[aMap.key]
-            else:
-                # get the exclusion value if specified, and not the string 'null'
-                if exclusion.__contains__(aMap) is True:
-                    if exclusion[aMap.field] == 'value':
-                        obs_dataset.__setattr__[aMap.field] = json_obs[aMap.key]
-                    elif exclusion[aMap.field] != 'null':
-                        obs_dataset.__setattr__[aMap.field] = exclusion[aMap.field]
-
-    def process_aggregation(self, poste_metor: Poste, json_obs: json, agg_all_dataset, extreme_recalc: json, flag: bool) -> json:
+    def process_aggregation(self, poste_metor: PosteMeteor, json_obs: json, agg_all_dataset, extreme_recalc: json, flag: bool) -> json:
         """
             process_aggregation, aggregate measur data
 
@@ -59,18 +33,19 @@ class RootTypeInstrument:
             json_obs. is {} when flag is False
             agg_all_dataset: List[0...6] of aggregations
             extreme_recalc: json for a later computation of min/max needed (only when flag is False)
-            flag: True for insert, False for delete 
+            flag: True for insert, False for delete
         """
 
         # is there any new measure
-        b_donnee_elementaire = json_obs.__contains__(ClimConstants.JSON_CURRENT) and json_obs[ClimConstants.JSON_CURRENT] != {} and json_obs[ClimConstants.JSON_CURRENT] != []
+        b_donnee_elementaire = json_obs.__contains__(ClimConstants.JSON_CURRENT) and json_obs[ClimConstants.JSON_CURRENT] != {
+        } and json_obs[ClimConstants.JSON_CURRENT] != []
 
         # is there anty aggregated data
-        b_donnee_aggregee = json_obs.__contains__(ClimConstants.JSON_AGGREGATE) and json_obs[ClimConstants.JSON_AGGREGATE] != {} and json_obs[ClimConstants.JSON_AGGREGATE] != []
+        b_donnee_aggregee = json_obs.__contains__(ClimConstants.JSON_AGGREGATE) and json_obs[ClimConstants.JSON_AGGREGATE] != {
+        } and json_obs[ClimConstants.JSON_AGGREGATE] != []
 
         # delta value to aggregate into upper levels
         delta_agg = {}
-
 
         # si bDonnesElementaires && !bDonneesAggregaton
         #   calcule delta agregation par heure

@@ -82,3 +82,8 @@ def calc_agg_date(niveau_agg: AggLevel, dt_utc: datetime, factor: float = 0) -> 
         print(type(inst))    # the exception instance
         print(inst.args)     # arguments stored in .args
         print(inst)          # __str__ allows args to be printed directly,
+
+
+def is_flagged(flag: int, setting: int) -> bool:
+    """ check if the bit is set """
+    return ((flag & setting) == flag)

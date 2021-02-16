@@ -8,7 +8,7 @@ class TypeInstrumentMeteor():
         gere les objets TypeInstrument metier
 
         o=TypeInstrumentMeteor(type_instrument_id)
-        o.me -> TypeInstrument object (data, methods...)
+        o.data -> TypeInstrument object (data, methods...)
 
     """
 
@@ -17,10 +17,10 @@ class TypeInstrumentMeteor():
 
         try:
             if TypeInstrument.objects.filter(id=type_instrument_id).exists():
-                self.me = TypeInstrument.objects.get(id=type_instrument_id)
+                self.data = TypeInstrument.objects.get(id=type_instrument_id)
             else:
-                self.me = TypeInstrument()
-                self.me.save()
+                self.data = TypeInstrument()
+                self.data.save()
 
         except Exception as inst:
             print(type(inst))    # the exception instance
@@ -30,7 +30,7 @@ class TypeInstrumentMeteor():
     def save(self):
         """ save Poste and Exclusions """
         try:
-            self.me.save()
+            self.data.save()
 
         except Exception as inst:
             print(type(inst))    # the exception instance
@@ -39,4 +39,4 @@ class TypeInstrumentMeteor():
 
     def __str__(self):
         """print myself"""
-        return "TypeInstrumentMeteor id: " + str(self.me.id) + ", name: " + str(self.me.name)
+        return "TypeInstrumentMeteor id: " + str(self.data.id) + ", name: " + str(self.data.name)
