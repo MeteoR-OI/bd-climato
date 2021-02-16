@@ -1,0 +1,81 @@
+from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, Exclusion, TypeInstrument   #
+import datetime
+from dateutil.relativedelta import relativedelta
+from app.classes.obsMeteor import ObsMeteor
+from app.classes.posteMeteor import PosteMeteor
+from app.classes.ExcluMeteor import ExcluMeteor
+from app.tools.agg_tools import get_agg_object
+import json
+from app.tools.jsonPlus import jsonPlus
+
+
+class type_temp_test():
+    """ debug helper """
+
+    def __init__(self):
+        """ pre load std data """
+        self.dt_test = datetime.datetime(2021, 2, 11, 13, 9, 30, 0, datetime.timezone.utc)
+        self.p_test = PosteMeteor.get(1)
+
+        self.o_test = self.p_test.observation(self.dt_test)
+        self.a_test = self.p_test.aggregations(self.dt_test)
+        json_string = """
+        {
+            "metor" : "BBF015",
+            "info" : {
+                "blabla": "blabla"
+            },
+            "data":
+            [
+                {
+                    "current":
+                        {
+                            "dat" : "2021-02-11T13:09:30+00:00",
+                            "duration" : 300,
+                            "temp_out" : 29.5
+                        },
+                    "aggregations": [
+                        {
+                            "level" : "H",
+                            "temp_out_avg" : 32.75
+                        },
+                        {
+                            "level" : "D",
+                            "rain_rate_avg" : 1.23
+                        }
+                    ]
+                },
+                {
+                    "current" :
+                        {
+                            "dat" : "2021-02-11T13:09:40+00:00",
+                            "duration" : 300,
+                            "temp_out" : 30
+                        },
+                    "aggregations" : [
+                        {
+                            "level" : "H",
+                            "temp_out_avg" : 33
+                        },
+                        {
+                            "level" : "D",
+                            "rain_rate_avg" : 1.23
+                        }
+                    ]
+                }
+            ]
+        }
+        """
+        self.j_test = jsonPlus().loads(json_string)
+
+    def delete_obs_agg(self):
+        Observation.objects.delete()
+        Agg_hour.objects.delete()
+        Agg_day.objects.delete()
+        Agg_month.objects.delete()
+        Agg_year.objects.delete()
+        Agg_global.objects.delete()
+
+    def load_obs(self):
+        print("to be done")
+        

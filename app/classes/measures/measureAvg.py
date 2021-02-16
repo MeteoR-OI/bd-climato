@@ -2,11 +2,12 @@ import datetime
 from app.classes.posteMeteor import PosteMeteor
 from app.classes.obsMeteor import ObsMeteor
 from app.tools.climConstant import AggLevel, MeasureProcessingBitMask
+from app.classes.measures.measureAvg import RootMeasure
 from app.tools.agg_tools import is_flagged
 import json
 
 
-class MeasureAvg:
+class MeasureAvg(RootMeasure):
     """
         MeasureAvg
 

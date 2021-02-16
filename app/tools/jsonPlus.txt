@@ -1,0 +1,5 @@
+from app.tools.jsonPlus import jsonPlus
+import json
+jp = jsonPlus()
+z = jp.json_test()
+jp.loads(z)
