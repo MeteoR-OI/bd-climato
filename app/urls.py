@@ -11,4 +11,5 @@ urlpatterns = [
     path('month/<int:poste_id>', views.view_agg_month),
     path('year/<int:poste_id>', views.view_agg_year),
     path('all/<int:poste_id>', views.view_agg_all),
+    path('debug', views.test_compute),
 ]

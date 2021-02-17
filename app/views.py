@@ -1,6 +1,8 @@
 from django.http import HttpResponse
 import json
 from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, Exclusion, TypeInstrument   #
+from app.classes.tests.typeTemp_test import type_temp_test
+from app.tools.jsonPlus import jsonPlus
 
 
 def index(request):
@@ -22,6 +24,18 @@ def view_last_obs(request, poste_id):
 
 def view_agg_hour(request, poste_id):
     return view_agg(request, "H", poste_id)
+
+
+def test_compute(request):
+    """ debug environment"""
+    try:
+
+        tt = type_temp_test()
+        ret_json = tt.load_obs()
+        return HttpResponse(jsonPlus().dumps(ret_json))
+
+    except Exception as inst:
+        return HttpResponse(inst)
 
 
 def view_agg_day(request, poste_id):

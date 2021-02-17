@@ -86,4 +86,4 @@ def calc_agg_date(niveau_agg: AggLevel, dt_utc: datetime, factor: float = 0) -> 
 
 def is_flagged(flag: int, setting: int) -> bool:
     """ check if the bit is set """
-    return ((flag & setting) == flag)
+    return ((flag & int(setting)) == int(setting))

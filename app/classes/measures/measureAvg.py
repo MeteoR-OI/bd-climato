@@ -2,12 +2,12 @@ import datetime
 from app.classes.posteMeteor import PosteMeteor
 from app.classes.obsMeteor import ObsMeteor
 from app.tools.climConstant import AggLevel, MeasureProcessingBitMask
-from app.classes.measures.measureAvg import RootMeasure
+# from app.classes.measures.measureAvg import RootMeasure
 from app.tools.agg_tools import is_flagged
 import json
 
 
-class MeasureAvg(RootMeasure):
+class MeasureAvg():
     """
         MeasureAvg
 
@@ -34,7 +34,7 @@ class MeasureAvg(RootMeasure):
             field_name = my_measure['field']
 
             # get exclusion
-            exclusion = poste_meteor.get_exclusion(my_measure['type_i'])
+            exclusion = poste_meteor.exclusion(my_measure['type_i'])
 
             b_set_val = True
             b_set_null = False
@@ -49,81 +49,81 @@ class MeasureAvg(RootMeasure):
                 if obs_meteor.__contains__(field_name):
                     if b_set_val:
                         if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
-                            delta_values[field_name + '_sum'] = obs_meteor[field_name] * -1
+                            delta_values[field_name + '_sum'] = obs_meteor.data[field_name] * -1
                         else:
-                            delta_values[field_name + '_sum'] = obs_meteor[field_name] * -1 * obs_meteor['duration']
-                        delta_values[field_name + '_duration'] = obs_meteor['duration'] * -1
+                            delta_values[field_name + '_sum'] = obs_meteor.data[field_name] * -1 * obs_meteor.data['duration']
+                        delta_values[field_name + '_duration'] = obs_meteor.data['duration'] * -1
                     elif b_set_null is False:
                         if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
                             delta_values[field_name + '_sum'] = exclusion[field_name] * -1
                         else:
-                            delta_values[field_name + '_sum'] = exclusion[field_name] * -1 * obs_meteor['duration']
-                        delta_values[field_name + '_duration'] = obs_meteor['duration'] * -1
+                            delta_values[field_name + '_sum'] = exclusion[field_name] * -1 * obs_meteor.data['duration']
+                        delta_values[field_name + '_duration'] = obs_meteor.data['duration'] * -1
                 return delta_values
 
             # no processing if measure is nullified by an exclusion
-            if b_set_null is False:
+            if b_set_null is True:
                 return delta_values
 
             # process our measure
-            if measures.data[measure_idx].__contains__(field_name):
+            if measures['data'][measure_idx].__contains__('current') and measures['data'][measure_idx]['current'].__contains__(field_name):
                 if b_set_val:
                     # add Measure to ObsMeteor
                     if (is_flagged(my_measure['special'], MeasureProcessingBitMask.DoNotProcessTwiceInObs)) is False:
-                        obs_meteor[field_name] = measures.data[measure_idx][field_name]
+                        obs_meteor.data[field_name] = measures['data'][measure_idx]['current'][field_name]
                         if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                            obs_meteor[field_name + '_dir'] = measures.data[measure_idx][field_name+"_dir"]
+                            obs_meteor.data[field_name + '_dir'] = measures['data'][measure_idx]['current'][field_name+"_dir"]
                     # add Measure to delta_values
                     if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
-                        delta_values[field_name + '_sum'] = measures.data[measure_idx][field_name]
+                        delta_values[field_name + '_sum'] = measures['data'][measure_idx]['current'][field_name]
                     else:
-                        delta_values[field_name + '_sum'] = measures.data[measure_idx][field_name] * measures.data[measure_idx]['duration']
-                    delta_values[field_name + '_duration'] = measures.data[measure_idx]['duration']
+                        delta_values[field_name + '_sum'] = measures['data'][measure_idx]['current'][field_name] * measures['data'][measure_idx]['current']['duration']
+                    delta_values[field_name + '_duration'] = measures['data'][measure_idx]['current']['duration']
                 else:
                     # add exclusion to ObsMeteor
                     if (is_flagged(my_measure['special'], MeasureProcessingBitMask.DoNotProcessTwiceInObs)) is False:
-                        obs_meteor[field_name] = exclusion[field_name]
+                        obs_meteor.data[field_name] = exclusion[field_name]
                         if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
                             # if wind is forced, then win_dir should be forced (probably not a real situation....)
-                            obs_meteor[field_name + '_dir'] = exclusion[field_name + "_dir"]
+                            obs_meteor.data[field_name + '_dir'] = exclusion[field_name + "_dir"]
                     # add Exclusion to delta_values
                     if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
                         delta_values[field_name + '_sum'] = exclusion[field_name]
                     else:
-                        delta_values[field_name + '_sum'] = exclusion[field_name] * measures.data[measure_idx]['duration']
-                    delta_values[field_name + '_duration'] = measures.data[measure_idx]['duration']
+                        delta_values[field_name + '_sum'] = exclusion[field_name] * measures['data'][measure_idx]['current']['duration']
+                    delta_values[field_name + '_duration'] = measures['data'][measure_idx]['current']['duration']
         
             # datetime de la demie-periode
-            half_period_time = measures.data[measure_idx]['dat'] + datetime.timedelta(minutes=int(measures.data[measure_idx]['duration'] / 2))
+            half_period_time = measures['data'][measure_idx]['current']['dat'] + datetime.timedelta(minutes=int(measures['data'][measure_idx]['current']['duration'] / 2))
 
             # store M_max for the next upper aggregation
-            if measures.data[measure_idx].__contains__(field_name + '_max'):
+            if measures['data'][measure_idx]['current'].__contains__(field_name + '_max'):
                 # on a le max dans le json
-                obs_meteor[field_name + '_max'] = measures.data[measure_idx][field_name + '_max']
-                obs_meteor[field_name + '_max_time'] = measures.data[measure_idx][field_name + '_max_time']
-                delta_values[field_name + '_max'] = measures.data[measure_idx][field_name + '_max']
-                delta_values[field_name + '_max_time'] = measures.data[measure_idx][field_name + '_max_time']
+                obs_meteor.data[field_name + '_max'] = measures['data'][measure_idx]['current'][field_name + '_max']
+                obs_meteor.data[field_name + '_max_time'] = measures['data'][measure_idx]['current'][field_name + '_max_time']
+                delta_values[field_name + '_max'] = measures['data'][measure_idx]['current'][field_name + '_max']
+                delta_values[field_name + '_max_time'] = measures['data'][measure_idx]['current'][field_name + '_max_time']
                 if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
                     """ save Wind_max_dir """
-                    obs_meteor[field_name + '_max_dir'] = measures.data[measure_idx][field_name + '_max_dir']
+                    obs_meteor.data[field_name + '_max_dir'] = measures['data'][measure_idx]['current'][field_name + '_max_dir']
             else:
                 # on prend la valeur reportee, et le milieu de l'heure de la periode de la donnee elementaire
-                delta_values[field_name + '_max'] = obs_meteor[field_name]
-                delta_values[field_name + '_max_time'] = measures.data[measure_idx][field_name + '_min_time']
+                delta_values[field_name + '_max'] = obs_meteor.data[field_name]
+                delta_values[field_name + '_max_time'] = measures['data'][measure_idx]['current'][field_name + '_min_time']
 
             # store M_min for the next upper aggregation
-            if measures.data[measure_idx].__contains__(field_name + '_min'):
+            if measures['data'][measure_idx]['current'].__contains__(field_name + '_min'):
                 # on a le min dans le json
-                obs_meteor[field_name + '_min'] = measures.data[measure_idx][field_name + '_min']
-                obs_meteor[field_name + '_min_time'] = measures.data[measure_idx][field_name + '_min_time']
-                delta_values[field_name + '_min'] = measures.data[measure_idx][field_name + '_min']
-                delta_values[field_name + '_min_time'] = measures.data[measure_idx][field_name + '_min_time']
+                obs_meteor.data[field_name + '_min'] = measures['data'][measure_idx]['current'][field_name + '_min']
+                obs_meteor.data[field_name + '_min_time'] = measures['data'][measure_idx]['current'][field_name + '_min_time']
+                delta_values[field_name + '_min'] = measures['data'][measure_idx]['current'][field_name + '_min']
+                delta_values[field_name + '_min_time'] = measures['data'][measure_idx]['current'][field_name + '_min_time']
                 if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
                     """ save Wind_min_dir """
-                    obs_meteor[field_name + '_min_dir'] = measures.data[measure_idx][field_name + '_min_dir']
+                    obs_meteor.data[field_name + '_min_dir'] = measures['data'][measure_idx]['current'][field_name + '_min_dir']
             else:
                 # on prend la valeur reportee, et le milieu de l'heure de la periode de la donnee elementaire
-                delta_values[field_name + '_min'] = obs_meteor[field_name]
+                delta_values[field_name + '_min'] = obs_meteor.data[field_name]
                 delta_values[field_name + '_min_time'] = half_period_time
 
             return delta_values
@@ -139,17 +139,9 @@ class MeasureAvg(RootMeasure):
 
         extremes_todo = []
         agg_niveau_idx = 0
-        for anAgg in AggLevel:
-            """loop for all aggregations in ascending level"""
-            agg_ds = aggregations[agg_niveau_idx]
-            agg_j = {}
-            if measures.data[measure_idx].__contains__()
-
-
-
-
-
-
-            agg_niveau_idx += 1
-
+        # for anAgg in AggLevel:
+        #     """loop for all aggregations in ascending level"""
+        #     agg_ds = aggregations[agg_niveau_idx]
+        #     agg_j = {}
+            # if measures['data'][measure_idx]['current'].__contains__()
         return extremes_todo

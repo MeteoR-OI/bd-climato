@@ -1,4 +1,4 @@
-from app.tools.agg_tools import round_datetime_per_aggregation, get_agg_object, convert_relative_hour
+from app.tools.agg_tools import get_agg_object, convert_relative_hour
 from app.tools.climConstant import ClimConstants, AggLevelConstant
 from app.classes.posteMeteor import PosteMeteor
 from app.classes.aggMeteor import AggMeteor
@@ -14,6 +14,10 @@ class RootTypeInstrument:
     def __init(self):
         tmpI = TypeInstrumentMeteor(self.my_type_instr_id)
         self.type_instrument = tmpI.data
+
+    def mapping(self):
+        """return current mapping"""
+        return self.mapping
 
     def process_observation(self, poste_metor: PosteMeteor, json_obs: json, obs_dataset: ObsMeteor, flag: bool) -> json:
         """
