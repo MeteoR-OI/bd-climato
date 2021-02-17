@@ -1,14 +1,10 @@
 from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, Exclusion, TypeInstrument   #
 import datetime
-from dateutil.relativedelta import relativedelta
-from app.classes.obsMeteor import ObsMeteor
 from app.classes.posteMeteor import PosteMeteor
-from app.classes.ExcluMeteor import ExcluMeteor
-from app.tools.agg_tools import get_agg_object
-import json
 from app.tools.jsonPlus import jsonPlus
 from app.classes.typeInstruments.typeTemp import TypeTemp
 from app.classes.measures.measureAvg import MeasureAvg
+
 
 class type_temp_test():
     """ debug helper """
@@ -81,22 +77,41 @@ class type_temp_test():
     def load_obs(self):
         try:
             tt = TypeTemp()
-            # tt.mapping[0] -> first measure
+            # tt.mapping[0] -> first measure, tt.p_test, tt_o_test, tt.j_test, tt.a_test
+
+            pp = PosteMeteor.get(1)
+            # remove existing exclusion in poste (will require a reload)
+            xx = pp.exclus
+            pp.exclus = []
+
+            # call the method to update obs, and return delta_val
             ma = MeasureAvg()
-            return ma.update_obs_and_get_delta(self.p_test, tt.mapping[0], self.j_test, 0, self.o_test, True)
+            delta_val = ma.update_obs_and_get_delta(self.p_test, tt.mapping[0], self.j_test, 0, self.o_test, True)
+
+            # restore exclus, as our object is cached
+            pp.exclus = xx
+
+            # example of test to execute
+            # Observation values should be tested too...
+
+            # delta_val validation
+            if int(delta_val['temp_out_sum']) != 8850:
+                return "temp_out_sum wrong " + str(delta_val['temp_out_sum'])
+            if int(delta_val['temp_out_duration']) != 300:
+                return "temp_out_duration wrong: " + str(delta_val['temp_out_duration'])
+            if float(delta_val['temp_out_max']) != 29.5:
+                return "temp_out_max wrong: " + str(delta_val['temp_out_max'])
+            if str(delta_val['temp_out_max_time']) != '2021-02-11 13:12:00+00:00':
+                return "temp_out_max_time wrong: " + str(delta_val['temp_out_max_time'])
+            if float(delta_val['temp_out_min']) != 29.5:
+                return "temp_out_min wrong: " + str(delta_val['temp_out_min'])
+            if str(delta_val['temp_out_min_time']) != '2021-02-11 13:12:00+00:00':
+                return "temp_out_min_time wrong: " + str(delta_val['temp_out_min_time'])
+
+            # return to the browser when executed in interactive mode... (not needed in real testing situation)
+            return delta_val
 
         except Exception as inst:
             print(type(inst))    # the exception instance
             print(inst.args)     # arguments stored in .args
             print(inst)          # __str__ allows args to be printed directly,
-
-
-if __name__ == "__main__":
-    try:
-        ma = MeasureAvg()
-        ma.load_obs()
-
-    except Exception as inst:
-        print(type(inst))    # the exception instance
-        print(inst.args)     # arguments stored in .args
-        print(inst)

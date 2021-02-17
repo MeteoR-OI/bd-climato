@@ -36,7 +36,7 @@ class MeasureAvg():
             # get exclusion
             exclusion = poste_meteor.exclusion(my_measure['type_i'])
             # todo: no exclusion for now
-            exclusion = {}
+            # exclusion = {}
 
             b_set_val = True
             b_set_null = False
