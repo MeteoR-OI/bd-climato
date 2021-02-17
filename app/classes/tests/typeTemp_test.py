@@ -83,7 +83,7 @@ class type_temp_test():
             tt = TypeTemp()
             # tt.mapping[0] -> first measure
             ma = MeasureAvg()
-            ma.update_obs_and_get_delta(self.p_test, tt.mapping[0], self.j_test, 0, self.o_test, True)
+            return ma.update_obs_and_get_delta(self.p_test, tt.mapping[0], self.j_test, 0, self.o_test, True)
 
         except Exception as inst:
             print(type(inst))    # the exception instance

@@ -32,7 +32,8 @@ def test_compute(request):
 
         tt = type_temp_test()
         ret_json = tt.load_obs()
-        return HttpResponse(jsonPlus().dumps(ret_json))
+        ret = jsonPlus().dumps(ret_json)
+        return HttpResponse(ret)
 
     except Exception as inst:
         return HttpResponse(inst)
