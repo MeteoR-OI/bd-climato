@@ -2,4 +2,14 @@ from app.tools.jsonPlus import jsonPlus
 import json
 jp = jsonPlus()
 z = jp.json_test()
-jp.loads(z)
+jj=jp.loads(z)
+-> check that all dat/last_dat_rec/max_out_temp_time was well decoded as datetime -> isinstance(jj['data'][0]['current']['dat'], datetime.datetime) ==  True
+
+js=jp.dumps(jj)
+-> Check la date en string ???
+
+jj2=jp.loads(js)
+-> check qu'on a rien perdu (comparer jp.dumps(jj) et jp.dumps(jj2) ??)
+
+
+

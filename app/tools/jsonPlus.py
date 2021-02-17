@@ -8,6 +8,7 @@ class jsonPlus():
     """ super class adding date serialization/deserialization aupport """
 
     def json_test(self) -> str:
+        """ json sample for future testing """
         json_string = """
         {
             "metor" : "BBF015",
@@ -76,25 +77,25 @@ class jsonPlus():
         if isinstance(j, dict):
             # print("rec_json(" + json.dumps(j))
             for k, v in j.items():
-                print("Decode: " + k + ":" + str(j[k]) + ", type: " + str(type(j[k])))
+                # print("Decode: " + k + ":" + str(j[k]) + ", type: " + str(type(j[k])))
                 if 'dat' == k:
-                    print('  found dat..')
+                    # print('  found dat..')
                     j[k] = dateutil.parser.parse(str(j[k]))
                 if 'last_dat_rec' == k:
-                    print('  found last_dat_rec..')
+                    # print('  found last_dat_rec..')
                     j[k] = dateutil.parser.parse(str(j[k]))
                 if k.find('_time') > -1:
-                    print('  found end with _time')
+                    # print('  found end with _time')
                     j[k] = dateutil.parser.parse(str(j[k]))
                 if isinstance(j[k], dict):
-                    print("** going down... **")
+                    # print("** going down... **")
                     self.rec_json(j[k])
-                print("----- loop -----")
+                # print("----- loop -----")
 
 
 # subclass JSONEncoder
 class DateTimeEncoder(json.JSONEncoder):
-
+    """ Encode datetime to str """
     # Override the default method
     def default(self, obj):
         if isinstance(obj, (datetime.date, datetime.datetime)):
