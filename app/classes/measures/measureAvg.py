@@ -31,7 +31,11 @@ class MeasureAvg():
         try:
             # deltaValues returned for aggregation processing
             delta_values = {}
-            field_name = my_measure['field']
+            key_name = my_measure['key']
+            # load field if defined in json
+            field_name = key_name
+            if my_measure.__contains__('field'):
+                field_name = my_measure['field']
 
             # get exclusion
             exclusion = poste_meteor.exclusion(my_measure['type_i'])
@@ -48,21 +52,25 @@ class MeasureAvg():
             if b_set_null is True:
                 return delta_values
 
+            m_suffix = ''
+            if (is_flagged(my_measure['special'], MeasureProcessingBitMask.IsOmmMeasure)):
+                m_suffix = '_omm'
+
             # in delete situation, generate the delta_values from the obs dataset
             if flag is False:
-                if obs_meteor.__contains__(field_name):
+                if obs_meteor.__contains__(field_name + m_suffix):
                     if b_set_val:
                         if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
-                            delta_values[field_name + '_sum'] = obs_meteor.data.__setattr__(field_name, -1)
+                            delta_values[field_name + m_suffix + '_sum'] = obs_meteor.data.__setattr__(field_name, -1)
                         else:
-                            delta_values[field_name + '_sum'] = obs_meteor.data.__setattr__(field_name, -1 * obs_meteor.data['duration'])
-                        delta_values[field_name + '_duration'] = obs_meteor.data['duration'] * -1
+                            delta_values[field_name + m_suffix + '_sum'] = obs_meteor.data.__setattr__(field_name, -1 * obs_meteor.data['duration'])
+                        delta_values[field_name + m_suffix + '_duration'] = obs_meteor.data['duration'] * -1
                     elif b_set_null is False:
                         if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
-                            delta_values[field_name + '_sum'] = exclusion[field_name] * -1
+                            delta_values[field_name + m_suffix + '_sum'] = exclusion[field_name] * -1
                         else:
-                            delta_values[field_name + '_sum'] = exclusion[field_name] * -1 * obs_meteor.data['duration']
-                        delta_values[field_name + '_duration'] = obs_meteor.data['duration'] * -1
+                            delta_values[field_name + m_suffix + '_sum'] = exclusion[field_name] * -1 * obs_meteor.data['duration']
+                        delta_values[field_name + m_suffix + '_duration'] = obs_meteor.data['duration'] * -1
                 return delta_values
 
             # process our measure
