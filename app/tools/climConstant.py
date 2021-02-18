@@ -8,7 +8,7 @@ class ClimConstants(Constants):
 
 
 class AggLevelConstant(Constants):
-    """ code agregation """
+    """ code agregation - non Sorted """
     Hour = 'H'
     Day = 'D'
     Month = 'M'
@@ -16,6 +16,7 @@ class AggLevelConstant(Constants):
     All = 'A'
 
 
+# sorted list of Aggregation levels
 AggLevel = ['H', 'D', 'M', 'Y', 'A']
 
 

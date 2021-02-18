@@ -19,17 +19,17 @@ class RootTypeInstrument:
         """return current mapping"""
         return self.mapping
 
-    def process_observation(self, poste_metor: PosteMeteor, json_obs: json, obs_dataset: ObsMeteor, flag: bool) -> json:
+    def process_observation(self, poste_meteor: PosteMeteor, json_obs: json, obs_dataset: ObsMeteor, flag: bool) -> json:
         """
             process_observation
             parameters:
-                poste_metor: PosteMeteor
+                poste_meteor: PosteMeteor
                 json_obs: json of the new mesure to process
             data into obs_dataset. flag is True for insert, False for delete
 
         """
 
-    def process_aggregation(self, poste_metor: PosteMeteor, json_obs: json, agg_all_dataset, extreme_recalc: json, flag: bool) -> json:
+    def process_aggregation(self, poste_meteor: PosteMeteor, json_obs: json, agg_all_dataset, extreme_recalc: json, flag: bool) -> json:
         """
             process_aggregation, aggregate measur data
 
@@ -74,7 +74,7 @@ class RootTypeInstrument:
         #    field est different de la duration de l'agregation basee sur TU
         # comment limiter le besoin de lire les records next pour agregation jour/mois/an
 
-    def process_extreme(self, poste_metor, json_obs, agg_all_dataset, flag):
+    def process_extreme(self, poste_meteor, json_obs, agg_all_dataset, flag):
         """process observation data into al aggregation dataset. flag is True for insert, False for delete"""
 
         # bDonnesElementaires si existe donnees elementaires

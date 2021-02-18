@@ -31,12 +31,14 @@ class MeasureAvg():
         try:
             # deltaValues returned for aggregation processing
             delta_values = {}
-            field_name = my_measure['field']
+            key_name = my_measure['key']
+            # load field if defined in json
+            field_name = key_name
+            if my_measure.__contains__('field'):
+                field_name = my_measure['field']
 
             # get exclusion
             exclusion = poste_meteor.exclusion(my_measure['type_i'])
-            # todo: no exclusion for now
-            # exclusion = {}
 
             b_set_val = True
             b_set_null = False
@@ -46,25 +48,29 @@ class MeasureAvg():
                 if exclusion[field_name] == 'null':
                     b_set_null = True
 
-            # in delete situation, generate the delta_values from the obs dataset
-            if flag is False:
-                if obs_meteor.__contains__(field_name):
-                    if b_set_val:
-                        if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
-                            delta_values[field_name + '_sum'] = obs_meteor.data.__setattr__(field_name, -1)
-                        else:
-                            delta_values[field_name + '_sum'] = obs_meteor.data.__setattr__(field_name, -1 * obs_meteor.data['duration'])
-                        delta_values[field_name + '_duration'] = obs_meteor.data['duration'] * -1
-                    elif b_set_null is False:
-                        if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
-                            delta_values[field_name + '_sum'] = exclusion[field_name] * -1
-                        else:
-                            delta_values[field_name + '_sum'] = exclusion[field_name] * -1 * obs_meteor.data['duration']
-                        delta_values[field_name + '_duration'] = obs_meteor.data['duration'] * -1
-                return delta_values
-
             # no processing if measure is nullified by an exclusion
             if b_set_null is True:
+                return delta_values
+
+            m_suffix = ''
+            if (is_flagged(my_measure['special'], MeasureProcessingBitMask.IsOmmMeasure)):
+                m_suffix = '_omm'
+
+            # in delete situation, generate the delta_values from the obs dataset
+            if flag is False:
+                if obs_meteor.__contains__(field_name + m_suffix):
+                    if b_set_val:
+                        if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
+                            delta_values[field_name + m_suffix + '_sum'] = obs_meteor.data.__setattr__(field_name, -1)
+                        else:
+                            delta_values[field_name + m_suffix + '_sum'] = obs_meteor.data.__setattr__(field_name, -1 * obs_meteor.data['duration'])
+                        delta_values[field_name + m_suffix + '_duration'] = obs_meteor.data['duration'] * -1
+                    elif b_set_null is False:
+                        if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
+                            delta_values[field_name + m_suffix + '_sum'] = exclusion[field_name] * -1
+                        else:
+                            delta_values[field_name + m_suffix + '_sum'] = exclusion[field_name] * -1 * obs_meteor.data['duration']
+                        delta_values[field_name + m_suffix + '_duration'] = obs_meteor.data['duration'] * -1
                 return delta_values
 
             # process our measure
@@ -136,14 +142,69 @@ class MeasureAvg():
             print(inst)          # __str__ allows args to be printed directly,
 
     # {'key': 'temp_out', 'field': 'temp_out', 'avg': True, 'Min': True, 'max': True, 'hour_deca': 0, 'special': 0},
-    def update_aggs(self, poste_meteor: PosteMeteor, measure_def: json, measures: json, measure_idx: int, aggregations: list, delta_values: json, flag: bool) -> json:
+    def update_aggs(self, poste_meteor: PosteMeteor, my_measure: json, measures: json, measure_idx: int, aggregations: list, delta_values: json, flag: bool) -> json:
         """ update all aggregation from the delta data, and aggregations key on json, return a list of extremes to recompute """
 
-        extremes_todo = []
-        agg_niveau_idx = 0
-        # for anAgg in AggLevel:
-        #     """loop for all aggregations in ascending level"""
-        #     agg_ds = aggregations[agg_niveau_idx]
-        #     agg_j = {}
-            # if measures['data'][measure_idx]['current'].__contains__()
-        return extremes_todo
+        try:
+            extremes_todo = []
+            agg_niveau_idx = 0
+            for anAgg in AggLevel:
+                """loop for all aggregations in ascending level"""
+                delta_values_next = {}
+                agg_ds = aggregations[agg_niveau_idx]
+                agg_j = {}
+
+                if measures['data'][measure_idx].__contains__('aggregates'):
+                    for a_j_agg in measures['data'][measure_idx]['aggregates']:
+                        if a_j_agg['level'] == anAgg:
+                            agg_j = a_j_agg
+                            break
+                
+                field_name = my_measure['field']
+
+                # get exclusion
+                exclusion = poste_meteor.exclusion(my_measure['type_i'])
+
+                # get the exclusion value if specified, and not the string 'null'
+                if exclusion.__contains__(field_name) is True and exclusion[field_name] != 'value' and exclusion[field_name] == 'null':
+                    return delta_values
+
+                tmp_duration = int(measures['data'][measure_idx]['current']['duration'])
+                if anAgg == 'H':
+                    data_src = agg_ds
+                else:
+                    data_src = delta_values
+
+                if agg_j.__contains__(field_name + '_avg'):
+                    if agg_ds.__contains__(field_name + '_avg'):
+                        # json.aggregations contains M_avg, M_sum, M_duration
+                        agg_ds[field_name + '_avg'] += float(agg_j[field_name + '_avg'])
+                        agg_ds[field_name + '_sum'] += int(agg_j[field_name + '_sum']) * tmp_duration
+                        agg_ds[field_name + '_duration'] += tmp_duration
+                        # update delta_values for next level
+                        delta_values_next.__setattribute__(field_name + '_avg', float(agg_j[field_name + '_avg']))
+                        delta_values_next.__setattribute__(field_name + '_sum', int(agg_j[field_name + '_sum']) * tmp_duration)
+                        delta_values_next.__setattribute__(field_name + '_duration', tmp_duration)
+
+                    elif agg_ds.__contains__(field_name + '_sum'):
+                        # json.aggregations contains M_sum, M_duration only
+                        agg_ds[field_name + '_sum'] += int(agg_j[field_name + '_sum']) * tmp_duration
+                        agg_ds[field_name + '_duration'] += tmp_duration
+                        agg_ds[field_name + '_avg'] = agg_ds[field_name + '_sum'] / agg_ds[field_name + '_duration']
+                        # update delta_values for next level
+                        delta_values_next.__setattribute__(field_name + '_avg', float(agg_j[field_name + '_avg']))
+                        delta_values_next.__setattribute__(field_name + '_sum', int(agg_j[field_name + '_sum']) * tmp_duration)
+                        delta_values_next.__setattribute__(field_name + '_duration', tmp_duration)
+
+                    else:
+                        # json.aggregations does not contains any value for our Measure
+                        agg_ds.__setattribute__(field_name + '_avg', float(agg_j[field_name + '_avg']))
+                        agg_ds.__setattribute__(field_name + '_sum', int(agg_j[field_name + '_sum']) * tmp_duration)
+                        agg_ds.__setattribute__(field_name + '_duration', tmp_duration)
+            return extremes_todo
+
+        except Exception as inst:
+            print(type(inst))    # the exception instance
+            print(inst.args)     # arguments stored in .args
+            print(inst)          # __str__ allows args to be printed directly,
+

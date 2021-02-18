@@ -4,6 +4,7 @@ from app.classes.posteMeteor import PosteMeteor
 from app.tools.jsonPlus import jsonPlus
 from app.classes.typeInstruments.typeTemp import TypeTemp
 from app.classes.measures.measureAvg import MeasureAvg
+from app.tools.getterSetter import GetterSetter
 
 
 class type_temp_test():
@@ -73,6 +74,17 @@ class type_temp_test():
         Agg_month.objects.all().delete()
         Agg_year.objects.all().delete()
         Agg_global.objects.all().delete()
+
+    def getset(self):
+        """ getter/setter test on djamgo objects """
+        fm = GetterSetter()
+        old_meteor = fm.get(self.p_test, 'meteor')
+        ret = {'meteor': old_meteor}
+        fm.set(self.p_test, 'new value', 'meteor')
+        ret['first'] = str(self.p_test.data)
+        fm.set(self.p_test, old_meteor, 'meteor')
+        ret['second'] = str(self.p_test.data)
+        return ret
 
     def load_obs(self):
         try:
