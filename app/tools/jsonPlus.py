@@ -11,7 +11,7 @@ class jsonPlus():
         """ json sample for future testing """
         json_string = """
         {
-            "metor" : "BBF015",
+            "meteor" : "BBF015",
             "info" : {
                 "blabla": "blabla"
             },

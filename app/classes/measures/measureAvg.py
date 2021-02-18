@@ -165,19 +165,16 @@ class MeasureAvg():
                 # get exclusion
                 exclusion = poste_meteor.exclusion(my_measure['type_i'])
 
-                b_set_val = True
-                b_set_null = False
                 # get the exclusion value if specified, and not the string 'null'
-                if exclusion.__contains__(field_name) is True and exclusion[field_name] != 'value':
-                    b_set_val = False    # exclusion[field_name] = 'null' or value_to_force
-                    if exclusion[field_name] == 'null':
-                        b_set_null = True
-
-                # no processing if measure is nullified by an exclusion
-                if b_set_null is True:
+                if exclusion.__contains__(field_name) is True and exclusion[field_name] != 'value' and exclusion[field_name] == 'null':
                     return delta_values
 
                 tmp_duration = int(measures['data'][measure_idx]['current']['duration'])
+                if anAgg == 'H':
+                    data_src = agg_ds
+                else:
+                    data_src = delta_values
+
                 if agg_j.__contains__(field_name + '_avg'):
                     if agg_ds.__contains__(field_name + '_avg'):
                         # json.aggregations contains M_avg, M_sum, M_duration
@@ -205,6 +202,7 @@ class MeasureAvg():
                         agg_ds.__setattribute__(field_name + '_sum', int(agg_j[field_name + '_sum']) * tmp_duration)
                         agg_ds.__setattribute__(field_name + '_duration', tmp_duration)
             return extremes_todo
+
         except Exception as inst:
             print(type(inst))    # the exception instance
             print(inst.args)     # arguments stored in .args
