@@ -12,42 +12,21 @@ class PosteMeteor:
     """
         PosteMeteor
 
-        gere les objets Poste metier en memoire, une seule instance en memoire
-        (singleton par instance d'objet)
+        objets Poste metier
 
-        p=PosteMeteor.get(1) -> recuperer le poste id = 1
-
+        p1=PosteMeteor(1) -> recupere le poste id = 1 + exclusions actuelles
+        p2=PosteMeteor(1, my_date) -> recupere le poste id = 1 et exclusions a la date de my_date
     """
 
-    all = []    # all is global to all instances
-
-    # def __del__(self):
-    #     """destructor need to clean up all list"""
-    #     try:
-    #         print("destructor: id " + str(self.data.id))
-    #         for one_poste in self.all:
-    #             if one_poste.__dict__.__contains__('me'):
-    #                 if one_poste.data.id == self.data.id:
-    #                     self.all.remove(one_poste)
-    #     except Exception as inst:
-    #         print(type(inst))    # the exception instance
-    #         print(inst.args)     # arguments stored in .args
-    #         print(inst)          # __str__ allows args to be printed directly,
-
-    @staticmethod
-    def get(poste_id: int):
-        """manage a singleton per poste instance, and load active exclusions"""
+    def __init__(poste_id: int, date_histo=datetime.datetime.now(datetime.timezone.utc)):
+        """ load our instance from db, load exclusions at date_histo """
         tmp_poste = PosteMeteor()
-        for one_poste in tmp_poste.all:
-            if one_poste.data.id == poste_id:
-                return one_poste
         if Poste.objects.filter(id=poste_id).exists():
             tmp_poste.data = Poste.objects.get(id=poste_id)
-            tmp_poste.exclus = ExcluMeteor.getAllForAPoste(tmp_poste.data.id)
+            tmp_poste.exclus = ExcluMeteor.getAllForAPoste(tmp_poste, date_histo)
         else:
             tmp_poste.data = Poste()
             tmp_poste.exclus = []
-        tmp_poste.all.append(tmp_poste)
         return tmp_poste
 
     def save(self):

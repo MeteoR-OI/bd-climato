@@ -5,6 +5,7 @@ from app.tools.climConstant import AggLevel, MeasureProcessingBitMask
 # from app.classes.measures.measureAvg import RootMeasure
 from app.tools.agg_tools import is_flagged
 import json
+from app.tools.getterSetter import GetterSetter
 
 
 class MeasureAvg():
@@ -14,17 +15,8 @@ class MeasureAvg():
         Computation specific to a measure type
 
     """
-    # {'type_i': 1, 'key': 'temp_out', 'field': 'temp_out', 'avg': True, 'Min': True, 'max': True, 'hour_deca': 0, 'special': 0},
-    def compute(self, measure_def: json, measures: json, obs_meteor: ObsMeteor, agg_array, agg_niveau: AggLevel, flag: bool):
-        """
-            compute: process new measure
 
-            measure_def: from typeInstruments
-            measures: json with new data. Should have the key dat, duration
-            obs_meteor
-            flag: True new data, False, data to delete
-        """
-
+    # p should be called with o.dat in case of delete !
     # {'type_i': 1, 'key': 'temp_out', 'field': 'temp_out', 'avg': True, 'Min': True, 'max': True, 'hour_deca': 0, 'special': 0},
     def update_obs_and_get_delta(self, poste_meteor: PosteMeteor, my_measure: json, measures: json, measure_idx: int, obs_meteor: ObsMeteor, flag: bool) -> json:
         """ generate deltaValues from ObsMeteor.data """
@@ -148,32 +140,31 @@ class MeasureAvg():
         try:
             extremes_todo = []
             agg_niveau_idx = 0
+            field_name = my_measure['field']
             for anAgg in AggLevel:
                 """loop for all aggregations in ascending level"""
                 delta_values_next = {}
                 agg_ds = aggregations[agg_niveau_idx]
                 agg_j = {}
+                if anAgg == 'H':
+                    data_src = agg_ds
+                else:
+                    data_src = delta_values
 
                 if measures['data'][measure_idx].__contains__('aggregates'):
                     for a_j_agg in measures['data'][measure_idx]['aggregates']:
                         if a_j_agg['level'] == anAgg:
                             agg_j = a_j_agg
                             break
-                
-                field_name = my_measure['field']
 
                 # get exclusion
                 exclusion = poste_meteor.exclusion(my_measure['type_i'])
 
-                # get the exclusion value if specified, and not the string 'null'
+                # do nothing if exclusion
                 if exclusion.__contains__(field_name) is True and exclusion[field_name] != 'value' and exclusion[field_name] == 'null':
                     return delta_values
 
                 tmp_duration = int(measures['data'][measure_idx]['current']['duration'])
-                if anAgg == 'H':
-                    data_src = agg_ds
-                else:
-                    data_src = delta_values
 
                 if agg_j.__contains__(field_name + '_avg'):
                     if agg_ds.__contains__(field_name + '_avg'):
@@ -207,4 +198,3 @@ class MeasureAvg():
             print(type(inst))    # the exception instance
             print(inst.args)     # arguments stored in .args
             print(inst)          # __str__ allows args to be printed directly,
-

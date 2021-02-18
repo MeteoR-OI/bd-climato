@@ -19,7 +19,7 @@ class type_temp_test():
         self.a_test = self.p_test.aggregations(self.dt_test)
         json_string = """
         {
-            "metor" : "BBF015",
+            "meteor" : "BBF015",
             "info" : {
                 "blabla": "blabla"
             },

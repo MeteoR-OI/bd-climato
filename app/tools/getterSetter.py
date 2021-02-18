@@ -63,11 +63,9 @@ if __name__ == "__main__":
     } """
     j = json.loads(json_string)
     print('j = meteor: ' + gs.get(j, 'meteor') + ', info.blabla: ' + gs.get(j, 'info', 'blabla') + ', data[0].current.out_temp: ' + str(gs.get(j, 'data', 0, 'current', 'out_temp')))
-    
+
     print('Before set, j = ' + json.dumps(j))
     gs.set(j, 'new Meteor', 'meteor')
     gs.set(j, 'coze', 'info', 'blabla')
     gs.set(j, 25.6, 'data', 0, 'current', 'out_temp')
     print('After set, j = ' + json.dumps(j))
-
-    
