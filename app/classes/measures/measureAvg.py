@@ -145,64 +145,68 @@ class MeasureAvg():
     def update_aggs(self, poste_meteor: PosteMeteor, my_measure: json, measures: json, measure_idx: int, aggregations: list, delta_values: json, flag: bool) -> json:
         """ update all aggregation from the delta data, and aggregations key on json, return a list of extremes to recompute """
 
-        extremes_todo = []
-        agg_niveau_idx = 0
-        for anAgg in AggLevel:
-            """loop for all aggregations in ascending level"""
-            delta_values_next = {}
-            agg_ds = aggregations[agg_niveau_idx]
-            agg_j = {}
+        try:
+            extremes_todo = []
+            agg_niveau_idx = 0
+            for anAgg in AggLevel:
+                """loop for all aggregations in ascending level"""
+                delta_values_next = {}
+                agg_ds = aggregations[agg_niveau_idx]
+                agg_j = {}
 
-            if measures['data'][measure_idx].__contains__('aggregates'):
-                for a_j_agg in measures['data'][measure_idx]['aggregates']:
-                    if a_j_agg['level'] == anAgg:
-                        agg_j = a_j_agg
-                        break
-            
-            field_name = my_measure['field']
+                if measures['data'][measure_idx].__contains__('aggregates'):
+                    for a_j_agg in measures['data'][measure_idx]['aggregates']:
+                        if a_j_agg['level'] == anAgg:
+                            agg_j = a_j_agg
+                            break
+                
+                field_name = my_measure['field']
 
-            # get exclusion
-            exclusion = poste_meteor.exclusion(my_measure['type_i'])
+                # get exclusion
+                exclusion = poste_meteor.exclusion(my_measure['type_i'])
 
-            b_set_val = True
-            b_set_null = False
-            # get the exclusion value if specified, and not the string 'null'
-            if exclusion.__contains__(field_name) is True and exclusion[field_name] != 'value':
-                b_set_val = False    # exclusion[field_name] = 'null' or value_to_force
-                if exclusion[field_name] == 'null':
-                    b_set_null = True
+                b_set_val = True
+                b_set_null = False
+                # get the exclusion value if specified, and not the string 'null'
+                if exclusion.__contains__(field_name) is True and exclusion[field_name] != 'value':
+                    b_set_val = False    # exclusion[field_name] = 'null' or value_to_force
+                    if exclusion[field_name] == 'null':
+                        b_set_null = True
 
-            # no processing if measure is nullified by an exclusion
-            if b_set_null is True:
-                return delta_values
+                # no processing if measure is nullified by an exclusion
+                if b_set_null is True:
+                    return delta_values
 
-            tmp_duration = int(measures['data'][measure_idx]['current']['duration'])
-            if agg_j.__contains__(field_name + '_avg'):
-                if agg_ds.__contains__(field_name + '_avg'):
-                    # json.aggregations contains M_avg, M_sum, M_duration
-                    agg_ds[field_name + '_avg'] += float(agg_j[field_name + '_avg'])
-                    agg_ds[field_name + '_sum'] += int(agg_j[field_name + '_sum']) * tmp_duration
-                    agg_ds[field_name + '_duration'] += tmp_duration
-                    # update delta_values for next level
-                    delta_values_next.__setattribute__(field_name + '_avg', float(agg_j[field_name + '_avg']))
-                    delta_values_next.__setattribute__(field_name + '_sum', int(agg_j[field_name + '_sum']) * tmp_duration)
-                    delta_values_next.__setattribute__(field_name + '_duration', tmp_duration)
+                tmp_duration = int(measures['data'][measure_idx]['current']['duration'])
+                if agg_j.__contains__(field_name + '_avg'):
+                    if agg_ds.__contains__(field_name + '_avg'):
+                        # json.aggregations contains M_avg, M_sum, M_duration
+                        agg_ds[field_name + '_avg'] += float(agg_j[field_name + '_avg'])
+                        agg_ds[field_name + '_sum'] += int(agg_j[field_name + '_sum']) * tmp_duration
+                        agg_ds[field_name + '_duration'] += tmp_duration
+                        # update delta_values for next level
+                        delta_values_next.__setattribute__(field_name + '_avg', float(agg_j[field_name + '_avg']))
+                        delta_values_next.__setattribute__(field_name + '_sum', int(agg_j[field_name + '_sum']) * tmp_duration)
+                        delta_values_next.__setattribute__(field_name + '_duration', tmp_duration)
 
-                elif agg_ds.__contains__(field_name + '_sum'):
-                    # json.aggregations contains M_sum, M_duration only
-                    agg_ds[field_name + '_sum'] += int(agg_j[field_name + '_sum']) * tmp_duration
-                    agg_ds[field_name + '_duration'] += tmp_duration
-                    agg_ds[field_name + '_avg'] = agg_ds[field_name + '_sum'] / agg_ds[field_name + '_duration']
-                    # update delta_values for next level
-                    delta_values_next.__setattribute__(field_name + '_avg', float(agg_j[field_name + '_avg']))
-                    delta_values_next.__setattribute__(field_name + '_sum', int(agg_j[field_name + '_sum']) * tmp_duration)
-                    delta_values_next.__setattribute__(field_name + '_duration', tmp_duration)
+                    elif agg_ds.__contains__(field_name + '_sum'):
+                        # json.aggregations contains M_sum, M_duration only
+                        agg_ds[field_name + '_sum'] += int(agg_j[field_name + '_sum']) * tmp_duration
+                        agg_ds[field_name + '_duration'] += tmp_duration
+                        agg_ds[field_name + '_avg'] = agg_ds[field_name + '_sum'] / agg_ds[field_name + '_duration']
+                        # update delta_values for next level
+                        delta_values_next.__setattribute__(field_name + '_avg', float(agg_j[field_name + '_avg']))
+                        delta_values_next.__setattribute__(field_name + '_sum', int(agg_j[field_name + '_sum']) * tmp_duration)
+                        delta_values_next.__setattribute__(field_name + '_duration', tmp_duration)
 
-                else:
-                    # json.aggregations does not contains any value for our Measure
-                    # agg_ds.__setattribute__(field_name + '_avg', float(agg_j[field_name + '_avg']))
-                    # agg_ds.__setattribute__(field_name + '_sum', int(agg_j[field_name + '_sum']) * tmp_duration)
-                    # agg_ds.__setattribute__(field_name + '_duration', tmp_duration)
+                    else:
+                        # json.aggregations does not contains any value for our Measure
+                        agg_ds.__setattribute__(field_name + '_avg', float(agg_j[field_name + '_avg']))
+                        agg_ds.__setattribute__(field_name + '_sum', int(agg_j[field_name + '_sum']) * tmp_duration)
+                        agg_ds.__setattribute__(field_name + '_duration', tmp_duration)
+            return extremes_todo
+        except Exception as inst:
+            print(type(inst))    # the exception instance
+            print(inst.args)     # arguments stored in .args
+            print(inst)          # __str__ allows args to be printed directly,
 
-
-        return extremes_todo
