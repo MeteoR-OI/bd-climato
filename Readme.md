@@ -14,6 +14,7 @@
 - [4. app test Initialisation](#4-app-test-initialisation)
 - [5. Problemes courants](#5-problemes-courants)
 - [6. Demarrer avec GIT](#6-demarrer-avec-git)
+- [7. Notes Generales](#7-notes-generales)
 
 <!-- /code_chunk_output -->
 
@@ -44,3 +45,6 @@ Le schema de la base de donnees va etre profondement revu...
 
 # 6. Demarrer avec GIT
 [lien](doc/gitBasic.md)
+
+# 7. Notes Generales
+[lien](doc/globalNotes.md)
