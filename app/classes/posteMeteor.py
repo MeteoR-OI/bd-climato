@@ -18,16 +18,14 @@ class PosteMeteor:
         p2=PosteMeteor(1, my_date) -> recupere le poste id = 1 et exclusions a la date de my_date
     """
 
-    def __init__(poste_id: int, date_histo=datetime.datetime.now(datetime.timezone.utc)):
+    def __init__(self, poste_id: int, date_histo=datetime.datetime.now(datetime.timezone.utc)):
         """ load our instance from db, load exclusions at date_histo """
-        tmp_poste = PosteMeteor()
         if Poste.objects.filter(id=poste_id).exists():
-            tmp_poste.data = Poste.objects.get(id=poste_id)
-            tmp_poste.exclus = ExcluMeteor.getAllForAPoste(tmp_poste, date_histo)
+            self.data = Poste.objects.get(id=poste_id)
+            self.exclus = ExcluMeteor.getAllForAPoste(self.data, date_histo)
         else:
-            tmp_poste.data = Poste()
-            tmp_poste.exclus = []
-        return tmp_poste
+            self.data = Poste()
+            self.exclus = []
 
     def save(self):
         """ save Poste """
