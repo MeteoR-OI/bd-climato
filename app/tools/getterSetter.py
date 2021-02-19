@@ -115,10 +115,10 @@ class GetterSetter():
         if args.__len__() != 1:
             raise Exception("fieldMeasure", "only one arg allowed")
         if self.has(obj, 'data'):
-            obj.data.__setattr__(args[0], value)
+            setattr(obj.data, args[0], str(value))
             return
         if self.has(obj, args[0]):
-            obj.__setattr__(args[0], value)
+            setattr(obj, args[0], str(value))
             return
         raise Exception("fieldMeasure", "unknown object " + obj.__class__)
 

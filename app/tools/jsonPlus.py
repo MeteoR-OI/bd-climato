@@ -84,7 +84,7 @@ class jsonPlus():
                 if 'last_dat_rec' == k:
                     # print('  found last_dat_rec..')
                     j[k] = dateutil.parser.parse(str(j[k]))
-                if k.find('_time') > -1:
+                if k.endswith('_time'):
                     # print('  found end with _time')
                     j[k] = dateutil.parser.parse(str(j[k]))
                 if isinstance(j[k], dict):
