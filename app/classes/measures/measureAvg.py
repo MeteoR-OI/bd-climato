@@ -79,15 +79,13 @@ class MeasureAvg():
                 if b_set_val:
                     # add Measure to ObsMeteor
                     if (is_flagged(my_measure['special'], MeasureProcessingBitMask.DoNotProcessTwiceInObs)) is False:
-                        obs_meteor.data.__setattr__(
-                            field_name, measures['data'][measure_idx]['current'][field_name])
+                        obs_meteor.data.__setattr__(field_name, measures['data'][measure_idx]['current'][field_name])
                         if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
                             obs_meteor.data.__setattr__(
                                 field_name + '_dir', measures['data'][measure_idx]['current'][field_name+"_dir"])
                     # add Measure to delta_values
                     if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
-                        delta_values[field_name +
-                                     '_sum'] = measures['data'][measure_idx]['current'][field_name]
+                        delta_values[field_name + '_sum'] = measures['data'][measure_idx]['current'][field_name]
                     else:
                         delta_values[field_name + '_sum'] = measures['data'][measure_idx]['current'][field_name] * \
                             measures['data'][measure_idx]['current']['duration']
@@ -96,8 +94,7 @@ class MeasureAvg():
                 else:
                     # add exclusion to ObsMeteor
                     if (is_flagged(my_measure['special'], MeasureProcessingBitMask.DoNotProcessTwiceInObs)) is False:
-                        obs_meteor.data.__setattr__(
-                            field_name, exclusion[field_name])
+                        obs_meteor.data.__setattr__(field_name, exclusion[field_name])
                         if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
                             # if wind is forced, then win_dir should be forced (probably not a real situation....)
                             obs_meteor.data.__setattr__(
