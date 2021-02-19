@@ -9,7 +9,7 @@ from app.tools.agg_tools import get_agg_object
 dt=datetime.datetime.now(datetime.timezone.utc)
 dtdt = datetime.datetime(2021, 2, 11, 13, 0, 0, 0, datetime.timezone.utc)
 
-p=PosteMeteor.get(1)
+p=PosteMeteor(1)
 p.data
 o1=p.observation(datetime.datetime(2021, 2, 13, 12, 49, 55, 0, datetime.timezone.utc))
 o1

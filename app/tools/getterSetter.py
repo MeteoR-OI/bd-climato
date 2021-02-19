@@ -18,11 +18,11 @@ class GetterSetter():
                 return obj.data.__getattribute__(args[0])
             else:
                 return None
-        if hasattr(obj.data, args[0]):
+        if hasattr(obj, args[0]):
             return obj.__getattribute__(args[0])
         raise Exception("fieldMeasure", "unknown object " + obj.__class__)
 
-    def has(self, obj, value, *args):
+    def has(self, obj, *args):
         """ has """
         if isinstance(obj, dict):
             j = obj
@@ -33,8 +33,56 @@ class GetterSetter():
             raise Exception("fieldMeasure", "only one arg allowed")
         if hasattr(obj, 'data'):
             return hasattr(obj.data, args[0])
-        if hasattr(obj.data, args[0]):
+        if hasattr(obj, args[0]):
             return hasattr(obj.data, args[0])
+        raise Exception("fieldMeasure", "unknown object " + obj.__class__)
+
+    def is_max(self, obj, value, *args):
+        """ max """
+        if self.has(obj, value, args) is False:
+            return True
+        if isinstance(obj, dict):
+            j = obj
+            for anarg in args[:-1]:
+                j = j[anarg]
+            if j.__contains__(args[-1]):
+                return [args[-1]] < value
+            return False
+        if args.__len__() != 1:
+            raise Exception("fieldMeasure", "only one arg allowed")
+        if hasattr(obj, 'data'):
+            if hasattr(obj.data, args[0]):
+                return obj.data.__getattribute__(args[0]) < value
+            return False
+        if hasattr(obj, args[0]):
+            if hasattr(obj, args[0]):
+                return obj.__getattribute__(args[0]) < value
+            return False
+
+        raise Exception("fieldMeasure", "unknown object " + obj.__class__)
+
+    def is_min(self, obj, value, *args):
+        """ max """
+        if self.has(obj, value, args) is False:
+            return True
+        if isinstance(obj, dict):
+            j = obj
+            for anarg in args[:-1]:
+                j = j[anarg]
+            if j.__contains__(args[-1]):
+                return [args[-1]] > value
+            return False
+        if args.__len__() != 1:
+            raise Exception("fieldMeasure", "only one arg allowed")
+        if hasattr(obj, 'data'):
+            if hasattr(obj.data, args[0]):
+                return obj.data.__getattribute__(args[0]) > value
+            return False
+        if hasattr(obj, args[0]):
+            if hasattr(obj, args[0]):
+                return obj.__getattribute__(args[0]) > value
+            return False
+
         raise Exception("fieldMeasure", "unknown object " + obj.__class__)
 
     def add(self, obj, value, *args):
@@ -56,7 +104,7 @@ class GetterSetter():
             else:
                 obj.data.__setattr__(args[0], value)
             return
-        if hasattr(obj.data, args[0]):
+        if hasattr(obj, args[0]):
             if hasattr(obj.data, args[0]):
                 obj.__setattr__(args[0], obj.__getattribute__(args[0]) + value)
             else:
@@ -78,7 +126,7 @@ class GetterSetter():
             if hasattr(obj.data, args[0]):
                 obj.data.__setattr__(args[0], value)
                 return
-        if hasattr(obj.data, args[0]):
+        if hasattr(obj, args[0]):
             obj.__setattr__(args[0], value)
             return
         raise Exception("fieldMeasure", "unknown object " + obj.__class__)

@@ -1593,7 +1593,7 @@ COPY public.poste (id, meteor, meteofr, fuseau, cas_gestion_extreme, agg_min_ext
 --
 
 COPY public.type_instrument (id, name, model_value) FROM stdin;
-1	Temp	{"temp_out": "int"}
+1	Temp	{"out_temp": "int"}
 2	Pression	{}
 3	Rain	{}
 4	Wind	{}

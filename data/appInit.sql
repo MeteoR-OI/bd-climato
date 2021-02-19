@@ -27,7 +27,7 @@ COPY public.poste (id, meteor, meteofr, title, cas_gestion_extreme, agg_min_extr
 SELECT pg_catalog.setval('public.poste_id_seq', 2, true);
 
 COPY public.type_instrument (id, name, model_value) FROM stdin;
-1	Temp	{"temp_out": "int"}
+1	Temp	{"out_temp": "int"}
 2	Pression	{}
 3	Rain	{}
 4	Wind	{}
@@ -38,9 +38,9 @@ COPY public.type_instrument (id, name, model_value) FROM stdin;
 SELECT pg_catalog.setval('public.type_instrument_id_seq', 6, true);
 
 COPY public.exclusion (id, start_x, end_x, value, poste_id_id, type_instrument_id) FROM stdin;
-1	2021-02-11 11:33:13+04	2100-12-21 04:00:00+04	{"temp_out": -1}	1	1
-2	2021-02-11 11:41:56+04	2021-02-01 11:42:06+04	{"temp_out": "null", "actif": "none"}	1	1
-3	2021-02-11 11:41:34+04	2100-12-21 04:00:00+04	{"temp_out": 123}	2	1
+1	2021-02-11 11:33:13+04	2100-12-21 04:00:00+04	{"out_temp": -1}	1	1
+2	2021-02-11 11:41:56+04	2021-02-01 11:42:06+04	{"out_temp": "null", "actif": "none"}	1	1
+3	2021-02-11 11:41:34+04	2100-12-21 04:00:00+04	{"out_temp": 123}	2	1
 4	2021-02-11 11:34:24+04	2100-12-21 04:00:00+04	{"rain_sum": 0}	1	3
 \.
 SELECT pg_catalog.setval('public.exclusion_id_seq', 4, true);

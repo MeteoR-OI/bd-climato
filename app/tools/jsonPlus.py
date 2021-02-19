@@ -22,12 +22,12 @@ class jsonPlus():
                         {
                             "dat" : "2021-02-11T13:09:30+00:00",
                             "duration" : 300,
-                            "temp_out" : 29.5
+                            "out_temp" : 29.5
                         },
                     "aggregations": [
                         {
                             "level" : "H",
-                            "temp_out_avg" : 32.75
+                            "out_temp_avg" : 32.75
                         },
                         {
                             "level" : "D",
@@ -40,12 +40,12 @@ class jsonPlus():
                         {
                             "dat" : "2021-02-11T13:09:40+00:00",
                             "duration" : 300,
-                            "temp_out" : 30
+                            "out_temp" : 30
                         },
                     "aggregations" : [
                         {
                             "level" : "H",
-                            "temp_out_avg" : 33
+                            "out_temp_avg" : 33
                         },
                         {
                             "level" : "D",
@@ -97,6 +97,7 @@ class jsonPlus():
 class DateTimeEncoder(json.JSONEncoder):
     """ Encode datetime to str """
     # Override the default method
+
     def default(self, obj):
         if isinstance(obj, (datetime.date, datetime.datetime)):
             return obj.isoformat()

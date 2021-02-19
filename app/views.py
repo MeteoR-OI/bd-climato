@@ -29,9 +29,20 @@ def view_agg_hour(request, poste_id):
 def test_compute(request):
     """ debug environment"""
     try:
-
         tt = type_temp_test()
         ret_json = tt.load_obs()
+        ret = jsonPlus().dumps(ret_json)
+        return HttpResponse(ret)
+
+    except Exception as inst:
+        return HttpResponse(inst)
+
+
+def test_compute_agg(request):
+    """ debug environment"""
+    try:
+        tt = type_temp_test()
+        ret_json = tt.load_agg()
         ret = jsonPlus().dumps(ret_json)
         return HttpResponse(ret)
 

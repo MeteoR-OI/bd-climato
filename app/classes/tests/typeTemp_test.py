@@ -12,8 +12,9 @@ class type_temp_test():
 
     def __init__(self):
         """ pre load std data """
-        self.dt_test = datetime.datetime(2021, 2, 11, 13, 9, 30, 0, datetime.timezone.utc)
-        self.p_test = PosteMeteor.get(1)
+        self.dt_test = datetime.datetime(
+            2021, 2, 11, 13, 9, 30, 0, datetime.timezone.utc)
+        self.p_test = PosteMeteor(1)
 
         self.o_test = self.p_test.observation(self.dt_test)
         self.a_test = self.p_test.aggregations(self.dt_test)
@@ -30,12 +31,12 @@ class type_temp_test():
                         {
                             "dat" : "2021-02-11T13:09:30+00:00",
                             "duration" : 300,
-                            "temp_out" : 29.5
+                            "out_temp" : 29.5
                         },
                     "aggregations": [
                         {
                             "level" : "H",
-                            "temp_out_avg" : 32.75
+                            "out_temp_avg" : 32.75
                         },
                         {
                             "level" : "D",
@@ -48,12 +49,12 @@ class type_temp_test():
                         {
                             "dat" : "2021-02-11T13:09:40+00:00",
                             "duration" : 300,
-                            "temp_out" : 30
+                            "out_temp" : 30
                         },
                     "aggregations" : [
                         {
                             "level" : "H",
-                            "temp_out_avg" : 33
+                            "out_temp_avg" : 33
                         },
                         {
                             "level" : "D",
@@ -91,14 +92,15 @@ class type_temp_test():
             tt = TypeTemp()
             # tt.mapping[0] -> first measure, tt.p_test, tt_o_test, tt.j_test, tt.a_test
 
-            pp = PosteMeteor.get(1)
+            pp = PosteMeteor(1)
             # remove existing exclusion in poste (will require a reload)
             xx = pp.exclus
             pp.exclus = []
 
             # call the method to update obs, and return delta_val
             ma = MeasureAvg()
-            delta_val = ma.update_obs_and_get_delta(self.p_test, tt.mapping[0], self.j_test, 0, self.o_test, True)
+            delta_val = ma.update_obs_and_get_delta(
+                self.p_test, tt.mapping[0], self.j_test, 0, self.o_test, True)
 
             # restore exclus, as our object is cached
             pp.exclus = xx
@@ -107,21 +109,49 @@ class type_temp_test():
             # Observation values should be tested too...
 
             # delta_val validation
-            if int(delta_val['temp_out_sum']) != 8850:
-                return "temp_out_sum wrong " + str(delta_val['temp_out_sum'])
-            if int(delta_val['temp_out_duration']) != 300:
-                return "temp_out_duration wrong: " + str(delta_val['temp_out_duration'])
-            if float(delta_val['temp_out_max']) != 29.5:
-                return "temp_out_max wrong: " + str(delta_val['temp_out_max'])
-            if str(delta_val['temp_out_max_time']) != '2021-02-11 13:12:00+00:00':
-                return "temp_out_max_time wrong: " + str(delta_val['temp_out_max_time'])
-            if float(delta_val['temp_out_min']) != 29.5:
-                return "temp_out_min wrong: " + str(delta_val['temp_out_min'])
-            if str(delta_val['temp_out_min_time']) != '2021-02-11 13:12:00+00:00':
-                return "temp_out_min_time wrong: " + str(delta_val['temp_out_min_time'])
+            if int(delta_val['out_temp_sum']) != 8850:
+                return "out_temp_sum wrong " + str(delta_val['out_temp_sum'])
+            if int(delta_val['out_temp_duration']) != 300:
+                return "out_temp_duration wrong: " + str(delta_val['out_temp_duration'])
+            if float(delta_val['out_temp_max']) != 29.5:
+                return "out_temp_max wrong: " + str(delta_val['out_temp_max'])
+            if str(delta_val['out_temp_max_time']) != '2021-02-11 13:12:00+00:00':
+                return "out_temp_max_time wrong: " + str(delta_val['out_temp_max_time'])
+            if float(delta_val['out_temp_min']) != 29.5:
+                return "out_temp_min wrong: " + str(delta_val['out_temp_min'])
+            if str(delta_val['out_temp_min_time']) != '2021-02-11 13:12:00+00:00':
+                return "out_temp_min_time wrong: " + str(delta_val['out_temp_min_time'])
 
             # return to the browser when executed in interactive mode... (not needed in real testing situation)
             return delta_val
+
+        except Exception as inst:
+            print(type(inst))    # the exception instance
+            print(inst.args)     # arguments stored in .args
+            print(inst)          # __str__ allows args to be printed directly,
+
+    def load_agg(self):
+        try:
+            tt = TypeTemp()
+            # tt.mapping[0] -> first measure, tt.p_test, tt_o_test, tt.j_test, tt.a_test
+
+            pp = PosteMeteor(1)
+            # remove existing exclusion in poste (will require a reload)
+            xx = pp.exclus
+            pp.exclus = []
+
+            # call the method to update obs, and return delta_val
+            ma = MeasureAvg()
+            delta_val = ma.update_obs_and_get_delta(
+                self.p_test, tt.mapping[0], self.j_test, 0, self.o_test, True)
+            agg_recompute = ma.update_aggs(
+                self.p_test, tt.mapping[0], self.j_test, 0, self.a_test, delta_val, True)
+
+            # restore exclus, as our object is cached
+            pp.exclus = xx
+
+            # return to the browser when executed in interactive mode... (not needed in real testing situation)
+            return agg_recompute
 
         except Exception as inst:
             print(type(inst))    # the exception instance
