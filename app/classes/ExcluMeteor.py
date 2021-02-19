@@ -1,5 +1,4 @@
 from app.models import Exclusion, Poste, TypeInstrument
-from app.classes.posteMeteor import PosteMeteor
 from app.classes.typeInstrumentMeteor import TypeInstrumentMeteor
 import datetime
 import json
@@ -33,8 +32,8 @@ class ExcluMeteor():
             print(inst)          # __str__ allows args to be printed directly,
 
     @staticmethod
-    def getAllForAPoste(poste_meteor: PosteMeteor, my_date: datetime = datetime.datetime.now(datetime.timezone.utc)) -> json:
-        return Exclusion.objects.filter(poste_id_id=poste_meteor.data.id).filter(start_x_gt=my_date).filter(end_x__lt=my_date).values('type_instrument', 'value')
+    def getAllForAPoste(poste: Poste, my_date: datetime = datetime.datetime.now(datetime.timezone.utc)) -> json:
+        return Exclusion.objects.filter(poste_id_id=poste.id).filter(start_x_gt=my_date).filter(end_x__lt=my_date).values('type_instrument', 'value')
 
     def save(self):
         """ save Poste and Exclusions """
