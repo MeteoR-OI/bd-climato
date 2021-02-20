@@ -161,7 +161,7 @@ Tapez les commandes suivantes dans un terminal:
 ```shell
 psql -U postgres    # Vous allez etre dans le prompt de psql
 
-create database bd_climato;
+CREATE DATABASE bd_climato;
 \q                  # retour sur le prompt du terminal
 exit
 ```
