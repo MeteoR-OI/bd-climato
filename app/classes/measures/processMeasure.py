@@ -4,7 +4,7 @@ from app.classes.obsMeteor import ObsMeteor
 from app.tools.climConstant import AggLevel, MeasureProcessingBitMask
 # from app.classes.measures.ProcessMeasure import RootMeasure
 from app.tools.agg_tools import is_flagged
-from app.tools.JsonPlus import JsonPlus
+from app.tools.jsonPlus import JsonPlus
 from app.tools.agg_tools import get_agg_object
 import json
 from app.tools.getterSetter import GetterSetter
@@ -34,7 +34,7 @@ class ProcessMeasure():
     def update_obs_and_get_delta(self, poste_meteor: PosteMeteor, my_measure: json, measures: json, measure_idx: int, obs_meteor: ObsMeteor, flag: bool) -> json:
         """
             getProcessObject
-            
+
             generate deltaValues and load Observation
                 flag=True => from our json data
                 flag=False => from the obs data

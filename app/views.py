@@ -2,7 +2,7 @@ from django.http import HttpResponse
 import json
 from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, Exclusion, TypeInstrument   #
 from app.classes.tests.typeTemp_test import type_temp_test
-from app.tools.JsonPlus import JsonPlus
+from app.tools.jsonPlus import JsonPlus
 
 
 def index(request):

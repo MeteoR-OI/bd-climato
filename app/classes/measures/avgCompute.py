@@ -4,7 +4,7 @@ from app.classes.obsMeteor import ObsMeteor
 from app.tools.climConstant import AggLevel, MeasureProcessingBitMask
 # from app.classes.measures.measureAvg import RootMeasure
 from app.tools.agg_tools import is_flagged
-from app.tools.JsonPlus import JsonPlus
+from app.tools.jsonPlus import JsonPlus
 from app.tools.agg_tools import get_agg_object
 import json
 from app.tools.getterSetter import GetterSetter
