@@ -4,7 +4,7 @@ import dateutil.parser
 import datetime
 
 
-class jsonPlus():
+class JsonPlus():
     """ super class adding date serialization/deserialization aupport """
 
     def json_test(self) -> str:
@@ -22,7 +22,9 @@ class jsonPlus():
                         {
                             "dat" : "2021-02-11T13:09:30+00:00",
                             "duration" : 300,
-                            "out_temp" : 29.5
+                            "out_temp" : 29.5,
+                            "out_temp_max": 30.1,
+                            "out_temp_max_time": "2021-02-11T13:09:32+00:00"
                         },
                     "aggregations": [
                         {
@@ -60,37 +62,70 @@ class jsonPlus():
 
     def dumps(self, j: json) -> str:
         """ serialize json with date values """
-        return json.dumps(j, cls=DateTimeEncoder)
+        ret = json.dumps(j, cls=DateTimeEncoder)
+        self.deserialize(j)
+        return ret
 
     # custom Decoder
     def loads(self, json_str: str) -> json:
-        """ deserialize key dat and last_rec_dat """
+        """ load json from a string, and deserialize datetime fields """
         return json.loads(json_str, object_hook=self.customDecoder)
 
     def customDecoder(self, jsonDict: dict) -> str:
         """ Hook to parse str to datetime """
-        self.rec_json(jsonDict)
+        self.deserialize(jsonDict)
         return jsonDict
 
-    def rec_json(self, j: dict):
-        """ look recursively in json to find our datetime keys """
-        if isinstance(j, dict):
-            # print("rec_json(" + json.dumps(j))
+    def deserialize(self, j: dict):
+        """ encode str fields into datetime for our well known keys """
+        if isinstance(j, dict) or isinstance(j, JsonPlus):
+            # print("serialize(" + json.dumps(j))
             for k, v in j.items():
                 # print("Decode: " + k + ":" + str(j[k]) + ", type: " + str(type(j[k])))
                 if 'dat' == k:
-                    # print('  found dat..')
                     j[k] = dateutil.parser.parse(str(j[k]))
+                    # print("found dat, new type : " + str(type(j[k])))
                 if 'last_dat_rec' == k:
-                    # print('  found last_dat_rec..')
                     j[k] = dateutil.parser.parse(str(j[k]))
+                    # print("found last_dat_rec, new type : " + str(type(j[k])))
                 if k.endswith('_time'):
-                    # print('  found end with _time')
                     j[k] = dateutil.parser.parse(str(j[k]))
-                if isinstance(j[k], dict):
+                    # print("found xxx_time, new type : " + str(type(j[k])))
+                if isinstance(j[k], dict) or isinstance(j[k], JsonPlus):
                     # print("** going down... **")
-                    self.rec_json(j[k])
+                    self.deserialize(j[k])
+                if isinstance(j[k], list):
+                    for akey in j[k]:
+                        if isinstance(akey, dict) or isinstance(akey, JsonPlus):
+                            # print("   ** going down... **")
+                            self.deserialize(akey)
                 # print("----- loop -----")
+        return j
+
+    def serialize(self, j: dict):
+        """ encode datetime into str format """
+        try:
+            if isinstance(j, dict) or isinstance(j, JsonPlus):
+                # print("serialize(" + json.dumps(j))
+                for k, v in j.items():
+                    # print("serialize: " + k + ", type: " + str(type(j[k])))
+                    if isinstance(v, (datetime.date, datetime.datetime)):
+                        j[k] = v.isoformat()
+                        # print("   serialize " + k + ", new type: " + str(type(j[k])))
+                    if isinstance(j[k], dict) or isinstance(j[k], JsonPlus):
+                        # print("   ** going down... **")
+                        self.serialize(j[k])
+                    if isinstance(j[k], list):
+                        for akey in j[k]:
+                            if isinstance(akey, dict) or isinstance(akey, JsonPlus):
+                                # print("   ** going down... **")
+                                self.serialize(akey)
+                    # print("----- loop -----")
+            return j
+        except Exception as inst:
+            print(type(inst))    # the exception instance
+            print(inst.args)     # arguments stored in .args
+            print(inst)          # __str__ allows args to be printed directly,
 
 
 # subclass JSONEncoder
@@ -101,3 +136,27 @@ class DateTimeEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, (datetime.date, datetime.datetime)):
             return obj.isoformat()
+
+
+if __name__ == "__main__":
+    jp = JsonPlus()
+    z = jp.json_test()
+    # load a json, with date as a str
+    jj = jp.loads(z)
+    # all dates are datetime after loads
+    print('dat is a datetime: ' + str(isinstance(jj['data'][0]['current']['dat'], datetime.datetime)))
+    print(jp.dumps(jj))
+    # dumps works with datetime (for str, use json.dump(jj))
+    print('dat is still a datetime: ' + str(isinstance(jj['data'][0]['current']['dat'], datetime.datetime)))
+
+    # dumps are loads keep all data
+    jj2 = jp.loads(jp.dumps(jj))
+    print('the two json are equivalent: ' + str(jp.dumps(jj2) == jp.dumps(jj)))
+
+    # change date in json from datetime to str
+    jp.serialize(jj)
+    print('dat is now a str: ' + str(isinstance(jj['data'][0]['current']['dat'], str)))
+
+    # change date in json for str to datetime
+    jp.deserialize(jj)
+    print('dat is again datetime: ' + str(isinstance(jj['data'][0]['current']['dat'], datetime.datetime)))

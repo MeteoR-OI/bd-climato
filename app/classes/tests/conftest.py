@@ -1,4 +1,4 @@
-from app.tools.jsonPlus import jsonPlus
+from app.tools.JsonPlus import JsonPlus
 import pytest
 
 # On définit un json string qui sera disponible dans tous les tests
@@ -56,12 +56,12 @@ def json_string():
 
     return json
 
-# On définit une nouvelle fixture qui utilisera la méthode loads de jsonPlus
+# On définit une nouvelle fixture qui utilisera la méthode loads de JsonPlus
 
 
 @pytest.fixture()
 def jp_loads(json_string):
-    jp = jsonPlus()
+    jp = JsonPlus()
     return jp.loads(json_string)
 
 # On définit une nouvelle fixture qui tentera de reconvertir jp_loads en string
@@ -69,7 +69,7 @@ def jp_loads(json_string):
 
 @pytest.fixture()
 def jp_dumps(jp_loads):
-    jp = jsonPlus()
+    jp = JsonPlus()
     return jp.dumps(jp_loads)
 
 

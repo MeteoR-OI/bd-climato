@@ -1,9 +1,9 @@
 from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, Exclusion, TypeInstrument   #
 import datetime
 from app.classes.posteMeteor import PosteMeteor
-from app.tools.jsonPlus import jsonPlus
+from app.tools.JsonPlus import JsonPlus
 from app.classes.typeInstruments.typeTemp import TypeTemp
-from app.classes.measures.measureAvg import MeasureAvg
+from app.classes.measures.avgCompute import avgCompute
 from app.tools.getterSetter import GetterSetter
 
 
@@ -65,7 +65,7 @@ class type_temp_test():
             ]
         }
         """
-        self.j_test = jsonPlus().loads(json_string)
+        self.j_test = JsonPlus().loads(json_string)
 
     def delete_obs_agg(self):
         """clean_up all our tables"""
@@ -98,7 +98,7 @@ class type_temp_test():
             pp.exclus = []
 
             # call the method to update obs, and return delta_val
-            ma = MeasureAvg()
+            ma = avgCompute()
             delta_val = ma.update_obs_and_get_delta(
                 self.p_test, tt.mapping[0], self.j_test, 0, self.o_test, True)
 
@@ -141,7 +141,7 @@ class type_temp_test():
             pp.exclus = []
 
             # call the method to update obs, and return delta_val
-            ma = MeasureAvg()
+            ma = avgCompute()
             delta_val = ma.update_obs_and_get_delta(
                 self.p_test, tt.mapping[0], self.j_test, 0, self.o_test, True)
             agg_recompute = ma.update_aggs(

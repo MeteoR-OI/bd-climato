@@ -5,17 +5,24 @@ from dateutil.relativedelta import relativedelta
 from app.classes.obsMeteor import ObsMeteor
 from app.classes.posteMeteor import PosteMeteor
 from app.classes.ExcluMeteor import ExcluMeteor
+from app.classes.combined.superPosteMeteor import SuperPosteMeteor
 from app.tools.agg_tools import get_agg_object
+from app.tools.jsonPlus import JsonPlus
+jp = JsonPlus()
 dt=datetime.datetime.now(datetime.timezone.utc)
 dtdt = datetime.datetime(2021, 2, 11, 13, 0, 0, 0, datetime.timezone.utc)
 
 p=PosteMeteor(1)
 p.data
-o1=p.observation(datetime.datetime(2021, 2, 13, 12, 49, 55, 0, datetime.timezone.utc))
-o1
-obs=p.observation(dtdt)
-obs
-agg=p.aggregations(dt)
+sp=SuperPosteMeteor(1, dt)
+sp.data
+
+obs=sp.observation(dtdt)
+
+obs.data.j={"out_temp": 33, "out_temp_max": 33.1, "out_temp_max_time": datetime.datetime(2021, 2, 11, 14, 0, 0, 0, datetime.timezone.utc)}
+obs.save()
+
+agg=sp.aggregations(dtdt)
 
 
 d_loc=p.date_fuseau(dt)

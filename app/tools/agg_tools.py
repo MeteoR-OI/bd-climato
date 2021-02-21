@@ -63,15 +63,21 @@ def calc_agg_date(niveau_agg: AggLevel, dt_utc: datetime, factor: float = 0) -> 
 
         if niveau_agg == "D":
             if int(factor) == 1:
-                return datetime.datetime(dt_utc.year, dt_utc.month, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(days=1)
+                return datetime.datetime(dt_utc.year, dt_utc.month, dt_utc.day, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(days=1)
+            if int(factor) == -1:
+                return datetime.datetime(dt_utc.year, dt_utc.month, dt_utc.day, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(days=-1)
             return datetime.datetime(dt_utc.year, dt_utc.month, dt_utc.day, 0, 0, 0, 0, datetime.timezone.utc) + datetime.timedelta(hours=int(24 * factor))
         elif niveau_agg == "M":
             if int(factor) == 1:
-                return datetime.datetime(dt_utc.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(months=1)
+                return datetime.datetime(dt_utc.year, dt_utc.month, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(months=1)
+            if int(factor) == -1:
+                return datetime.datetime(dt_utc.year, dt_utc.month, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(months=-1)
             return datetime.datetime(dt_utc.year, dt_utc.month, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(days=int(30.5 * factor))
         elif niveau_agg == "Y":
             if int(factor) == 1:
                 return datetime.datetime(dt_utc.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(years=1)
+            if int(factor) == -1:
+                return datetime.datetime(dt_utc.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(years=-1)
             return datetime.datetime(dt_utc.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(months=int(12 * factor))
         elif niveau_agg == "A":
             return datetime.datetime(1900, 1, 1, 0, 0, 0, 0, datetime.timezone.utc)

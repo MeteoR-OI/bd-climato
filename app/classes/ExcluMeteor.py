@@ -1,7 +1,7 @@
-from app.models import Exclusion, Poste, TypeInstrument
-from app.classes.typeInstrumentMeteor import TypeInstrumentMeteor
+from app.models import Exclusion
 import datetime
 import json
+
 
 class ExcluMeteor():
     """
@@ -12,18 +12,24 @@ class ExcluMeteor():
         o=ExcluMeteor(poste, dat)
         o.data -> Observation object (data, methods...)
 
+        value is a json with:
+            key = measure name (ie. 'out_temp')
+            value =
+                'value' => keep the value from the json file
+                'null'  => measure is invalid
+                data    => force this data in the measure (numeric)
     """
 
-    def __init__(self, poste: Poste, type_instrument: TypeInstrument):
+    def __init__(self, poste_id: int, type_instrument_id: int):
         """Init a new ExcluMeteor object"""
 
         try:
-            if Exclusion.objects.filter(poste_id_id=poste.id).filter(type_instrument=type_instrument).exists():
-                self.data = Exclusion.objects.filter(poste_id_id=poste.id).filter(
-                    type_instrument=type_instrument).first()
+            if Exclusion.objects.filter(poste_id_id=poste_id).filter(type_instrument=type_instrument_id).exists():
+                self.data = Exclusion.objects.filter(poste_id_id=poste_id).filter(
+                    type_instrument=type_instrument_id).first()
             else:
                 self.data = Exclusion(
-                    poste_id=poste, type_instrument=type_instrument)
+                    poste_id=poste_id, type_instrument=type_instrument_id)
                 self.data.save()
 
         except Exception as inst:
@@ -32,8 +38,8 @@ class ExcluMeteor():
             print(inst)          # __str__ allows args to be printed directly,
 
     @staticmethod
-    def getAllForAPoste(poste: Poste, start_date: datetime = datetime.datetime.now(datetime.timezone.utc), end_date: datetime = datetime.datetime(2100, 12, 21, 0, 0, 0, 0, datetime.timezone.utc)) -> json:
-        return Exclusion.objects.filter(poste_id_id=poste.id).filter(start_x__lte=start_date).filter(end_x__lte=end_date).values('type_instrument', 'value')
+    def getAllForAPoste(poste_id: int, start_date: datetime = datetime.datetime.now(datetime.timezone.utc), end_date: datetime = datetime.datetime(2100, 12, 21, 0, 0, 0, 0, datetime.timezone.utc)) -> json:
+        return Exclusion.objects.filter(poste_id_id=poste_id).filter(start_x__lte=start_date).filter(end_x__lte=end_date).values('type_instrument', 'value')
 
     def save(self):
         """ save Poste and Exclusions """

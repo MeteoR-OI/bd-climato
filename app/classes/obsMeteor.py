@@ -1,4 +1,5 @@
-from app.models import Observation, Poste
+from app.models import Observation
+from app.tools.jsonPlus import JsonPlus
 import datetime
 
 
@@ -13,18 +14,15 @@ class ObsMeteor():
 
     """
 
-    def __init__(self, poste: Poste, dt_utc: datetime):
+    def __init__(self, poste_id: int, dt_utc: datetime):
         """Init a new ObsMeteor object"""
-        # todo : check that my_datetime_utc > previous dat + duration pour le poste_id
-        # todo: put a warning somewhere if my_datetime_utc > previous dat+duration
-        # todo: what is happening if the date given is at the middle of an existing period ?
+        # todo: block if my_datetime_utc > previous dat+duration
         try:
-            if Observation.objects.filter(poste_id_id=poste.id).filter(dat=dt_utc).exists():
-                self.data = Observation.objects.filter(
-                    poste_id_id=poste.id).filter(dat=dt_utc).first()
+            if Observation.objects.filter(poste_id_id=poste_id).filter(dat=dt_utc).exists():
+                self.data = Observation.objects.filter(poste_id_id=poste_id).filter(dat=dt_utc).first()
+                JsonPlus().deserialize(self.data.j)
             else:
-                self.data = Observation(
-                    poste_id=poste, dat=dt_utc, last_rec_dat=dt_utc, duration=0)
+                self.data = Observation(poste_id_id=poste_id, dat=dt_utc, last_rec_dat=dt_utc, duration=0, j={})
                 self.data.save()
 
         except Exception as inst:
@@ -35,7 +33,10 @@ class ObsMeteor():
     def save(self):
         """ save Poste and Exclusions """
         try:
+            if self.data.j != {}:
+                JsonPlus().serialize(self.data.j)
             self.data.save()
+            JsonPlus().deserialize(self.data.j)
 
         except Exception as inst:
             print(type(inst))    # the exception instance

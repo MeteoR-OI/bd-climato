@@ -1,6 +1,6 @@
-from app.models import Poste   # ,Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global
-from app.tools.agg_tools import get_agg_object
 from app.tools.climConstant import AggLevel
+from app.tools.agg_tools import get_agg_object
+from app.tools.jsonPlus import JsonPlus
 import datetime
 
 
@@ -16,7 +16,7 @@ class AggMeteor():
 
     """
 
-    def __init__(self, poste: Poste, agg_niveau: AggLevel, dt_agg_utc: datetime):
+    def __init__(self, poste_id: int, agg_niveau: AggLevel, dt_agg_utc: datetime):
         """
             Init a new AggMeteor object
 
@@ -27,12 +27,11 @@ class AggMeteor():
         try:
             self.agg_niveau = agg_niveau
             agg_object = get_agg_object(agg_niveau)
-            if agg_object.objects.filter(poste_id_id=poste.id).filter(dat=dt_agg_utc).exists():
-                self.data = agg_object.objects.filter(
-                    poste_id_id=poste.id).filter(dat=dt_agg_utc).first()
+            if agg_object.objects.filter(poste_id_id=poste_id).filter(dat=dt_agg_utc).exists():
+                self.data = agg_object.objects.filter(poste_id_id=poste_id).filter(dat=dt_agg_utc).first()
+                JsonPlus().deserialize(self.data.j)
             else:
-                self.data = agg_object(
-                    poste_id=poste, dat=dt_agg_utc, last_rec_dat=dt_agg_utc, duration=0)
+                self.data = agg_object(poste_id_id=poste_id, dat=dt_agg_utc, last_rec_dat=dt_agg_utc, duration=0, j={})
                 self.data.save()
 
         except Exception as inst:
@@ -43,7 +42,10 @@ class AggMeteor():
     def save(self):
         """ save Poste and Exclusions """
         try:
+            if self.data.j != {}:
+                JsonPlus().serialize(self.data.j)
             self.data.save()
+            JsonPlus().deserialize(self.data.j)
 
         except Exception as inst:
             print(type(inst))    # the exception instance

@@ -4,15 +4,15 @@ from app.classes.obsMeteor import ObsMeteor
 from app.tools.climConstant import AggLevel, MeasureProcessingBitMask
 # from app.classes.measures.measureAvg import RootMeasure
 from app.tools.agg_tools import is_flagged
-from app.tools.jsonPlus import jsonPlus
+from app.tools.JsonPlus import JsonPlus
 from app.tools.agg_tools import get_agg_object
 import json
 from app.tools.getterSetter import GetterSetter
 
 
-class MeasureAvg():
+class avgCompute():
     """
-        MeasureAvg
+        avgCompute
 
         Computation specific to a measure type
 
@@ -175,7 +175,7 @@ class MeasureAvg():
             if my_measure.__contains__('field'):
                 field_name = my_measure['field']
             gs = GetterSetter()
-            jsonp = jsonPlus()
+            jsonp = JsonPlus()
             for anAgg in AggLevel:
                 """loop for all aggregations in ascending level"""
                 delta_values_next = {}
