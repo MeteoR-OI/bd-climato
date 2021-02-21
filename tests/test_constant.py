@@ -1,5 +1,6 @@
+from django.conf import settings
 from app.tools.constantClass import Constants
-import doctest
+from pathlib import Path
 
 
 class MyConstants(Constants):
@@ -34,10 +35,10 @@ class ObjectType(FigConstants):
     CompoundEnd   = -6
 
 
-def test_README():
-    failure_count, test_count = doctest.testfile('README.rst', verbose=True)
-    assert test_count > 0
-    assert failure_count == 0
+def test_requirements():
+    requirements_file = Path(f'{settings.BASE_DIR}/requirements.txt')
+    assert requirements_file.is_file() is True
+    assert requirements_file.exists() is True
 
 
 def test_Colors():
