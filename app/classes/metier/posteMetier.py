@@ -1,14 +1,14 @@
 from app.tools.climConstant import AggLevel
 import datetime
 import json
-from app.classes.obsMeteor import ObsMeteor
-from app.classes.aggMeteor import AggMeteor
-from app.classes.ExcluMeteor import ExcluMeteor
-from app.classes.posteMeteor import PosteMeteor
+from app.classes.repository.obsMeteor import ObsMeteor
+from app.classes.repository.aggMeteor import AggMeteor
+from app.classes.repository.excluMeteor import ExcluMeteor
+from app.classes.repository.posteMeteor import PosteMeteor
 from app.tools.agg_tools import calc_agg_date
 
 
-class SuperPosteMeteor(PosteMeteor):
+class PosteMetier(PosteMeteor):
     """
         PosteMeteor
 

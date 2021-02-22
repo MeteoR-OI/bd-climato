@@ -1,30 +1,35 @@
-import unittest
 from app.tools.jsonPlus import JsonPlus
 import datetime
 
+jp = JsonPlus()
+z = jp.json_test()
 
-class TestScript(unittest.TestCase):
-    jp = JsonPlus()
-    z = jp.json_test()
 
-    def load_json_from_string(self):
-        # load a json, with date as a str
-        jj = self.jp.loads(self.z)
-        # all dates are datetime after loads
-        assert str(isinstance(jj['data'][0]['current']['dat'], datetime.datetime))
+def test_load_json_from_string():
+    # load a json, with date as a str
+    jj = jp.loads(z)
+    # all dates are datetime after loads
+    ret = isinstance(jj['data'][0]['current']['dat'], datetime.datetime)
+    assert ret
 
-    def dumps_loads(self):
-        jj = self.jp.loads(self.z)
-        jj2 = self.jp.loads(self.jp.dumps(jj))
-        assert str(self.jp.dumps(jj2) == self.jp.dumps(jj))
 
-    def serialize(self):
-        jj = self.jp.loads(self.z)
-        self.jp.serialize(jj)
-        assert isinstance(jj['data'][0]['current']['dat'], str)
+def test_dumps_loads():
+    jj = jp.loads(z)
+    jj2 = jp.loads(jp.dumps(jj))
+    ret = jp.dumps(jj2) == jp.dumps(jj)
+    assert ret
 
-    def deserialize(self):
-        jj = self.jp.loads(self.z)
-        self.jp.serialize(jj)
-        self.jp.deserialize(jj)
-        assert isinstance(jj['data'][0]['current']['dat'], datetime)
+
+def test_serialize():
+    jj = jp.loads(z)
+    jp.serialize(jj)
+    ret = isinstance(jj['data'][0]['current']['dat'], str)
+    assert ret
+
+
+def test_deserialize():
+    jj = jp.loads(z)
+    jp.serialize(jj)
+    jp.deserialize(jj)
+    ret = isinstance(jj['data'][0]['current']['dat'], datetime.datetime)
+    assert ret

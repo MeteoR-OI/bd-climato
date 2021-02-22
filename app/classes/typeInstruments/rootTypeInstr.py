@@ -1,10 +1,10 @@
 from app.tools.agg_tools import get_agg_object, convert_relative_hour
 from app.tools.climConstant import ClimConstants, AggLevelConstant
-from app.classes.posteMeteor import PosteMeteor
-from app.classes.aggMeteor import AggMeteor
-from app.classes.obsMeteor import ObsMeteor
-from app.classes.typeInstrumentMeteor import TypeInstrumentMeteor
-from app.classes.measures.processMeasure import ProcessMeasure
+from app.classes.metier.posteMetier import PosteMetier
+from app.classes.repository.aggMeteor import AggMeteor
+from app.classes.repository.obsMeteor import ObsMeteor
+from app.classes.repository.typeInstrumentMeteor import TypeInstrumentMeteor
+from app.classes.calcul.processMeasure import ProcessMeasure
 import datetime
 import json
 
@@ -21,7 +21,7 @@ class RootTypeInstrument:
         """return current mapping"""
         return self.mapping
 
-    def process_json(self, poste_meteor: PosteMeteor, measures: json, measure_idx: int, obs_meteor: ObsMeteor, agg_Array: json, flag: bool) -> json:
+    def process_json(self, poste_meteor: PosteMetier, measures: json, measure_idx: int, obs_meteor: ObsMeteor, agg_Array: json, flag: bool) -> json:
         """
             process_json
         """
@@ -41,4 +41,3 @@ class RootTypeInstrument:
             print(type(inst))    # the exception instance
             print(inst.args)     # arguments stored in .args
             print(inst)          # __str__ allows args to be printed directly,
-

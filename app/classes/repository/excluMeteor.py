@@ -38,7 +38,11 @@ class ExcluMeteor():
             print(inst)          # __str__ allows args to be printed directly,
 
     @staticmethod
-    def getAllForAPoste(poste_id: int, start_date: datetime = datetime.datetime.now(datetime.timezone.utc), end_date: datetime = datetime.datetime(2100, 12, 21, 0, 0, 0, 0, datetime.timezone.utc)) -> json:
+    def getAllForAPoste(
+        poste_id: int,
+        start_date: datetime = datetime.datetime.now(datetime.timezone.utc),
+        end_date: datetime = datetime.datetime(2100, 12, 21, 0, 0, 0, 0, datetime.timezone.utc)
+    ) -> json:
         return Exclusion.objects.filter(poste_id_id=poste_id).filter(start_x__lte=start_date).filter(end_x__lte=end_date).values('type_instrument', 'value')
 
     def save(self):

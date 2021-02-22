@@ -1,9 +1,9 @@
-from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, Exclusion, TypeInstrument   #
+from app.models import Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, Exclusion, TypeInstrument   #
 import datetime
-from app.classes.posteMeteor import PosteMeteor
+from app.classes.metier.posteMetier import PosteMetier
 from app.tools.jsonPlus import JsonPlus
 from app.classes.typeInstruments.typeTemp import TypeTemp
-from app.classes.measures.avgCompute import avgCompute
+from app.classes.calcul.avgCompute import avgCompute
 from app.tools.getterSetter import GetterSetter
 
 
@@ -14,7 +14,7 @@ class type_temp_test():
         """ pre load std data """
         self.dt_test = datetime.datetime(
             2021, 2, 11, 13, 9, 30, 0, datetime.timezone.utc)
-        self.p_test = PosteMeteor(1)
+        self.p_test = PosteMetier(1)
 
         self.o_test = self.p_test.observation(self.dt_test)
         self.a_test = self.p_test.aggregations(self.dt_test)
@@ -92,7 +92,7 @@ class type_temp_test():
             tt = TypeTemp()
             # tt.mapping[0] -> first measure, tt.p_test, tt_o_test, tt.j_test, tt.a_test
 
-            pp = PosteMeteor(1)
+            pp = PosteMetier(1)
             # remove existing exclusion in poste (will require a reload)
             xx = pp.exclus
             pp.exclus = []
@@ -135,7 +135,7 @@ class type_temp_test():
             tt = TypeTemp()
             # tt.mapping[0] -> first measure, tt.p_test, tt_o_test, tt.j_test, tt.a_test
 
-            pp = PosteMeteor(1)
+            pp = PosteMetier(1)
             # remove existing exclusion in poste (will require a reload)
             xx = pp.exclus
             pp.exclus = []

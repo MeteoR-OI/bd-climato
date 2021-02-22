@@ -1,6 +1,6 @@
-from app.classes.obsMeteor import ObsMeteor
-from app.classes.posteMeteor import PosteMeteor
-from app.classes.aggMeteor import AggMeteor
+from app.classes.repository.obsMeteor import ObsMeteor
+from app.classes.metier.posteMetier import PosteMetier
+from app.classes.repository.aggMeteor import AggMeteor
 from app.classes.typeInstruments import rootTypeInstr, typeTemp
 
 import json
@@ -16,7 +16,7 @@ all_instruments = [
 class TypeInstrumentRepository():
     """
         TypeInstrumentRepository
-    
+
         Objet climato type_instrument
     """
 
@@ -29,7 +29,7 @@ class TypeInstrumentRepository():
                 return atype.object
         raise Exception("all_instrument_meteor.get", "invalid type_instrument_id: " + str(type_instrument_id))
 
-    def process_json(self, poste_meteor: PosteMeteor, measures: json, measure_idx: int, obs_meteor: ObsMeteor, agg_array: json, flag: bool) -> json:
+    def process_json(self, poste_meteor: PosteMetier, measures: json, measure_idx: int, obs_meteor: ObsMeteor, agg_array: json, flag: bool) -> json:
         """process observation data for all our TypeInstrument"""
         try:
             for an_intrument in self.all_instruments:

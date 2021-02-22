@@ -1,27 +1,46 @@
 import datetime
-from app.classes.posteMeteor import PosteMeteor
-from app.classes.obsMeteor import ObsMeteor
+from app.classes.metier.posteMetier import PosteMetier
+from app.classes.repository.obsMeteor import ObsMeteor
 from app.tools.climConstant import AggLevel, MeasureProcessingBitMask
-# from app.classes.measures.measureAvg import RootMeasure
+# from app.classes.measures.ProcessMeasure import RootMeasure
 from app.tools.agg_tools import is_flagged
 from app.tools.jsonPlus import JsonPlus
 from app.tools.agg_tools import get_agg_object
 import json
 from app.tools.getterSetter import GetterSetter
+from app.classes.calcul.avgCompute import avgCompute
 
 
-class avgCompute():
+class ProcessMeasure():
     """
-        avgCompute
+        ProcessMeasure
 
         Computation specific to a measure type
 
     """
+    process_type = [
+        {"agg": "avg", "object": avgCompute()}
+    ]
+
+    def getProcessObject(self, agg: str):
+        """ get our type_process instance """
+        for aprocess in self.process_type:
+            if aprocess['agg'] == agg:
+                return aprocess['object']
+        raise Exception("getProcessObject", "agg with no compute module: " + agg)
 
     # p should be called with o.dat in case of delete !
     # {'type_i': 1, 'key': 'out_temp', 'field': 'out_temp', 'avg': True, 'Min': True, 'max': True, 'hour_deca': 0, 'special': 0},
-    def update_obs_and_get_delta(self, poste_meteor: PosteMeteor, my_measure: json, measures: json, measure_idx: int, obs_meteor: ObsMeteor, flag: bool) -> json:
-        """ generate deltaValues from ObsMeteor.data """
+    def update_obs_and_get_delta(self, poste_meteor: PosteMetier, my_measure: json, measures: json, measure_idx: int, obs_meteor: ObsMeteor, flag: bool) -> json:
+        """
+            getProcessObject
+
+            generate deltaValues and load Observation
+                flag=True => from our json data
+                flag=False => from the obs data
+
+            calculation methods are implemented as virtual in the xxxCompute module
+        """
         try:
             # deltaValues returned for aggregation processing
             delta_values = {}
@@ -31,11 +50,14 @@ class avgCompute():
             if my_measure.__contains__('field'):
                 field_name = my_measure['field']
 
-            # get exclusion
+            j_obj = obs_meteor.data.j
+
+            # get exclusion for the measure type
             exclusion = poste_meteor.exclusion(my_measure['type_i'])
 
-            b_set_val = True
-            b_set_null = False
+            b_set_val = True        # a value is forced in exclusion
+            b_set_null = False      # the measure is invalidated
+
             # get the exclusion value if specified, and not the string 'null'
             if exclusion.__contains__(field_name) is True and exclusion[field_name] != 'value':
                 # exclusion[field_name] = 'null' or value_to_force
@@ -163,7 +185,7 @@ class avgCompute():
             print(inst)          # __str__ allows args to be printed directly,
 
     # {'key': 'out_temp', 'field': 'out_temp', 'avg': True, 'Min': True, 'max': True, 'hour_deca': 0, 'special': 0},
-    def update_aggs(self, poste_meteor: PosteMeteor, my_measure: json, measures: json, measure_idx: int, aggregations: list, delta_values: json, flag: bool) -> json:
+    def update_aggs(self, poste_meteor: PosteMetier, my_measure: json, measures: json, measure_idx: int, aggregations: list, delta_values: json, flag: bool) -> json:
         """ update all aggregation from the delta data, and aggregations key on json, return a list of extremes to recompute """
 
         try:
