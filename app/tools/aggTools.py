@@ -6,7 +6,7 @@ import datetime
 from dateutil.relativedelta import relativedelta
 
 
-def convert_relative_hour(mesure_dt: datetime, hour_deca: int):
+def convertRelativeHour(mesure_dt: datetime, hour_deca: int):
     """
         convert_relative_hour
 
@@ -27,7 +27,7 @@ def convert_relative_hour(mesure_dt: datetime, hour_deca: int):
     return -24 - tmp_hour
 
 
-def get_agg_object(niveau_agg):
+def getAggObject(niveau_agg):
     """get the aggregation depending on the level"""
     try:
         if niveau_agg == "H":
@@ -41,8 +41,7 @@ def get_agg_object(niveau_agg):
         elif niveau_agg == "A":
             return Agg_global
         else:
-            raise Exception("get_agg_object",
-                            "wrong niveau_agg: " + niveau_agg)
+            raise Exception("get_agg_object", "wrong niveau_agg: " + niveau_agg)
 
     except Exception as inst:
         print(type(inst))    # the exception instance
@@ -50,7 +49,29 @@ def get_agg_object(niveau_agg):
         print(inst)          # __str__ allows args to be printed directly,
 
 
-def calc_agg_date(niveau_agg: AggLevel, dt_utc: datetime, factor: float = 0) -> datetime:
+def getAggDuration(niveau_agg) -> int:
+    """get the aggregation depending on the level"""
+    try:
+        if niveau_agg == "H":
+            return 60
+        elif niveau_agg == "D":
+            return 24 * 60
+        elif niveau_agg == "M":
+            return int(30.5 * 24 * 60)
+        elif niveau_agg == "Y":
+            return int(365.25 * 24 * 60)
+        elif niveau_agg == "A":
+            raise Exception("get_gg_duration", "global has no duration")
+        else:
+            raise Exception("get_agg_duration", "wrong niveau_agg: " + niveau_agg)
+
+    except Exception as inst:
+        print(type(inst))    # the exception instance
+        print(inst.args)     # arguments stored in .args
+        print(inst)          # __str__ allows args to be printed directly,
+
+
+def calcAggDate(niveau_agg: AggLevel, dt_utc: datetime, factor: float = 0) -> datetime:
     """
         calc_agg_date
 
@@ -90,6 +111,6 @@ def calc_agg_date(niveau_agg: AggLevel, dt_utc: datetime, factor: float = 0) -> 
         print(inst)          # __str__ allows args to be printed directly,
 
 
-def is_flagged(flag: int, setting: int) -> bool:
+def isFlagged(flag: int, setting: int) -> bool:
     """ check if the bit is set """
     return ((flag & int(setting)) == int(setting))

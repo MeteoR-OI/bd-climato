@@ -1,11 +1,7 @@
-from app.tools.agg_tools import get_agg_object, convert_relative_hour
-from app.tools.climConstant import ClimConstants, AggLevelConstant
 from app.classes.metier.posteMetier import PosteMetier
-from app.classes.repository.aggMeteor import AggMeteor
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.typeInstrumentMeteor import TypeInstrumentMeteor
 from app.classes.calcul.processMeasure import ProcessMeasure
-import datetime
 import json
 
 

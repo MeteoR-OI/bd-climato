@@ -1,5 +1,5 @@
 from app.tools.climConstant import AggLevel
-from app.tools.agg_tools import get_agg_object
+from app.tools.aggTools import getAggObject
 from app.tools.jsonPlus import JsonPlus
 import datetime
 
@@ -26,7 +26,7 @@ class AggMeteor():
         """
         try:
             self.agg_niveau = agg_niveau
-            agg_object = get_agg_object(agg_niveau)
+            agg_object = getAggObject(agg_niveau)
             if agg_object.objects.filter(poste_id_id=poste_id).filter(dat=dt_agg_utc).exists():
                 self.data = agg_object.objects.filter(poste_id_id=poste_id).filter(dat=dt_agg_utc).first()
                 JsonPlus().deserialize(self.data.j)

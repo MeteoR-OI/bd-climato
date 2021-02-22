@@ -2,10 +2,9 @@ import datetime
 from app.classes.metier.posteMetier import PosteMetier
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.tools.climConstant import AggLevel, MeasureProcessingBitMask
-# from app.classes.measures.ProcessMeasure import RootMeasure
-from app.tools.agg_tools import is_flagged
+from app.tools.aggTools import isFlagged
 from app.tools.jsonPlus import JsonPlus
-from app.tools.agg_tools import get_agg_object
+from app.tools.aggTools import getAggObject
 import json
 from app.tools.getterSetter import GetterSetter
 from app.classes.calcul.avgCompute import avgCompute
@@ -31,7 +30,7 @@ class ProcessMeasure():
 
     # p should be called with o.dat in case of delete !
     # {'type_i': 1, 'key': 'out_temp', 'field': 'out_temp', 'avg': True, 'Min': True, 'max': True, 'hour_deca': 0, 'special': 0},
-    def update_obs_and_get_delta(self, poste_meteor: PosteMetier, my_measure: json, measures: json, measure_idx: int, obs_meteor: ObsMeteor, flag: bool) -> json:
+    def updateObsAndGetDelta(self, poste_metier: PosteMetier, my_measure: json, measures: json, measure_idx: int, obs_meteor: ObsMeteor, flag: bool) -> json:
         """
             getProcessObject
 
@@ -50,132 +49,32 @@ class ProcessMeasure():
             if my_measure.__contains__('field'):
                 field_name = my_measure['field']
 
-            j_obj = obs_meteor.data.j
-
             # get exclusion for the measure type
-            exclusion = poste_meteor.exclusion(my_measure['type_i'])
+            exclusion = poste_metier.exclusion(my_measure['type_i'])
 
-            b_set_val = True        # a value is forced in exclusion
             b_set_null = False      # the measure is invalidated
 
             # get the exclusion value if specified, and not the string 'null'
-            if exclusion.__contains__(field_name) is True and exclusion[field_name] != 'value':
-                # exclusion[field_name] = 'null' or value_to_force
-                b_set_val = False
-                if exclusion[field_name] == 'null':
-                    b_set_null = True
+            if exclusion.__contains__(field_name) is True and exclusion[field_name] == 'null':
+                b_set_null = True
 
             # no processing if measure is nullified by an exclusion
             if b_set_null is True:
                 return delta_values
 
             m_suffix = ''
-            if (is_flagged(my_measure['special'], MeasureProcessingBitMask.IsOmmMeasure)):
+            if (isFlagged(my_measure['special'], MeasureProcessingBitMask.IsOmmMeasure)):
                 m_suffix = '_omm'
 
             # in delete situation, generate the delta_values from the obs dataset
             if flag is False:
-                if obs_meteor.__contains__(field_name + m_suffix):
-                    if b_set_val:
-                        if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
-                            delta_values[field_name + m_suffix +
-                                         '_sum'] = obs_meteor.data.__setattr__(field_name, -1)
-                        else:
-                            delta_values[field_name + m_suffix + '_sum'] = obs_meteor.data.__setattr__(
-                                field_name, -1 * obs_meteor.data['duration'])
-                        delta_values[field_name + m_suffix +
-                                     '_duration'] = obs_meteor.data['duration'] * -1
-                    elif b_set_null is False:
-                        if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
-                            delta_values[field_name + m_suffix +
-                                         '_sum'] = exclusion[field_name] * -1
-                        else:
-                            delta_values[field_name + m_suffix +
-                                         '_sum'] = exclusion[field_name] * -1 * obs_meteor.data['duration']
-                        delta_values[field_name + m_suffix +
-                                     '_duration'] = obs_meteor.data['duration'] * -1
-                return delta_values
+                return self.getDeltaFromObs(my_measure, obs_meteor, field_name, m_suffix, exclusion)
 
-            # process our measure
-            if measures['data'][measure_idx].__contains__('current') and measures['data'][measure_idx]['current'].__contains__(field_name):
-                if b_set_val:
-                    # add Measure to ObsMeteor
-                    if (is_flagged(my_measure['special'], MeasureProcessingBitMask.DoNotProcessTwiceInObs)) is False:
-                        obs_meteor.data.__setattr__(field_name, measures['data'][measure_idx]['current'][field_name])
-                        if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                            obs_meteor.data.__setattr__(
-                                field_name + '_dir', measures['data'][measure_idx]['current'][field_name+"_dir"])
-                    # add Measure to delta_values
-                    if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
-                        delta_values[field_name + '_sum'] = measures['data'][measure_idx]['current'][field_name]
-                    else:
-                        delta_values[field_name + '_sum'] = measures['data'][measure_idx]['current'][field_name] * \
-                            measures['data'][measure_idx]['current']['duration']
-                    delta_values[field_name +
-                                 '_duration'] = measures['data'][measure_idx]['current']['duration']
-                else:
-                    # add exclusion to ObsMeteor
-                    if (is_flagged(my_measure['special'], MeasureProcessingBitMask.DoNotProcessTwiceInObs)) is False:
-                        obs_meteor.data.__setattr__(field_name, exclusion[field_name])
-                        if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                            # if wind is forced, then win_dir should be forced (probably not a real situation....)
-                            obs_meteor.data.__setattr__(
-                                field_name + '_dir', exclusion[field_name + "_dir"])
-                    # add Exclusion to delta_values
-                    if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
-                        delta_values[field_name +
-                                     '_sum'] = exclusion[field_name]
-                    else:
-                        delta_values[field_name + '_sum'] = exclusion[field_name] * \
-                            measures['data'][measure_idx]['current']['duration']
-                    delta_values[field_name +
-                                 '_duration'] = measures['data'][measure_idx]['current']['duration']
+            # load obs record, and get the delta_values added
+            delta_values = self.loadObsGetDelta(my_measure, measures, measure_idx, obs_meteor, field_name, exclusion, flag)
 
-            # datetime de la demie-periode
-            half_period_time = measures['data'][measure_idx]['current']['dat'] + datetime.timedelta(
-                seconds=int(measures['data'][measure_idx]['current']['duration'] / 2))
-
-            # store M_max for the next upper aggregation
-            if measures['data'][measure_idx]['current'].__contains__(field_name + '_max'):
-                # on a le max dans le json
-                obs_meteor.data.__setattr__(
-                    field_name + '_max', measures['data'][measure_idx]['current'][field_name + '_max'])
-                obs_meteor.data.__setattr__(
-                    field_name + '_max_time', measures['data'][measure_idx]['current'][field_name + '_max_time'])
-                delta_values[field_name +
-                             '_max'] = measures['data'][measure_idx]['current'][field_name + '_max']
-                delta_values[field_name +
-                             '_max_time'] = measures['data'][measure_idx]['current'][field_name + '_max_time']
-                if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                    """ save Wind_max_dir """
-                    obs_meteor.data.__setattr__(
-                        field_name + '_max_dir', measures['data'][measure_idx]['current'][field_name + '_max_dir'])
-            else:
-                # on prend la valeur reportee, et le milieu de l'heure de la periode de la donnee elementaire
-                delta_values[field_name +
-                             '_max'] = obs_meteor.data.__getattribute__(field_name)
-                delta_values[field_name + '_max_time'] = half_period_time
-
-            # store M_min for the next upper aggregation
-            if measures['data'][measure_idx]['current'].__contains__(field_name + '_min'):
-                # on a le min dans le json
-                obs_meteor.data.__setattr__(
-                    field_name + '_min', measures['data'][measure_idx]['current'][field_name + '_min'])
-                obs_meteor.data.__setattr__(
-                    field_name + '_min_time', measures['data'][measure_idx]['current'][field_name + '_min_time'])
-                delta_values[field_name +
-                             '_min'] = measures['data'][measure_idx]['current'][field_name + '_min']
-                delta_values[field_name +
-                             '_min_time'] = measures['data'][measure_idx]['current'][field_name + '_min_time']
-                if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                    """ save Wind_min_dir """
-                    obs_meteor.data.__setattr__(
-                        field_name + '_min_dir', measures['data'][measure_idx]['current'][field_name + '_min_dir'])
-            else:
-                # on prend la valeur reportee, et le milieu de l'heure de la periode de la donnee elementaire
-                delta_values[field_name +
-                             '_min'] = obs_meteor.data.__getattribute__(field_name)
-                delta_values[field_name + '_min_time'] = half_period_time
+            # load Max/Min and update delta_values
+            self.loadMaxMin(my_measure, measures, measure_idx, obs_meteor, field_name, exclusion, delta_values, flag)
 
             return delta_values
 
@@ -185,12 +84,10 @@ class ProcessMeasure():
             print(inst)          # __str__ allows args to be printed directly,
 
     # {'key': 'out_temp', 'field': 'out_temp', 'avg': True, 'Min': True, 'max': True, 'hour_deca': 0, 'special': 0},
-    def update_aggs(self, poste_meteor: PosteMetier, my_measure: json, measures: json, measure_idx: int, aggregations: list, delta_values: json, flag: bool) -> json:
+    def update_aggs(self, poste_metier: PosteMetier, my_measure: json, measures: json, measure_idx: int, aggregations: list, delta_values: json, flag: bool) -> json:
         """ update all aggregation from the delta data, and aggregations key on json, return a list of extremes to recompute """
 
         try:
-            extremes_todo = []
-            agg_niveau_idx = 0
             key_name = my_measure['key']
             # load field if defined in json
             field_name = key_name
@@ -201,7 +98,7 @@ class ProcessMeasure():
             for anAgg in AggLevel:
                 """loop for all aggregations in ascending level"""
                 delta_values_next = {}
-                agg_ds = get_agg_object(anAgg)()
+                agg_ds = getAggObject(anAgg)()
                 agg_j = {}
 
                 if measures['data'][measure_idx].__contains__('aggregates'):
@@ -211,7 +108,7 @@ class ProcessMeasure():
                             break
 
                 # get exclusion
-                exclusion = poste_meteor.exclusion(my_measure['type_i'])
+                exclusion = poste_metier.exclusion(my_measure['type_i'])
 
                 # do nothing if exclusion is nullify
                 if exclusion.__contains__(field_name) is True and exclusion[field_name] == 'null':
@@ -231,7 +128,7 @@ class ProcessMeasure():
                         tmp_avg = float(gs.get(agg_j, [field_name + '_avg']))
                         gs.set(agg_ds, tmp_avg, field_name + '_avg')
                         gs.set(delta_values_next, tmp_avg, field_name + '_avg')
-                    elif (is_flagged(my_measure['special'], MeasureProcessingBitMask.NoAvgField) is False):
+                    elif (isFlagged(my_measure['special'], MeasureProcessingBitMask.NoAvgField) is False):
                         # compute M_avg if required
                         tmp_avg = float(gs.get(delta_values_next, [
                                         field_name + '_sum']) / gs.get(delta_values_next, [field_name + '_duration']))
@@ -260,7 +157,7 @@ class ProcessMeasure():
                         tmp_max_time = jsonp.dumps(gs.get(agg_j, [field_name + '_max_time']))
                         gs.set(agg_ds, tmp_max_time, field_name + '_max_time')
                         gs.set(delta_values_next, tmp_max_time, field_name + '_max_time')
-                        if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
+                        if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
                             tmp_dir = gs.get(agg_j, [field_name + '_max_dir'])
                             gs.set(agg_ds, tmp_dir, field_name + '_max_dir')
                             gs.set(delta_values_next, tmp_dir, field_name + '_max_dir')
@@ -275,7 +172,7 @@ class ProcessMeasure():
                             tmp_max_time = jsonp.dumps(gs.get(delta_values, field_name + '_max_time'))
                             gs.set(agg_ds, tmp_max_time, field_name + '_max_time')
                             gs.set(delta_values_next, tmp_max_time, field_name + '_max_time')
-                            if (is_flagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
+                            if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
                                 tmp_dir = gs.get(agg_j, field_name + '_max_dir')
                                 gs.set(agg_ds, tmp_dir, field_name + '_max_dir')
                                 gs.set(delta_values_next, tmp_dir, field_name + '_max_dir')
@@ -288,3 +185,112 @@ class ProcessMeasure():
             print(type(inst))    # the exception instance
             print(inst.args)     # arguments stored in .args
             print(inst)          # __str__ allows args to be printed directly,
+
+    def checkExtremes():
+        print('to do')
+
+    # private or virtal methods
+
+    def getDeltaFromObs(self, my_measure: json, obs_meteor: ObsMeteor, field_name: str, m_suffix: str, exclusion: json) -> json:
+        """
+            getDeltaFromObs
+
+            get delta_values from current Obs
+            Always in substracting mode, because this is called only in delete obs situation
+        """
+        try:
+            delta_values = {'extremes': []}
+            b_set_val = True        # a value is forced in exclusion
+            b_set_null = False      # the measure is invalidated
+            obs_j = obs_meteor.data.j
+
+            # get the exclusion value if specified, and not the string 'null'
+            if exclusion.__contains__(field_name) is True and exclusion[field_name] != 'value':
+                # exclusion[field_name] = 'null' or value_to_force
+                b_set_val = False
+                if exclusion[field_name] == 'null':
+                    b_set_null = True
+
+            if b_set_null is False:
+                if b_set_val:
+                    # value forced from exclusion
+                    if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
+                        delta_values[field_name + m_suffix + '_sum'] = exclusion[field_name] * -1
+                    else:
+                        delta_values[field_name + m_suffix + '_sum'] = exclusion[field_name] * obs_meteor.data['duration'] * -1
+                    delta_values[field_name + m_suffix + '_duration'] = obs_meteor.data['duration'] * -1
+                elif obs_j.__contains__(field_name + m_suffix):
+                    # use the value in obs_meteor
+                    if b_set_val:
+                        if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
+                            delta_values[field_name + m_suffix + '_sum'] = obs_j[field_name] * -1
+                        else:
+                            delta_values[field_name + m_suffix + '_sum'] = obs_j[field_name] * obs_meteor.data['duration'] * -1
+                        delta_values[field_name + m_suffix + '_duration'] = obs_meteor.data['duration'] * -1
+            return delta_values
+
+        except Exception as inst:
+            print(type(inst))    # the exception instance
+            print(inst.args)     # arguments stored in .args
+            print(inst)          # __str__ allows args to be printed directly
+
+    def loadObsGetDelta(self, my_measure: json, measures: json, measure_idx: int, obs_meteor: ObsMeteor, field_name: str, exclusion: json, flag: bool) -> json:
+        raise Exception("loadObsGetDelta", "not allowed in parent class")
+
+    def loadMaxMin(self, my_measure: json, measures: json, measure_idx: int, obs_meteor: ObsMeteor, field_name: str, exclusion: json, delta_values: json, flag: bool) -> json:
+        """
+            loadMaxMin
+
+            load in obs max/min value if present
+            update delta_values
+        """
+        try:
+            b_set_val = True        # a value is forced in exclusion
+            b_set_null = False      # the measure is invalidated
+            obs_j = obs_meteor.data.j
+
+            # get the exclusion value if specified, and not the string 'null'
+            if exclusion.__contains__(field_name) is True and exclusion[field_name] != 'value':
+                # exclusion[field_name] = 'null' or value_to_force
+                b_set_val = False
+                if exclusion[field_name] == 'null':
+                    b_set_null = True
+
+            m_suffix = ''
+            if (isFlagged(my_measure['special'], MeasureProcessingBitMask.IsOmmMeasure)):
+                m_suffix = '_omm'
+
+            if b_set_val:
+                if measures['data'][measure_idx].__contains__('current'):
+                    data_src = measures['data'][measure_idx]['current']
+                else:
+                    data_src = {}
+            else:
+                data_src = exclusion
+
+            # in exclusion + nullify return an empty json
+            if b_set_null:
+                return delta_values
+
+            half_period_time = measures['data'][measure_idx]['current']['dat'] + datetime.timedelta(seconds=int(measures['data'][measure_idx]['current']['duration'] / 2))
+
+            for my_avg in ['_max', '_min']:
+                # is there a M_max/M_min in the data_src ?
+                if data_src.__contains__(field_name + m_suffix + my_avg):
+                    # found, then load in in obs and delta_values
+                    obs_j[field_name + m_suffix + my_avg] = data_src[field_name + m_suffix + my_avg]
+                    obs_j[field_name + m_suffix + my_avg + '_time'] = data_src[field_name + m_suffix + my_avg + '_time']
+                    delta_values[field_name + m_suffix + my_avg] = data_src[field_name + m_suffix + my_avg]
+                    delta_values[field_name + m_suffix + my_avg + '_time'] = data_src[field_name + m_suffix + my_avg + '_time']
+                    if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)) and my_avg == '_max':
+                        """ save Wind_max_dir """
+                        obs_j[field_name + m_suffix + my_avg + '_dir'] = data_src[field_name + m_suffix + my_avg + '_dir']
+                elif obs_j.__contains__(field_name + m_suffix):
+                    # on prend la valeur reportee, et le milieu de l'heure de la periode de la donnee elementaire
+                    delta_values[field_name + m_suffix + my_avg] = obs_j[field_name + m_suffix]
+                    delta_values[field_name + m_suffix + my_avg + '_time'] = half_period_time
+
+        except Exception as inst:
+            print(type(inst))    # the exception instance
+            print(inst.args)     # arguments stored in .args
+            print(inst)          # __str__ allows args to be printed directly

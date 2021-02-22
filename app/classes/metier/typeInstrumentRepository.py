@@ -5,7 +5,7 @@ from app.classes.typeInstruments import rootTypeInstr, typeTemp
 
 import json
 
-# from app.tools.agg_tools import round_datetime_per_aggregation, get_agg_object
+# from app.tools.aggTools import round_datetime_per_aggregation, get_agg_object
 
 # Tous les types connus, et le nom de la classe qui l'implemente
 all_instruments = [

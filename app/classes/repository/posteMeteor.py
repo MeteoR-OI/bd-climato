@@ -30,11 +30,11 @@ class PosteMeteor:
             print(inst)          # __str__ allows args to be printed directly,
 
     def cas_gestion_extreme(self):
-        """ in future could get the information from values in db """
+        """ in future we will get the information from values in db """
         return self.data.cas_gestion_extreme
 
     def agg_min_extreme(self):
-        """ in future could get the information from values in db """
+        """ in future we will get the information from values in db """
         return self.data.agg_min_extreme
 
     def __str__(self):

@@ -5,7 +5,7 @@ from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.aggMeteor import AggMeteor
 from app.classes.repository.excluMeteor import ExcluMeteor
 from app.classes.repository.posteMeteor import PosteMeteor
-from app.tools.agg_tools import calc_agg_date
+from app.tools.aggTools import calcAggDate
 
 
 class PosteMetier(PosteMeteor):
@@ -53,15 +53,15 @@ class PosteMetier(PosteMeteor):
             ret = []
             # push aggregations of all levels for the given date
             for agg_niveau in AggLevel:
-                tmp_dt = calc_agg_date(agg_niveau, my_datetime_utc)
+                tmp_dt = calcAggDate(agg_niveau, my_datetime_utc)
                 ret.append(AggMeteor(self.data.id, agg_niveau, tmp_dt))
 
             # get aggregation of day - 1 for measures that will aggregate yesteray
-            tmp_dt = calc_agg_date('D', my_datetime_utc, -1)
+            tmp_dt = calcAggDate('D', my_datetime_utc, -1)
             ret.append(AggMeteor(self.data.id, 'D', tmp_dt))
 
             # get aggregation of day + 1 for measures that will aggregate the day after
-            tmp_dt = calc_agg_date('D', my_datetime_utc, 1)
+            tmp_dt = calcAggDate('D', my_datetime_utc, 1)
             ret.append(AggMeteor(self.data.id, 'D', tmp_dt))
 
             return ret
