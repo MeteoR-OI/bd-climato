@@ -26,11 +26,11 @@ def view_agg_hour(request, poste_id):
     return view_agg(request, "H", poste_id)
 
 
-def test_compute(request):
+def testComputeObsOnly(request):
     """ debug environment"""
     try:
         tt = type_temp_test()
-        ret_json = tt.load_obs()
+        ret_json = tt.loadObs()
         ret = JsonPlus().dumps(ret_json)
         return HttpResponse(ret)
 
@@ -38,24 +38,11 @@ def test_compute(request):
         return HttpResponse(inst)
 
 
-def test_compute_agg(request):
+def testComputeAll(request):
     """ debug environment"""
     try:
         tt = type_temp_test()
-        ret_json = tt.load_agg()
-        ret = JsonPlus().dumps(ret_json)
-        return HttpResponse(ret)
-
-    except Exception as inst:
-        return HttpResponse(inst)
-
-
-def test_getset(request):
-    """ debug environment"""
-    try:
-
-        tt = type_temp_test()
-        ret_json = tt.getset()
+        ret_json = tt.loadObsAndAgg()
         ret = JsonPlus().dumps(ret_json)
         return HttpResponse(ret)
 

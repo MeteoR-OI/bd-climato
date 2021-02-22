@@ -13,7 +13,7 @@ all_instruments = [
 ]
 
 
-class TypeInstrumentRepository():
+class TypeInstrumentAll():
     """
         TypeInstrumentRepository
 
@@ -33,7 +33,7 @@ class TypeInstrumentRepository():
         """process observation data for all our TypeInstrument"""
         try:
             for an_intrument in self.all_instruments:
-                an_intrument['objects'].process_json(poste_meteor, measures, measure_idx, obs_meteor, agg_array, flag)
+                an_intrument['objects'].processJson(poste_meteor, measures, measure_idx, obs_meteor, agg_array, flag)
         except Exception as inst:
             print(type(inst))    # the exception instance
             print(inst.args)     # arguments stored in .args

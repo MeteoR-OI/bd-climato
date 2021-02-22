@@ -87,7 +87,7 @@ class type_temp_test():
         ret['second'] = str(self.p_test.data)
         return ret
 
-    def load_obs(self):
+    def loadObs(self):
         try:
             tt = TypeTemp()
             # tt.mapping[0] -> first measure, tt.p_test, tt_o_test, tt.j_test, tt.a_test
@@ -99,8 +99,7 @@ class type_temp_test():
 
             # call the method to update obs, and return delta_val
             ma = avgCompute()
-            delta_val = ma.update_obs_and_get_delta(
-                self.p_test, tt.mapping[0], self.j_test, 0, self.o_test, True)
+            delta_val = ma.updateObsAndGetDelta(self.p_test, tt.mesures[0], self.j_test, 0, self.o_test, True)
 
             # restore exclus, as our object is cached
             pp.exclus = xx
@@ -130,7 +129,7 @@ class type_temp_test():
             print(inst.args)     # arguments stored in .args
             print(inst)          # __str__ allows args to be printed directly,
 
-    def load_agg(self):
+    def loadObsAndAgg(self):
         try:
             tt = TypeTemp()
             # tt.mapping[0] -> first measure, tt.p_test, tt_o_test, tt.j_test, tt.a_test
@@ -142,16 +141,15 @@ class type_temp_test():
 
             # call the method to update obs, and return delta_val
             ma = avgCompute()
-            delta_val = ma.update_obs_and_get_delta(
-                self.p_test, tt.mapping[0], self.j_test, 0, self.o_test, True)
-            agg_recompute = ma.update_aggs(
-                self.p_test, tt.mapping[0], self.j_test, 0, self.a_test, delta_val, True)
+            delta_val = ma.updateObsAndGetDelta(self.p_test, tt.mapping[0], self.j_test, 0, self.o_test, True)
+            # agg_recompute = ma.update_aggs(self.p_test, tt.mapping[0], self.j_test, 0, self.a_test, delta_val, True)
 
             # restore exclus, as our object is cached
             pp.exclus = xx
 
             # return to the browser when executed in interactive mode... (not needed in real testing situation)
-            return agg_recompute
+            # return agg_recompute
+            return delta_val
 
         except Exception as inst:
             print(type(inst))    # the exception instance
