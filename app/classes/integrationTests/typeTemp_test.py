@@ -1,4 +1,4 @@
-from app.models import Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, Exclusion, TypeInstrument   #
+from app.models import Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global
 import datetime
 from app.classes.metier.posteMetier import PosteMetier
 from app.tools.jsonPlus import JsonPlus

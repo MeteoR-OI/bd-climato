@@ -3,8 +3,7 @@ from app.classes.metier.posteMetier import PosteMetier
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.tools.climConstant import AggLevel, MeasureProcessingBitMask
 from app.tools.aggTools import isFlagged
-from app.tools.aggTools import getAggObject
-from app.tools.aggTools import addJson
+from app.tools.aggTools import getRightAggregation
 import json
 
 
@@ -87,15 +86,19 @@ class ProcessMeasure():
             for anAgg in AggLevel:
                 """loop for all aggregations in ascending level"""
                 dv_next = {}
-                agg_ds = getAggObject(anAgg)()
-                agg_j = agg_ds.data.j
-                m_agg_j = {}
 
-                if measures['data'][measure_idx].__contains__('aggregates'):
-                    for a_j_agg in measures['data'][measure_idx]['aggregates']:
-                        if a_j_agg['level'] == anAgg:
-                            m_agg_j = a_j_agg
-                            break
+                # array of aggregations, current, and prev/next for agg_day only
+                all_agg = []
+                for anAgg in aggregations:
+                    if anAgg.agg_niveau == anAgg:
+                        all_agg.append(anAgg)
+                        if anAgg == "D":
+                            all_agg.append(aggregations[5])
+                            all_agg.append(aggregations[6])
+
+                # get the rigth aggregation with hour_deca
+                measure_dat = measures['data'][measure_idx]['current']['dat']
+                agg_active = getRightAggregation(anAgg, measure_dat, my_measure['hour_deca'], all_agg)
 
                 # get exclusion
                 exclusion = poste_metier.exclusion(my_measure['type_i'])
@@ -104,69 +107,38 @@ class ProcessMeasure():
                 if exclusion.__contains__(field_name) is True and exclusion[field_name] == 'null':
                     return delta_values
 
-                # get dat and duration of the mesure
-                measure_duration = int(measures['data'][measure_idx]['current']['duration'])
-                measure_dat = measures['data'][measure_idx]['current']['dat']
+                # load data in our aggregation
+                self.loadAggGetDelta(my_measure, measures, measure_idx, agg_active, field_name, m_suffix, delta_values, dv_next, flag)
 
-                if m_agg_j.__contains__(field_name + m_suffix + '_sum'):
-                    tmp_sum = float(m_agg_j[field_name + '_sum'])
-                    addJson(agg_ds, field_name + '_sum', tmp_sum)
-                    dv_next[field_name + '_sum'] = tmp_sum
-                    addJson(agg_ds, field_name + '_duration', measure_duration)
-                    dv_next[field_name + '_duration'] = measure_duration
-                    if gs.has(m_agg_j, field_name + '_avg'):
-                        # json.aggregations contains M_avg, M_sum, M_duration
-                        tmp_avg = float(gs.get(m_agg_j, [field_name + '_avg']))
-                        gs.set(agg_ds, tmp_avg, field_name + '_avg')
-                        gs.set(dv_next, tmp_avg, field_name + '_avg')
-                    elif (isFlagged(my_measure['special'], MeasureProcessingBitMask.NoAvgField) is False):
-                        # compute M_avg if required
-                        tmp_avg = float(gs.get(dv_next, [
-                                        field_name + '_sum']) / gs.get(dv_next, [field_name + '_duration']))
-                        gs.set(agg_ds, tmp_avg, field_name + '_avg')
-                        gs.set(dv_next, tmp_avg, field_name + '_avg')
-                elif gs.has(delta_values, field_name + '_sum'):
-                    tmp_sum = float(gs.get(delta_values, field_name + '_sum'))
-                    gs.add(agg_ds, tmp_sum, field_name + '_sum')
-                    gs.set(dv_next, tmp_sum, field_name + '_sum')
-                    gs.add(agg_ds, measure_duration, field_name + '_duration')
-                    gs.set(dv_next, measure_duration,
-                           field_name + '_duration')
-                    if gs.has(delta_values, field_name + '_avg'):
-                        # get our values to agregate from delta_values
-                        tmp_avg = float(
-                            gs.get(delta_values, [field_name + '_avg']))
-                        gs.set(agg_ds, tmp_avg, field_name + '_avg')
-                        gs.set(dv_next, tmp_avg, field_name + '_avg')
-                # else => we don't have any values to aggregate..
+                # todo: process max/min
 
-                if gs.has(m_agg_j, field_name + '_max'):
-                    if gs.is_max(agg_ds, gs.get(m_agg_j, field_name + '_max'), field_name + '_max'):
-                        tmp_max = float(gs.get(m_agg_j, [field_name + '_max']))
-                        gs.set(agg_ds, tmp_max, field_name + '_max')
-                        gs.set(dv_next, tmp_max, field_name + '_max')
-                        tmp_max_time = jsonp.dumps(gs.get(m_agg_j, [field_name + '_max_time']))
-                        gs.set(agg_ds, tmp_max_time, field_name + '_max_time')
-                        gs.set(dv_next, tmp_max_time, field_name + '_max_time')
-                        if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                            tmp_dir = gs.get(m_agg_j, [field_name + '_max_dir'])
-                            gs.set(agg_ds, tmp_dir, field_name + '_max_dir')
-                            gs.set(dv_next, tmp_dir, field_name + '_max_dir')
-                else:
-                    if gs.has(delta_values, field_name + '_max'):
-                        tmp_max = gs.get(delta_values, field_name + '_max')
-                        if gs.is_max(agg_ds, tmp_max, field_name + '_max'):
-                            tmp_max = float(
-                                gs.get(delta_values, field_name + '_max'))
-                            gs.set(agg_ds, tmp_max, field_name + '_max')
-                            gs.set(dv_next, tmp_max, field_name + '_max')
-                            tmp_max_time = jsonp.dumps(gs.get(delta_values, field_name + '_max_time'))
-                            gs.set(agg_ds, tmp_max_time, field_name + '_max_time')
-                            gs.set(dv_next, tmp_max_time, field_name + '_max_time')
-                            if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                                tmp_dir = gs.get(m_agg_j, field_name + '_max_dir')
-                                gs.set(agg_ds, tmp_dir, field_name + '_max_dir')
-                                gs.set(dv_next, tmp_dir, field_name + '_max_dir')
+                # if gs.has(data_src, field_name + '_max'):
+                #     if gs.is_max(agg_ds, gs.get(data_src, field_name + '_max'), field_name + '_max'):
+                #         tmp_max = float(gs.get(data_src, [field_name + '_max']))
+                #         gs.set(agg_ds, tmp_max, field_name + '_max')
+                #         gs.set(dv_next, tmp_max, field_name + '_max')
+                #         tmp_max_time = jsonp.dumps(gs.get(data_src, [field_name + '_max_time']))
+                #         gs.set(agg_ds, tmp_max_time, field_name + '_max_time')
+                #         gs.set(dv_next, tmp_max_time, field_name + '_max_time')
+                #         if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
+                #             tmp_dir = gs.get(data_src, [field_name + '_max_dir'])
+                #             gs.set(agg_ds, tmp_dir, field_name + '_max_dir')
+                #             gs.set(dv_next, tmp_dir, field_name + '_max_dir')
+                # else:
+                #     if gs.has(delta_values, field_name + '_max'):
+                #         tmp_max = gs.get(delta_values, field_name + '_max')
+                #         if gs.is_max(agg_ds, tmp_max, field_name + '_max'):
+                #             tmp_max = float(
+                #                 gs.get(delta_values, field_name + '_max'))
+                #             gs.set(agg_ds, tmp_max, field_name + '_max')
+                #             gs.set(dv_next, tmp_max, field_name + '_max')
+                #             tmp_max_time = jsonp.dumps(gs.get(delta_values, field_name + '_max_time'))
+                #             gs.set(agg_ds, tmp_max_time, field_name + '_max_time')
+                #             gs.set(dv_next, tmp_max_time, field_name + '_max_time')
+                #             if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
+                #                 tmp_dir = gs.get(data_src, field_name + '_max_dir')
+                #                 gs.set(agg_ds, tmp_dir, field_name + '_max_dir')
+                #                 gs.set(dv_next, tmp_dir, field_name + '_max_dir')
 
                 # we give our new delta_values to the next level
                 delta_values = dv_next

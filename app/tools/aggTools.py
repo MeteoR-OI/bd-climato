@@ -27,6 +27,24 @@ def convertRelativeHour(mesure_dt: datetime, hour_deca: int):
     return -24 - tmp_hour
 
 
+def getRightAggregation(agg_niveau: str, dt_utc: datetime, hour_deca: int, aggregations: list):
+    """
+        getRightAggregation
+
+        return the right aggregation, depending on the hour_deca
+    """
+    if agg_niveau != "D" or hour_deca != 0:
+        return aggregations[0]
+
+    # get relative hour
+    hour_rel = convertRelativeHour(dt_utc, hour_deca)
+    if hour_rel < 0:
+        return aggregations[1]
+    if hour_rel > 0:
+        return aggregations[2]
+    return aggregations[0]
+
+
 def getAggObject(niveau_agg):
     """get the aggregation depending on the level"""
     try:
