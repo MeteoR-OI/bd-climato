@@ -1,4 +1,3 @@
-from app.models import Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global   #
 from app.tools.climConstant import AggLevel
 import json
 # import sys
@@ -45,29 +44,7 @@ def getRightAggregation(agg_niveau: str, dt_utc: datetime, hour_deca: int, aggre
     return aggregations[0]
 
 
-def getAggObject(niveau_agg):
-    """get the aggregation depending on the level"""
-    try:
-        if niveau_agg == "H":
-            return Agg_hour
-        elif niveau_agg == "D":
-            return Agg_day
-        elif niveau_agg == "M":
-            return Agg_month
-        elif niveau_agg == "Y":
-            return Agg_year
-        elif niveau_agg == "A":
-            return Agg_global
-        else:
-            raise Exception("get_agg_object", "wrong niveau_agg: " + niveau_agg)
-
-    except Exception as inst:
-        print(type(inst))    # the exception instance
-        print(inst.args)     # arguments stored in .args
-        print(inst)          # __str__ allows args to be printed directly,
-
-
-def getAggDuration(niveau_agg) -> int:
+def getAggDuration(niveau_agg: str) -> int:
     """get the aggregation depending on the level"""
     try:
         if niveau_agg == "H":
@@ -134,7 +111,7 @@ def isFlagged(flag: int, setting: int) -> bool:
     return ((flag & int(setting)) == int(setting))
 
 
-def addJson(self, j: json, key: str, valeur):
+def addJson(j: json, key: str, valeur):
     """
         addJson
 

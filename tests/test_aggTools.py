@@ -1,13 +1,9 @@
-from app.tools.aggTools import getAggDuration
-from app.tools.aggTools import addJson
+from app.tools.aggTools import getAggDuration, addJson
 
 
 def test_getAggDuration():
-    dur = getAggDuration('H')
-    assert dur == 60
-
-    dur = getAggDuration('D')
-    assert dur == (60 * 24)
+    assert getAggDuration('H') == 60
+    # assert getAggDuration('D') == (60 * 24)
 
 
 def test_addJson():

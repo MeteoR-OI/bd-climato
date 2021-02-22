@@ -1,5 +1,5 @@
+from app.models import Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global   #
 from app.tools.climConstant import AggLevel
-from app.tools.aggTools import getAggObject
 from app.tools.jsonPlus import JsonPlus
 import datetime
 
@@ -26,7 +26,7 @@ class AggMeteor():
         """
         try:
             self.agg_niveau = agg_niveau
-            agg_object = getAggObject(agg_niveau)
+            agg_object = self.getAggObject(agg_niveau)
             if agg_object.objects.filter(poste_id_id=poste_id).filter(dat=dt_agg_utc).exists():
                 self.data = agg_object.objects.filter(poste_id_id=poste_id).filter(dat=dt_agg_utc).first()
                 JsonPlus().deserialize(self.data.j)
@@ -46,6 +46,27 @@ class AggMeteor():
                 JsonPlus().serialize(self.data.j)
             self.data.save()
             JsonPlus().deserialize(self.data.j)
+
+        except Exception as inst:
+            print(type(inst))    # the exception instance
+            print(inst.args)     # arguments stored in .args
+            print(inst)          # __str__ allows args to be printed directly,
+
+    def getAggObject(self, niveau_agg: str):
+        """get the aggregation depending on the level"""
+        try:
+            if niveau_agg == "H":
+                return Agg_hour
+            elif niveau_agg == "D":
+                return Agg_day
+            elif niveau_agg == "M":
+                return Agg_month
+            elif niveau_agg == "Y":
+                return Agg_year
+            elif niveau_agg == "A":
+                return Agg_global
+            else:
+                raise Exception("get_agg_object", "wrong niveau_agg: " + niveau_agg)
 
         except Exception as inst:
             print(type(inst))    # the exception instance
