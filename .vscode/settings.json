@@ -21,9 +21,6 @@
         "--log-cli-level", "INFO",
     ],
     "pythonTestExplorer.testFramework": "pytest",
-    "testExplorer.mergeSuites": true,
-    "testExplorer.onStart": "reset",
-    "testExplorer.onReload": "retire",
     "testExplorer.showOnRun": true,
     "testExplorer.sort": "byLabelWithSuitesFirst",
 }

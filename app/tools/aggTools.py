@@ -1,6 +1,6 @@
 from app.models import Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global   #
 from app.tools.climConstant import AggLevel
-# import json
+import json
 # import sys
 import datetime
 from dateutil.relativedelta import relativedelta
@@ -114,3 +114,14 @@ def calcAggDate(niveau_agg: AggLevel, dt_utc: datetime, factor: float = 0) -> da
 def isFlagged(flag: int, setting: int) -> bool:
     """ check if the bit is set """
     return ((flag & int(setting)) == int(setting))
+
+
+def addJson(self, j: json, key: str, valeur):
+    """
+        addJson
+
+        add the value to j[key]
+    """
+    if j.__contains__(key) is False:
+        j[key] = 0
+    j[key] += valeur

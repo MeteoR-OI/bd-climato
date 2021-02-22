@@ -66,7 +66,6 @@ class avgCompute(ProcessMeasure):
                 if data_src.__contains__(field_name + m_suffix + '_avg'):
                     delta_values[field_name + m_suffix + '_avg'] = data_src[field_name + m_suffix + '_avg']
                     obs_j[field_name + m_suffix + '_avg'] = data_src[field_name + m_suffix + '_avg']
-
                 if b_omm_case:
                     obs_j[field_name + '_mesure'] = data_src[field_name] * factor
                     obs_j[field_name + '_first_time'] = data_src['dat']
