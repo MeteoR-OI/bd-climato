@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": ".venv/bin/python",
+    "python.languageServer": "Pylance",
     "python.terminal.activateEnvironment":true,
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
@@ -14,11 +14,9 @@
         "--max-line-length=200",
         // "--ignore=E402,F841,F401,E302,E305, W293",
     ],
-    "python.testing.pytestArgs": [        
-        "./tests/",
-        "-v",
-        "-s",
-        "--log-cli-level", "INFO",
+    "python.testing.pytestArgs": [
+        "tests",
+        "app/tools"
     ],
     "pythonTestExplorer.testFramework": "pytest",
     "testExplorer.showOnRun": true,

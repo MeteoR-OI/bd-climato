@@ -3,6 +3,7 @@ attrs==20.3.0
 cycler==0.10.0
 Django==3.1.7
 django-common-helpers==0.9.2
+django-coverage-plugin==1.8.0
 django-cron==0.5.1
 django-extensions==3.1.1
 flake8==3.8.4
@@ -26,7 +27,6 @@ pyparsing==2.4.7
 pytest==6.2.2
 pytest-django==4.1.0
 python-dateutil==2.8.1
-pytest-cov==2.11.1
 pytz==2021.1
 setuptools==53.0.0
 six==1.15.0

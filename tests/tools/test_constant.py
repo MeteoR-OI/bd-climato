@@ -1,6 +1,5 @@
-from django.conf import settings
+import pytest
 from app.tools.constantClass import Constants
-from pathlib import Path
 
 
 class MyConstants(Constants):
@@ -36,7 +35,6 @@ class ObjectType(FigConstants):
 
 
 # def test_requirements():
-#     requirements_file = Path(f'{settings.BASE_DIR}/requirements.txt')
 #     assert requirements_file.is_file() is True
 #     assert requirements_file.exists() is True
 

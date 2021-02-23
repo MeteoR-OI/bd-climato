@@ -48,7 +48,7 @@ class type_temp_test():
                         {
                             "dat" : "2021-02-11T13:09:40+00:00",
                             "duration" : 300,
-                            "out_temp" : 30
+                            "out_temp" : 32
                         },
                     "aggregations" : [
                         {
@@ -348,42 +348,57 @@ class type_temp_test():
     def doCalculus(self, m_j: json):
         try:
             all_instr = TypeInstrumentAll()
+            ret = []
 
-            # call the method to update obs, and return delta_val
-            result = all_instr.process_json(self.p_test, m_j, self.o_test, self.a_test, True)
+            idx = 0
+            while idx < m_j['data'].__len__():
+                # call the method to update obs, and return delta_val
+                delta_values = all_instr.process_json(self.p_test, m_j, idx, self.o_test, self.a_test, True)
+
+                # return to the browser when executed in interactive mode... (not needed in real testing situation)
+                # result can be seen with https://codebeautify.org/jsonviewer
+                ret.append({
+                    'helper': 'cut and paste this data into https://codebeautify.org/jsonviewer',
+                    'dat': m_j['data'][idx]['current']['dat'],
+                    'observation': JsonPlus().loads(JsonPlus().dumps(self.o_test.data.j)),
+                    'delta_values': delta_values,
+                    'agg_hour': JsonPlus().loads(JsonPlus().dumps(self.a_test[0].data.j)),
+                    'agg_day': JsonPlus().loads(JsonPlus().dumps(self.a_test[1].data.j)),
+                    'agg_month': JsonPlus().loads(JsonPlus().dumps(self.a_test[2].data.j)),
+                    'agg_year': JsonPlus().loads(JsonPlus().dumps(self.a_test[3].data.j)),
+                    'agg_all': JsonPlus().loads(JsonPlus().dumps(self.a_test[4].data.j)),
+                    'agg_day before': JsonPlus().loads(JsonPlus().dumps(self.a_test[5].data.j)),
+                    'agg_day after': JsonPlus().loads(JsonPlus().dumps(self.a_test[6].data.j)),
+                    }
+                )
+                idx += 1
 
             # example of test to execute
             # Observation values should be tested too...
             if m_j['data'].__len__() == 2:
                 # delta_val validation
-                if int(result['out_temp_sum']) != 9000:
-                    return "out_temp_sum wrong " + str(result['out_temp_sum'])
-                if int(result['out_temp_duration']) != 300:
-                    return "out_temp_duration wrong: " + str(result['out_temp_duration'])
-                if float(result['out_temp_max']) != 30.0:
-                    return "out_temp_max wrong: " + str(result['out_temp_max'])
-                if str(result['out_temp_max_time']) != '2021-02-11 13:12:10+00:00':
-                    return "out_temp_max_time wrong: " + str(result['out_temp_max_time'])
-                if float(result['out_temp_min']) != 30:
-                    return "out_temp_min wrong: " + str(result['out_temp_min'])
-                if str(result['out_temp_min_time']) != '2021-02-11 13:12:10+00:00':
-                    return "out_temp_min_time wrong: " + str(result['out_temp_min_time'])
+                if int(ret[0]['delta_values']['out_temp_sum']) != 8850:
+                    return "out_temp_sum [0] wrong " + str(ret[0]['delta_values']['out_temp_sum'])
+                if int(ret[0]['delta_values']['out_temp_duration']) != 300:
+                    return "out_temp_duration [0] wrong: " + str(ret[0]['delta_values']['out_temp_duration'])
+                if int(ret[1]['delta_values']['out_temp_sum']) != 9600:
+                    return "out_temp_sum [1] wrong " + str(ret[1]['delta_values']['out_temp_sum'])
+                if int(ret[1]['delta_values']['out_temp_duration']) != 300:
+                    return "out_temp_duration [1] wrong: " + str(ret[1]['delta_values']['out_temp_duration'])
             else:
                 obs_j = self.o_test.data.j
-                if (obs_j['out_temp'] != 28.6):
-                    return("out_temp not good in obs: " + str(obs_j['out_temp']))
+
+                if (ret[0]['delta_values']['out_temp_sum'] != 8430.0):
+                    return("out_temp not good in obs: " + str(ret[0]['delta_values']['out_temp_sum']))
                 # more tests...
-                if result['out_temp_sum'] != 8580.0:
-                    return("out_temp_sump is not good in delta_values: " + str(result['out_temp_sum']))
+                if obs_j['out_temp'] != 28.6:
+                    return("out_temp is not good in observation: " + str(obs_j['out_temp']))
                 # more tests
 
-            # return to the browser when executed in interactive mode... (not needed in real testing situation)
-            # result can be seen with https://codebeautify.org/jsonviewer
-            ret = {'observation': JsonPlus().serialize(self.o_test.data.j), "delta_values": result}
-            JsonPlus().deserialize(self.o_test.data.j)
             return ret
 
         except Exception as inst:
             print(type(inst))    # the exception instance
             print(inst.args)     # arguments stored in .args
             print(inst)          # __str__ allows args to be printed directly,
+            return ret

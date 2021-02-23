@@ -22,9 +22,9 @@ class RootTypeInstrument:
         """return current mapping"""
         return self.mapping
 
-    def processJson(self, poste_metier: PosteMetier, measures: json, obs_meteor: ObsMeteor, agg_Array: json, delta_values: json, flag: bool) -> json:
+    def processJson(self, poste_metier: PosteMetier, measures: json, measure_idx: int, obs_meteor: ObsMeteor, agg_Array: json, delta_values: json, flag: bool) -> json:
         """
-            process_json
+            processJson
         """
         try:
             # for all measures
@@ -32,13 +32,9 @@ class RootTypeInstrument:
                 # find the calculus object for my_mesure
                 for a_calculus in self.all_calculus:
                     if a_calculus['agg'] == my_measure['agg']:
-                        # for all data element in our json
-                        idx = 0
-                        while idx < measures['data'].__len__():
-                            if a_calculus['object'] is not None:
-                                a_calculus['object'].updateObsAndGetDelta(poste_metier, my_measure, measures, idx, obs_meteor, delta_values, flag)
-                            # todo call agg calculus
-                            idx += 1
+                        if a_calculus['object'] is not None:
+                            a_calculus['object'].updateObsAndGetDelta(poste_metier, my_measure, measures, measure_idx, obs_meteor, delta_values, flag)
+                        # todo call agg calculus
             return delta_values
 
         except Exception as inst:

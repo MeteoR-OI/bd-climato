@@ -1,3 +1,7 @@
+# import sys
+# with open('/tmp/python-sys-path.txt', 'w') as outfile:
+#     print("** PATH **: " + str(sys.path))
+import pytest
 from app.tools.aggTools import getAggDuration, addJson
 
 
