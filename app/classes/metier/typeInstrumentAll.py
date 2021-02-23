@@ -1,6 +1,13 @@
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.metier.posteMetier import PosteMetier
-from app.classes.typeInstruments import rootTypeInstr, typeTemp, typeHumidity, typePression, typeRain, typeWind, typeSolar, typeInterieur, typeDivers
+from app.classes.typeInstruments.typeTemp import TypeTemp
+from app.classes.typeInstruments.typeHumidity import TypeHumidity
+from app.classes.typeInstruments.typePression import TypePression
+from app.classes.typeInstruments.typeRain import TypeRain
+from app.classes.typeInstruments.typeWind import TypeWind
+from app.classes.typeInstruments.typeSolar import TypeSolar
+from app.classes.typeInstruments.typeInterieur import TypeInterieur
+from app.classes.typeInstruments.typeDivers import TypeDivers
 import json
 
 
@@ -11,19 +18,20 @@ class TypeInstrumentAll():
         Objet climato type_instrument
     """
 
-    # Tous les types connus, et le nom de la classe qui l'implemente
-    all_instruments = [
-        {'type_id': 1, 'name': 'Temp', 'object': typeTemp},
-        {'type_id': 2, 'name': 'Humidity', 'object': typeHumidity},
-        {'type_id': 3, 'name': 'Pression', 'object': typePression},
-        {'type_id': 4, 'name': 'Rain', 'object': typeRain},
-        {'type_id': 5, 'name': 'Wind', 'object': typeWind},
-        {'type_id': 6, 'name': 'Solar', 'object': typeSolar},
-        {'type_id': 7, 'name': 'Interieur', 'object': typeInterieur},
-        {'type_id': 9, 'name': 'Divers', 'object': typeDivers},
-    ]
+    def __init__(self):
+        # Tous les types connus, et le nom de la classe qui l'implemente
+        self.all_instruments = [
+            {'type_id': 1, 'name': 'Temp', 'object': TypeTemp()},
+            {'type_id': 2, 'name': 'Humidity', 'object': TypeHumidity()},
+            {'type_id': 3, 'name': 'Pression', 'object': TypePression()},
+            {'type_id': 4, 'name': 'Rain', 'object': TypeRain()},
+            {'type_id': 5, 'name': 'Wind', 'object': TypeWind()},
+            {'type_id': 6, 'name': 'Solar', 'object': TypeSolar()},
+            {'type_id': 7, 'name': 'Interieur', 'object': TypeInterieur()},
+            {'type_id': 9, 'name': 'Divers', 'object': TypeDivers()},
+        ]
 
-    def get(self, type_instrument_id: int) -> rootTypeInstr:
+    def get(self, type_instrument_id: int):
         """ get TypeInstrument object """
         for atype in self.all_instruments:
             if atype['type_id'] == type_instrument_id:
@@ -33,12 +41,11 @@ class TypeInstrumentAll():
     def process_json(self, poste_metier: PosteMetier, measures: json, obs_meteor: ObsMeteor, agg_array: json, flag: bool) -> json:
         """process observation data for all our TypeInstrument"""
         try:
-            result = []
+            delta_values = {}
             # for all type_instruments
             for an_intrument in self.all_instruments:
-                delta_values = an_intrument['object']().processJson(poste_metier, measures, obs_meteor, agg_array, flag)
-                result.append(delta_values)
-            return result
+                delta_values = an_intrument['object'].processJson(poste_metier, measures, obs_meteor, agg_array, delta_values, flag)
+            return delta_values
 
         except Exception as inst:
             print(type(inst))    # the exception instance

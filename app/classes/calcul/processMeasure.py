@@ -16,7 +16,7 @@ class ProcessMeasure():
     """
     # p should be called with o.dat in case of delete !
     # {'type_i': 1, 'key': 'out_temp', 'field': 'out_temp', 'avg': True, 'Min': True, 'max': True, 'hour_deca': 0, 'special': 0},
-    def updateObsAndGetDelta(self, poste_metier: PosteMetier, my_measure: json, measures: json, measure_idx: int, obs_meteor: ObsMeteor, flag: bool) -> json:
+    def updateObsAndGetDelta(self, poste_metier: PosteMetier, my_measure: json, measures: json, measure_idx: int, obs_meteor: ObsMeteor, delta_values: json, flag: bool) -> json:
         """
             getProcessObject
 
@@ -28,7 +28,6 @@ class ProcessMeasure():
         """
         try:
             # deltaValues returned for aggregation processing
-            delta_values = {'extremes': []}
             key_name = my_measure['key']
             # load field if defined in json
             field_name = key_name
@@ -57,7 +56,7 @@ class ProcessMeasure():
                 return self.getDeltaFromObs(my_measure, obs_meteor, field_name, m_suffix, exclusion)
 
             # load obs record, and get the delta_values added
-            delta_values = self.loadObsGetDelta(my_measure, measures, measure_idx, obs_meteor, field_name, m_suffix, exclusion, flag)
+            self.loadObsGetDelta(my_measure, measures, measure_idx, obs_meteor, field_name, m_suffix, exclusion, delta_values, flag)
 
             # load Max/Min and update delta_values
             self.loadMaxMin(my_measure, measures, measure_idx, obs_meteor, field_name, exclusion, delta_values, flag)
@@ -198,7 +197,7 @@ class ProcessMeasure():
             print(inst.args)     # arguments stored in .args
             print(inst)          # __str__ allows args to be printed directly
 
-    def loadObsGetDelta(self, my_measure: json, measures: json, measure_idx: int, obs_meteor: ObsMeteor, field_name: str, exclusion: json, flag: bool) -> json:
+    def loadObsGetDelta(self, my_measure: json, measures: json, measure_idx: int, obs_meteor: ObsMeteor, field_name: str, exclusion: json, delta_values: json, flag: bool) -> json:
         raise Exception("loadObsGetDelta", "not allowed in parent class")
 
     def loadMaxMin(self, my_measure: json, measures: json, measure_idx: int, obs_meteor: ObsMeteor, field_name: str, exclusion: json, delta_values: json, flag: bool) -> json:

@@ -24,7 +24,7 @@ class TypeRain(RootTypeInstrument):
                 #                                     -n -> decalage de n heures par rapport a heure GMT
                 # special: special processing (like "field"_dir)
                 {'type_i': 4, 'key': 'rain', 'dataType': float, 'agg': 'avg', 'avg': True, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
-                {'type_i': 4, 'key': 'rain_rate', 'dataType': float, 'rate': 'avg', 'avg': True, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
+                {'type_i': 4, 'key': 'rain_rate', 'dataType': float, 'agg': 'rate', 'avg': True, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
             ]
             super()
 

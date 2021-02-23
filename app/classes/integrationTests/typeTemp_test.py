@@ -356,23 +356,32 @@ class type_temp_test():
             # Observation values should be tested too...
             if m_j['data'].__len__() == 2:
                 # delta_val validation
-                if int(result[0]['out_temp_sum']) != 8850:
-                    return "out_temp_sum wrong " + str(result[0]['out_temp_sum'])
-                if int(result[0]['out_temp_duration']) != 300:
-                    return "out_temp_duration wrong: " + str(result[0]['out_temp_duration'])
-                if float(result[0]['out_temp_max']) != 29.5:
-                    return "out_temp_max wrong: " + str(result[0]['out_temp_max'])
-                if str(result[0]['out_temp_max_time']) != '2021-02-11 13:12:00+00:00':
-                    return "out_temp_max_time wrong: " + str(result[0]['out_temp_max_time'])
-                if float(result[0]['out_temp_min']) != 29.5:
-                    return "out_temp_min wrong: " + str(result[0]['out_temp_min'])
-                if str(result[0]['out_temp_min_time']) != '2021-02-11 13:12:00+00:00':
-                    return "out_temp_min_time wrong: " + str(result[0]['out_temp_min_time'])
+                if int(result['out_temp_sum']) != 9000:
+                    return "out_temp_sum wrong " + str(result['out_temp_sum'])
+                if int(result['out_temp_duration']) != 300:
+                    return "out_temp_duration wrong: " + str(result['out_temp_duration'])
+                if float(result['out_temp_max']) != 30.0:
+                    return "out_temp_max wrong: " + str(result['out_temp_max'])
+                if str(result['out_temp_max_time']) != '2021-02-11 13:12:10+00:00':
+                    return "out_temp_max_time wrong: " + str(result['out_temp_max_time'])
+                if float(result['out_temp_min']) != 30:
+                    return "out_temp_min wrong: " + str(result['out_temp_min'])
+                if str(result['out_temp_min_time']) != '2021-02-11 13:12:10+00:00':
+                    return "out_temp_min_time wrong: " + str(result['out_temp_min_time'])
             else:
-                print('todo test on full json')
+                obs_j = self.o_test.data.j
+                if (obs_j['out_temp'] != 28.6):
+                    return("out_temp not good in obs: " + str(obs_j['out_temp']))
+                # more tests...
+                if result['out_temp_sum'] != 8580.0:
+                    return("out_temp_sump is not good in delta_values: " + str(result['out_temp_sum']))
+                # more tests
 
             # return to the browser when executed in interactive mode... (not needed in real testing situation)
-            return result
+            # result can be seen with https://codebeautify.org/jsonviewer
+            ret = {'observation': JsonPlus().serialize(self.o_test.data.j), "delta_values": result}
+            JsonPlus().deserialize(self.o_test.data.j)
+            return ret
 
         except Exception as inst:
             print(type(inst))    # the exception instance

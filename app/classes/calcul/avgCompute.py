@@ -15,10 +15,9 @@ class avgCompute(ProcessMeasure):
 
     """
 
-    def loadObsGetDelta(self, my_measure: json, measures: json, measure_idx: int, obs_meteor: ObsMeteor, field_name: str, m_suffix: str, exclusion: json, flag: bool) -> json:
+    def loadObsGetDelta(self, my_measure: json, measures: json, measure_idx: int, obs_meteor: ObsMeteor, field_name: str, m_suffix: str, exclusion: json, delta_values: json, flag: bool) -> json:
         """ generate deltaValues from ObsMeteor.data """
         try:
-            delta_values = {'extremes': []}
             b_set_val = True        # a value is forced in exclusion
             b_set_null = False      # the measure is invalidated
             b_omm_case = isFlagged(my_measure['special'], MeasureProcessingBitMask.IsOmmMeasure)
@@ -56,7 +55,7 @@ class avgCompute(ProcessMeasure):
                     if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
                         obs_j[field_name + m_suffix + '_dir'] = int(data_src[field_name + "_dir"])
                 # add M_sum/M_duration to delta_values
-                tmp_duration = int(data_src['duration'] * factor)
+                tmp_duration = int(measures['data'][measure_idx]['current']['duration'])
                 delta_values[field_name + m_suffix + '_sum'] = my_value * tmp_duration * factor
                 if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
                     delta_values[field_name + m_suffix + '_sum'] = my_value * factor

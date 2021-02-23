@@ -159,7 +159,7 @@ class MeasureAvg():
                         if a_j_agg['level'] == anAgg:
                             agg_j = a_j_agg
                             break
-                
+
                 field_name = my_measure['field']
 
                 # get exclusion
@@ -170,10 +170,10 @@ class MeasureAvg():
                     return delta_values
 
                 tmp_duration = int(measures['data'][measure_idx]['current']['duration'])
-                if anAgg == 'H':
-                    data_src = agg_ds
-                else:
-                    data_src = delta_values
+                # if anAgg == 'H':
+                #     data_src = agg_ds
+                # else:
+                #     data_src = delta_values
 
                 if agg_j.__contains__(field_name + '_avg'):
                     if agg_ds.__contains__(field_name + '_avg'):
@@ -207,4 +207,3 @@ class MeasureAvg():
             print(type(inst))    # the exception instance
             print(inst.args)     # arguments stored in .args
             print(inst)          # __str__ allows args to be printed directly,
-
