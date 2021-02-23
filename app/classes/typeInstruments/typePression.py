@@ -1,13 +1,13 @@
 from app.classes.typeInstruments.rootTypeInstr import RootTypeInstrument
 
 
-class TypeHumidity(RootTypeInstrument):
-    """Type Humidity"""
+class TypePression(RootTypeInstrument):
+    """Type Pression"""
 
     def __init__(self):
         try:
             # type_instrument_id
-            self.my_type_instr_id = 2
+            self.my_type_instr_id = 3
 
             self.mesures = [
                 # type_i : type_instrument_id
@@ -23,7 +23,9 @@ class TypeHumidity(RootTypeInstrument):
                 #                                      n -> decallage de n heures par rapport a heure locale
                 #                                     -n -> decalage de n heures par rapport a heure GMT
                 # special: special processing (like "field"_dir)
-                {'type_i': 2, 'key': 'humidity', 'dataType': int, 'agg': 'avg', 'avg': True, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
+                {'type_i': 3, 'key': 'barometer', 'dataType': float, 'agg': 'avg', 'avg': True, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
+                {'type_i': 3, 'key': 'barometer', 'dataType': float, 'agg': 'avg', 'avg': True, 'min': False, 'max': False, 'hour_deca': 7, 'special': 16},
+                {'type_i': 3, 'key': 'pressure', 'dataType': float, 'agg': 'no', 'avg': False, 'min': False, 'max': False, 'hour_deca': 0, 'special': 0},
             ]
             super()
 

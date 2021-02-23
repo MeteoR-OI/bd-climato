@@ -1,9 +1,8 @@
 from app.models import Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global
 import datetime
 from app.classes.metier.posteMetier import PosteMetier
+from app.classes.metier.typeInstrumentAll import TypeInstrumentAll
 from app.tools.jsonPlus import JsonPlus
-from app.classes.typeInstruments.typeTemp import TypeTemp
-from app.classes.calcul.avgCompute import avgCompute
 import json
 
 
@@ -340,35 +339,21 @@ class type_temp_test():
         Agg_year.objects.all().delete()
         Agg_global.objects.all().delete()
 
-    def loadObs(self):
-        return self.loadObsCommon(self.j_test)
+    def doCalculusOneMeasure(self):
+        return self.doCalculus(self.j_test)
 
-    def loadObs2(self):
-        return self.loadObsCommon(self.j2_test)
+    def doCalculusFullJson(self):
+        return self.doCalculus(self.j2_test)
 
-    def loadObsCommon(self, m_j: json):
+    def doCalculus(self, m_j: json):
         try:
-            tt = TypeTemp()
-            # tt.mapping[0] -> first measure, tt.p_test, tt_o_test, tt.j_test, tt.a_test
-
-            pp = PosteMetier(1)
-            # remove existing exclusion in poste (will require a reload)
-            xx = pp.exclus
-            pp.exclus = []
+            all_instr = TypeInstrumentAll()
 
             # call the method to update obs, and return delta_val
-            ma = avgCompute()
-            result = []
-            for my_measure in tt.mesures:
-                delta_val = ma.updateObsAndGetDelta(self.p_test, my_measure, m_j, 0, self.o_test, True)
-                result.append(delta_val)
-
-            # restore exclus, as our object is cached
-            pp.exclus = xx
+            result = all_instr.process_json(self.p_test, m_j, self.o_test, self.a_test, True)
 
             # example of test to execute
             # Observation values should be tested too...
-
             if m_j['data'].__len__() == 2:
                 # delta_val validation
                 if int(result[0]['out_temp_sum']) != 8850:
@@ -384,37 +369,10 @@ class type_temp_test():
                 if str(result[0]['out_temp_min_time']) != '2021-02-11 13:12:00+00:00':
                     return "out_temp_min_time wrong: " + str(result[0]['out_temp_min_time'])
             else:
-                print('todo')
+                print('todo test on full json')
 
             # return to the browser when executed in interactive mode... (not needed in real testing situation)
             return result
-
-        except Exception as inst:
-            print(type(inst))    # the exception instance
-            print(inst.args)     # arguments stored in .args
-            print(inst)          # __str__ allows args to be printed directly,
-
-    def loadObsAndAgg(self):
-        try:
-            tt = TypeTemp()
-            # tt.mapping[0] -> first measure, tt.p_test, tt_o_test, tt.j_test, tt.a_test
-
-            pp = PosteMetier(1)
-            # remove existing exclusion in poste (will require a reload)
-            xx = pp.exclus
-            pp.exclus = []
-
-            # call the method to update obs, and return delta_val
-            ma = avgCompute()
-            delta_val = ma.updateObsAndGetDelta(self.p_test, tt.mapping[0], self.j_test, 0, self.o_test, True)
-            # agg_recompute = ma.update_aggs(self.p_test, tt.mapping[0], self.j_test, 0, self.a_test, delta_val, True)
-
-            # restore exclus, as our object is cached
-            pp.exclus = xx
-
-            # return to the browser when executed in interactive mode... (not needed in real testing situation)
-            # return agg_recompute
-            return delta_val
 
         except Exception as inst:
             print(type(inst))    # the exception instance

@@ -30,7 +30,7 @@ def testComputeObsOnly(request):
     """ debug environment"""
     try:
         tt = type_temp_test()
-        ret_json = tt.loadObs()
+        ret_json = tt.doCalculusOneMeasure()
         ret = JsonPlus().dumps(ret_json)
         return HttpResponse(ret)
 
@@ -42,19 +42,7 @@ def testComputeObsOnly2(request):
     """ debug environment"""
     try:
         tt = type_temp_test()
-        ret_json = tt.loadObs2()
-        ret = JsonPlus().dumps(ret_json)
-        return HttpResponse(ret)
-
-    except Exception as inst:
-        return HttpResponse(inst)
-
-
-def testComputeAll(request):
-    """ debug environment"""
-    try:
-        tt = type_temp_test()
-        ret_json = tt.loadObsAndAgg()
+        ret_json = tt.doCalculusFullJson()
         ret = JsonPlus().dumps(ret_json)
         return HttpResponse(ret)
 

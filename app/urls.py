@@ -12,6 +12,5 @@ urlpatterns = [
     path('year/<int:poste_id>', views.view_agg_year),
     path('all/<int:poste_id>', views.view_agg_all),
     path('debug', views.testComputeObsOnly),
-    path('debug1', views.testComputeObsOnly2),
-    path('debug2', views.testComputeAll),
+    path('debug1', views.testComputeObsOnly2)
 ]

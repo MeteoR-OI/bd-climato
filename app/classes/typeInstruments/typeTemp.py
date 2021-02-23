@@ -13,7 +13,7 @@ class TypeTemp(RootTypeInstrument):
                 # type_i : type_instrument_id
                 # key: key string in json
                 # field: db column name only if different. No value -> use key name
-                # agg: Type aggregation: avg, ommAvg, rate, sun
+                # agg: Type aggregation: avg, ommAvg, rate, sun, no
                 # avg -> compute "field"_sum, "field"_duration, et si besoin "field"_avg
                 # max -> load "field"_max & "field"_max_time from json. if null -> will be computed in aggregation
                 # min -> load "field"_min & "field"_min_time from json. if null -> will be computed in aggregation
