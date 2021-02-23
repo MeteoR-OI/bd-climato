@@ -38,6 +38,18 @@ def testComputeObsOnly(request):
         return HttpResponse(inst)
 
 
+def testComputeObsOnly2(request):
+    """ debug environment"""
+    try:
+        tt = type_temp_test()
+        ret_json = tt.loadObs2()
+        ret = JsonPlus().dumps(ret_json)
+        return HttpResponse(ret)
+
+    except Exception as inst:
+        return HttpResponse(inst)
+
+
 def testComputeAll(request):
     """ debug environment"""
     try:
@@ -49,17 +61,6 @@ def testComputeAll(request):
     except Exception as inst:
         return HttpResponse(inst)
 
-def test_getset(request):
-    """ debug environment"""
-    try:
-
-        tt = type_temp_test()
-        ret_json = tt.getset()
-        ret = jsonPlus().dumps(ret_json)
-        return HttpResponse(ret)
-
-    except Exception as inst:
-        return HttpResponse(inst)
 
 def view_agg_day(request, poste_id):
     return view_agg(request, "D", poste_id)

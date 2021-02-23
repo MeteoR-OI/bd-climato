@@ -21,7 +21,7 @@ class avgCompute(ProcessMeasure):
             delta_values = {'extremes': []}
             b_set_val = True        # a value is forced in exclusion
             b_set_null = False      # the measure is invalidated
-            b_omm_case = False
+            b_omm_case = isFlagged(my_measure['special'], MeasureProcessingBitMask.IsOmmMeasure)
             obs_j = obs_meteor.data.j
             factor = 1
             if flag is False:
@@ -50,25 +50,26 @@ class avgCompute(ProcessMeasure):
 
             if data_src.__contains__(field_name):
                 # add Measure to ObsMeteor
+                my_value = my_measure['dataType'](data_src[field_name] * factor)
                 if (isFlagged(my_measure['special'], MeasureProcessingBitMask.DoNotProcessTwiceInObs)) is False:
-                    obs_j[field_name + m_suffix] = data_src[field_name] * factor
+                    obs_j[field_name + m_suffix] = my_value
                     if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                        obs_j[field_name + m_suffix + '_dir'] = data_src[field_name + "_dir"]
+                        obs_j[field_name + m_suffix + '_dir'] = int(data_src[field_name + "_dir"])
                 # add M_sum/M_duration to delta_values
-                tmp_duration = data_src['duration'] * factor
-                delta_values[field_name + m_suffix + '_sum'] = data_src[field_name] * tmp_duration * factor
+                tmp_duration = int(data_src['duration'] * factor)
+                delta_values[field_name + m_suffix + '_sum'] = my_value * tmp_duration * factor
                 if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
-                    delta_values[field_name + m_suffix + '_sum'] = data_src[field_name] * factor
+                    delta_values[field_name + m_suffix + '_sum'] = my_value * factor
                 delta_values[field_name + m_suffix + '_duration'] = tmp_duration * factor
                 if data_src.__contains__(field_name + m_suffix + '_avg'):
-                    delta_values[field_name + m_suffix + '_avg'] = data_src[field_name + m_suffix + '_avg']
-                    obs_j[field_name + m_suffix + '_avg'] = data_src[field_name + m_suffix + '_avg']
+                    tmp_avg = float(data_src[field_name + m_suffix + '_avg'])
+                    delta_values[field_name + m_suffix + '_avg'] = tmp_avg
+                    obs_j[field_name + m_suffix + '_avg'] = tmp_avg
                 if b_omm_case:
-                    obs_j[field_name + '_mesure'] = data_src[field_name] * factor
+                    obs_j[field_name + '_mesure'] = my_value * factor
                     obs_j[field_name + '_first_time'] = data_src['dat']
-                    delta_values[field_name + m_suffix + '_mesure'] = data_src[field_name] * factor
+                    delta_values[field_name + m_suffix + '_mesure'] = my_value * factor
                     delta_values[field_name + m_suffix + 'first_time'] = data_src['dat']
-
             return delta_values
 
         except Exception as inst:

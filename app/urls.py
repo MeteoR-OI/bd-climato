@@ -11,11 +11,7 @@ urlpatterns = [
     path('month/<int:poste_id>', views.view_agg_month),
     path('year/<int:poste_id>', views.view_agg_year),
     path('all/<int:poste_id>', views.view_agg_all),
-<<<<<<< Updated upstream
     path('debug', views.testComputeObsOnly),
-    path('debug1', views.testComputeAll),
-=======
-    path('debug', views.test_compute),
-    path('debug2', views.test_getset)
->>>>>>> Stashed changes
+    path('debug1', views.testComputeObsOnly2),
+    path('debug2', views.testComputeAll),
 ]

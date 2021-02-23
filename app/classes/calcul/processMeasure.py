@@ -238,21 +238,22 @@ class ProcessMeasure():
 
             half_period_time = measures['data'][measure_idx]['current']['dat'] + datetime.timedelta(seconds=int(measures['data'][measure_idx]['current']['duration'] / 2))
 
-            for my_avg in ['_max', '_min']:
+            for maxmin_type in ['_max', '_min']:
                 # is there a M_max/M_min in the data_src ?
-                if data_src.__contains__(field_name + m_suffix + my_avg):
+                if data_src.__contains__(field_name + m_suffix + maxmin_type):
                     # found, then load in in obs and delta_values
-                    obs_j[field_name + m_suffix + my_avg] = data_src[field_name + m_suffix + my_avg]
-                    obs_j[field_name + m_suffix + my_avg + '_time'] = data_src[field_name + m_suffix + my_avg + '_time']
-                    delta_values[field_name + m_suffix + my_avg] = data_src[field_name + m_suffix + my_avg]
-                    delta_values[field_name + m_suffix + my_avg + '_time'] = data_src[field_name + m_suffix + my_avg + '_time']
-                    if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)) and my_avg == '_max':
+                    my_avg_value = float(data_src[field_name + m_suffix + maxmin_type])
+                    obs_j[field_name + m_suffix + maxmin_type] = my_avg_value
+                    obs_j[field_name + m_suffix + maxmin_type + '_time'] = data_src[field_name + m_suffix + maxmin_type + '_time']
+                    delta_values[field_name + m_suffix + maxmin_type] = my_avg_value
+                    delta_values[field_name + m_suffix + maxmin_type + '_time'] = data_src[field_name + m_suffix + maxmin_type + '_time']
+                    if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)) and maxmin_type == '_max':
                         """ save Wind_max_dir """
-                        obs_j[field_name + m_suffix + my_avg + '_dir'] = data_src[field_name + m_suffix + my_avg + '_dir']
-                elif obs_j.__contains__(field_name + m_suffix):
+                        obs_j[field_name + m_suffix + maxmin_type + '_dir'] = int(data_src[field_name + m_suffix + maxmin_type + '_dir'])
+                elif obs_j.__contains__(field_name):
                     # on prend la valeur reportee, et le milieu de l'heure de la periode de la donnee elementaire
-                    delta_values[field_name + m_suffix + my_avg] = obs_j[field_name + m_suffix]
-                    delta_values[field_name + m_suffix + my_avg + '_time'] = half_period_time
+                    delta_values[field_name + m_suffix + maxmin_type] = my_measure['dataType'](obs_j[field_name])
+                    delta_values[field_name + m_suffix + maxmin_type + '_time'] = half_period_time
 
         except Exception as inst:
             print(type(inst))    # the exception instance

@@ -1,10 +1,9 @@
-from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, Exclusion, TypeInstrument   #
+from app.models import Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global
 import datetime
-from app.classes.posteMeteor import PosteMeteor
+from app.classes.metier.PosteMetier import PosteMetier
 from app.tools.jsonPlus import jsonPlus
 from app.classes.typeInstruments.typeTemp import TypeTemp
 from app.classes.measures.measureAvg import MeasureAvg
-from app.tools.getterSetter import GetterSetter
 
 
 class type_temp_test():
@@ -13,7 +12,7 @@ class type_temp_test():
     def __init__(self):
         """ pre load std data """
         self.dt_test = datetime.datetime(2021, 2, 11, 13, 9, 30, 0, datetime.timezone.utc)
-        self.p_test = PosteMeteor.get(1)
+        self.p_test = PosteMetier.get(1)
 
         self.o_test = self.p_test.observation(self.dt_test)
         self.a_test = self.p_test.aggregations(self.dt_test)
@@ -75,23 +74,12 @@ class type_temp_test():
         Agg_year.objects.all().delete()
         Agg_global.objects.all().delete()
 
-    def getset(self):
-        """ getter/setter test on djamgo objects """
-        fm = GetterSetter()
-        old_meteor = fm.get(self.p_test, 'meteor')
-        ret = {'meteor': old_meteor}
-        fm.set(self.p_test, 'new value', 'meteor')
-        ret['first'] = str(self.p_test.data)
-        fm.set(self.p_test, old_meteor, 'meteor')
-        ret['second'] = str(self.p_test.data)
-        return ret
-
     def load_obs(self):
         try:
             tt = TypeTemp()
             # tt.mapping[0] -> first measure, tt.p_test, tt_o_test, tt.j_test, tt.a_test
 
-            pp = PosteMeteor.get(1)
+            pp = PosteMetier.get(1)
             # remove existing exclusion in poste (will require a reload)
             xx = pp.exclus
             pp.exclus = []

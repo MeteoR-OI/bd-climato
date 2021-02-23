@@ -1,13 +1,13 @@
 from app.classes.typeInstruments.rootTypeInstr import RootTypeInstrument
 
 
-class TypeTemp(RootTypeInstrument):
-    """Type Temp"""
+class TypeHumidity(RootTypeInstrument):
+    """Type Humidity"""
 
     def __init__(self):
         try:
             # type_instrument_id
-            self.my_type_instr_id = 1
+            self.my_type_instr_id = 2
 
             self.mesures = [
                 # type_i : type_instrument_id

@@ -27,26 +27,21 @@ COPY public.poste (id, meteor, meteofr, title, cas_gestion_extreme, agg_min_extr
 SELECT pg_catalog.setval('public.poste_id_seq', 2, true);
 
 COPY public.type_instrument (id, name, model_value) FROM stdin;
-1	Temp	{"out_temp": "int"}
-2	Pression	{}
-3	Rain	{}
-4	Wind	{}
-5	Solar	{}
-6	Divers	{}
+1	Temp	{"out_temp": "float", "windchill": "float", "heatindex": "float", "dewpoint": "float", "soiltemp": "float"}
+2	Humidite	{"humidity": "int"}
+3	Pression	{"barometer": "float", "pressure": "float"}
+4	Rain	{"rain": "int", "rain_rate": "float"}
+5	Wind	{"win_i": "int", "wind_i_dir": "int", "wind": "int", "wind_dir": "int", "wind10": "int"}
+6	Solar	{"uv_indice": "int", "etp": "int", "radiation": "float"}
+7	Interieur	{"in_temp": "float", "in_humidity": "int"}
+9	Divers	{"rx": "int", "voltage": "float"}
 \.
 -- SELECT pg_catalog.setval('public.type_data_id_seq', 6, true);
 SELECT pg_catalog.setval('public.type_instrument_id_seq', 6, true);
 
 COPY public.exclusion (id, start_x, end_x, value, poste_id_id, type_instrument_id) FROM stdin;
-1	2021-02-11 11:33:13+04	2100-12-21 04:00:00+04	{"out_temp": -1}	1	1
-2	2021-02-11 11:41:56+04	2021-02-01 11:42:06+04	{"out_temp": "null", "actif": "none"}	1	1
-3	2021-02-11 11:41:34+04	2100-12-21 04:00:00+04	{"out_temp": 123}	2	1
-4	2021-02-11 11:34:24+04	2100-12-21 04:00:00+04	{"rain_sum": 0}	1	3
+1	2021-02-11 11:33:13+04	2100-12-21 04:00:00+04	{"out_temp": "value", "windchill": "value", "heatindex": "value", "dewpoint": 22.5, "soiltemp": "null"}	1	1
 \.
 SELECT pg_catalog.setval('public.exclusion_id_seq', 4, true);
 
-COPY public.obs (id, dat, last_rec_dat, duration, qa_modifications, qa_incidents, qa_check_done, poste_id_id, barometer, barometer_max, barometer_max_time, barometer_min, barometer_min_time, dewpoint, etp, heat_index, humidity, humidity_max, humidity_max_time, humidity_min, humidity_min_time, in_humidity, in_temp, radiation, out_temp, out_temp_max, out_temp_max_time, out_temp_min, out_temp_min_time, pressure, rain_rate_max, rain_rate_max_time, rain, soil_temp, soil_temp_min, soil_temp_min_time, uv_indice, wind_i_dir, wind_dir, rain_rate, wind_max_dir, wind_max_time, wind, windchill, rx, voltage, wind10, wind_i, wind_max) FROM stdin;
-1	2021-02-13 16:49:55+04	2021-02-13 16:50:25.462786+04	300	0	0	f	1	1035.0	\N	\N	\N	\N	\N	0.000	\N	82	\N	\N	\N	\N	\N	\N	100	30.0	\N	\N	\N	\N	\N	\N	\N	0.0	\N	\N	\N	8	\N	80	0.0	\N	\N	5.0	\N	\N	\N	\N	\N	\N
-\.
 SELECT pg_catalog.setval('public.obs_id_seq', 1, true);
-
