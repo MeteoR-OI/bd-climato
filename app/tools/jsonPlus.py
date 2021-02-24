@@ -136,27 +136,3 @@ class DateTimeEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, (datetime.date, datetime.datetime)):
             return obj.isoformat()
-
-
-if __name__ == "__main__":
-    jp = JsonPlus()
-    z = jp.json_test()
-    # load a json, with date as a str
-    jj = jp.loads(z)
-    # all dates are datetime after loads
-    print('dat is a datetime: ' + str(isinstance(jj['data'][0]['current']['dat'], datetime.datetime)))
-    print(jp.dumps(jj))
-    # dumps works with datetime (for str, use json.dump(jj))
-    print('dat is still a datetime: ' + str(isinstance(jj['data'][0]['current']['dat'], datetime.datetime)))
-
-    # dumps are loads keep all data
-    jj2 = jp.loads(jp.dumps(jj))
-    print('the two json are equivalent: ' + str(jp.dumps(jj2) == jp.dumps(jj)))
-
-    # change date in json from datetime to str
-    jp.serialize(jj)
-    print('dat is now a str: ' + str(isinstance(jj['data'][0]['current']['dat'], str)))
-
-    # change date in json for str to datetime
-    jp.deserialize(jj)
-    print('dat is again datetime: ' + str(isinstance(jj['data'][0]['current']['dat'], datetime.datetime)))
