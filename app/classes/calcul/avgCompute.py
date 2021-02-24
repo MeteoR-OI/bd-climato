@@ -61,7 +61,9 @@ class avgCompute(ProcessMeasure):
                     delta_values[field_name + m_suffix + '_sum'] = my_value * factor
                 delta_values[field_name + m_suffix + '_duration'] = tmp_duration * factor
                 if data_src.__contains__(field_name + m_suffix + '_avg'):
-                    tmp_avg = float(data_src[field_name + m_suffix + '_avg'])
+                    tmp_avg = float(data_src[field_name + m_suffix + '_avg'])/tmp_duration
+                    if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
+                        tmp_avg = float(data_src[field_name + m_suffix + '_avg'])
                     delta_values[field_name + m_suffix + '_avg'] = tmp_avg
                     obs_j[field_name + m_suffix + '_avg'] = tmp_avg
                 if b_omm_case:
@@ -104,6 +106,10 @@ class avgCompute(ProcessMeasure):
                 flag: True=insert, False=delete
         """
         try:
+            factor = 1
+            if flag is False:
+                factor = -1
+
             # json data in aggMeteor object
             agg_j = agg_relative.data.j
 
@@ -118,50 +124,47 @@ class avgCompute(ProcessMeasure):
                         m_agg_j = a_j_agg
                         break
 
-            # get dat and duration of the mesure
-            if b_has_measures is True:
-                measure_duration = int(measures['data'][measure_idx]['current']['duration'])
-            else:
-                measure_duration = getAggDuration(agg_relative.level)
-            # measure_dat = measures['data'][measure_idx]['current']['dat']
-
             # update aggregation and dv_next
             # look to 'calcul aggregation.xls' in tab 'delta vs agg'
             if m_agg_j.__contains__(field_name + m_suffix + '_sum'):
-                tmp_sum = float(m_agg_j[field_name + m_suffix + '_sum'])
+                tmp_sum = float(m_agg_j[field_name + m_suffix + '_sum'] * factor)
                 addJson(agg_j, field_name + m_suffix + '_sum', tmp_sum)
                 dv_next[field_name + m_suffix + '_sum'] = tmp_sum
-                addJson(agg_j, field_name + m_suffix + '_duration', measure_duration)
-                dv_next[field_name + '_duration'] = measure_duration
+                tmp_duration = int(m_agg_j[field_name + m_suffix + '_duration'] * factor)
+                addJson(agg_j, field_name + m_suffix + '_duration', tmp_duration)
+                dv_next[field_name + '_duration'] = tmp_duration
                 if m_agg_j.__contains__(field_name + m_suffix + '_avg'):
                     tmp_avg = float(m_agg_j[field_name + m_suffix + '_avg'])
-                    addJson(agg_j, field_name + m_suffix + '_avg', tmp_sum)
+                    agg_j[field_name + m_suffix + '_avg'] = tmp_avg
                     dv_next[field_name + m_suffix + '_avg'] = tmp_avg
                 else:
                     if (isFlagged(my_measure['special'], MeasureProcessingBitMask.NoAvgField) is False):
-                        tmp_avg = float(tmp_sum / measure_duration)
-                        addJson(agg_j, field_name + m_suffix + '_avg', tmp_sum)
+                        tmp_avg = float(tmp_sum / tmp_duration)
+                        addJson(agg_j, field_name + m_suffix + '_avg', tmp_avg)
             else:
                 if delta_values.__contains__(field_name + m_suffix + '_sum'):
                     tmp_sum = float(delta_values[field_name + m_suffix + '_sum'])
                     addJson(agg_j, field_name + m_suffix + '_sum', tmp_sum)
                     dv_next[field_name + m_suffix + '_sum'] = tmp_sum
-                    addJson(agg_j, field_name + m_suffix + '_duration', measure_duration)
-                    dv_next[field_name + '_duration'] = measure_duration
+                    tmp_duration = float(delta_values[field_name + m_suffix + '_duration'])
+                    addJson(agg_j, field_name + m_suffix + '_duration', tmp_duration)
+                    dv_next[field_name + '_duration'] = tmp_duration
                 if m_agg_j.__contains__(field_name + m_suffix + '_avg'):
                     tmp_avg = float(m_agg_j[field_name + m_suffix + '_avg'])
-                    addJson(agg_j, field_name + m_suffix + '_avg', tmp_sum)
+                    agg_j[field_name + m_suffix + '_avg'] = tmp_avg
                     dv_next[field_name + m_suffix + '_avg'] = tmp_avg
                 else:
                     if (isFlagged(my_measure['special'], MeasureProcessingBitMask.NoAvgField) is False):
                         if delta_values.__contains__(field_name + m_suffix + '_avg'):
                             tmp_avg = delta_values[field_name + m_suffix + '_avg']
-                            addJson(agg_j, field_name + m_suffix + '_avg', tmp_avg)
+                            agg_j[field_name + m_suffix + '_avg'] = tmp_avg
                             dv_next[field_name + m_suffix + '_avg'] = tmp_avg
                         else:
-                            if delta_values.__contains__(field_name + m_suffix + '_sum'):
-                                tmp_avg = float(tmp_sum / measure_duration)
-                                addJson(agg_j, field_name + m_suffix + '_avg', tmp_sum)
+                            if agg_j.__contains__(field_name + m_suffix + '_sum'):
+                                tmp_avg = float(int(agg_j[field_name + m_suffix + '_sum']) / int(agg_j[field_name + m_suffix + '_duration']))
+                                if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum):
+                                    tmp_avg = float(agg_j[field_name + m_agg_j + '_sum'])
+                                agg_j[field_name + m_suffix + '_avg'] = tmp_avg
 
         except Exception as inst:
             print(type(inst))    # the exception instance

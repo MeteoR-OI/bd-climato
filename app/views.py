@@ -50,6 +50,18 @@ def testComputeObsOnly2(request):
         return HttpResponse(inst)
 
 
+def testComputeAgg(request):
+    """ debug environment"""
+    try:
+        tt = type_temp_test()
+        ret_json = tt.doCalculusAgg()
+        ret = JsonPlus().dumps(ret_json)
+        return HttpResponse(ret)
+
+    except Exception as inst:
+        return HttpResponse(inst)
+
+
 def view_agg_day(request, poste_id):
     return view_agg(request, "D", poste_id)
 

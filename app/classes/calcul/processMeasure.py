@@ -260,7 +260,6 @@ class ProcessMeasure():
                     # on prend la valeur reportee, et le milieu de l'heure de la periode de la donnee elementaire
                     delta_values[field_name + m_suffix + maxmin_type] = my_measure['dataType'](obs_j[field_name])
                     delta_values[field_name + m_suffix + maxmin_type + '_time'] = half_period_time
-        for my_
 
         except Exception as inst:
             print(type(inst))    # the exception instance

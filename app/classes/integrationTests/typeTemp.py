@@ -327,8 +327,51 @@ class type_temp_test():
     ]
   }
         """
+        json_string3 = """
+        {
+            "meteor" : "BBF015",
+            "info" : {
+                "blabla": "blabla"
+            },
+            "data":
+            [
+                {"current":      {"dat" : "2021-01-30T05:45:00+00:00", "duration" : 300, "out_temp" : 25.0}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-01-30T05:50:00+00:00", "duration" : 300, "out_temp" : 25.3}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-01-30T05:55:00+00:00", "duration" : 300, "out_temp" : 25.6}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-01-30T06:00:00+00:00", "duration" : 300, "out_temp" : 25.9}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-01-31T06:05:00+00:00", "duration" : 300, "out_temp" : 26.0}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-01-31T06:10:00+00:00", "duration" : 300, "out_temp" : 26.1}, "aggregations": [{"level" : "D", "out_temp_avg" : 1.23}]},
+                {"current":      {"dat" : "2021-01-31T06:15:00+00:00", "duration" : 300, "out_temp" : 26.5}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-01-31T06:20:00+00:00", "duration" : 300, "out_temp" : 26.6}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-02-01T10:10:00+00:00", "duration" : 300, "out_temp" : 24.0}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-02-01T10:15:00+00:00", "duration" : 300, "out_temp" : 24.4}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-02-01T10:20:00+00:00", "duration" : 300, "out_temp" : 24.8}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-02-01T10:25:00+00:00", "duration" : 300, "out_temp" : 25.2}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-02-01T10:30:00+00:00", "duration" : 300, "out_temp" : 25.6}, "aggregations": [ ]},
+                {
+                    "current" :
+                        {
+                            "dat" : "2021-02-11T13:09:40+00:00",
+                            "duration" : 300,
+                            "out_temp" : 32
+                        },
+                    "aggregations" : [
+                        {
+                            "level" : "H",
+                            "out_temp_avg" : 33
+                        },
+                        {
+                            "level" : "D",
+                            "rain_rate_avg" : 1.23
+                        }
+                    ]
+                }
+            ]
+        }
+        """
         self.j_test = JsonPlus().loads(json_string)
         self.j2_test = JsonPlus().loads(json_string2)
+        self.j3_test = JsonPlus().loads(json_string3)
 
     def delete_obs_agg(self):
         """clean_up all our tables"""
@@ -345,13 +388,20 @@ class type_temp_test():
     def doCalculusFullJson(self):
         return self.doCalculus(self.j2_test)
 
+    def doCalculusAgg(self):
+        return self.doCalculus(self.j3_test)
+
     def doCalculus(self, m_j: json):
         try:
             all_instr = TypeInstrumentAll()
             ret = []
+            self.delete_obs_agg()
 
             idx = 0
             while idx < m_j['data'].__len__():
+                self.o_test = self.p_test.observation(m_j['data'][idx]['current']['dat'])
+                self.a_test = self.p_test.aggregations(m_j['data'][idx]['current']['dat'])
+
                 # call the method to update obs, and return delta_val
                 delta_values = all_instr.process_json(self.p_test, m_j, idx, self.o_test, self.a_test, True)
 
@@ -371,6 +421,9 @@ class type_temp_test():
                     'agg_day after': JsonPlus().loads(JsonPlus().dumps(self.a_test[6].data.j)),
                     }
                 )
+                self.o_test.save()
+                for i in (0, 1, 2, 3, 4, 5, 6):
+                    self.a_test[i].save()
                 idx += 1
 
             # example of test to execute
@@ -385,7 +438,7 @@ class type_temp_test():
                     return "out_temp_sum [1] wrong " + str(ret[1]['delta_values']['out_temp_sum'])
                 if int(ret[1]['delta_values']['out_temp_duration']) != 300:
                     return "out_temp_duration [1] wrong: " + str(ret[1]['delta_values']['out_temp_duration'])
-            else:
+            elif m_j['data'].__len__() == 3:
                 obs_j = self.o_test.data.j
 
                 if (ret[0]['delta_values']['out_temp_sum'] != 8430.0):
