@@ -101,12 +101,13 @@ class ProcessMeasure():
 
                 # array of aggregations, current, and prev/next for agg_day only
                 all_agg = []
-                for anAgg in aggregations:
-                    if anAgg.level == anAgg:
-                        all_agg.append(anAgg)
+                for my_agg in aggregations:
+                    if my_agg.data.level == anAgg:
+                        all_agg.append(my_agg)
                         if anAgg == "D":
                             all_agg.append(aggregations[5])
                             all_agg.append(aggregations[6])
+                        break
 
                 # get the rigth aggregation with hour_deca (only for day)
                 agg_deca = getRightAggregation(anAgg, measure_dat, my_measure['hour_deca'], all_agg)
@@ -259,6 +260,7 @@ class ProcessMeasure():
                     # on prend la valeur reportee, et le milieu de l'heure de la periode de la donnee elementaire
                     delta_values[field_name + m_suffix + maxmin_type] = my_measure['dataType'](obs_j[field_name])
                     delta_values[field_name + m_suffix + maxmin_type + '_time'] = half_period_time
+        for my_
 
         except Exception as inst:
             print(type(inst))    # the exception instance

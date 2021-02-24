@@ -16,7 +16,7 @@ def convertRelativeHour(mesure_dt: datetime, hour_deca: int):
         le numero est > 24 pour le jour suivant
     """
 
-    tmp_hour = mesure_dt.datetime.hour + hour_deca
+    tmp_hour = mesure_dt.hour + hour_deca
     if tmp_hour >= 0:
         return tmp_hour
 
@@ -39,22 +39,22 @@ def getRightAggregation(agg_niveau: str, dt_utc: datetime, hour_deca: int, aggre
     hour_rel = convertRelativeHour(dt_utc, hour_deca)
     if hour_rel < 0:
         return aggregations[1]
-    if hour_rel > 0:
+    if hour_rel >= 24:
         return aggregations[2]
     return aggregations[0]
 
 
 def getAggDuration(niveau_agg: str) -> int:
-    """get the aggregation depending on the level"""
+    """get the aggregation (in sec) depending on the level"""
     try:
         if niveau_agg == "H":
-            return 60
+            return 3600
         elif niveau_agg == "D":
-            return 24 * 60
+            return 86400
         elif niveau_agg == "M":
-            return int(30.5 * 24 * 60)
+            return 2635200   # int(30.5 * 24 * 60)
         elif niveau_agg == "Y":
-            return int(365.25 * 24 * 60)
+            return 757382400    # int(365.25 * 24 * 60)
         elif niveau_agg == "A":
             raise Exception("get_gg_duration", "global has no duration")
         else:

@@ -36,7 +36,7 @@ class RootTypeInstrument:
                             # load our json in obs row
                             a_calculus['object'].updateObsAndGetDelta(poste_metier, my_measure, measures, measure_idx, obs_meteor, delta_values, flag)
                             # load our json in all aggregation rows
-                            xtreme_values = a_calculus['object'].updateAggAndGetDeltaVal(poste_metier, my_measure, measures, measure_idx, agg_array, delta_values, flag)
+                            a_calculus['object'].updateAggAndGetDeltaVal(poste_metier, my_measure, measures, measure_idx, agg_array, delta_values, flag)
 
                             # process xtremes
                         # todo call agg calculus
