@@ -16,7 +16,7 @@ class ProcessMeasure():
     """
     # p should be called with o.dat in case of delete !
     # {'type_i': 1, 'key': 'out_temp', 'field': 'out_temp', 'avg': True, 'Min': True, 'max': True, 'hour_deca': 0, 'special': 0},
-    def updateObsAndGetDelta(self, poste_metier: PosteMetier, my_measure: json, measures: json, measure_idx: int, obs_meteor: ObsMeteor, delta_values: json, flag: bool) -> json:
+    def updateObsAndGetDelta(self, poste_metier: PosteMetier, my_measure: json, measures: json, measure_idx: int, obs_meteor: ObsMeteor, delta_values: json, flag: bool):
         """
             getProcessObject
 
@@ -69,9 +69,13 @@ class ProcessMeasure():
             print(inst)          # __str__ allows args to be printed directly,
 
     # {'key': 'out_temp', 'field': 'out_temp', 'avg': True, 'Min': True, 'max': True, 'hour_deca': 0, 'special': 0},
-    def updateAggAndGetDeltaVal(self, poste_metier: PosteMetier, my_measure: json, measures: json, measure_idx: int, aggregations: list, delta_values: json, flag: bool) -> json:
+    def updateAggAndGetDeltaVal(self, poste_metier: PosteMetier, my_measure: json, measures: json, measure_idx: int, aggregations: list, delta_values: json, flag: bool):
         """ update all aggregation from the delta data, and aggregations key on json, return a list of extremes to recompute """
         try:
+            # be sure that we have an extremesFix key
+            if delta_values.__contains__("extremesFix") is False:
+                delta_values['extremesFix'] = []
+
             key_name = my_measure['key']
             # load field if defined in json
             field_name = key_name
@@ -82,6 +86,15 @@ class ProcessMeasure():
             if (isFlagged(my_measure['special'], MeasureProcessingBitMask.IsOmmMeasure)):
                 m_suffix = '_omm'
 
+            # get exclusion
+            exclusion = poste_metier.exclusion(my_measure['type_i'])
+
+            # do nothing if exclusion is nullify
+            if exclusion.__contains__(field_name) is True and exclusion[field_name] == 'null':
+                return delta_values
+
+            measure_dat = measures['data'][measure_idx]['current']['dat']
+
             for anAgg in AggLevel:
                 """loop for all aggregations in ascending level"""
                 dv_next = {}
@@ -89,25 +102,18 @@ class ProcessMeasure():
                 # array of aggregations, current, and prev/next for agg_day only
                 all_agg = []
                 for anAgg in aggregations:
-                    if anAgg.agg_niveau == anAgg:
+                    if anAgg.level == anAgg:
                         all_agg.append(anAgg)
                         if anAgg == "D":
                             all_agg.append(aggregations[5])
                             all_agg.append(aggregations[6])
 
-                # get the rigth aggregation with hour_deca
-                measure_dat = measures['data'][measure_idx]['current']['dat']
-                agg_active = getRightAggregation(anAgg, measure_dat, my_measure['hour_deca'], all_agg)
-
-                # get exclusion
-                exclusion = poste_metier.exclusion(my_measure['type_i'])
-
-                # do nothing if exclusion is nullify
-                if exclusion.__contains__(field_name) is True and exclusion[field_name] == 'null':
-                    return delta_values
+                # get the rigth aggregation with hour_deca (only for day)
+                agg_deca = getRightAggregation(anAgg, measure_dat, my_measure['hour_deca'], all_agg)
+                all_agg = []
 
                 # load data in our aggregation
-                self.loadAggGetDelta(my_measure, measures, measure_idx, agg_active, field_name, m_suffix, delta_values, dv_next, flag)
+                self.loadAggGetDelta(my_measure, measures, measure_idx, agg_deca, field_name, m_suffix, delta_values, dv_next, flag)
 
                 # todo: process max/min
 

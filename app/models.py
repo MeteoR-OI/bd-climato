@@ -142,6 +142,7 @@ class Observation(models.Model):
 class Agg_hour(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     dat = models.DateTimeField()
+    level = models.CharField(max_length=1, default='?')
     last_rec_dat = models.DateTimeField(default=timezone.now)
     duration = models.IntegerField(verbose_name="duration", default=0)
     qa_modifications = models.IntegerField(default=0)
@@ -256,6 +257,7 @@ class Agg_hour(models.Model):
 class Agg_day(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     dat = models.DateTimeField()
+    level = models.CharField(max_length=1, default='?')
     last_rec_dat = models.DateTimeField(default=timezone.now)
     duration = models.IntegerField(verbose_name="duration", default=0)
     qa_modifications = models.IntegerField(default=0)
@@ -370,6 +372,7 @@ class Agg_day(models.Model):
 class Agg_month(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     dat = models.DateTimeField()
+    level = models.CharField(max_length=1, default='?')
     last_rec_dat = models.DateTimeField(default=timezone.now)
     duration = models.IntegerField(verbose_name="duration", default=0)
     qa_modifications = models.IntegerField(default=0)
@@ -484,6 +487,7 @@ class Agg_month(models.Model):
 class Agg_year(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     dat = models.DateTimeField()
+    level = models.CharField(max_length=1, default='?')
     last_rec_dat = models.DateTimeField(default=timezone.now)
     duration = models.IntegerField(verbose_name="duration", default=0)
     qa_modifications = models.IntegerField(default=0)
@@ -598,6 +602,7 @@ class Agg_year(models.Model):
 class Agg_global(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     dat = models.DateTimeField()
+    level = models.CharField(max_length=1, default='?')
     last_rec_dat = models.DateTimeField(default=timezone.now)
     duration = models.IntegerField(verbose_name="duration", default=0)
     qa_modifications = models.IntegerField(default=0)

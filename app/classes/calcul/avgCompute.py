@@ -3,7 +3,7 @@ from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.aggMeteor import AggMeteor
 from app.tools.climConstant import MeasureProcessingBitMask
 from app.classes.calcul.processMeasure import ProcessMeasure
-from app.tools.aggTools import addJson, isFlagged
+from app.tools.aggTools import addJson, isFlagged, getAggDuration
 import json
 
 
@@ -109,14 +109,20 @@ class avgCompute(ProcessMeasure):
 
             # measure Json pointer
             m_agg_j = {}
-            if measures['data'][measure_idx].__contains__('aggregates'):
+            b_has_measures = False
+            if measures.__contains__('data'):
+                b_has_measures = True
+            if b_has_measures is True and measures['data'][measure_idx].__contains__('aggregates'):
                 for a_j_agg in measures['data'][measure_idx]['aggregates']:
                     if a_j_agg['level'] == agg_relative.agg_niveau:
                         m_agg_j = a_j_agg
                         break
 
             # get dat and duration of the mesure
-            measure_duration = int(measures['data'][measure_idx]['current']['duration'])
+            if b_has_measures is True:
+                measure_duration = int(measures['data'][measure_idx]['current']['duration'])
+            else:
+                measure_duration = getAggDuration(anAgg)
             # measure_dat = measures['data'][measure_idx]['current']['dat']
 
             # source of data: json first, then delta_values
