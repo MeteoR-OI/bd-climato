@@ -19,7 +19,7 @@ def json_string():
                     "current":
                         {
                             "dat" : "2021-02-11T13:09:30+00:00",
-                            "duration" : 300,
+                            "duration" : 5,
                             "out_temp" : 29.5
                         },
                     "aggregations": [
@@ -37,7 +37,7 @@ def json_string():
                     "current" :
                         {
                             "dat" : "2021-02-11T13:09:40+00:00",
-                            "duration" : 300,
+                            "duration" : 5,
                             "out_temp" : 30
                         },
                     "aggregations" : [

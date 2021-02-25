@@ -161,15 +161,15 @@ class ProcessMeasure():
     # -------------------------
     # private or virtal methods
     # --------------------------
-    def getDeltaFromObs(self, my_measure: json, obs_meteor: ObsMeteor, field_name: str, m_suffix: str, exclusion: json) -> json:
+    def getDeltaFromObs(self, my_measure: json, obs_meteor: ObsMeteor, field_name: str, m_suffix: str, exclusion: json, delta_values: json) -> json:
         """
             getDeltaFromObs
 
             get delta_values from current Obs
             Always in substracting mode, because this is called only in delete obs situation
         """
+        # todo: load max/min
         try:
-            delta_values = {'extremes': []}
             b_set_val = True        # a value is forced in exclusion
             b_set_null = False      # the measure is invalidated
             obs_j = obs_meteor.data.j

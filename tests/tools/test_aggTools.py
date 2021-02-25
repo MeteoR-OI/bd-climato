@@ -6,8 +6,10 @@ from app.tools.aggTools import getAggDuration, addJson
 
 
 def test_getAggDuration():
-    assert getAggDuration('H') == 60
-    # assert getAggDuration('D') == (60 * 24)
+    assert int(getAggDuration('H')) == int(60)
+    assert int(getAggDuration('D')) == int(1440)
+    assert int(getAggDuration('M')) == int(43920)
+    assert int(getAggDuration('Y')) == int(525960)
 
 
 def test_addJson():

@@ -1,3 +1,4 @@
+from app.classes.repository.posteMeteor import PosteMeteor
 from app.models import Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global
 import datetime
 from app.classes.metier.posteMetier import PosteMetier
@@ -17,7 +18,7 @@ class type_temp_test():
 
         self.o_test = self.p_test.observation(self.dt_test)
         self.a_test = self.p_test.aggregations(self.dt_test)
-        json_string = """
+        json_string1 = """
         {
             "meteor" : "BBF015",
             "info" : {
@@ -29,17 +30,19 @@ class type_temp_test():
                     "current":
                         {
                             "dat" : "2021-02-11T13:09:30+00:00",
-                            "duration" : 300,
+                            "duration" : 5,
                             "out_temp" : 29.5
                         },
                     "aggregations": [
                         {
                             "level" : "H",
-                            "out_temp_avg" : 32.75
+                            "out_temp_avg" : 32.75,
+                            "out_temp_duration": 5
                         },
                         {
                             "level" : "D",
-                            "rain_rate_avg" : 1.23
+                            "out_temp_avg" : 33,
+                            "out_temp_duration": 25
                         }
                     ]
                 },
@@ -47,17 +50,18 @@ class type_temp_test():
                     "current" :
                         {
                             "dat" : "2021-02-11T13:09:40+00:00",
-                            "duration" : 300,
+                            "duration" : 5,
                             "out_temp" : 32
                         },
                     "aggregations" : [
                         {
                             "level" : "H",
-                            "out_temp_avg" : 33
+                            "out_temp_avg" : 33,
+                            "out_temp_duration": 10
                         },
                         {
                             "level" : "D",
-                            "rain_rate_avg" : 1.23
+                            "out_temp_avg" : 20
                         }
                     ]
                 }
@@ -91,7 +95,7 @@ class type_temp_test():
                 "current":
                 {
                     "dat" : "2021-02-11T08:35:00+00:00",
-                    "duration" : 300,
+                    "duration" : 5,
                     "out_temp":"28.1",
                     "windchill":"28.1",
                     "heatindex":"32.4",
@@ -170,7 +174,7 @@ class type_temp_test():
                 "current" :
                 {
                     "dat" : "2021-02-11T08:40:00+00:00",
-                    "duration" : 300 ,
+                    "duration" : 5 ,
                     "out_temp":"28.4",
                     "windchill":"28.4",
                     "heatindex":"32.9",
@@ -249,7 +253,7 @@ class type_temp_test():
                 "current" :
                 {
                     "dat" : "2021-02-11T08:45:00+00:00",
-                    "duration" : 300,
+                    "duration" : 5,
                     "out_temp":"28.6",
                     "windchill":"28.6",
                     "heatindex":"33.1",
@@ -335,20 +339,20 @@ class type_temp_test():
             },
             "data":
             [
-                {"current":      {"dat" : "2021-01-30T05:45:00+00:00", "duration" : 300, "out_temp" : 25.0}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-01-30T05:50:00+00:00", "duration" : 300, "out_temp" : 25.3}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-01-30T05:55:00+00:00", "duration" : 300, "out_temp" : 25.6}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-01-30T06:00:00+00:00", "duration" : 300, "out_temp" : 25.9}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-01-31T06:05:00+00:00", "duration" : 300, "out_temp" : 26.0}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-01-31T06:10:00+00:00", "duration" : 300, "out_temp" : 26.1}, "aggregations": [
+                {"current":      {"dat" : "2021-01-30T05:45:00+00:00", "duration" : 5, "out_temp" : 25.0}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-01-30T05:50:00+00:00", "duration" : 5, "out_temp" : 25.3}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-01-30T05:55:00+00:00", "duration" : 5, "out_temp" : 25.6}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-01-30T06:00:00+00:00", "duration" : 5, "out_temp" : 25.9}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-01-31T06:05:00+00:00", "duration" : 5, "out_temp" : 26.0}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-01-31T06:10:00+00:00", "duration" : 5, "out_temp" : 26.1}, "aggregations": [
                                                                                         {"level" : "D", "out_temp_avg" : 26.9} ]},
-                {"current":      {"dat" : "2021-01-31T06:15:00+00:00", "duration" : 300, "out_temp" : 26.5}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-01-31T06:20:00+00:00", "duration" : 300, "out_temp" : 26.6}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-02-01T10:10:00+00:00", "duration" : 300, "out_temp" : 24.0}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-02-01T10:15:00+00:00", "duration" : 300, "out_temp" : 24.4}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-02-01T10:20:00+00:00", "duration" : 300, "out_temp" : 24.8}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-02-01T10:25:00+00:00", "duration" : 300, "out_temp" : 25.2}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-02-01T10:30:00+00:00", "duration" : 300, "out_temp" : 25.6}, "aggregations": [ ]}
+                {"current":      {"dat" : "2021-01-31T06:15:00+00:00", "duration" : 5, "out_temp" : 26.5}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-01-31T06:20:00+00:00", "duration" : 5, "out_temp" : 26.6}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-02-01T10:10:00+00:00", "duration" : 5, "out_temp" : 24.0}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-02-01T10:15:00+00:00", "duration" : 5, "out_temp" : 24.4}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-02-01T10:20:00+00:00", "duration" : 5, "out_temp" : 24.8}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-02-01T10:25:00+00:00", "duration" : 5, "out_temp" : 25.2}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-02-01T10:30:00+00:00", "duration" : 5, "out_temp" : 25.6}, "aggregations": [ ]}
             ]
         }
         """
@@ -360,24 +364,24 @@ class type_temp_test():
             },
             "data":
             [
-                {"current":      {"dat" : "2021-01-30T05:45:00+00:00", "duration" : 300, "out_temp" : 25.0}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-01-30T05:50:00+00:00", "duration" : 300, "out_temp" : 25.3}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-01-30T05:55:00+00:00", "duration" : 300, "out_temp" : 25.7}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-01-30T06:00:00+00:00", "duration" : 300, "out_temp" : 26.0}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-01-31T06:05:00+00:00", "duration" : 300, "out_temp" : 25.5}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-01-31T06:10:00+00:00", "duration" : 300, "out_temp" : 25.4}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-01-31T06:15:00+00:00", "duration" : 300, "out_temp" : 24.5}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-01-31T06:20:00+00:00", "duration" : 300, "out_temp" : 25.0}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-02-01T10:10:00+00:00", "duration" : 300, "out_temp" : 24.0}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-02-01T10:15:00+00:00", "duration" : 300, "out_temp" : 24.4}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-02-01T10:20:00+00:00", "duration" : 300, "out_temp" : 24.8}, "aggregations": [ ]},
-                {"current":      {"dat" : "2021-02-01T10:25:00+00:00", "duration" : 300, "out_temp" : 24.7}, "aggregations": [
+                {"current":      {"dat" : "2021-01-30T05:45:00+00:00", "duration" : 5, "out_temp" : 25.0}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-01-30T05:50:00+00:00", "duration" : 5, "out_temp" : 25.3}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-01-30T05:55:00+00:00", "duration" : 5, "out_temp" : 25.7}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-01-30T06:00:00+00:00", "duration" : 5, "out_temp" : 26.0}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-01-31T06:05:00+00:00", "duration" : 5, "out_temp" : 25.5}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-01-31T06:10:00+00:00", "duration" : 5, "out_temp" : 25.4}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-01-31T06:15:00+00:00", "duration" : 5, "out_temp" : 24.5}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-01-31T06:20:00+00:00", "duration" : 5, "out_temp" : 25.0}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-02-01T10:10:00+00:00", "duration" : 5, "out_temp" : 24.0}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-02-01T10:15:00+00:00", "duration" : 5, "out_temp" : 24.4}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-02-01T10:20:00+00:00", "duration" : 5, "out_temp" : 24.8}, "aggregations": [ ]},
+                {"current":      {"dat" : "2021-02-01T10:25:00+00:00", "duration" : 5, "out_temp" : 24.7}, "aggregations": [
                                      {"level" : "D", "out_temp_max" : 25.0, "out_temp_max_time" : "2021-02-01T10:27:35+00:00"} ]},
-                {"current":      {"dat" : "2021-02-01T10:30:00+00:00", "duration" : 300, "out_temp" : 24.7}, "aggregations": [ ]}
+                {"current":      {"dat" : "2021-02-01T10:30:00+00:00", "duration" : 5, "out_temp" : 24.7}, "aggregations": [ ]}
             ]
         }
         """
-        self.j_test = JsonPlus().loads(json_string)
+        self.j1_test = JsonPlus().loads(json_string1)
         self.j2_test = JsonPlus().loads(json_string2)
         self.j3_test = JsonPlus().loads(json_string3)
         self.j4_test = JsonPlus().loads(json_string4)
@@ -391,39 +395,53 @@ class type_temp_test():
         Agg_year.objects.all().delete()
         Agg_global.objects.all().delete()
 
-    def doCalculusOneMeasure(self):
-        return self.doCalculus(self.j_test)
+    def doCalculusJ1(self):
+        return self.doCalculus(self.j1_test, True)
 
-    def doCalculusFullJson(self):
-        return self.doCalculus(self.j2_test)
+    def doCalculusJ2(self):
+        return self.doCalculus(self.j2_test, True)
 
-    def doCalculusAgg(self):
-        return self.doCalculus(self.j3_test)
+    def doCalculusJ3(self):
+        return self.doCalculus(self.j3_test, True)
 
-    def doCalculusMax(self):
-        return self.doCalculus(self.j4_test)
+    def doCalculusJ4(self):
+        return self.doCalculus(self.j4_test, True)
 
-    def doCalculus(self, m_j: json):
+    def doCalculus(self, m_j: json, b_serialize: bool, flag: bool = True):
         try:
             all_instr = TypeInstrumentAll()
             ret = []
-            self.delete_obs_agg()
+            if b_serialize:
+                self.delete_obs_agg()
 
             idx = 0
             while idx < m_j['data'].__len__():
+                pid = PosteMeteor.getPosteIdByMeteor(m_j['meteor'])
+                if pid is None:
+                    raise Exception('doCalculus', 'unknown code meteor: ' + m_j['meteor'])
+                self.p = PosteMetier(pid)
                 self.o_test = self.p_test.observation(m_j['data'][idx]['current']['dat'])
+                if self.o_test.data.duration == 0:
+                    self.o_test.data.duration = m_j['data'][idx]['current']['duration']
                 self.a_test = self.p_test.aggregations(m_j['data'][idx]['current']['dat'])
 
                 # call the method to update obs, and return delta_val
-                delta_values = all_instr.process_json(self.p_test, m_j, idx, self.o_test, self.a_test, True)
+                all_instr.process_json(self.p_test, m_j, idx, self.o_test, self.a_test, True)
 
-                # return to the browser when executed in interactive mode... (not needed in real testing situation)
-                # result can be seen with https://codebeautify.org/jsonviewer
+                if b_serialize:
+                    self.o_test.save()
+                    for i in (0, 1, 2, 3, 4, 5, 6):
+                        self.a_test[i].save()
+                # else:
+                # will return to the caller when in test mode
+                if idx == 0:
+                    helper = ' - cut and paste this data into https://codebeautify.org/jsonviewer'
+                else:
+                    helper = ''
                 ret.append({
-                    'helper': 'cut and paste this data into https://codebeautify.org/jsonviewer',
+                    'info': 'idx=' + str(idx) + helper,
                     'dat': m_j['data'][idx]['current']['dat'],
                     'observation': JsonPlus().loads(JsonPlus().dumps(self.o_test.data.j)),
-                    'delta_values': delta_values,
                     'agg_hour': JsonPlus().loads(JsonPlus().dumps(self.a_test[0].data.j)),
                     'agg_day': JsonPlus().loads(JsonPlus().dumps(self.a_test[1].data.j)),
                     'agg_month': JsonPlus().loads(JsonPlus().dumps(self.a_test[2].data.j)),
@@ -433,32 +451,8 @@ class type_temp_test():
                     'agg_day after': JsonPlus().loads(JsonPlus().dumps(self.a_test[6].data.j)),
                     }
                 )
-                self.o_test.save()
-                for i in (0, 1, 2, 3, 4, 5, 6):
-                    self.a_test[i].save()
+
                 idx += 1
-
-            # example of test to execute
-            # Observation values should be tested too...
-            if m_j['data'].__len__() == 2:
-                # delta_val validation
-                if int(ret[0]['delta_values']['out_temp_sum']) != 8850:
-                    return "out_temp_sum [0] wrong " + str(ret[0]['delta_values']['out_temp_sum'])
-                if int(ret[0]['delta_values']['out_temp_duration']) != 300:
-                    return "out_temp_duration [0] wrong: " + str(ret[0]['delta_values']['out_temp_duration'])
-                if int(ret[1]['delta_values']['out_temp_sum']) != 9600:
-                    return "out_temp_sum [1] wrong " + str(ret[1]['delta_values']['out_temp_sum'])
-                if int(ret[1]['delta_values']['out_temp_duration']) != 300:
-                    return "out_temp_duration [1] wrong: " + str(ret[1]['delta_values']['out_temp_duration'])
-            elif m_j['data'].__len__() == 3:
-                obs_j = self.o_test.data.j
-
-                if (ret[0]['delta_values']['out_temp_sum'] != 8430.0):
-                    return("out_temp not good in obs: " + str(ret[0]['delta_values']['out_temp_sum']))
-                # more tests...
-                if obs_j['out_temp'] != 28.6:
-                    return("out_temp is not good in observation: " + str(obs_j['out_temp']))
-                # more tests
 
             return ret
 
@@ -466,4 +460,5 @@ class type_temp_test():
             print(type(inst))    # the exception instance
             print(inst.args)     # arguments stored in .args
             print(inst)          # __str__ allows args to be printed directly,
+            ret.append({'Exception': inst.__str__()})
             return ret

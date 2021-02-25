@@ -26,11 +26,11 @@ def view_agg_hour(request, poste_id):
     return view_agg(request, "H", poste_id)
 
 
-def testComputeObsOnly(request):
+def testComputeJ1(request):
     """ debug environment"""
     try:
         tt = type_temp_test()
-        ret_json = tt.doCalculusOneMeasure()
+        ret_json = tt.doCalculusJ1()
         ret = JsonPlus().dumps(ret_json)
         return HttpResponse(ret)
 
@@ -38,11 +38,11 @@ def testComputeObsOnly(request):
         return HttpResponse(inst)
 
 
-def testComputeObsOnly2(request):
+def testComputeJ2(request):
     """ debug environment"""
     try:
         tt = type_temp_test()
-        ret_json = tt.doCalculusFullJson()
+        ret_json = tt.doCalculusJ2()
         ret = JsonPlus().dumps(ret_json)
         return HttpResponse(ret)
 
@@ -50,11 +50,11 @@ def testComputeObsOnly2(request):
         return HttpResponse(inst)
 
 
-def testComputeAgg(request):
+def testComputeJ3(request):
     """ debug environment"""
     try:
         tt = type_temp_test()
-        ret_json = tt.doCalculusAgg()
+        ret_json = tt.doCalculusJ3()
         ret = JsonPlus().dumps(ret_json)
         return HttpResponse(ret)
 
@@ -62,11 +62,11 @@ def testComputeAgg(request):
         return HttpResponse(inst)
 
 
-def testComputeMax(request):
+def testComputeJ4(request):
     """ debug environment"""
     try:
         tt = type_temp_test()
-        ret_json = tt.doCalculusMax()
+        ret_json = tt.doCalculusJ4()
         ret = JsonPlus().dumps(ret_json)
         return HttpResponse(ret)
 

@@ -48,13 +48,13 @@ def getAggDuration(niveau_agg: str) -> int:
     """get the aggregation (in sec) depending on the level"""
     try:
         if niveau_agg == "H":
-            return 3600
+            return 60
         elif niveau_agg == "D":
-            return 86400
+            return 1440
         elif niveau_agg == "M":
-            return 2635200   # int(30.5 * 24 * 60)
+            return 43920   # int(30.5 * 24 * 60)
         elif niveau_agg == "Y":
-            return 757382400    # int(365.25 * 24 * 60)
+            return 525960    # int(365.25 * 24 * 60)
         elif niveau_agg == "A":
             raise Exception("get_gg_duration", "global has no duration")
         else:

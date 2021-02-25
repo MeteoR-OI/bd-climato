@@ -40,7 +40,7 @@ class RootTypeInstrument:
 
                             # process xtremes
                         # todo call agg calculus
-            return delta_values
+            return
 
         except Exception as inst:
             print(type(inst))    # the exception instance

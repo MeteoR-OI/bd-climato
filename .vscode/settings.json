@@ -31,7 +31,7 @@
                 "name": "CodeCov",
                 "color": "yellow",
                 "singleInstance": true,
-                "command": "coverage run -m pytest tests; coverage xml", // This is executed in the terminal.
+                "command": "coverage run -m pytest tests; coverage xml; exit 0", // This is executed in the terminal.
             }
         ]
     }

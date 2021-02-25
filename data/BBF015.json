@@ -24,7 +24,7 @@
           "current":
           {
               "dat" : "2021-02-11T08:35:00+00:00",
-              "duration" : 300,
+              "duration" : 5,
               "out_temp":"28.1",
               "windchill":"28.1",
               "heatindex":"32.4",
@@ -103,7 +103,7 @@
         "current" :
         {
             "dat" : "2021-02-11T08:40:00+00:00",
-            "duration" : 300 ,
+            "duration" : 5 ,
             "out_temp":"28.4",
             "windchill":"28.4",
             "heatindex":"32.9",
@@ -182,7 +182,7 @@
           "current" :
           {
               "dat" : "2021-02-11T08:45:00+00:00",
-              "duration" : 300,
+              "duration" : 5,
               "out_temp":"28.6",
               "windchill":"28.6",
               "heatindex":"33.1",

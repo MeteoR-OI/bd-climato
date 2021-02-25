@@ -21,7 +21,7 @@ class JsonPlus():
                     "current":
                         {
                             "dat" : "2021-02-11T13:09:30+00:00",
-                            "duration" : 300,
+                            "duration" : 5,
                             "out_temp" : 29.5,
                             "out_temp_max": 30.1,
                             "out_temp_max_time": "2021-02-11T13:09:32+00:00"
@@ -41,7 +41,7 @@ class JsonPlus():
                     "current" :
                         {
                             "dat" : "2021-02-11T13:09:40+00:00",
-                            "duration" : 300,
+                            "duration" : 5,
                             "out_temp" : 30
                         },
                     "aggregations" : [

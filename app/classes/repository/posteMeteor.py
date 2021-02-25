@@ -19,6 +19,13 @@ class PosteMeteor:
         else:
             self.data = Poste()
 
+    @staticmethod
+    def getPosteIdByMeteor(meteor: str) -> int:
+        """ find a poste with his meteor name """
+        if Poste.objects.filter(meteor=meteor).exists():
+            return Poste.objects.filter(meteor=meteor).first().id
+        return None
+
     def save(self):
         """ save Poste """
         try:
