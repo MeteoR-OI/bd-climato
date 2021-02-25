@@ -429,8 +429,10 @@ class type_temp_test():
                 all_instr.process_json(self.p_test, m_j, idx, self.o_test, self.a_test, True)
 
                 if b_serialize:
+                    self.o_test.data.j['dv'] = {}
                     self.o_test.save()
                     for i in (0, 1, 2, 3, 4, 5, 6):
+                        self.a_test[i].data.j['dv'] = {}
                         self.a_test[i].save()
                 # else:
                 # will return to the caller when in test mode
