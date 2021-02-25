@@ -1,0 +1,121 @@
+#encoding UTF-8
+#def get_battery_status($x)
+#if $x == 0
+OK#slurp
+#else
+LOW#slurp
+#end if
+#end def
+{
+  "meteor" : "$BootstrapLabels.station_id",
+  "info" : {
+     "title":"Météo en direct",
+     "location":"$station.location",
+     "time":"$current.dateTime.formatted",
+     "lat":"$station.latitude[0] $station.latitude[1]' $station.latitude[2]",
+     "lon":"$station.longitude[0] $station.longitude[1]' $station.longitude[2]",
+     "alt":"$station.altitude",
+     "hardware":"$station.hardware",
+     "uptime":"$station.uptime.formatted",
+     "serverUptime":"$station.os_uptime",
+     "weewxVersion":"$station.version",
+     "monitors": {
+       #if $day.txBatteryStatus.has_data
+          "txBatteryStatus": "$get_battery_status($current.txBatteryStatus.raw)",
+       #end if
+       "signal_quality": "$current.rxCheckPercent",
+       "consBatteryVoltage" : "$current.consBatteryVoltage"
+	}
+     },
+  "data": {
+     "current": {
+       "dat":"$current.dateTime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "duration":"300",
+       "out_temp":"$current.outTemp.formatted",
+       "windchill":"$current.windchill.formatted",
+       "heatIndex":"$current.heatindex.formatted",
+       "dewpoint":"$current.dewpoint.formatted",
+       "humidity":"$current.outHumidity.formatted",
+       "in_humidity":"$current.inHumidity.formatted",
+       "barometer":"$current.barometer.formatted",
+       "wind":"$current.windSpeed.formatted",
+       "wind_dir":"$current.windDir.formatted",
+       "wind_max":"$current.windGust.formatted",
+       "wind_max_dir":"$current.windGustDir.formatted",
+       "rain_rate":"$current.rainRate.formatted",
+       "rain":"$current.rain.formatted",
+#if $day.UV.has_data
+       "uv_indice":"$current.UV.formatted",
+#end if
+#if $day.ET.has_data and $day.ET.sum.raw > 0.0
+       "etp":"$current.ET.formatted",
+#end if
+#if $day.radiation.has_data  
+       "solar_radiation":"$current.radiation.formatted",
+#end if
+       "in_temp":"$current.inTemp.formatted",
+       "rx":"$current.rxCheckPercent.formatted",
+       "voltage":"$current.consBatteryVoltage.formatted"
+        },
+   "aggregations": {
+       "level":"D",
+       "out_temp_max":"$day.outTemp.max.formatted",
+       "out_temp_max_time":"$day.outTemp.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "out_temp_min":"$day.outTemp.min.formatted",
+       "out_temp_min_time":"$day.outTemp.mintime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "out_temp_avg":"$day.outTemp.avg.formatted",
+       "heatindex_max":"$day.heatindex.max.formatted",
+       "heatindex_max_time":"$day.heatindex.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "windchill_min":"$day.windchill.min.formatted",
+       "windchill_min_time":"$day.windchill.mintime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "humidity_max":"$day.outHumidity.max.formatted",
+       "humidity_max_time":"$day.outHumidity.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "humidity_min":"$day.outHumidity.min.formatted",
+       "humidity_min_time":"$day.outHumidity.mintime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "dewpoint_max":"$day.dewpoint.max.formatted",
+       "dewpoint_max_time":"$day.dewpoint.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "dewpoint_min":"$day.dewpoint.min.formatted",
+       "dewpoint_min_time":"$day.dewpoint.mintime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "barometer_max":"$day.barometer.max.formatted",
+       "barometer_max_time":"$day.barometer.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "barometer_min":"$day.barometer.min.formatted",
+       "barometer_min_time":"$day.barometer.mintime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "rainSum":"$day.rain.sum.formatted",
+       "rain_rate_max":"$day.rainRate.max.formatted",
+       "rain_rate_max_time":"$day.rainRate.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "wind_max":"$day.wind.max.formatted",
+       "wind_max_dir":"$day.wind.gustdir.formatted",
+       "wind_max_time":"$day.wind.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+      	"wind_avg":$day.wind.avg.formatted,
+#if $day.UV.has_data
+        "uv_indice_max":"$day.UV.max.formatted",
+        "uv_indice_max_time":"$day.UV.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+#end if
+#if $day.ET.has_data and $day.ET.sum.raw >0.0
+        "etp_sum":"$day.ET.max.formatted",
+#end if
+#if $day.radiation.has_data
+       	"radiation_max":"$day.radiation.max.formatted",
+       	"radiation_max_time":"$day.radiation.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       	"radiation_min":"$day.radiation.min.formatted",
+       	"radiation_min_time":"$day.radiation.mintime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+#end if
+#if $day.rxCheckPercent.has_data
+       	"rx_max":"$day.rxCheckPercent.max.formatted",
+       	"rx_max_time":"$day.rxCheckPercent.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       	"rx_min":"$day.rxCheckPercent.min.formatted",
+       	"rx_min_time":"$day.rxCheckPercent.mintime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+#end if
+#if $day.consBatteryVoltage.has_data
+       	"voltage_max":"$day.consBatteryVoltage.max.formatted",
+       	"voltage_max_time":"$day.consBatteryVoltage.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       	"voltage_min":"$day.consBatteryVoltage.min.formatted",
+       	"voltage_min_time":"$day.consBatteryVoltage.mintime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+#end if
+       	"in_temp_max":"$day.inTemp.max.formatted",
+       	"in_temp_max_time":"$day.inTemp.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       	"in_temp_min":"$day.inTemp.min.formatted",
+       	"in_temp_min_time":"$day.inTemp.mintime.format("%Y-%m-%dT%H-%M-%S+00:00")"
+	}
+     }
+}
