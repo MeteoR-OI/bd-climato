@@ -407,7 +407,7 @@ class type_temp_test():
     def doCalculusJ4(self):
         return self.doCalculus(self.j4_test, True)
 
-    def doCalculus(self, m_j: json, b_serialize: bool, flag: bool = True):
+    def doCalculus(self, m_j: json, b_serialize: bool, flag: bool = True) -> json:
         try:
             all_instr = TypeInstrumentAll()
             ret = []
