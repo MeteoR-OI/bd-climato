@@ -27,10 +27,10 @@ LOW#slurp
      "consBatteryVoltage" : "$current.consBatteryVoltage"
 	}
      },
-  "data": 
+  "data":
      [
      {"current": {
-       "dat":"$current.dateTime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "dat":"$current.dateTime.format("%Y-%m-%dT%H:%M:%S+00:00")",
        "duration":5,
        "out_temp":$current.outTemp.raw,
        "windchill":$current.windchill.raw,
@@ -58,66 +58,66 @@ LOW#slurp
        "rx":$current.rxCheckPercent.raw,
        "voltage":$current.consBatteryVoltage.raw
         },
-   "aggregations": 
+   "aggregations":
      [ {
        "level":"D",
        "out_temp_max":$day.outTemp.max.raw,
-       "out_temp_max_time":"$day.outTemp.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "out_temp_max_time":"$day.outTemp.maxtime.format("%Y-%m-%dT%H:%M:%S+00:00")",
        "out_temp_min":$day.outTemp.min.raw,
-       "out_temp_min_time":"$day.outTemp.mintime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "out_temp_min_time":"$day.outTemp.mintime.format("%Y-%m-%dT%H:%M:%S+00:00")",
        "out_temp_avg":$day.outTemp.avg.raw,
        "heatindex_max":$day.heatindex.max.raw,
-       "heatindex_max_time":"$day.heatindex.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "heatindex_max_time":"$day.heatindex.maxtime.format("%Y-%m-%dT%H:%M:%S+00:00")",
        "windchill_min":$day.windchill.min.raw,
-       "windchill_min_time":"$day.windchill.mintime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "windchill_min_time":"$day.windchill.mintime.format("%Y-%m-%dT%H:%M:%S+00:00")",
        "humidity_max":$day.outHumidity.max.raw,
-       "humidity_max_time":"$day.outHumidity.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "humidity_max_time":"$day.outHumidity.maxtime.format("%Y-%m-%dT%H:%M:%S+00:00")",
        "humidity_min":$day.outHumidity.min.raw,
-       "humidity_min_time":"$day.outHumidity.mintime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "humidity_min_time":"$day.outHumidity.mintime.format("%Y-%m-%dT%H:%M:%S+00:00")",
        "dewpoint_max":$day.dewpoint.max.raw,
-       "dewpoint_max_time":"$day.dewpoint.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "dewpoint_max_time":"$day.dewpoint.maxtime.format("%Y-%m-%dT%H:%M:%S+00:00")",
        "dewpoint_min":$day.dewpoint.min.raw,
-       "dewpoint_min_time":"$day.dewpoint.mintime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "dewpoint_min_time":"$day.dewpoint.mintime.format("%Y-%m-%dT%H:%M:%S+00:00")",
        "barometer_max":$day.barometer.max.raw,
-       "barometer_max_time":"$day.barometer.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "barometer_max_time":"$day.barometer.maxtime.format("%Y-%m-%dT%H:%M:%S+00:00")",
        "barometer_min":$day.barometer.min.raw,
-       "barometer_min_time":"$day.barometer.mintime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "barometer_min_time":"$day.barometer.mintime.format("%Y-%m-%dT%H:%M:%S+00:00")",
        "rainSum":$day.rain.sum.raw,
        "rain_rate_max":$day.rainRate.max.raw,
-       "rain_rate_max_time":"$day.rainRate.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "rain_rate_max_time":"$day.rainRate.maxtime.format("%Y-%m-%dT%H:%M:%S+00:00")",
        "wind_max":$day.wind.max.raw,
        "wind_max_dir":$day.wind.gustdir.raw,
-       "wind_max_time":"$day.wind.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "wind_max_time":"$day.wind.maxtime.format("%Y-%m-%dT%H:%M:%S+00:00")",
        "wind_avg":$day.wind.avg.raw,
 #if $day.UV.has_data
        "uv_indice_max":$day.UV.max.raw,
-       "uv_indice_max_time":"$day.UV.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "uv_indice_max_time":"$day.UV.maxtime.format("%Y-%m-%dT%H:%M:%S+00:00")",
 #end if
 #if $day.ET.has_data and $day.ET.sum.raw >0.0
        "etp_sum":$day.ET.max.raw,
 #end if
 #if $day.radiation.has_data
        "radiation_max":$day.radiation.max.raw,
-       "radiation_max_time":"$day.radiation.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "radiation_max_time":"$day.radiation.maxtime.format("%Y-%m-%dT%H:%M:%S+00:00")",
        "radiation_min":$day.radiation.min.raw,
-       "radiation_min_time":"$day.radiation.mintime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "radiation_min_time":"$day.radiation.mintime.format("%Y-%m-%dT%H:%M:%S+00:00")",
 #end if
 #if $day.rxCheckPercent.has_data
        "rx_max":$day.rxCheckPercent.max.raw,
-       "rx_max_time":"$day.rxCheckPercent.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "rx_max_time":"$day.rxCheckPercent.maxtime.format("%Y-%m-%dT%H:%M:%S+00:00")",
        "rx_min":$day.rxCheckPercent.min.raw,
-       "rx_min_time":"$day.rxCheckPercent.mintime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "rx_min_time":"$day.rxCheckPercent.mintime.format("%Y-%m-%dT%H:%M:%S+00:00")",
 #end if
 #if $day.consBatteryVoltage.has_data
        "voltage_max":$day.consBatteryVoltage.max.raw,
-       "voltage_max_time":"$day.consBatteryVoltage.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "voltage_max_time":"$day.consBatteryVoltage.maxtime.format("%Y-%m-%dT%H:%M:%S+00:00")",
        "voltage_min":$day.consBatteryVoltage.min.raw,
-       "voltage_min_time":"$day.consBatteryVoltage.mintime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "voltage_min_time":"$day.consBatteryVoltage.mintime.format("%Y-%m-%dT%H:%M:%S+00:00")",
 #end if
        "in_temp_max":$day.inTemp.max.raw,
-       "in_temp_max_time":"$day.inTemp.maxtime.format("%Y-%m-%dT%H-%M-%S+00:00")",
+       "in_temp_max_time":"$day.inTemp.maxtime.format("%Y-%m-%dT%H:%M:%S+00:00")",
        "in_temp_min":$day.inTemp.min.raw,
-       "in_temp_min_time":"$day.inTemp.mintime.format("%Y-%m-%dT%H-%M-%S+00:00")"
+       "in_temp_min_time":"$day.inTemp.mintime.format("%Y-%m-%dT%H:%M:%S+00:00")"
 	} ]
      }
      ]
