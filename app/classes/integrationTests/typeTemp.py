@@ -18,6 +18,20 @@ class type_temp_test():
 
         self.o_test = self.p_test.observation(self.dt_test)
         self.a_test = self.p_test.aggregations(self.dt_test)
+        json_string0 = """
+        {
+            "meteor" : "BBF015",
+            "info" : {
+                "blabla": "blabla"
+            },
+            "data":
+            [
+                {"current" : {"dat" : "2021-02-11T13:30:00+00:00", "duration" : 5, "out_temp" : 20}},
+                {"current" : {"dat" : "2021-02-11T13:25:00+00:00", "duration" : 5, "out_temp" : 10}},
+                {"current" : {"dat" : "2021-02-11T13:35:00+00:00", "duration" : 5, "out_temp" : 30}}
+            ]
+        }
+        """
         json_string1 = """
         {
             "meteor" : "BBF015",
@@ -381,6 +395,7 @@ class type_temp_test():
             ]
         }
         """
+        self.j0_test = JsonPlus().loads(json_string0)
         self.j1_test = JsonPlus().loads(json_string1)
         self.j2_test = JsonPlus().loads(json_string2)
         self.j3_test = JsonPlus().loads(json_string3)
@@ -394,6 +409,9 @@ class type_temp_test():
         Agg_month.objects.all().delete()
         Agg_year.objects.all().delete()
         Agg_global.objects.all().delete()
+
+    def doCalculusJ0(self):
+        return self.doCalculus(self.j0_test, True)
 
     def doCalculusJ1(self):
         return self.doCalculus(self.j1_test, True)
@@ -429,10 +447,10 @@ class type_temp_test():
                 all_instr.process_json(self.p_test, m_j, idx, self.o_test, self.a_test, True)
 
                 if b_serialize:
-                    self.o_test.data.j['dv'] = {}
+                    # self.o_test.data.j['dv'] = {}
                     self.o_test.save()
                     for i in (0, 1, 2, 3, 4, 5, 6):
-                        self.a_test[i].data.j['dv'] = {}
+                        # self.a_test[i].data.j['dv'] = {}
                         self.a_test[i].save()
                 # else:
                 # will return to the caller when in test mode

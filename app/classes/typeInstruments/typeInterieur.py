@@ -23,8 +23,8 @@ class TypeInterieur(RootTypeInstrument):
                 #                                      n -> decallage de n heures par rapport a heure locale
                 #                                     -n -> decalage de n heures par rapport a heure GMT
                 # special: special processing (like "field"_dir)
-                {'type_i': 7, 'key': 'in_temp', 'dataType': float, 'agg': 'avg', 'avg': False, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
-                {'type_i': 7, 'key': 'in_humidity', 'dataType': float, 'agg': 'avg', 'avg': False, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
+                {'type_i': 7, 'src_key': 'in_temp', 'dataType': float, 'agg': 'avg', 'avg': False, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
+                {'type_i': 7, 'src_key': 'in_humidity', 'dataType': float, 'agg': 'avg', 'avg': False, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
             ]
             super()
 

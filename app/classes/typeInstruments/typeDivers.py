@@ -23,8 +23,8 @@ class TypeDivers(RootTypeInstrument):
                 #                                      n -> decallage de n heures par rapport a heure locale
                 #                                     -n -> decalage de n heures par rapport a heure GMT
                 # special: special processing (like "field"_dir)
-                {'type_i': 9, 'key': 'rx', 'dataType': float, 'agg': 'avg', 'avg': True, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
-                {'type_i': 9, 'key': 'voltage', 'dataType': float, 'agg': 'avg', 'avg': True, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
+                {'type_i': 9, 'src_key': 'rx', 'dataType': float, 'agg': 'avg', 'avg': True, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
+                {'type_i': 9, 'src_key': 'voltage', 'dataType': float, 'agg': 'avg', 'avg': True, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
             ]
             super()
 

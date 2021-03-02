@@ -120,3 +120,19 @@ def addJson(j: json, key: str, valeur):
     if j.__contains__(key) is False:
         j[key] = 0
     j[key] += valeur
+
+
+def shouldNullify(exclusion: json, src_key: str) -> bool:
+    # Check if the exclusion requires to nullify the measure
+    if exclusion is not None:
+        if (exclusion.__contains__(src_key) is True and exclusion[src_key] == 'null') or exclusion.__contains__(src_key) is False:
+            return True
+    return False
+
+
+def loadFromExclu(exclusion, src_key: str) -> bool:
+    # check if the value should be loaded from the exclusion, not from the measured valued
+    if exclusion is not None and exclusion.__contains__(src_key) is True:
+        if exclusion[src_key] != 'null' and exclusion[src_key] != 'value':
+            return True
+    return False

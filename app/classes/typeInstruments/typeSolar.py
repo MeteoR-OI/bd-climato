@@ -23,9 +23,9 @@ class TypeSolar(RootTypeInstrument):
                 #                                      n -> decallage de n heures par rapport a heure locale
                 #                                     -n -> decalage de n heures par rapport a heure GMT
                 # special: special processing (like "field"_dir)
-                {'type_i': 6, 'key': 'uv_indice', 'dataType': float, 'agg': 'avg', 'avg': False, 'min': False, 'max': True, 'hour_deca': 0, 'special': 0},
-                {'type_i': 6, 'key': 'radiation', 'dataType': float, 'agg': 'avg', 'avg': True, 'min': False, 'max': True, 'hour_deca': 0, 'special': 16},
-                {'type_i': 6, 'key': 'etp', 'dataType': float, 'agg': 'sum', 'avg': False, 'min': True, 'max': False, 'hour_deca': 0, 'special': 1 + 8}
+                {'type_i': 6, 'src_key': 'uv_indice', 'dataType': float, 'agg': 'avg', 'avg': False, 'min': False, 'max': True, 'hour_deca': 0, 'special': 0},
+                {'type_i': 6, 'src_key': 'radiation', 'dataType': float, 'agg': 'avg', 'avg': True, 'min': False, 'max': True, 'hour_deca': 0, 'special': 16},
+                {'type_i': 6, 'src_key': 'etp', 'dataType': float, 'agg': 'sum', 'avg': False, 'min': True, 'max': False, 'hour_deca': 0, 'special': 1 + 8}
             ]
             super()
 

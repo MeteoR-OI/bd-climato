@@ -26,6 +26,18 @@ def view_agg_hour(request, poste_id):
     return view_agg(request, "H", poste_id)
 
 
+def testComputeJ0(request):
+    """ debug environment"""
+    try:
+        tt = type_temp_test()
+        ret_json = tt.doCalculusJ0()
+        ret = JsonPlus().dumps(ret_json)
+        return HttpResponse(ret)
+
+    except Exception as inst:
+        return HttpResponse(inst)
+
+
 def testComputeJ1(request):
     """ debug environment"""
     try:

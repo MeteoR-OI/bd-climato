@@ -23,7 +23,7 @@ class TypeHumidity(RootTypeInstrument):
                 #                                      n -> decallage de n heures par rapport a heure locale
                 #                                     -n -> decalage de n heures par rapport a heure GMT
                 # special: special processing (like "field"_dir)
-                {'type_i': 2, 'key': 'humidity', 'dataType': int, 'agg': 'avg', 'avg': True, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
+                {'type_i': 2, 'src_key': 'humidity', 'dataType': int, 'agg': 'avg', 'avg': True, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
             ]
             super()
 

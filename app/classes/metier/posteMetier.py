@@ -27,7 +27,7 @@ class PosteMetier(PosteMeteor):
         for anExclu in self.exclus:
             if anExclu['type_instrument'] == type_intrument_id:
                 return anExclu['value']
-        return {}
+        return None
 
     def getAllForAPoste(self, start_date: datetime = datetime.datetime.now(datetime.timezone.utc), end_date: datetime = datetime.datetime(2100, 12, 21, 0, 0, 0, 0, datetime.timezone.utc)) -> json:
         return ExcluMeteor.getAllForAPoste(self.data.id, start_date, end_date)

@@ -11,6 +11,7 @@ urlpatterns = [
     path('month/<int:poste_id>', views.view_agg_month),
     path('year/<int:poste_id>', views.view_agg_year),
     path('all/<int:poste_id>', views.view_agg_all),
+    path('debug0', views.testComputeJ0),
     path('debug1', views.testComputeJ1),
     path('debug2', views.testComputeJ2),
     path('debug3', views.testComputeJ3),

@@ -27,5 +27,5 @@ class MeasureProcessingBitMask(Constants):
     MeasureIsWind = 2
     OnlyAggregateInHour = 4
     NoAvgField = 8
-    IsOmmMeasure = 16
+    MeasureIsOmm = 16
     DoNotProcessTwiceInObs = 32     # when a measure is used multiple time in rootTypeInstr.mapping
