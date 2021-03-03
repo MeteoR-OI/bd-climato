@@ -1,4 +1,3 @@
-# calculus for avg
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.aggMeteor import AggMeteor
 from app.tools.climConstant import MeasureProcessingBitMask
@@ -136,7 +135,9 @@ class avgCompute(ProcessMeasure):
             if flag is False:
                 raise Exception('loadAggGetDelta', 'flag = False -> not coded yet')
 
-return si pas de data dans delta_values !! (humidity in debug0)
+            # return si pas de data dans delta_values !! (humidity in debug0)
+            if json_key == 'humidity':
+                agg_j = agg_relative.data.j
 
             # for tracing, save inputed delta_values in dv
             agg_j = agg_relative.data.j
@@ -159,6 +160,8 @@ return si pas de data dans delta_values !! (humidity in debug0)
             # if we get a sum, save it in current aggregation, and for next level
             if delta_values.__contains__(json_key + '_sum') is False:
                 tmp_sum = tmp_duration = 0
+                if delta_values.__contains__(json_key + '_avg') is False:
+                    return
             else:
                 tmp_sum = float(delta_values[json_key + '_sum'])
                 tmp_duration = float(delta_values[json_key + '_duration'])
