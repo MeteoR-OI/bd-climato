@@ -27,7 +27,7 @@ class type_temp_test():
             "data":
             [
                 {"current" : {"dat" : "2021-02-11T13:30:00+00:00", "duration" : 5, "out_temp" : 20}},
-                {"current" : {"dat" : "2021-02-11T13:25:00+00:00", "duration" : 5, "out_temp" : 10}},
+                {"current" : {"dat" : "2021-02-11T13:01:00+00:00", "duration" : 5, "out_temp" : 10}},
                 {"current" : {"dat" : "2021-02-11T13:35:00+00:00", "duration" : 5, "out_temp" : 30}}
             ]
         }

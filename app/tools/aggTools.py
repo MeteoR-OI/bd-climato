@@ -66,7 +66,7 @@ def getAggDuration(niveau_agg: str) -> int:
         print(inst)          # __str__ allows args to be printed directly,
 
 
-def calcAggDate(niveau_agg: AggLevel, dt_utc: datetime, factor: float = 0) -> datetime:
+def calcAggDate(niveau_agg: AggLevel, dt_utc: datetime, duration: int, factor: float = 0) -> datetime:
     """
         calc_agg_date
 
@@ -75,7 +75,10 @@ def calcAggDate(niveau_agg: AggLevel, dt_utc: datetime, factor: float = 0) -> da
     """
     try:
         if niveau_agg == "H":
-            return datetime.datetime(dt_utc.year, dt_utc.month, dt_utc.day, dt_utc.hour, 0, 0, 0, datetime.timezone.utc) + datetime.timedelta(minutes=int(60 * factor))
+            # agg_hour for hour h covers from (h-1):00:01 to h:00.00
+            if dt_utc.time.minute == 0 and dt_utc.time.second == 0:
+                hour -= 1
+            return datetime.datetime(dt_utc.year, dt_utc.month, dt_utc.day, hour, 0, 0, 0, datetime.timezone.utc) + datetime.timedelta(minutes=int(60 * factor))
 
         if niveau_agg == "D":
             if int(factor) == 1:
