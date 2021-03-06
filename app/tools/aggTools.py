@@ -76,9 +76,9 @@ def calcAggDate(niveau_agg: AggLevel, dt_utc: datetime, duration: int, factor: f
     try:
         if niveau_agg == "H":
             # agg_hour for hour h covers from (h-1):00:01 to h:00.00
-            if dt_utc.time.minute == 0 and dt_utc.time.second == 0:
-                hour -= 1
-            return datetime.datetime(dt_utc.year, dt_utc.month, dt_utc.day, hour, 0, 0, 0, datetime.timezone.utc) + datetime.timedelta(minutes=int(60 * factor))
+            # if dt_utc.time.minute == 0 and dt_utc.time.second == 0:
+            #     hour -= 1
+            return datetime.datetime(dt_utc.year, dt_utc.month, dt_utc.day, dt_utc.hour, 0, 0, 0, datetime.timezone.utc) + datetime.timedelta(minutes=int(60 * factor))
 
         if niveau_agg == "D":
             if int(factor) == 1:

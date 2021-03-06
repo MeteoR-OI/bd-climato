@@ -1,6 +1,5 @@
-from jsonPlus import JsonPlus
+from app.tools.jsonPlus import JsonPlus
 import os
-import datetime
 
 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 file_name = os.path.join(base_dir, 'data/obs.json')
