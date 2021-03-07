@@ -7,15 +7,11 @@ PY2 = sys.version_info <= (3,)
 def with_metaclass(meta, *bases):
     """
     Function from jinja2/_compat.py. License: BSD.
-
-    Use it like this::
-        
+    Use it like this:
         class BaseForm(object):
             pass
-        
         class FormType(type):
             pass
-        
         class Form(with_metaclass(FormType, BaseForm)):
             pass
 
@@ -25,7 +21,7 @@ def with_metaclass(meta, *bases):
     we also need to make sure that we downgrade the custom metaclass
     for one level to something closer to type (that's why __call__ and
     __init__ comes back from type etc.).
-    
+
     This has the advantage over six.with_metaclass of not introducing
     dummy classes into the final MRO.
     """
@@ -49,7 +45,7 @@ class _ConstantsMeta(type):
         The results are cached, i.e. given the same type, the same
         class will be returned in subsequent calls."""
         Const = cls.__NamedTypes.get(typ, None)
-        
+
         if Const is None:
             def __new__(cls, name, value):
                 res = typ.__new__(cls, value)
@@ -59,7 +55,7 @@ class _ConstantsMeta(type):
 
             def name(self):
                 return self._name
-            
+
             def __repr__(self):
                 if self._namespace is None:
                     return self._name
@@ -87,7 +83,7 @@ The name is also available via a `name()` method.""".lstrip(),
             cls.__NamedTypes[typ] = Const
 
         return Const
-    
+
     def __new__(cls, name, bases, dct):
         constants = {}
 
@@ -103,7 +99,7 @@ The name is also available via a `name()` method.""".lstrip(),
 
         dct['__constants__'] = constants
         dct['__reverse__'] = dict((value, value) for key, value in constants.items())
-        dct['__sorted__'] = sorted(constants.values(), key = lambda x: (id(type(x)), x))
+        dct['__sorted__'] = sorted(constants.values(), key=lambda x: (id(type(x)), x))
 
         result = type.__new__(cls, name, bases, dct)
 
@@ -123,7 +119,7 @@ The name is also available via a `name()` method.""".lstrip(),
         raise TypeError('Constants are not supposed to be changed ex post')
 
     def __contains__(self, x):
-        return self.has_key(x) or self.has_value(x)
+        return x in self or self.has_value(x)
 
     def has_key(self, key):
         return key in self.__constants__
@@ -146,7 +142,7 @@ The name is also available via a `name()` method.""".lstrip(),
         iterkeys = keys
         itervalues = values
         iteritems = items
-        
+
         def keys(self):
             return [c.name() for c in self.__sorted__]
 
@@ -164,7 +160,7 @@ class Constants(with_metaclass(_ConstantsMeta)):
     def __new__(cls, x):
         if cls.has_value(x):
             return cls.__reverse__[x]
-        if cls.has_key(x):
+        if x in cls:
             return cls.__constants__[x]
         raise ValueError('%s has no key or value %r' % (cls.__name__, x))
 

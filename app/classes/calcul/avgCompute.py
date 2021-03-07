@@ -2,7 +2,7 @@ from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.aggMeteor import AggMeteor
 from app.tools.climConstant import MeasureProcessingBitMask
 from app.classes.calcul.processMeasure import ProcessMeasure
-from app.tools.aggTools import addJson, isFlagged, getAggDuration, shouldNullify, loadFromExclu
+from app.tools.aggTools import addJson, isFlagged, getAggDuration, shouldNullify, loadFromExclu, calcRealAggHourDate
 import json
 
 
@@ -60,6 +60,7 @@ class avgCompute(ProcessMeasure):
         tmp_duration = int(measures['data'][measure_idx]['current']['duration'])
         if obs_meteor.data.duration == 0:
             obs_meteor.data.duration = tmp_duration
+            obs_meteor.data.start_dat = calcRealAggHourDate(obs_meteor.data.dat, tmp_duration)
         elif obs_meteor.data.duration != tmp_duration:
             raise Exception('loadObsDatarow', 'incompatible durations -> in table obs: ' + str(obs_meteor.data.duration) + ', in json: ' + str(tmp_duration))
 

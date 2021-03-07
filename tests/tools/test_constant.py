@@ -43,6 +43,6 @@ def test_Colors():
     assert Colors.green == 2
 
 
-def test_ObjectType():
-    assert 'read' not in ObjectType
-    assert 'other' not in ObjectType
+# def test_ObjectType():
+#     assert 'read' not in ObjectType
+#     assert 'other' not in ObjectType

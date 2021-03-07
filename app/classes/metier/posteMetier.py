@@ -32,7 +32,7 @@ class PosteMetier(PosteMeteor):
     def getAllForAPoste(self, start_date: datetime = datetime.datetime.now(datetime.timezone.utc), end_date: datetime = datetime.datetime(2100, 12, 21, 0, 0, 0, 0, datetime.timezone.utc)) -> json:
         return ExcluMeteor.getAllForAPoste(self.data.id, start_date, end_date)
 
-    def aggregations(self, my_datetime_utc: datetime):
+    def aggregations(self, my_datetime_utc: datetime, duration: int):
         """
         get_agg
 
@@ -53,15 +53,15 @@ class PosteMetier(PosteMeteor):
             ret = []
             # push aggregations of all levels for the given date
             for agg_niveau in AggLevel:
-                tmp_dt = calcAggDate(agg_niveau, my_datetime_utc)
+                tmp_dt = calcAggDate(agg_niveau, my_datetime_utc, duration)
                 ret.append(AggMeteor(self.data.id, agg_niveau, tmp_dt))
 
             # get aggregation of day - 1 for measures that will aggregate yesteray
-            tmp_dt = calcAggDate('D', my_datetime_utc, -1)
+            tmp_dt = calcAggDate('D', my_datetime_utc, duration, -1)
             ret.append(AggMeteor(self.data.id, 'D', tmp_dt))
 
             # get aggregation of day + 1 for measures that will aggregate the day after
-            tmp_dt = calcAggDate('D', my_datetime_utc, 1)
+            tmp_dt = calcAggDate('D', my_datetime_utc, duration, 1)
             ret.append(AggMeteor(self.data.id, 'D', tmp_dt))
 
             return ret

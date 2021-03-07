@@ -27,11 +27,11 @@ class AggMeteor():
         try:
             self.agg_niveau = agg_niveau
             agg_object = self.getAggObject(agg_niveau)
-            if agg_object.objects.filter(poste_id_id=poste_id).filter(dat=dt_agg_utc).exists():
-                self.data = agg_object.objects.filter(poste_id_id=poste_id).filter(dat=dt_agg_utc).first()
+            if agg_object.objects.filter(poste_id_id=poste_id).filter(start_dat=dt_agg_utc).exists():
+                self.data = agg_object.objects.filter(poste_id_id=poste_id).filter(start_dat=dt_agg_utc).first()
                 JsonPlus().deserialize(self.data.j)
             else:
-                self.data = agg_object(poste_id_id=poste_id, dat=dt_agg_utc, level=agg_niveau, last_rec_dat=dt_agg_utc, duration=0, j={})
+                self.data = agg_object(poste_id_id=poste_id, start_dat=dt_agg_utc, level=agg_niveau, last_rec_dat=dt_agg_utc, duration=0, j={})
                 self.data.save()
 
         except Exception as inst:

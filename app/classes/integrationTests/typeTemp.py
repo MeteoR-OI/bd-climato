@@ -17,7 +17,7 @@ class type_temp_test():
         self.p_test = PosteMetier(1)
 
         self.o_test = self.p_test.observation(self.dt_test)
-        self.a_test = self.p_test.aggregations(self.dt_test)
+        self.a_test = self.p_test.aggregations(self.dt_test, 5)
         json_string0 = """
         {
             "meteor" : "BBF015",
@@ -441,7 +441,7 @@ class type_temp_test():
                 self.o_test = self.p_test.observation(m_j['data'][idx]['current']['dat'])
                 if self.o_test.data.duration == 0:
                     self.o_test.data.duration = m_j['data'][idx]['current']['duration']
-                self.a_test = self.p_test.aggregations(m_j['data'][idx]['current']['dat'])
+                self.a_test = self.p_test.aggregations(m_j['data'][idx]['current']['dat'], m_j['data'][idx]['current']['duration'])
 
                 # call the method to update obs, and return delta_val
                 all_instr.process_json(self.p_test, m_j, idx, self.o_test, self.a_test, True)

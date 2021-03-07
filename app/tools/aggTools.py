@@ -1,6 +1,5 @@
-from app.tools.climConstant import AggLevel
+from app.tools.climConstant import AggLevel, ComputationParam
 import json
-# import sys
 import datetime
 from dateutil.relativedelta import relativedelta
 
@@ -66,6 +65,15 @@ def getAggDuration(niveau_agg: str) -> int:
         print(inst)          # __str__ allows args to be printed directly,
 
 
+def calcRealAggHourDate(dt_utc: datetime, duration: int) -> datetime:
+    # compute the start date of a measure, not rounded to next agregation hour
+    dt_utc = dt_utc - relativedelta(minutes=duration)
+    if dt_utc.minute == 0 and dt_utc.second == 0:
+        # we are in a round hour
+        return dt_utc + relativedelta(hours=ComputationParam.AddHourToRoundedHourInAggHour)
+    return dt_utc
+
+
 def calcAggDate(niveau_agg: AggLevel, dt_utc: datetime, duration: int, factor: float = 0) -> datetime:
     """
         calc_agg_date
@@ -73,40 +81,37 @@ def calcAggDate(niveau_agg: AggLevel, dt_utc: datetime, duration: int, factor: f
         returns the start of the datetime of the aggregation level
         can return an datetime for half period (force=0.5)
     """
-    try:
-        if niveau_agg == "H":
-            # agg_hour for hour h covers from (h-1):00:01 to h:00.00
-            # if dt_utc.time.minute == 0 and dt_utc.time.second == 0:
-            #     hour -= 1
-            return datetime.datetime(dt_utc.year, dt_utc.month, dt_utc.day, dt_utc.hour, 0, 0, 0, datetime.timezone.utc) + datetime.timedelta(minutes=int(60 * factor))
+    start_date = calcRealAggHourDate(dt_utc, duration)
+    if niveau_agg == "H":
+        delta_dt = datetime.timedelta(minutes=int(60 * (factor + ComputationParam.AddHourToMeasureInAggHour)))
+        return datetime.datetime(start_date.year, start_date.month, start_date.day, start_date.hour, 0, 0, 0, datetime.timezone.utc) + delta_dt
 
-        if niveau_agg == "D":
-            if int(factor) == 1:
-                return datetime.datetime(dt_utc.year, dt_utc.month, dt_utc.day, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(days=1)
-            if int(factor) == -1:
-                return datetime.datetime(dt_utc.year, dt_utc.month, dt_utc.day, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(days=-1)
-            return datetime.datetime(dt_utc.year, dt_utc.month, dt_utc.day, 0, 0, 0, 0, datetime.timezone.utc) + datetime.timedelta(hours=int(24 * factor))
-        elif niveau_agg == "M":
-            if int(factor) == 1:
-                return datetime.datetime(dt_utc.year, dt_utc.month, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(months=1)
-            if int(factor) == -1:
-                return datetime.datetime(dt_utc.year, dt_utc.month, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(months=-1)
-            return datetime.datetime(dt_utc.year, dt_utc.month, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(days=int(30.5 * factor))
-        elif niveau_agg == "Y":
-            if int(factor) == 1:
-                return datetime.datetime(dt_utc.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(years=1)
-            if int(factor) == -1:
-                return datetime.datetime(dt_utc.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(years=-1)
-            return datetime.datetime(dt_utc.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(months=int(12 * factor))
-        elif niveau_agg == "A":
-            return datetime.datetime(1900, 1, 1, 0, 0, 0, 0, datetime.timezone.utc)
-        else:
-            raise Exception("calc_period_date", "wrong niveau_agg: " + niveau_agg)
+    if niveau_agg == "D":
+        if int(factor) == 1:
+            return datetime.datetime(start_date.year, start_date.month, start_date.day, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(days=1)
+        if int(factor) == -1:
+            return datetime.datetime(start_date.year, start_date.month, start_date.day, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(days=-1)
+        return datetime.datetime(start_date.year, start_date.month, start_date.day, 0, 0, 0, 0, datetime.timezone.utc) + datetime.timedelta(hours=int(24 * factor))
 
-    except Exception as inst:
-        print(type(inst))    # the exception instance
-        print(inst.args)     # arguments stored in .args
-        print(inst)          # __str__ allows args to be printed directly,
+    elif niveau_agg == "M":
+        if int(factor) == 1:
+            return datetime.datetime(start_date.year, start_date.month, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(months=1)
+        if int(factor) == -1:
+            return datetime.datetime(start_date.year, start_date.month, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(months=-1)
+        return datetime.datetime(start_date.year, start_date.month, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(days=int(30.5 * factor))
+
+    elif niveau_agg == "Y":
+        if int(factor) == 1:
+            return datetime.datetime(start_date.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(years=1)
+        if int(factor) == -1:
+            return datetime.datetime(start_date.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(years=-1)
+        return datetime.datetime(start_date.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(months=int(12 * factor))
+
+    elif niveau_agg == "A":
+        return datetime.datetime(1900, 1, 1, 0, 0, 0, 0, datetime.timezone.utc)
+
+    else:
+        raise Exception("calc_period_date", "wrong niveau_agg: " + niveau_agg)
 
 
 def isFlagged(flag: int, setting: int) -> bool:
