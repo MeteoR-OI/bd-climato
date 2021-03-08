@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 import datetime
+import pytz
 
 
 class Poste(models.Model):
@@ -75,7 +76,7 @@ class Exclusion(models.Model):
 class Observation(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     dat = models.DateTimeField()
-    start_dat = models.DateTimeField(default=datetime.datetime(1900, 1, 1))
+    start_dat = models.DateTimeField(default=datetime.datetime(1900, 1, 1, 0, 0, tzinfo=pytz.UTC))
     last_rec_dat = models.DateTimeField(default=timezone.now)
     duration = models.IntegerField(verbose_name="duration", default=0)
     qa_modifications = models.IntegerField(default=0)

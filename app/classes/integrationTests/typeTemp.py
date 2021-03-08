@@ -12,8 +12,7 @@ class type_temp_test():
 
     def __init__(self):
         """ pre load std data """
-        self.dt_test = datetime.datetime(
-            2021, 2, 11, 13, 9, 30, 0, datetime.timezone.utc)
+        self.dt_test = datetime.datetime(2021, 2, 11, 13, 9, 30, 0, datetime.timezone.utc)
         self.p_test = PosteMetier(1)
 
         self.o_test = self.p_test.observation(self.dt_test)
@@ -462,13 +461,13 @@ class type_temp_test():
                     'info': 'idx=' + str(idx) + helper,
                     'dat': m_j['data'][idx]['current']['dat'],
                     'observation': JsonPlus().loads(JsonPlus().dumps(self.o_test.data.j)),
-                    'agg_hour': JsonPlus().loads(JsonPlus().dumps(self.a_test[0].data.j)),
-                    'agg_day': JsonPlus().loads(JsonPlus().dumps(self.a_test[1].data.j)),
-                    'agg_month': JsonPlus().loads(JsonPlus().dumps(self.a_test[2].data.j)),
-                    'agg_year': JsonPlus().loads(JsonPlus().dumps(self.a_test[3].data.j)),
-                    'agg_all': JsonPlus().loads(JsonPlus().dumps(self.a_test[4].data.j)),
-                    'agg_day before': JsonPlus().loads(JsonPlus().dumps(self.a_test[5].data.j)),
-                    'agg_day after': JsonPlus().loads(JsonPlus().dumps(self.a_test[6].data.j)),
+                    'agg_hour': {'start_dat': self.a_test[0].data.start_dat, 'j': JsonPlus().loads(JsonPlus().dumps(self.a_test[0].data.j))},
+                    'agg_day': {'start_dat': self.a_test[1].data.start_dat, 'j': JsonPlus().loads(JsonPlus().dumps(self.a_test[1].data.j))},
+                    'agg_month': {'start_dat': self.a_test[2].data.start_dat, 'j': JsonPlus().loads(JsonPlus().dumps(self.a_test[2].data.j))},
+                    'agg_year': {'start_dat': self.a_test[3].data.start_dat, 'j': JsonPlus().loads(JsonPlus().dumps(self.a_test[3].data.j))},
+                    'agg_all': {'start_dat': self.a_test[4].data.start_dat, 'j': JsonPlus().loads(JsonPlus().dumps(self.a_test[4].data.j))},
+                    'agg_day before': {'start_dat': self.a_test[5].data.start_dat, 'j': JsonPlus().loads(JsonPlus().dumps(self.a_test[5].data.j))},
+                    'agg_day after': {'start_dat': self.a_test[6].data.start_dat, 'j': JsonPlus().loads(JsonPlus().dumps(self.a_test[6].data.j))},
                     }
                 )
 
