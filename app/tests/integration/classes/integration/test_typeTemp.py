@@ -1,10 +1,8 @@
-# import datetime
 from django.test import TestCase
-# from django.utils import timezone
-from app.classes.integrationTests.typeTemp import type_temp_test
+from app.classes.integrationTests.typeTemp import TypeTempTest
 
 
-class TypeTempTest(TestCase):
+class TypeTempMyTest(TestCase):
     # prefix for json tests
     my_json = """
         {
@@ -16,10 +14,10 @@ class TypeTempTest(TestCase):
         }
         """
 
-    def __init__(self):
-        self.tt = type_temp_test()
+    def __init__(self, param1):
+        self.tt = TypeTempTest()
 
-    def simple_aggregation_hour(self):
+    def test_simple_aggregation_hour(self, param1):
         """
             Test that measure for rounded hours are agregated in agg_h previous hour
         """

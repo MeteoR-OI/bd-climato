@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 import json
 from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global
-from app.classes.integrationTests.typeTemp import type_temp_test
+from app.classes.integrationTests.typeTemp import TypeTempTest
 from app.tools.jsonPlus import JsonPlus
 
 
@@ -29,7 +29,7 @@ def view_agg_hour(request, poste_id):
 def testComputeJ0(request):
     """ debug environment"""
     try:
-        tt = type_temp_test()
+        tt = TypeTempTest()
         ret_json = tt.doCalculusJ0()
         ret = JsonPlus().dumps(ret_json)
         return HttpResponse(ret)
@@ -41,7 +41,7 @@ def testComputeJ0(request):
 def testComputeJ1(request):
     """ debug environment"""
     try:
-        tt = type_temp_test()
+        tt = TypeTempTest()
         ret_json = tt.doCalculusJ1()
         ret = JsonPlus().dumps(ret_json)
         return HttpResponse(ret)
@@ -53,7 +53,7 @@ def testComputeJ1(request):
 def testComputeJ2(request):
     """ debug environment"""
     try:
-        tt = type_temp_test()
+        tt = TypeTempTest()
         ret_json = tt.doCalculusJ2()
         ret = JsonPlus().dumps(ret_json)
         return HttpResponse(ret)
@@ -65,7 +65,7 @@ def testComputeJ2(request):
 def testComputeJ3(request):
     """ debug environment"""
     try:
-        tt = type_temp_test()
+        tt = TypeTempTest()
         ret_json = tt.doCalculusJ3()
         ret = JsonPlus().dumps(ret_json)
         return HttpResponse(ret)
@@ -77,7 +77,7 @@ def testComputeJ3(request):
 def testComputeJ4(request):
     """ debug environment"""
     try:
-        tt = type_temp_test()
+        tt = TypeTempTest()
         ret_json = tt.doCalculusJ4()
         ret = JsonPlus().dumps(ret_json)
         return HttpResponse(ret)

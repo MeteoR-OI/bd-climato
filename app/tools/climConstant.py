@@ -33,5 +33,5 @@ class MeasureProcessingBitMask(Constants):
 
 class ComputationParam(Constants):
     # parameter for calculus module
-    AddHourToRoundedHourInAggHour = -1
+    AddHourToRoundedHourInAggHour = 0
     AddHourToMeasureInAggHour = 1

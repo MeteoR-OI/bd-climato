@@ -7,7 +7,7 @@ from app.tools.jsonPlus import JsonPlus
 import json
 
 
-class type_temp_test():
+class TypeTempTest():
     """ debug helper """
 
     def __init__(self):
