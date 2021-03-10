@@ -20,11 +20,11 @@ class Poste(models.Model):
         ('A', 'Global'),
     )
 
-    meteor = models.CharField(max_length=10, verbose_name="Code MeteoR.OI")
+    meteor = models.CharField(null=False, max_length=10, verbose_name="Code MeteoR.OI")
     meteofr = models.CharField(null=True, max_length=10, verbose_name="Code Meteo France")
-    fuseau = models.SmallIntegerField(default=0, verbose_name="nombre heure entre TU et heure fuseau")
-    cas_gestion_extreme = models.CharField(default='0', max_length=1, choices=GESTION_EXTREME, verbose_name="Gestion des extrêmes")
-    agg_min_extreme = models.CharField(null=True, max_length=1, default='', choices=NIVEAU_AGGREGATION, verbose_name="Niveau Agregation, Auto dans agregation")
+    fuseau = models.SmallIntegerField(null=False, default=4, verbose_name="nombre heure entre TU et heure fuseau, default UTC+4")
+    cas_gestion_extreme = models.CharField(null=False, default='0', max_length=1, choices=GESTION_EXTREME, verbose_name="Gestion des extrêmes")
+    agg_min_extreme = models.CharField(null=False, max_length=1, default='', choices=NIVEAU_AGGREGATION, verbose_name="Niveau Agregation, Auto dans agregation")
 
     # la suite n'est pas utilise par climato
     title = models.CharField(null=True, max_length=50, default="", verbose_name="Nom clair de la station")
@@ -49,8 +49,8 @@ class Poste(models.Model):
 
 
 class TypeInstrument(models.Model):
-    name = models.CharField(max_length=10, verbose_name="Type de Donnees")
-    model_value = models.JSONField(verbose_name="JsonB")
+    name = models.CharField(null=False, max_length=10, verbose_name="Type de Donnees")
+    model_value = models.JSONField(default=dict, verbose_name="JsonB")
 
     def __str__(self):
         return "type_instrument id: " + str(self.id) + ", name: " + self.name
@@ -60,11 +60,11 @@ class TypeInstrument(models.Model):
 
 
 class Exclusion(models.Model):
-    poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
-    type_instrument = models.ForeignKey(to="TypeInstrument", on_delete=models.CASCADE)
-    start_x = models.DateTimeField(default=timezone.now)
-    end_x = models.DateTimeField(default=timezone.datetime(2100, 12, 21))
-    value = models.JSONField(verbose_name="JsonB")
+    poste_id = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
+    type_instrument = models.ForeignKey(null=False, to="TypeInstrument", on_delete=models.CASCADE)
+    start_x = models.DateTimeField(null=False, default=timezone.now)
+    end_x = models.DateTimeField(null=False, default=timezone.datetime(2100, 12, 21))
+    value = models.JSONField(null=False, default=dict, verbose_name="JsonB")
 
     def __str__(self):
         return "exclusion id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.type_instrument)
@@ -74,15 +74,15 @@ class Exclusion(models.Model):
 
 
 class Observation(models.Model):
-    poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
-    dat = models.DateTimeField()
-    start_dat = models.DateTimeField(default=datetime.datetime(1900, 1, 1, 0, 0, tzinfo=pytz.UTC))
-    last_rec_dat = models.DateTimeField(default=timezone.now)
-    duration = models.IntegerField(verbose_name="duration", default=0)
-    qa_modifications = models.IntegerField(default=0)
-    qa_incidents = models.IntegerField(default=0)
-    qa_check_done = models.BooleanField(default=False)
-    j = models.JSONField(default=dict)
+    poste_id = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
+    dat = models.DateTimeField(null=False, verbose_name='end date for the measure period')
+    start_dat = models.DateTimeField(null=False, default=datetime.datetime(1900, 1, 1, 0, 0, tzinfo=pytz.UTC), verbose_name='start date of the measure period')
+    last_rec_dat = models.DateTimeField(null=False, default=timezone.now, verbose_name='last date of update')
+    duration = models.IntegerField(null=False, verbose_name="duration in minutes", default=0)
+    qa_modifications = models.IntegerField(null=False, default=0, verbose_name='qa_modifications')
+    qa_incidents = models.IntegerField(null=False, default=0, verbose_name='qa_incidents')
+    qa_check_done = models.BooleanField(null=False, default=False, verbose_name='qa_check_done')
+    j = models.JSONField(null=False, default=dict)
 
     def __str__(self):
         return "observation id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
@@ -94,14 +94,14 @@ class Observation(models.Model):
 
 class Agg_hour(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
-    start_dat = models.DateTimeField(default=datetime.datetime(1900, 1, 1))
-    level = models.CharField(max_length=1, default='?')
-    last_rec_dat = models.DateTimeField(default=timezone.now)
-    duration = models.IntegerField(verbose_name="duration", default=0)
-    qa_modifications = models.IntegerField(default=0)
-    qa_incidents = models.IntegerField(default=0)
-    qa_check_done = models.BooleanField(default=False)
-    j = models.JSONField(default=dict)
+    start_dat = models.DateTimeField(null=False, default=datetime.datetime(1900, 1, 1), verbose_name='date debut periode de l aggregation')
+    level = models.CharField(null=False, max_length=1, default='H')
+    last_rec_dat = models.DateTimeField(null=False, default=timezone.now, verbose_name='last update date')
+    duration = models.IntegerField(null=False, verbose_name="duration", default=0)
+    qa_modifications = models.IntegerField(null=False, default=0)
+    qa_incidents = models.IntegerField(null=False, default=0)
+    qa_check_done = models.BooleanField(null=False, default=False)
+    j = models.JSONField(null=False, default=dict)
 
     def __str__(self):
         return "agg_hour id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
@@ -112,14 +112,14 @@ class Agg_hour(models.Model):
 
 class Agg_day(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
-    start_dat = models.DateTimeField(default=datetime.datetime(1900, 1, 1))
-    level = models.CharField(max_length=1, default='?')
-    last_rec_dat = models.DateTimeField(default=timezone.now)
-    duration = models.IntegerField(verbose_name="duration", default=0)
-    qa_modifications = models.IntegerField(default=0)
-    qa_incidents = models.IntegerField(default=0)
-    qa_check_done = models.BooleanField(default=False)
-    j = models.JSONField(default=dict)
+    start_dat = models.DateTimeField(null=False, default=datetime.datetime(1900, 1, 1), verbose_name='date debut periode de l aggregation')
+    level = models.CharField(null=False, max_length=1, default='D')
+    last_rec_dat = models.DateTimeField(null=False, default=timezone.now, verbose_name='last update date')
+    duration = models.IntegerField(null=False, verbose_name="duration", default=0)
+    qa_modifications = models.IntegerField(null=False, default=0)
+    qa_incidents = models.IntegerField(null=False, default=0)
+    qa_check_done = models.BooleanField(null=False, default=False)
+    j = models.JSONField(null=False, default=dict)
 
     def __str__(self):
         return "agg_day id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
@@ -130,14 +130,14 @@ class Agg_day(models.Model):
 
 class Agg_month(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
-    start_dat = models.DateTimeField(default=datetime.datetime(1900, 1, 1))
-    level = models.CharField(max_length=1, default='?')
-    last_rec_dat = models.DateTimeField(default=timezone.now)
-    duration = models.IntegerField(verbose_name="duration", default=0)
-    qa_modifications = models.IntegerField(default=0)
-    qa_incidents = models.IntegerField(default=0)
-    qa_check_done = models.BooleanField(default=False)
-    j = models.JSONField(default=dict)
+    start_dat = models.DateTimeField(null=False, default=datetime.datetime(1900, 1, 1), verbose_name='date debut periode de l aggregation')
+    level = models.CharField(null=False, max_length=1, default='M')
+    last_rec_dat = models.DateTimeField(null=False, default=timezone.now, verbose_name='last update date')
+    duration = models.IntegerField(null=False, verbose_name="duration", default=0)
+    qa_modifications = models.IntegerField(null=False, default=0)
+    qa_incidents = models.IntegerField(null=False, default=0)
+    qa_check_done = models.BooleanField(null=False, default=False)
+    j = models.JSONField(null=False, default=dict)
 
     def __str__(self):
         return "agg_month id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
@@ -148,14 +148,14 @@ class Agg_month(models.Model):
 
 class Agg_year(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
-    start_dat = models.DateTimeField(default=datetime.datetime(1900, 1, 1))
-    level = models.CharField(max_length=1, default='?')
-    last_rec_dat = models.DateTimeField(default=timezone.now)
-    duration = models.IntegerField(verbose_name="duration", default=0)
-    qa_modifications = models.IntegerField(default=0)
-    qa_incidents = models.IntegerField(default=0)
-    qa_check_done = models.BooleanField(default=False)
-    j = models.JSONField(default=dict)
+    start_dat = models.DateTimeField(null=False, default=datetime.datetime(1900, 1, 1), verbose_name='date debut periode de l aggregation')
+    level = models.CharField(null=False, max_length=1, default='Y')
+    last_rec_dat = models.DateTimeField(null=False, default=timezone.now, verbose_name='last update date')
+    duration = models.IntegerField(null=False, verbose_name="duration", default=0)
+    qa_modifications = models.IntegerField(null=False, default=0)
+    qa_incidents = models.IntegerField(null=False, default=0)
+    qa_check_done = models.BooleanField(null=False, default=False)
+    j = models.JSONField(null=False, default=dict)
 
     def __str__(self):
         return "agg_year id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
@@ -166,14 +166,14 @@ class Agg_year(models.Model):
 
 class Agg_global(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
-    start_dat = models.DateTimeField(default=datetime.datetime(1900, 1, 1))
-    level = models.CharField(max_length=1, default='?')
-    last_rec_dat = models.DateTimeField(default=timezone.now)
-    duration = models.IntegerField(verbose_name="duration", default=0)
-    qa_modifications = models.IntegerField(default=0)
-    qa_incidents = models.IntegerField(default=0)
-    qa_check_done = models.BooleanField(default=False)
-    j = models.JSONField(default=dict)
+    start_dat = models.DateTimeField(null=False, default=datetime.datetime(1900, 1, 1), verbose_name='date debut periode de l aggregation')
+    level = models.CharField(null=False, max_length=1, default='A')
+    last_rec_dat = models.DateTimeField(null=False, default=timezone.now, verbose_name='last update date')
+    duration = models.IntegerField(null=False, verbose_name="duration", default=0)
+    qa_modifications = models.IntegerField(null=False, default=0)
+    qa_incidents = models.IntegerField(null=False, default=0)
+    qa_check_done = models.BooleanField(null=False, default=False)
+    j = models.JSONField(null=False, default=dict)
 
     def __str__(self):
         return "agg_global id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)

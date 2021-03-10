@@ -1,3 +1,4 @@
+import pytest
 from app.tools.jsonPlus import JsonPlus
 import datetime
 
@@ -5,6 +6,7 @@ jp = JsonPlus()
 z = jp.json_test()
 
 
+@pytest.mark.unit
 def test_load_json_from_string():
     # load a json, with date as a str
     jj = jp.loads(z)
@@ -13,6 +15,7 @@ def test_load_json_from_string():
     assert ret
 
 
+@pytest.mark.unit
 def test_dumps_loads():
     jj = jp.loads(z)
     jj2 = jp.loads(jp.dumps(jj))
@@ -20,6 +23,7 @@ def test_dumps_loads():
     assert ret
 
 
+@pytest.mark.unit
 def test_serialize():
     jj = jp.loads(z)
     jp.serialize(jj)
@@ -27,6 +31,7 @@ def test_serialize():
     assert ret
 
 
+@pytest.mark.unit
 def test_deserialize():
     jj = jp.loads(z)
     jp.serialize(jj)

@@ -1,3 +1,4 @@
+import pytest
 from app.tools.constantClass import Constants
 
 
@@ -38,6 +39,7 @@ class ObjectType(FigConstants):
 #     assert requirements_file.exists() is True
 
 
+@pytest.mark.unit
 def test_Colors():
     assert Colors.green == 2
 

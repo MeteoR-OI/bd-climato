@@ -1,6 +1,5 @@
 from app.classes.repository.posteMeteor import PosteMeteor
 from app.models import Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global
-import datetime
 from app.classes.metier.posteMetier import PosteMetier
 from app.classes.metier.typeInstrumentAll import TypeInstrumentAll
 from app.tools.jsonPlus import JsonPlus
@@ -12,11 +11,11 @@ class TypeTempTest():
 
     def __init__(self):
         """ pre load std data """
-        self.dt_test = datetime.datetime(2021, 2, 11, 13, 9, 30, 0, datetime.timezone.utc)
-        self.p_test = PosteMetier(1)
+        # self.dt_test = datetime.datetime(2021, 2, 11, 13, 9, 30, 0, datetime.timezone.utc)
+        # self.p_test = PosteMetier(1)
 
-        self.o_test = self.p_test.observation(self.dt_test)
-        self.a_test = self.p_test.aggregations(self.dt_test, 5)
+        # self.o_test = self.p_test.observation(self.dt_test)
+        # self.a_test = self.p_test.aggregations(self.dt_test, 5)
         json_string0 = """
         {
             "meteor" : "BBF015",
@@ -436,7 +435,7 @@ class TypeTempTest():
                 pid = PosteMeteor.getPosteIdByMeteor(m_j['meteor'])
                 if pid is None:
                     raise Exception('doCalculus', 'unknown code meteor: ' + m_j['meteor'])
-                self.p = PosteMetier(pid)
+                self.p_test = PosteMetier(pid)
                 self.o_test = self.p_test.observation(m_j['data'][idx]['current']['dat'])
                 if self.o_test.data.duration == 0:
                     self.o_test.data.duration = m_j['data'][idx]['current']['duration']

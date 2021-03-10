@@ -2,6 +2,14 @@ from app.models import Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global   #
 from app.tools.climConstant import AggLevel
 from app.tools.jsonPlus import JsonPlus
 import datetime
+import pytest
+import logging
+
+
+@pytest.fixture(autouse=True)
+def enable_db_access_for_all_tests(db):
+    logging.info('fixture aggMeteor::enable_db_access_for_all_tests called')
+    pass
 
 
 class AggMeteor():

@@ -1,13 +1,14 @@
 # import sys
 # with open('/tmp/python-sys-path.txt', 'w') as outfile:
 #     print("** PATH **: " + str(sys.path))
-import pytest
 import datetime
 from app.tools.aggTools import getAggDuration, addJson, calcAggDate
 from app.tools.climConstant import ComputationParam
 import pytz
+import pytest
 
 
+@pytest.mark.unit
 def test_getAggDuration():
     assert int(getAggDuration('H')) == int(60)
     assert int(getAggDuration('D')) == int(1440)
@@ -15,6 +16,7 @@ def test_getAggDuration():
     assert int(getAggDuration('Y')) == int(525960)
 
 
+@pytest.mark.unit
 def test_addJson():
     jj = {}
     addJson(jj, 'a', 12)
@@ -24,6 +26,7 @@ def test_addJson():
     assert jj['a'] == 10
 
 
+@pytest.mark.unit
 def test_calcRealAggHourDate():
     # check that our constants matchs our computation made in Excel
     assert ComputationParam.AddHourToRoundedHourInAggHour == 0

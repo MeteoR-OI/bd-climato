@@ -2,6 +2,13 @@ from app.models import Observation
 from app.tools.jsonPlus import JsonPlus
 import datetime
 import pytz
+import pytest
+import logging
+
+@pytest.fixture(autouse=True)
+def enable_db_access_for_all_tests(db):
+    logging.info('fixture obsMeteor::enable_db_access_for_all_tests called')
+    pass
 
 
 class ObsMeteor():

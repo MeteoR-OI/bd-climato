@@ -28,20 +28,20 @@
         "commands": [
             {
                 "cwd": "${workspaceFolder}",     // Terminal initial folder ${workspaceFolder} and os user home as defaults
-                "name": "CodeCov",
+                "name": "CCov",
                 "color": "yellow",
                 "singleInstance": true,
                 "command": "coverage run -m pytest app/tests; coverage run manage.py test; coverage xml; exit 0", // This is executed in the terminal.
             },
             {
                 "cwd": "${workspaceFolder}",     // Terminal initial folder ${workspaceFolder} and os user home as defaults
-                "name": "CodeCov",
+                "name": "CC",
                 "color": "red",
                 "singleInstance": true,
                 "command": "coverage run -m pytest app/tests; coverage run manage.py test; coverage xml", // This is executed in the terminal.
             }
         ]
     },
-    "coverage-gutters.showLineCoverage": true,
+    "coverage-gutters.showLineCoverage": false,
     "coverage-gutters.showRulerCoverage": false
 }
