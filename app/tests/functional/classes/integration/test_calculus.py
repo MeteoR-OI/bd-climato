@@ -29,11 +29,11 @@ class CalculusTestSuite(TestCase):
                 texte += str(aligne)
             self.my_test_suite = JsonPlus().loads(texte)
 
-    # @pytest.mark.django_db
-    def test_run_calculus_test_suite(self):
+    def run_calculus_test_suite(self, name):
         """
             Run all tests in our suite test
         """
+        testIsRan = False
         pid = PosteMetier.getPosteIdByMeteor('BBF015')
         if pid is None:
             p = PosteMetier(1)
@@ -49,6 +49,9 @@ class CalculusTestSuite(TestCase):
             }
             """)
         for a_test in self.my_test_suite:
+            if a_test['name'] != name:
+                continue
+            testIsRan = True
             my_json['data'] = a_test['data']
             self.tt.delete_obs_agg()
             resp = self.tt.doCalculus(my_json, True)
@@ -57,5 +60,27 @@ class CalculusTestSuite(TestCase):
                 for a_key in a_check['f']:
                     tmp_j = tmp_j[a_key]
                 if str(tmp_j) != str(a_check['v']):
-                    assert a_test['name'] + ' failed, check: ' + str(a_check) + ', value: ' == str(tmp_j)
-            print('    test ' + a_test['name'] + ' -> OK')
+                    # assert an error
+                    assert a_test['name'] + ' failed, check: ' + str(a_check) + ', value: ' + str(tmp_j) == 'Failed test !!!'
+        assert name + ' run: ' + str(testIsRan) == name + ' run: True'
+
+    def test_simple_aggregation_hour(self):
+        self.run_calculus_test_suite('simple_aggregation_hour')
+
+    def test_simple_omm_aggregation(self):
+        self.run_calculus_test_suite('simple_omm_aggregation')
+
+    def test_max_min_aggregation_same_day(self):
+        self.run_calculus_test_suite('max_min_aggregation_same_day')
+
+    def test_max_min_aggregation_different_days(self):
+        self.run_calculus_test_suite('max_min_aggregation_different_days')
+
+    def test_max_min_date_aggregation_different_days(self):
+        self.run_calculus_test_suite('max_min_date_aggregation_different_days')
+
+    def max_min_omm_aggregation_same_day(self):
+        self.run_calculus_test_suite('max_min_aggregation_same_day')
+
+    def test_max_min_omm_aggregation_different_days(self):
+        self.run_calculus_test_suite('max_min_omm_aggregation_different_days')

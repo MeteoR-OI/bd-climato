@@ -26,3 +26,41 @@ Now, in every test that needs it, I use this session-scoped fixture, and the tes
 def test_my_potatoes(db, django_db_setup):
     # GIVEN a full database of potatoes, as provided by the django_db_setup fixture
     all_my_potatoes = Potato.objects.all()
+
+
+
+
+
+    },
+    {   "name": "max/min omm aggregation same day",
+        "data":
+        [
+            {"current" : {"dat" : "2021-02-11T13:30:00+00:00", "duration" : 5, "out_temp" : 20}},
+            {"current" : {"dat" : "2021-02-11T13:01:00+00:00", "duration" : 5, "out_temp" : 10}},
+            {"current" : {"dat" : "2021-02-11T13:35:00+00:00", "duration" : 5, "out_temp" : 30}}
+        ],
+        "test": [
+            {"f": [0,"agg_month", "j", "out_temp_omm_max"], "v": "20.0"},
+            {"f": [0,"agg_month", "j", "out_temp_omm_min"], "v": "20.0"},
+            {"f": [1,"agg_month", "j", "out_temp_omm_max"], "v": "20.0"},
+            {"f": [1,"agg_month", "j", "out_temp_omm_min"], "v": "20.0"},
+            {"f": [2,"agg_month", "j", "out_temp_omm_max"], "v": "30.0"},
+            {"f": [2,"agg_month", "j", "out_temp_omm_min"], "v": "30.0"}
+        ]
+    },
+    {   "name": "max/min omm aggregation different days",
+        "data":
+        [
+            {"current" : {"dat" : "2021-02-11T13:30:00+00:00", "duration" : 5, "out_temp" : 20}},
+            {"current" : {"dat" : "2021-02-12T13:01:00+00:00", "duration" : 5, "out_temp" : 10}},
+            {"current" : {"dat" : "2021-02-12T13:35:00+00:00", "duration" : 5, "out_temp" : 30}}
+        ],
+        "test": [
+            {"f": [0,"agg_month", "j", "out_temp_omm_max"], "v": "20.0"},
+            {"f": [0,"agg_month", "j", "out_temp_omm_min"], "v": "20.0"},
+            {"f": [1,"agg_month", "j", "out_temp_omm_max"], "v": "10.0"},
+            {"f": [1,"agg_month", "j", "out_temp_omm_min"], "v": "10.0"},
+            {"f": [2,"agg_month", "j", "out_temp_omm_max"], "v": "30.0"},
+            {"f": [2,"agg_month", "j", "out_temp_omm_min"], "v": "20.0"}
+        ]
+    }

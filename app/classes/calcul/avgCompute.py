@@ -189,7 +189,7 @@ class avgCompute(ProcessMeasure):
                     omm_time = delta_values['first_time']
                     if agg_j.__contains__(json_key + '_first_time'):
                         omm_time = agg_j[json_key + '_first_time']
-                    if delta_values['first_time'] <= omm_time:
+                    if delta_values['first_time'] >= omm_time:
                         # first pass, or datetime lower than datetime in the agg_day
                         agg_j[json_key + '_first_time'] = delta_values['first_time']
                         # compute for 60 mn
