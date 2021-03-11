@@ -11,6 +11,7 @@ def enable_db_access_for_all_tests(db):
     pass
 
 
+@pytest.mark.functional
 class PosteMeteorTest(TestCase):
 
     def create_poste_meteor(self):

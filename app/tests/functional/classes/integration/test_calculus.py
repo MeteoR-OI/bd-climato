@@ -14,6 +14,7 @@ def enable_db_access_for_all_tests(db):
     pass
 
 
+@pytest.mark.functional
 class CalculusTestSuite(TestCase):
     def __init__(self, *args, **kwargs):
         TestCase.__init__(self, *args, **kwargs)

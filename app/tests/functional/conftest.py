@@ -23,7 +23,7 @@ def django_db_setup(django_db_blocker):
     run_sql('CREATE DATABASE clima_test TEMPLATE climatest')
 
     with django_db_blocker.unblock():
-        call_command('loaddata', 'app/tests/integration/fixtures/climato_data.json')
+        call_command('loaddata', 'app/tests/functional/fixtures/climato_data.json')
 
     yield
 
