@@ -61,7 +61,7 @@ class CalculusTestSuite(TestCase):
                     tmp_j = tmp_j[a_key]
                 if str(tmp_j) != str(a_check['v']):
                     # assert an error
-                    assert a_test['name'] + ' failed, check: ' + str(a_check) + ', value: ' + str(tmp_j) == 'Failed test !!!'
+                    assert str(a_check) == str(tmp_j)
         assert name + ' run: ' + str(testIsRan) == name + ' run: True'
 
     def test_simple_aggregation_hour(self):
@@ -79,8 +79,11 @@ class CalculusTestSuite(TestCase):
     def test_max_min_date_aggregation_different_days(self):
         self.run_calculus_test_suite('max_min_date_aggregation_different_days')
 
-    def max_min_omm_aggregation_same_day(self):
+    def test_max_min_omm_aggregation_same_day(self):
         self.run_calculus_test_suite('max_min_aggregation_same_day')
 
     def test_max_min_omm_aggregation_different_days(self):
         self.run_calculus_test_suite('max_min_omm_aggregation_different_days')
+
+    def test_max_min_omm_aggregation_regeneration_to_be_fixed_final_omm_min_is_20(self):
+        self.run_calculus_test_suite('max_min_omm_aggregation_regeneration')

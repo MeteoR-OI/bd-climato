@@ -127,7 +127,7 @@ class ProcessMeasure():
             update delta_values
         """
         obs_j = obs_meteor.data.j
-        if delta_values.__contains__(target_key + '_value') is False:
+        if delta_values.__contains__(target_key + '_sum') is False:
             # no value processed
             return
 
@@ -171,7 +171,8 @@ class ProcessMeasure():
             update delta_values
         """
         agg_j = my_aggreg.data.j
-        # get aggregation values in measures
+
+        # get aggregation key in our json measures data
         m_agg_j = {}
         if measures.__contains__('data') and measures['data'][measure_idx].__contains__('aggregations'):
             for a_j_agg in measures['data'][measure_idx]['aggregations']:
@@ -183,6 +184,7 @@ class ProcessMeasure():
             maxmin_key = maxmin_suffix.split('_')[1]
 
             if my_measure.__contains__(maxmin_key) and my_measure[maxmin_key] is True:
+                # if the max-min is required in measure definition
                 tmp_maxmin = None
 
                 if delta_values.__contains__(json_key + maxmin_suffix) is True:
@@ -195,7 +197,7 @@ class ProcessMeasure():
                             tmp_maxmin_dir = int(delta_values[json_key + maxmin_suffix + '_dir'])
 
                 if m_agg_j.__contains__(json_key + maxmin_suffix):
-                    # load and use measure maxmin if given
+                    # load and use json measure maxmin if given in aggregation key
                     tmp_maxmin = my_measure['dataType'](m_agg_j[json_key + maxmin_suffix])
                     tmp_maxmin_time = m_agg_j[json_key + maxmin_suffix + '_time']
                     if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
@@ -207,7 +209,7 @@ class ProcessMeasure():
                     # no data in dv, neither on aggregation
                     if delta_values.__contains__(json_key) is False:
                         # can't compute without a data
-                        return
+                        continue
                     tmp_maxmin_time = measures['data'][measure_idx]['current']['dat'] + datetime.timedelta(minutes=float(measures['data'][measure_idx]['current']['duration'] / 2))
                     tmp_maxmin = my_measure['dataType'](delta_values[json_key])
                     if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
@@ -223,7 +225,15 @@ class ProcessMeasure():
                         current_maxmin = tmp_maxmin - 1
 
                 # compare the measure data and current maxmin
-                if (maxmin_suffix == '_max' and tmp_maxmin > current_maxmin) or (maxmin_suffix == '_min' and tmp_maxmin < current_maxmin):
+                b_loadValue = False
+                # we got a max greater than our current max
+                if maxmin_suffix == '_max' and tmp_maxmin > current_maxmin:
+                    b_loadValue = True
+                # we got a min smaller than our current min
+                if maxmin_suffix == '_min' and tmp_maxmin < current_maxmin:
+                    b_loadValue = True
+
+                if b_loadValue:
                     agg_j[json_key + maxmin_suffix] = tmp_maxmin
                     dv_next[json_key + maxmin_suffix] = tmp_maxmin
                     agg_j[json_key + maxmin_suffix + '_time'] = tmp_maxmin_time

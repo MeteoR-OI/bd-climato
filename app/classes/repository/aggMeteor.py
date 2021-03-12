@@ -40,7 +40,7 @@ class AggMeteor():
                 JsonPlus().deserialize(self.data.j)
             else:
                 self.data = agg_object(poste_id_id=poste_id, start_dat=dt_agg_utc, level=agg_niveau, last_rec_dat=dt_agg_utc, duration=0, j={})
-                self.data.save()
+                # self.data.save()
 
         except Exception as inst:
             print(type(inst))    # the exception instance

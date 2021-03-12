@@ -24,7 +24,7 @@ class TypeWind(RootTypeInstrument):
                 #                                     -n -> decalage de n heures par rapport a heure GMT
                 # special: special processing (like "field"_dir)
                 {'type_i': 5, 'src_key': 'wind_i', 'dataType': float, 'agg': 'avg', 'avg': True, 'min': False, 'max': False, 'hour_deca': 0, 'special': 0},
-                {'type_i': 5, 'src_key': 'wind', 'dataType': float, 'agg': 'avg', 'avg': True, 'min': False, 'max': True, 'hour_deca': 0, 'special': 16},
+                {'type_i': 5, 'src_key': 'wind', 'dataType': float, 'agg': 'aggomm', 'avg': True, 'min': False, 'max': True, 'hour_deca': 0, 'special': 16},
                 {'type_i': 5, 'src_key': 'win10', 'dataType': float, 'agg': 'avg', 'avg': True, 'min': False, 'max': False, 'hour_deca': 0, 'special': 0},
             ]
             super()

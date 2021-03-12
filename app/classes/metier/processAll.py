@@ -1,4 +1,5 @@
 from app.classes.calcul.avgCompute import avgCompute
+from app.classes.calcul.avgOmmCompute import avgOmmCompute
 
 
 class ProcessAll():
@@ -9,7 +10,8 @@ class ProcessAll():
 
     """
     process_type = [
-        {"agg": "avg", "object": avgCompute()}
+        {"agg": "avg", "object": avgCompute()},
+        {"agg": "aggomm", object: avgOmmCompute()}
     ]
 
     def get(self, agg: str):

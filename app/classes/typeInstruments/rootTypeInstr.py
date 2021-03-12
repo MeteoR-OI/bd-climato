@@ -2,6 +2,7 @@ from app.classes.metier.posteMetier import PosteMetier
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.typeInstrumentMeteor import TypeInstrumentMeteor
 from app.classes.calcul.avgCompute import avgCompute
+from app.classes.calcul.avgOmmCompute import avgOmmCompute
 import json
 
 
@@ -9,6 +10,7 @@ class RootTypeInstrument:
     """ typeInstrument root object"""
     all_calculus = [
         {"agg": "avg", "object": avgCompute()},
+        {"agg": "aggomm", "object": avgOmmCompute()},
         {"agg": "no", "object": None},
         {"agg": "sum", "object": None},    # sumCompute()}
         {"agg": "rate", "object": None}    # rateCompute()}
@@ -37,9 +39,9 @@ class RootTypeInstrument:
                             a_calculus['object'].processObservation(poste_metier, my_measure, measures, measure_idx, obs_meteor, delta_values, flag)
                             # load our json in all aggregation rows
                             a_calculus['object'].processAggregations(poste_metier, my_measure, measures, measure_idx, agg_array, delta_values, flag)
-
                             # process xtremes
-                        # todo call agg calculus
+                            # todo call agg calculus
+                        break
             return
 
         except Exception as inst:
