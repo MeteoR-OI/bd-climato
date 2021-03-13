@@ -442,7 +442,7 @@ class TypeTempTest():
                 self.a_test = self.p_test.aggregations(m_j['data'][idx]['current']['dat'], m_j['data'][idx]['current']['duration'])
 
                 # call the method to update obs, and return delta_val
-                all_instr.process_json(self.p_test, m_j, idx, self.o_test, self.a_test, True)
+                all_instr.process_json(self.p_test, m_j, idx, self.o_test, self.a_test, False)
 
                 if b_serialize:
                     # self.o_test.data.j['dv'] = {}

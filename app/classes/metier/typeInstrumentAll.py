@@ -38,13 +38,30 @@ class TypeInstrumentAll():
                 return atype.object
         raise Exception("all_instrument_meteor.get", "invalid type_instrument_id: " + str(type_instrument_id))
 
-    def process_json(self, poste_metier: PosteMetier, measures: json, measure_idx: int, obs_meteor: ObsMeteor, agg_array: json, flag: bool):
+    def process_json(
+        self,
+        poste_metier: PosteMetier,
+        measures: json,
+        measure_idx: int,
+        obs_meteor: ObsMeteor,
+        agg_array: json,
+        delete_flag: bool,
+    ):
         """process observation data for all our TypeInstrument"""
         try:
             delta_values = {"extremesFix": [], "maxminFix": []}
+
             # for all type_instruments
             for an_intrument in self.all_instruments:
-                an_intrument['object'].processJson(poste_metier, measures, measure_idx, obs_meteor, agg_array, delta_values, flag)
+                an_intrument['object'].processJson(
+                    poste_metier,
+                    measures,
+                    measure_idx,
+                    obs_meteor,
+                    agg_array,
+                    delta_values,
+                    delete_flag,
+                )
             return
 
         except Exception as inst:
