@@ -5,6 +5,7 @@ import pytz
 import pytest
 import logging
 
+
 @pytest.fixture(autouse=True)
 def enable_db_access_for_all_tests(db):
     logging.info('fixture obsMeteor::enable_db_access_for_all_tests called')
@@ -26,7 +27,7 @@ class ObsMeteor():
         """Init a new ObsMeteor object"""
         # todo: block if my_datetime_utc > previous dat+duration
         try:
-            if Observation.objects.filter(poste_id_id=poste_id).filter(start_dat=dt_utc).exists():
+            if Observation.objects.filter(poste_id_id=poste_id).filter(dat=dt_utc).exists():
                 self.data = Observation.objects.filter(poste_id_id=poste_id).filter(dat=dt_utc).first()
                 JsonPlus().deserialize(self.data.j)
             else:

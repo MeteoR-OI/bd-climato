@@ -24,7 +24,7 @@ class RootTypeInstrument:
         """return current mapping"""
         return self.mapping
 
-    def processJson(self, poste_metier: PosteMetier, measures: json, measure_idx: int, obs_meteor: ObsMeteor, agg_array: json, delta_values: json, flag: bool) -> json:
+    def processJson(self, poste_metier: PosteMetier, measures: json, measure_idx: int, obs_meteor: ObsMeteor, agg_array: json, delta_values: json) -> json:
         """
             processJson
         """
@@ -36,9 +36,9 @@ class RootTypeInstrument:
                     if a_calculus['agg'] == my_measure['agg']:
                         if a_calculus['object'] is not None:
                             # load our json in obs row
-                            a_calculus['object'].processObservation(poste_metier, my_measure, measures, measure_idx, obs_meteor, delta_values, flag)
+                            a_calculus['object'].processObservation(poste_metier, my_measure, measures, measure_idx, obs_meteor, delta_values)
                             # load our json in all aggregation rows
-                            a_calculus['object'].processAggregations(poste_metier, my_measure, measures, measure_idx, agg_array, delta_values, flag)
+                            a_calculus['object'].processAggregations(poste_metier, my_measure, measures, measure_idx, agg_array, delta_values)
                             # process xtremes
                             # todo call agg calculus
                         break

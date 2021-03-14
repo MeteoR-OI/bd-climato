@@ -144,3 +144,9 @@ def loadFromExclu(exclusion, src_key: str) -> bool:
         if exclusion[src_key] != 'null' and exclusion[src_key] != 'value':
             return True
     return False
+
+
+def delKey(j: json, key: str):
+    # delete a key in json if exists
+    if j.__contains__(key):
+        del j[key]

@@ -87,3 +87,7 @@ class CalculusTestSuite(TestCase):
 
     def test_max_min_omm_aggregation_regeneration_to_be_fixed_final_omm_min_is_20(self):
         self.run_calculus_test_suite('max_min_omm_aggregation_regeneration')
+
+    def test_max_min_simple_replace(self):
+        self.run_calculus_test_suite('max_min_simple_replace')
+

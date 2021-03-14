@@ -18,9 +18,14 @@
             {"f": [0,"agg_day", "j", "out_temp_omm_avg"], "v": "20.0"},
             {"f": [1,"agg_hour", "j", "out_temp_omm_avg"], "v": "10.0"},
             {"f": [1,"agg_day", "j", "out_temp_omm_avg"], "v": "10.0"},
-            {"f": [2,"agg_day", "j", "out_temp_omm_avg"], "v": "10.0"},
+            {"f": [1,"agg_day", "j", "out_temp_omm_avg"], "v": "10.0"},
+            {"f": [1,"agg_day", "j", "out_temp_omm_max"], "v": "10.0"},
+            {"f": [2,"agg_day", "j", "out_temp_omm_min"], "v": "10.0"},
             {"f": [2,"agg_month", "j", "out_temp_omm_sum"], "v": "600.0"},
-            {"f": [2,"agg_month", "j", "out_temp_omm_duration"], "v": "60.0"}
+            {"f": [2,"agg_month", "j", "out_temp_omm_duration"], "v": "60.0"},
+            {"f": [2,"agg_day", "j", "out_temp_omm_avg"], "v": "10.0"},
+            {"f": [2,"agg_day", "j", "out_temp_omm_max"], "v": "10.0"},
+            {"f": [2,"agg_day", "j", "out_temp_omm_min"], "v": "10.0"}
         ]
     },{ "name": "max_min_aggregation_same_day",
         "data":
@@ -100,7 +105,7 @@
             {"f": [0,"agg_month", "j", "out_temp_omm_min"], "v": "20.0"},
             {"f": [1,"agg_month", "j", "out_temp_omm_max"], "v": "20.0"},
             {"f": [1,"agg_month", "j", "out_temp_omm_min"], "v": "10.0"},
-            {"f": [2,"agg_month", "j", "out_temp_omm_max"], "v": "30.0"},
+            {"f": [2,"agg_month", "j", "out_temp_omm_max"], "v": "20.0"},
             {"f": [2,"agg_month", "j", "out_temp_omm_min"], "v": "10.0"}
         ]
     },{ "name": "max_min_omm_aggregation_regeneration",
@@ -116,10 +121,22 @@
             {"f": [1,"agg_month", "j", "out_temp_omm_max"], "v": "20.0"},
             {"f": [1,"agg_month", "j", "out_temp_omm_min"], "v": "10.0"},
             {"f": [2,"agg_month", "j", "out_temp_omm_max"], "v": "30.0"},
-            {"f": [2,"agg_month", "j", "out_temp_omm_min"], "v": "10.0"},
+            {"f": [2,"agg_month", "j", "out_temp_omm_min"], "v": "30.0"},
             {"f": [2,"agg_month", "j", "out_temp_omm_sum"], "v": "3000.0"},
-            {"f": [2,"agg_hour", "j", "dv", "maxminFix", 0, "valeur"], "v": "30.0"},
-            {"f": [2,"agg_hour", "j", "dv", "maxminFix", 1, "valeur"], "v": "30.0"}
+            {"f": [2,"agg_hour", "j", "dv", "maxminFix", 0, "valeur"], "v": "10.0"},
+            {"f": [2,"agg_hour", "j", "dv", "maxminFix", 1, "valeur"], "v": "10.0"}
+        ]
+    },{ "name": "max_min_simple_replace",
+        "data":
+        [
+            {"current" : {"dat" : "2021-02-11T13:30:00+00:00", "duration" : 5, "out_temp" : 20}},
+            {"current" : {"dat" : "2021-02-11T13:30:00+00:00", "duration" : 5, "out_temp" : 10}}
+        ],
+        "test": [
+            {"f": [0,"agg_month", "j", "out_temp_max"], "v": "20.0"},
+            {"f": [0,"agg_month", "j", "out_temp_min"], "v": "20.0"},
+            {"f": [1,"agg_month", "j", "out_temp_max"], "v": "10.0"},
+            {"f": [1,"agg_month", "j", "out_temp_min"], "v": "10.0"}
         ]
     }
 ]

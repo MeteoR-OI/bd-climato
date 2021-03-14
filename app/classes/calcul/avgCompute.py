@@ -2,7 +2,7 @@ from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.aggMeteor import AggMeteor
 from app.tools.climConstant import MeasureProcessingBitMask
 from app.classes.calcul.processMeasure import ProcessMeasure
-from app.tools.aggTools import addJson, isFlagged, getAggDuration, loadFromExclu, calcAggDate
+from app.tools.aggTools import addJson, isFlagged, getAggDuration, loadFromExclu, calcAggDate, delKey
 import json
 
 
@@ -25,7 +25,6 @@ class avgCompute(ProcessMeasure):
         target_key: str,
         exclusion: json,
         delta_values: json,
-        delete_flag: bool = False,
         isOmm: bool = False,
     ):
         """
@@ -37,10 +36,6 @@ class avgCompute(ProcessMeasure):
             isOmm: only to load more info in case of omm/avg
         """
         obs_j = obs_meteor.data.j
-
-        if delete_flag is True:
-            # nothing to do here, as the observation datarow will be deleted soon
-            return
 
         # save aggregations in obs for future recomputation if required
         if measures['data'][measure_idx].__contains__('aggregations'):
@@ -105,6 +100,11 @@ class avgCompute(ProcessMeasure):
             delta_values[target_key + '_sum'] = tmp_sum
             delta_values[target_key + '_duration'] = tmp_duration
 
+        # in case of replacement, invalidate the value for our min/max in aggregations
+        if obs_j.__contains__(target_key) and obs_j[target_key] != my_value:
+            delta_values[target_key + '_maxmin_invalid_val_max'] = obs_j[target_key]
+            delta_values[target_key + '_maxmin_invalid_val_min'] = obs_j[target_key]
+
         # save our data
         obs_j[target_key] = my_value
         delta_values[target_key] = my_value
@@ -126,11 +126,11 @@ class avgCompute(ProcessMeasure):
         # use the value in obs_meteor
         if obs_j.__contains__(json_key + '_sum'):
             delta_values[json_key + '_sum'] = obs_j[json_key + '_sum'] * -1
-            del obs_j[json_key + '_sum']
+            delKey(obs_j, json_key + '_sum')
 
         if obs_j.__contains__(json_key + '_duration'):
             delta_values[json_key + '_duration'] = obs_j[json_key + '_sum'] * -1
-            del obs_j[json_key + '_duration']
+            delKey(obs_j, json_key + '_duration')
 
     def loadAggregationDatarows(
         self,
@@ -141,10 +141,9 @@ class avgCompute(ProcessMeasure):
         json_key: str,
         delta_values: json,
         dv_next: json,
-        delete_flag: bool,
     ):
         """
-            loadAggGetDelta
+            loadAggregationDatarows
 
             Load one aggretation value from delta_values, update dv_next
 
@@ -158,12 +157,6 @@ class avgCompute(ProcessMeasure):
                 dv_next: delta_values for next level
                 flag: True=insert, False=delete
         """
-        if delete_flag is True:
-            raise Exception('loadAggGetDelta', 'flag = False -> not coded yet')
-
-        if isFlagged(my_measure['special'], MeasureProcessingBitMask.NoAvgField):
-            return
-
         # if we get no data, return
         if delta_values.__contains__(json_key) is False:
             return
@@ -172,17 +165,15 @@ class avgCompute(ProcessMeasure):
         agg_j, m_agg_j = self.savedv_and_get_agg_magg(current_agg, delta_values, measures, measure_idx)
 
         if my_measure['avg'] is True:
-            # load data to substract
             tmp_sum = tmp_duration = None
+
+            # load old values
             tmp_sum_old = tmp_duration_old = 0
             if delta_values.__contains__(json_key + '_sum_old'):
                 tmp_sum_old = delta_values[json_key + '_sum_old']
                 tmp_duration_old = delta_values[json_key + '_duration_old']
-                # propagate to next level
-                dv_next[json_key + '_sum_old'] = tmp_sum_old
-                dv_next[json_key + '_duration_old'] = tmp_duration_old
 
-            # get our data
+            # get our new data
             if delta_values.__contains__(json_key + '_sum'):
                 tmp_sum = float(delta_values[json_key + '_sum'])
                 tmp_duration = float(delta_values[json_key + '_duration'])
@@ -208,18 +199,28 @@ class avgCompute(ProcessMeasure):
                         tmp_duration = getAggDuration(m_agg_j.djson)
                 tmp_sum = tmp_avg * tmp_duration
 
-            # add the _sum and _duration in our aggregation
             addJson(agg_j, json_key + '_sum', tmp_sum - tmp_sum_old)
             addJson(agg_j, json_key + '_duration', tmp_duration - tmp_duration_old)
 
-            # compute the new _avg
-            tmp_sum_new = agg_j[json_key + '_sum']
             tmp_duration_new = agg_j[json_key + '_duration']
-            agg_j[json_key + '_avg'] = tmp_sum_new / tmp_duration_new
+            if tmp_duration_new == 0:
+                # no duration, delete all keys
+                delKey(agg_j, json_key + '_sum')
+                delKey(agg_j, json_key + '_duration')
+                delKey(agg_j, json_key + '_avg')
+                delKey(agg_j, json_key)
+                agg_j[json_key + '_delete_me'] = True
+                dv_next = {"extremesFix": [], "maxminFix": []}
+            else:
+                # compute the new _avg
+                tmp_sum_new = agg_j[json_key + '_sum']
+                tmp_duration_new = agg_j[json_key + '_duration']
+                if isFlagged(my_measure['special'], MeasureProcessingBitMask.NoAvgField) is False:
+                    agg_j[json_key + '_avg'] = tmp_sum_new / tmp_duration_new
 
             # propagate to next level if no limitation on aggregation level
-            dv_next[json_key + '_sum'] = tmp_sum
-            dv_next[json_key + '_duration'] = tmp_duration
+            dv_next[json_key + '_sum'] = tmp_sum - tmp_sum_old
+            dv_next[json_key + '_duration'] = tmp_duration - tmp_duration_old
             dv_next[json_key] = delta_values[json_key]
 
         # propagate our value to next level
@@ -227,7 +228,7 @@ class avgCompute(ProcessMeasure):
 
         # return if the aggregation should not be sent to upper levels
         if isFlagged(my_measure['special'], MeasureProcessingBitMask.OnlyAggregateInHour) is True:
-            dv_next = {}
+            dv_next = {"extremesFix": [], "maxminFix": []}
 
     def savedv_and_get_agg_magg(self, current_agg: AggMeteor, delta_values: json, measures: json, measure_idx: int):
         """
