@@ -1,19 +1,20 @@
 from app.classes.metier.posteMetier import PosteMetier
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.typeInstrumentMeteor import TypeInstrumentMeteor
-from app.classes.calcul.avgCompute import avgCompute
-from app.classes.calcul.avgOmmCompute import avgOmmCompute
+from app.classes.calcul.avgCompute import AvgCompute
+from app.classes.calcul.avgOmmCompute import AvgOmmCompute
+from app.classes.calcul.rateCompute import RateCompute
 import json
 
 
 class RootTypeInstrument:
     """ typeInstrument root object"""
     all_calculus = [
-        {"agg": "avg", "object": avgCompute()},
-        {"agg": "aggomm", "object": avgOmmCompute()},
+        {"agg": "avg", "object": AvgCompute()},
+        {"agg": "aggomm", "object": AvgOmmCompute()},
         {"agg": "no", "object": None},
         {"agg": "sum", "object": None},    # sumCompute()}
-        {"agg": "rate", "object": None}    # rateCompute()}
+        {"agg": "rate", "object": RateCompute()}    # rateCompute()}
     ]
 
     def __init(self):

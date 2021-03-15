@@ -107,7 +107,18 @@ class ProcessMeasure():
     # ----------------------------------------------------
     # private or methods common to multiple sub-instances
     # ----------------------------------------------------
-    def loadMaxMinInObservation(self, my_measure: json, measures: json, measure_idx: int, obs_meteor: ObsMeteor, src_key: str, target_key: str, exclusion: json, delta_values: json):
+    def loadMaxMinInObservation(
+        self,
+        my_measure: json,
+        measures: json,
+        measure_idx: int,
+        obs_meteor: ObsMeteor,
+        src_key: str,
+        target_key: str,
+        exclusion: json,
+        delta_values: json,
+        b_use_rate: bool = False,
+    ):
         """
             loadMaxMinInObservation
 
@@ -128,6 +139,8 @@ class ProcessMeasure():
         for maxmin_suffix in ['_max', '_min']:
             # is max or min needed for this measure
             maxmin_key = maxmin_suffix.split('_')[1]
+            if b_use_rate:
+                maxmin_suffix = '_rate' + maxmin_suffix
             if my_measure.__contains__(maxmin_key) is True and my_measure[maxmin_key] is True:
                 maxmin_time = half_period_time
 
@@ -149,10 +162,25 @@ class ProcessMeasure():
                             delta_values[target_key + maxmin_suffix + '_dir'] = my_wind_dir
                 elif delta_values.__contains__(target_key):
                     # on prend la valeur reportee, et le milieu de l'heure de la periode de la donnee elementaire
-                    delta_values[target_key + maxmin_suffix] = delta_values[target_key]
+                    if b_use_rate:
+                        # pour les "rate" on prend l'avg (qui est un rate)
+                        delta_values[target_key + maxmin_suffix] = delta_values[target_key + '_rate']
+                    else:
+                        # sinon on prend la valeur de la mesure
+                        delta_values[target_key + maxmin_suffix] = delta_values[target_key]
                     delta_values[target_key + maxmin_suffix + '_time'] = maxmin_time
 
-    def loadMaxMinInAggregation(self, my_measure: json, measures: json, measure_idx: int, my_aggreg, json_key: str, exclusion: json, delta_values: json, dv_next: json):
+    def loadMaxMinInAggregation(
+        self, my_measure: json,
+        measures: json,
+        measure_idx: int,
+        my_aggreg,
+        json_key: str,
+        exclusion: json,
+        delta_values: json,
+        dv_next: json,
+        b_use_rate: bool = False,
+    ):
         """
             loadMaxMinInObservation
 
@@ -164,6 +192,8 @@ class ProcessMeasure():
 
         for maxmin_suffix in ['_max', '_min']:
             maxmin_key = maxmin_suffix.split('_')[1]
+            if b_use_rate:
+                maxmin_suffix = '_rate' + maxmin_suffix
 
             if my_measure.__contains__(maxmin_key) and my_measure[maxmin_key] is True:
 

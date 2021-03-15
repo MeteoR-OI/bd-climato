@@ -90,4 +90,3 @@ class CalculusTestSuite(TestCase):
 
     def test_max_min_simple_replace(self):
         self.run_calculus_test_suite('max_min_simple_replace')
-

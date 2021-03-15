@@ -6,9 +6,9 @@ from app.tools.aggTools import addJson, isFlagged, getAggDuration, loadFromExclu
 import json
 
 
-class avgCompute(ProcessMeasure):
+class AvgCompute(ProcessMeasure):
     """
-        avgCompute
+        AvgCompute
 
         Computation specific to a measure type
 
@@ -26,6 +26,7 @@ class avgCompute(ProcessMeasure):
         exclusion: json,
         delta_values: json,
         isOmm: bool = False,
+        avg_suffix: str = '_avg',
     ):
         """
             loadObservationDatarow
@@ -84,15 +85,15 @@ class avgCompute(ProcessMeasure):
                 tmp_sum = my_value
             tmp_avg = tmp_sum / tmp_duration
 
-            if data_src.__contains__(src_key + '_avg'):
+            if data_src.__contains__(src_key + avg_suffix):
                 # use the given _avg if any, and compute  new 'virtual' sum
-                tmp_avg2 = float(data_src[src_key + '_avg'])
+                tmp_avg2 = float(data_src[src_key + avg_suffix])
                 tmp_sum = tmp_avg2 * tmp_duration
 
             # update our avg fields in obs
             obs_j[target_key + '_sum'] = tmp_sum
             obs_j[target_key + '_duration'] = tmp_duration
-            obs_j[target_key + '_avg'] = tmp_avg
+            obs_j[target_key + avg_suffix] = tmp_avg
             if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
                 obs_j[target_key + '_dir'] = int(data_src[src_key + "_dir"])
 
@@ -141,6 +142,7 @@ class avgCompute(ProcessMeasure):
         json_key: str,
         delta_values: json,
         dv_next: json,
+        avg_suffix: str = '_avg',
     ):
         """
             loadAggregationDatarows
@@ -185,8 +187,8 @@ class avgCompute(ProcessMeasure):
 
             # we got a forced avg in the aggregation part of our json.
             # avg can be given without a sum, or a duration...
-            if m_agg_j.__contains__(json_key + '_avg'):
-                tmp_avg = float(m_agg_j[json_key + '_avg'])
+            if m_agg_j.__contains__(json_key + avg_suffix):
+                tmp_avg = float(m_agg_j[json_key + avg_suffix])
                 if m_agg_j.__contains__(json_key + '_duration'):
                     tmp_duration = m_agg_j[json_key + '_duration']
                 else:
@@ -207,7 +209,7 @@ class avgCompute(ProcessMeasure):
                 # no duration, delete all keys
                 delKey(agg_j, json_key + '_sum')
                 delKey(agg_j, json_key + '_duration')
-                delKey(agg_j, json_key + '_avg')
+                delKey(agg_j, json_key + avg_suffix)
                 delKey(agg_j, json_key)
                 agg_j[json_key + '_delete_me'] = True
                 dv_next = {"extremesFix": [], "maxminFix": []}
@@ -216,7 +218,7 @@ class avgCompute(ProcessMeasure):
                 tmp_sum_new = agg_j[json_key + '_sum']
                 tmp_duration_new = agg_j[json_key + '_duration']
                 if isFlagged(my_measure['special'], MeasureProcessingBitMask.NoAvgField) is False:
-                    agg_j[json_key + '_avg'] = tmp_sum_new / tmp_duration_new
+                    agg_j[json_key + avg_suffix] = tmp_sum_new / tmp_duration_new
 
             # propagate to next level if no limitation on aggregation level
             dv_next[json_key + '_sum'] = tmp_sum - tmp_sum_old

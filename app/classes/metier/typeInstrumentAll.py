@@ -22,13 +22,13 @@ class TypeInstrumentAll():
         # Tous les types connus, et le nom de la classe qui l'implemente
         self.all_instruments = [
             {'type_id': 1, 'name': 'Temp', 'object': TypeTemp()},
-            # {'type_id': 2, 'name': 'Humidity', 'object': TypeHumidity()},
-            # {'type_id': 3, 'name': 'Pression', 'object': TypePression()},
-            # {'type_id': 4, 'name': 'Rain', 'object': TypeRain()},
-            # {'type_id': 5, 'name': 'Wind', 'object': TypeWind()},
-            # {'type_id': 6, 'name': 'Solar', 'object': TypeSolar()},
-            # {'type_id': 7, 'name': 'Interieur', 'object': TypeInterieur()},
-            # {'type_id': 9, 'name': 'Divers', 'object': TypeDivers()},
+            {'type_id': 2, 'name': 'Humidity', 'object': TypeHumidity()},
+            {'type_id': 3, 'name': 'Pression', 'object': TypePression()},
+            {'type_id': 4, 'name': 'Rain', 'object': TypeRain()},
+            {'type_id': 5, 'name': 'Wind', 'object': TypeWind()},
+            {'type_id': 6, 'name': 'Solar', 'object': TypeSolar()},
+            {'type_id': 7, 'name': 'Interieur', 'object': TypeInterieur()},
+            {'type_id': 9, 'name': 'Divers', 'object': TypeDivers()},
         ]
 
     def get(self, type_instrument_id: int):

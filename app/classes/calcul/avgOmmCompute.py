@@ -1,14 +1,14 @@
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.aggMeteor import AggMeteor
 from app.tools.climConstant import MeasureProcessingBitMask
-from app.classes.calcul.avgCompute import avgCompute
+from app.classes.calcul.avgCompute import AvgCompute
 from app.tools.aggTools import addJson, isFlagged, getAggDuration, delKey
 import json
 
 
-class avgOmmCompute(avgCompute):
+class AvgOmmCompute(AvgCompute):
     """
-        avgOmmCompute
+        AvgOmmCompute
 
         Computation specific to a measure type
 
@@ -29,7 +29,7 @@ class avgOmmCompute(avgCompute):
         isOmm: bool = False,
     ):
         """ generate deltaValues from ObsMeteor.data """
-        super(avgOmmCompute, self).loadObservationDatarow(
+        super(AvgOmmCompute, self).loadObservationDatarow(
             my_measure,
             measures,
             measure_idx,
