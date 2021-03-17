@@ -87,6 +87,7 @@ class RateCompute(AvgCompute):
             obs_meteor,
             src_key,
             target_key,
+            exclusion,
             delta_values,
             True,
         )
