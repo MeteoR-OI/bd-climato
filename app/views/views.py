@@ -7,6 +7,8 @@ from app.models import Poste, Observation
 from app.classes.integrationTests.typeTemp import TypeTempTest
 from app.tools.jsonPlus import JsonPlus
 from app.views.v_agg import view_agg
+from app.views.v_poste import view_my_poste
+from django.template import loader
 
 
 # views well routed
@@ -34,13 +36,11 @@ def view_agg_all(request, poste_id, keys: str = '*', start_dt: str = '1900-01-11
     return view_agg(request, "A", poste_id, keys, start_dt, end_dt)
 
 
-# views to update
 def view_poste(request, poste_id):
-    p = Poste.objects.get(id=poste_id)
-    data_details = {'function': 'last_obs', 'poste_id': p.id, 'meteor': p.meteor, 'owner': p.owner}
-    return HttpResponse(json.dumps(data_details))
+    return view_my_poste(request, poste_id)
 
 
+# views to update
 def view_last_obs(request, poste_id):
     p = Poste.objects.get(id=poste_id)
     o = Observation.objects.filter(poste_id=poste_id).order_by("dat").last()
