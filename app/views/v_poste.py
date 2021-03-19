@@ -10,7 +10,7 @@ from django.template import loader
 # views to update
 def view_my_poste(request, poste_id):
     p = posteMetier.PosteMeteor(poste_id)
-    
+
     # poste_data = {'function': 'last_obs', 'poste_id': p.id, 'meteor': p.meteor, 'owner': p.owner}
     template = loader.get_template('app/poste.html')
     context = {

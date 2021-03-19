@@ -8,7 +8,6 @@ from app.classes.integrationTests.typeTemp import TypeTempTest
 from app.tools.jsonPlus import JsonPlus
 from app.views.v_agg import view_agg
 from app.views.v_poste import view_my_poste
-from django.template import loader
 
 
 # views well routed
