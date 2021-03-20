@@ -4,6 +4,7 @@ import json
 import pytest
 import logging
 
+
 @pytest.fixture(autouse=True)
 def enable_db_access_for_all_tests(db):
     logging.info('fixture excluMeteor::enable_db_access_for_all_tests called')
@@ -30,27 +31,18 @@ class ExcluMeteor():
     def __init__(self, poste_id: int, type_instrument_id: int):
         """Init a new ExcluMeteor object"""
 
-        try:
-            if Exclusion.objects.filter(poste_id_id=poste_id).filter(type_instrument=type_instrument_id).exists():
-                self.data = Exclusion.objects.filter(poste_id_id=poste_id).filter(
-                    type_instrument=type_instrument_id).first()
-            else:
-                self.data = Exclusion(
-                    poste_id=poste_id, type_instrument=type_instrument_id)
-                self.data.save()
-
-        except Exception as inst:
-            print(type(inst))    # the exception instance
-            print(inst.args)     # arguments stored in .args
-            print(inst)          # __str__ allows args to be printed directly,
+        if Exclusion.objects.filter(poste_id_id=poste_id).filter(type_instrument=type_instrument_id).exists():
+            self.data = Exclusion.objects.filter(poste_id_id=poste_id).filter(type_instrument=type_instrument_id).first()
+        else:
+            self.data = Exclusion(poste_id=poste_id, type_instrument=type_instrument_id)
 
     @staticmethod
     def getAllForAPoste(
         poste_id: int,
-        start_date: datetime = datetime.datetime.now(datetime.timezone.utc),
-        end_date: datetime = datetime.datetime(2100, 12, 21, 0, 0, 0, 0, datetime.timezone.utc)
+        start_dat: datetime = datetime.datetime.now(datetime.timezone.utc),
+        stop_dat: datetime = datetime.datetime(2100, 12, 21, 0, 0, 0, 0, datetime.timezone.utc)
     ) -> json:
-        return Exclusion.objects.filter(poste_id_id=poste_id).filter(start_x__lte=start_date).filter(end_x__lte=end_date).values('type_instrument', 'value')
+        return Exclusion.objects.filter(poste_id_id=poste_id).filter(start_dat__lte=start_dat).filter(stop_dat__lte=stop_dat).values('type_instrument', 'value')
 
     def save(self):
         """ save Poste and Exclusions """

@@ -23,15 +23,16 @@ class ObsMeteor():
 
     """
 
-    def __init__(self, poste_id: int, dt_utc: datetime):
+    def __init__(self, poste_id: int, stop_dt_utc: datetime):
         """Init a new ObsMeteor object"""
         # todo: block if my_datetime_utc > previous dat+duration
         try:
-            if Observation.objects.filter(poste_id_id=poste_id).filter(dat=dt_utc).exists():
-                self.data = Observation.objects.filter(poste_id_id=poste_id).filter(dat=dt_utc).first()
+            if Observation.objects.filter(poste_id_id=poste_id).filter(stop_dat=stop_dt_utc).exists():
+                self.data = Observation.objects.filter(poste_id_id=poste_id).filter(stop_dat=stop_dt_utc).first()
                 JsonPlus().deserialize(self.data.j)
             else:
-                self.data = Observation(poste_id_id=poste_id, dat=dt_utc, start_dat=datetime.datetime(1900, 1, 1, 0, 0, tzinfo=pytz.UTC), last_rec_dat=dt_utc, duration=0, j={})
+                tmp_dat = datetime.datetime(1900, 1, 1, 0, 0, tzinfo=pytz.UTC)
+                self.data = Observation(poste_id_id=poste_id, start_dat=tmp_dat, stop_dat=stop_dt_utc, duration=0, j={})
                 self.data.save()
 
         except Exception as inst:

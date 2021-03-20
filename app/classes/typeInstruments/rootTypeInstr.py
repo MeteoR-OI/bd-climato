@@ -6,14 +6,35 @@ from app.classes.calcul.avgOmmCompute import AvgOmmCompute
 from app.classes.calcul.rateCompute import RateCompute
 import json
 
+# ---------------------
+# Measure Definitions -
+# ---------------------
+# type_i : type_instrument_id
+# src_key: key string in measures json (coming from the station)
+# target_key: json key name only if different. Used in obs and all aggregations
+# agg: Type aggregation: avg, ommAvg, rate
+# avg -> compute "field"_sum, "field"_duration, et si besoin "field"_avg
+#        field_sum is value * duration if MeasureIsSum is not set
+# calcAvg: Optionnel, defaut=True, can we compute avg if not given in aggregation json
+# max -> load "field"_max & "field"_max_time from json. if null -> will be computed in aggregation
+# min -> load "field"_min & "field"_min_time from json. if null -> will be computed in aggregation
+# hour_deca -> Hours substracted/added to the time of the measure when computing the hour aggregation datetime
+# special: special processing:
+#   Standard(0) : no specific processing
+#   MeasureIsSum(1) : Measure is a sum (no need to multiplu by duration)
+#   MeasureIsWind(2) : Measure is wind (need to save the xxx_dir)
+#   OnlyAggregateInHour(4)
+#   NoAvgField(8) : Compute xx_sum and xx_duration but not xxx_avg
+#   MeasureIsOmm(16) : This flag is set when agg == 'ommAvg', no need to use it
+
 
 class RootTypeInstrument:
     """ typeInstrument root object"""
     all_calculus = [
         {"agg": "avg", "object": AvgCompute()},
-        {"agg": "aggomm", "object": AvgOmmCompute()},
-        {"agg": "no", "object": None},
-        {"agg": "sum", "object": None},    # sumCompute()}
+        {"agg": "avgomm", "object": AvgOmmCompute()},
+        # {"agg": "no", "object": None},
+        # {"agg": "sum", "object": None},    # sumCompute()}
         {"agg": "rate", "object": RateCompute()}    # rateCompute()}
     ]
 

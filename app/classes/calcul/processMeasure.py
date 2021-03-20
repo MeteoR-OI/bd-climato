@@ -71,7 +71,7 @@ class ProcessMeasure():
             return
 
         # load the current aggregations array for our anAgg
-        measure_dat = measures['data'][measure_idx]['current']['dat']
+        measure_dat = measures['data'][measure_idx]['current']['start_dat']
 
         for anAgg in AggLevel:
             """loop for all aggregations in ascending level"""
@@ -80,7 +80,7 @@ class ProcessMeasure():
             # load our array of current aggregation, plus prev/next for agg_day only
             all_agg = []
             for my_agg in aggregations:
-                if my_agg.data.level == anAgg:
+                if my_agg.agg_niveau == anAgg:
                     all_agg.append(my_agg)
                     if anAgg == "D":
                         all_agg.append(aggregations[5])
@@ -131,7 +131,7 @@ class ProcessMeasure():
             return
 
         half_period_len = datetime.timedelta(minutes=float(measures['data'][measure_idx]['current']['duration'] / 2))
-        half_period_time = measures['data'][measure_idx]['current']['dat'] + half_period_len
+        half_period_time = measures['data'][measure_idx]['current']['stop_dat'] - half_period_len
         data_src = {}
         if measures['data'][measure_idx].__contains__('current'):
             data_src = measures['data'][measure_idx]['current']
@@ -164,7 +164,7 @@ class ProcessMeasure():
                     # on prend la valeur reportee, et le milieu de l'heure de la periode de la donnee elementaire
                     if b_use_rate:
                         # pour les "rate" on prend l'avg (qui est un rate)
-                        delta_values[target_key + maxmin_suffix] = delta_values[target_key + '_rate']
+                        delta_values[target_key + maxmin_suffix] = delta_values[target_key + '_sum']
                     else:
                         # sinon on prend la valeur de la mesure
                         delta_values[target_key + maxmin_suffix] = delta_values[target_key]
@@ -276,7 +276,7 @@ class ProcessMeasure():
         delta_values['maxminFix'].append({
             "posteId": my_aggreg.data.poste_id_id,
             "startDat": my_aggreg.data.start_dat,
-            "level": my_aggreg.data.level,
+            "level": my_aggreg.agg_niveau,
             "maxmin": maxmin_key,
             "key": json_key,
             "valeur": my_aggreg.data.j[json_key + '_' + maxmin_key],

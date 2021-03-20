@@ -6,6 +6,7 @@ admin.site.register(TypeInstrument)
 
 admin.site.register(Exclusion)
 
+
 class PosteAdmin(admin.ModelAdmin):
     fields = (
         'meteor',
@@ -15,13 +16,14 @@ class PosteAdmin(admin.ModelAdmin):
         'comment'
     )
 
+
 admin.site.register(Poste, PosteAdmin)
 
 
 class ObservationAdmin(admin.ModelAdmin):
     # all fields:
     # ('poste_id'),
-    # ('dat', 'last_rec_dat'),
+    # ('start_dat'),
     # ('duration'),
     # ('qa_modifications', 'qa_incidents', 'qa_check_done'),
     # ('out_temp', 'out_temp_max', 'out_temp_max_time', 'out_temp_min', 'out_temp_min_time',
@@ -44,12 +46,13 @@ class ObservationAdmin(admin.ModelAdmin):
         ('uv_indice', 'radiation', 'etp')
     )
 
+
 admin.site.register(Observation, ObservationAdmin)
 
 
 class Agg_hourAdmin(admin.ModelAdmin):
     fields = (
-        ('dat', 'last_rec_dat'),
+        ('start_dat'),
         ('duration'),
         ('qa_modifications', 'qa_incidents', 'qa_check_done'),
         ('poste_id'),
@@ -72,13 +75,14 @@ class Agg_hourAdmin(admin.ModelAdmin):
         ('wind_speed_avg', 'win_speed_duration',  'wind_speed_sum', 'wind_dir_avg', 'wind_dir_duration', 'wind_dir_sum', 'wind_gust', 'wind_gust_dir', 'wind_gust_time'),
         ('windchill_max', 'windchill_max_time', 'windchill_min', 'windchill_min_time')
     )
+
 
 admin.site.register(Agg_hour, Agg_hourAdmin)
 
 
 class Agg_dayAdmin(admin.ModelAdmin):
     fields = (
-        ('dat', 'last_rec_dat'),
+        ('start_dat'),
         ('duration'),
         ('qa_modifications', 'qa_incidents', 'qa_check_done'),
         ('poste_id'),
@@ -101,13 +105,14 @@ class Agg_dayAdmin(admin.ModelAdmin):
         ('wind_speed_avg', 'win_speed_duration',  'wind_speed_sum', 'wind_dir_avg', 'wind_dir_duration', 'wind_dir_sum', 'wind_gust', 'wind_gust_dir', 'wind_gust_time'),
         ('windchill_max', 'windchill_max_time', 'windchill_min', 'windchill_min_time')
     )
+
 
 admin.site.register(Agg_day, Agg_dayAdmin)
 
 
 class Agg_monthAdmin(admin.ModelAdmin):
     fields = (
-        ('dat', 'last_rec_dat'),
+        ('start_dat'),
         ('duration'),
         ('qa_modifications', 'qa_incidents', 'qa_check_done'),
         ('poste_id'),
@@ -130,12 +135,14 @@ class Agg_monthAdmin(admin.ModelAdmin):
         ('wind_speed_avg', 'win_speed_duration',  'wind_speed_sum', 'wind_dir_avg', 'wind_dir_duration', 'wind_dir_sum', 'wind_gust', 'wind_gust_dir', 'wind_gust_time'),
         ('windchill_max', 'windchill_max_time', 'windchill_min', 'windchill_min_time')
     )
+
+
 admin.site.register(Agg_month, Agg_monthAdmin)
 
 
 class Agg_yearAdmin(admin.ModelAdmin):
     fields = (
-        ('dat', 'last_rec_dat'),
+        ('start_dat'),
         ('duration'),
         ('qa_modifications', 'qa_incidents', 'qa_check_done'),
         ('poste_id'),
@@ -165,7 +172,7 @@ admin.site.register(Agg_year, Agg_yearAdmin)
 
 class Agg_globalAdmin(admin.ModelAdmin):
     fields = (
-        ('dat', 'last_rec_dat'),
+        ('start_dat'),
         ('duration'),
         ('qa_modifications', 'qa_incidents', 'qa_check_done'),
         ('poste_id'),
@@ -189,5 +196,5 @@ class Agg_globalAdmin(admin.ModelAdmin):
         ('windchill_max', 'windchill_max_time', 'windchill_min', 'windchill_min_time')
     )
 
-admin.site.register(Agg_global, Agg_globalAdmin)
 
+admin.site.register(Agg_global, Agg_globalAdmin)

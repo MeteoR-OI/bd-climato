@@ -29,7 +29,6 @@ def test_addJson():
 @pytest.mark.unit
 def test_calcRealAggHourDate():
     # check that our constants matchs our computation made in Excel
-    assert ComputationParam.AddHourToRoundedHourInAggHour == 0
     assert ComputationParam.AddHourToMeasureInAggHour == 1
 
     results = [
@@ -65,9 +64,9 @@ def test_calcRealAggHourDate():
         end_date = dt + datetime.timedelta(minutes=int(result['t']))
 
         # compute aggregation dates
-        aggh_dt = calcAggDate('H', end_date, duration, 0)
-        aggd_dt = calcAggDate('D', end_date, duration, 0)
-        aggm_dt = calcAggDate('M', end_date, duration, 0)
+        aggh_dt = calcAggDate('H', end_date, 0)
+        aggd_dt = calcAggDate('D', end_date, 0)
+        aggm_dt = calcAggDate('M', end_date, 0)
 
         # sum the duration to allow to compute delta_duration
         sum_duration += duration

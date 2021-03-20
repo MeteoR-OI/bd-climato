@@ -40,7 +40,7 @@ class AvgCompute(ProcessMeasure):
 
         # save aggregations in obs for future recomputation if required
         if measures['data'][measure_idx].__contains__('aggregations'):
-            obs_j['aggregations'] = measures['data'][measure_idx]['aggregations']
+            obs_meteor.data.j_agg = measures['data'][measure_idx]['aggregations']
 
         # b_exclu = True -> load data from exclusion, False -> normal processing
         b_exclu = loadFromExclu(exclusion, src_key)
@@ -52,7 +52,7 @@ class AvgCompute(ProcessMeasure):
                 # no data
                 return
             my_value = my_measure['dataType'](data_src[src_key])
-            my_dat = data_src['dat']
+            my_dat = data_src['stop_dat']
         elif b_exclu is False:
             # no data, only aggregations, no exclusion, then m_agg_j will be processed in aggregation processing
             return
@@ -250,7 +250,7 @@ class AvgCompute(ProcessMeasure):
         m_agg_j = {}
         if measures.__contains__('data') and measures['data'][measure_idx].__contains__('aggregations'):
             for a_j_agg in measures['data'][measure_idx]['aggregations']:
-                if a_j_agg['level'] == current_agg.data.level:
+                if a_j_agg['level'] == current_agg.agg_niveau:
                     m_agg_j = a_j_agg
                     break
         return agg_j, m_agg_j

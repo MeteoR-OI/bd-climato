@@ -28,10 +28,8 @@ class MeasureProcessingBitMask(Constants):
     OnlyAggregateInHour = 4
     NoAvgField = 8
     MeasureIsOmm = 16
-    DoNotProcessTwiceInObs = 32     # when a measure is used multiple time in rootTypeInstr.mapping
 
 
 class ComputationParam(Constants):
     # parameter for calculus module
-    AddHourToRoundedHourInAggHour = 0
     AddHourToMeasureInAggHour = 1

@@ -28,6 +28,8 @@ class AvgOmmCompute(AvgCompute):
         delta_values: json,
         isOmm: bool = False,
     ):
+        # force the omm flag
+        my_measure['special'] = my_measure['special'] | MeasureProcessingBitMask.MeasureIsOmm
         """ generate deltaValues from ObsMeteor.data """
         super(AvgOmmCompute, self).loadObservationDatarow(
             my_measure,
@@ -242,7 +244,7 @@ class AvgOmmCompute(AvgCompute):
                         agg_maxmin = current_maxmin - 1
 
                 # do we need to change our maxmin
-                if my_aggreg.data.level != 'H':
+                if my_aggreg.agg_niveau != 'H':
                     if (maxmin_suffix == '_max' and agg_maxmin < current_maxmin) or (maxmin_suffix == '_min' and agg_maxmin > current_maxmin):
                         b_change_maxmin = True
 
