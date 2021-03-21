@@ -39,10 +39,20 @@ class ExcluMeteor():
     @staticmethod
     def getAllForAPoste(
         poste_id: int,
-        start_dat: datetime = datetime.datetime.now(datetime.timezone.utc),
-        stop_dat: datetime = datetime.datetime(2100, 12, 21, 0, 0, 0, 0, datetime.timezone.utc)
+        measure_start_dat: datetime = datetime.datetime.now(datetime.timezone.utc),
     ) -> json:
-        return Exclusion.objects.filter(poste_id_id=poste_id).filter(start_dat__lte=start_dat).filter(stop_dat__lte=stop_dat).values('type_instrument', 'value')
+        tmp_exlus = Exclusion.objects.filter(poste_id_id=poste_id).filter(start_dat__gte=measure_start_dat).filter(stop_dat__lte=measure_start_dat).order_by('poste_id', 'start_dat').values()
+        # we only get the first in date for each type_intrument
+        ret = []
+        for an_exclu in tmp_exlus:
+            store_in_ret = True
+            for a_ret in ret:
+                if a_ret['type_instrument'] == an_exclu['type_instrument']:
+                    store_in_ret = False
+                    break
+            if store_in_ret is True:
+                ret.append({'type_instrument': an_exclu['type_instrument_id'], 'value': ['value']})
+        return ret
 
     def save(self):
         """ save Poste and Exclusions """

@@ -25,7 +25,7 @@ class AggMeteor():
 
     """
 
-    def __init__(self, poste_id: int, agg_niveau: AggLevel, start_dt_agg_utc: datetime):
+    def __init__(self, poste_id: int, agg_niveau: AggLevel, start_dt_agg_utc: datetime, is_measure_date: bool = False):
         """
             Init a new AggMeteor object
 
@@ -34,7 +34,7 @@ class AggMeteor():
             start_dt_agg_utc: start_date for the aggregation level, will be rounded
         """
         self.agg_niveau = agg_niveau
-        my_start_date = calcAggDate(agg_niveau, start_dt_agg_utc)
+        my_start_date = calcAggDate(agg_niveau, start_dt_agg_utc, is_measure_date)
         agg_object = self.getAggObject(agg_niveau)
         if agg_object.objects.filter(poste_id_id=poste_id).filter(start_dat=my_start_date).exists():
             self.data = agg_object.objects.filter(poste_id_id=poste_id).filter(start_dat=my_start_date).first()

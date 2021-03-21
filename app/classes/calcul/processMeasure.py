@@ -24,13 +24,12 @@ class ProcessMeasure():
         measure_idx: int,
         obs_meteor: ObsMeteor,
         delta_values: json,
+        trace_flag: bool = False,
     ):
         """
             getProcessObject
 
             generate deltaValues and load Observation
-                delete_flag=True => from our json data
-                delete_flag=False => from the obs data
 
             calculation methods are implemented as virtual in the xxxCompute module
         """
@@ -44,11 +43,38 @@ class ProcessMeasure():
 
         # load obs record, and get the delta_values added
         # should load dv[M_value], and dv[first_time] when in omm mode
-        self.loadObservationDatarow(my_measure, measures, measure_idx, obs_meteor, src_key, target_key, exclusion, delta_values)
+        self.loadObservationDatarow(
+            my_measure,
+            measures,
+            measure_idx,
+            obs_meteor,
+            src_key,
+            target_key,
+            exclusion,
+            delta_values,
+            trace_flag,
+        )
 
         # load Max/Min and update delta_values
-        self.loadMaxMinInObservation(my_measure, measures, measure_idx, obs_meteor, src_key, target_key, exclusion, delta_values)
+        self.loadMaxMinInObservation(
+            my_measure,
+            measures,
+            measure_idx,
+            obs_meteor,
+            src_key,
+            target_key,
+            exclusion,
+            delta_values,
+            trace_flag,
+        )
 
+        # save our delta_values if in trace mode
+        if trace_flag is True:
+            j_obs = obs_meteor.data.j
+            if j_obs.__contains__('dv') is False:
+                j_obs['dv'] = {}
+            for akey in delta_values.items():
+                j_obs['dv'][akey[0]] = delta_values[akey[0]]
         return
 
     def processAggregations(
@@ -59,6 +85,7 @@ class ProcessMeasure():
         measure_idx: int,
         aggregations: list,
         delta_values: json,
+        trace_flag: bool = False,
     ):
         """ update all aggregation from the delta data, and aggregations key on json, return a list of extremes to recompute """
 
@@ -92,10 +119,34 @@ class ProcessMeasure():
             all_agg = []
 
             # load data in our aggregation
-            self.loadAggregationDatarows(my_measure, measures, measure_idx, agg_deca, target_key, delta_values, dv_next)
+            self.loadAggregationDatarows(
+                my_measure,
+                measures,
+                measure_idx,
+                agg_deca,
+                target_key,
+                delta_values,
+                dv_next,
+            )
 
             # get our extreme values
-            self.loadMaxMinInAggregation(my_measure, measures, measure_idx, agg_deca, target_key, exclusion, delta_values, dv_next)
+            self.loadMaxMinInAggregation(
+                my_measure,
+                measures,
+                measure_idx,
+                agg_deca,
+                target_key,
+                exclusion,
+                delta_values,
+                dv_next,
+            )
+            # save our delta_values if in trace mode
+            if trace_flag is True:
+                j_agg = agg_deca[0].data.j
+                if j_agg.__contains__('dv') is False:
+                    j_agg['dv'] = {}
+                for akey in delta_values.items():
+                    j_agg['dv'][akey[0]] = delta_values[akey[0]]
 
             # we will pass our new delta_values to the next level
             delta_values = dv_next
@@ -188,7 +239,8 @@ class ProcessMeasure():
             update dv_next for nest level
         """
         # save our dv, and get agg_j, m_agg_j
-        agg_j, m_agg_j = self.savedv_and_get_agg_magg(my_aggreg, delta_values, measures, measure_idx)
+        m_agg_j = self.get_agg_magg(my_aggreg, delta_values, measures, measure_idx)
+        agg_j = my_aggreg.data.j
 
         for maxmin_suffix in ['_max', '_min']:
             maxmin_key = maxmin_suffix.split('_')[1]

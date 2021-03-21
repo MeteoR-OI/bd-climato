@@ -52,6 +52,8 @@ class AvgCompute(ProcessMeasure):
                 # no data
                 return
             my_value = my_measure['dataType'](data_src[src_key])
+            if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
+                my_value_dir = data_src[src_key + '_dir']
             my_dat = data_src['stop_dat']
         elif b_exclu is False:
             # no data, only aggregations, no exclusion, then m_agg_j will be processed in aggregation processing
@@ -61,6 +63,10 @@ class AvgCompute(ProcessMeasure):
             # load the value from exclusion
             data_src = exclusion
             my_value = my_measure['dataType'](exclusion[src_key])
+            if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
+                my_value_dir = None
+                if exclusion.__contains__(src_key + '_dir'):
+                    my_value_dir = exclusion[src_key + '_dir']
 
         # get our duration, and save it in the obs_meteor if not set, or test if compatible
         tmp_duration = int(measures['data'][measure_idx]['current']['duration'])
@@ -75,45 +81,43 @@ class AvgCompute(ProcessMeasure):
 
         # we will save current value in obs, and propagate delta values to our aggregations
         if my_measure['avg'] is True:
+
             # remove current values from our aggregations
-            if obs_j.__contains__(target_key + '_sum'):
-                delta_values[target_key + '_sum_old'] = obs_j[target_key + '_sum']
-                delta_values[target_key + '_duration_old'] = obs_j[target_key + '_duration']
+            if obs_j.__contains__(target_key):
+                tmp_value_old = obs_j[target_key]
+                tmp_duration_old = obs_meteor.data.duration
+                tmp_sum = tmp_value_old * tmp_duration
+                if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
+                    tmp_sum = tmp_value_old
+                delta_values[target_key + '_sum_old'] = tmp_sum
+                delta_values[target_key + '_duration_old'] = tmp_duration_old
+                # in case of replacement, invalidate the value for our min/max in aggregations
+                if obs_j.__contains__(target_key) and obs_j[target_key] != my_value:
+                    delta_values[target_key + '_maxmin_invalid_val_max'] = obs_j[target_key]
+                    delta_values[target_key + '_maxmin_invalid_val_min'] = obs_j[target_key]
 
             tmp_sum = my_value * tmp_duration
             if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
                 tmp_sum = my_value
-            tmp_avg = tmp_sum / tmp_duration
 
             if data_src.__contains__(src_key + avg_suffix):
                 # use the given _avg if any, and compute  new 'virtual' sum
                 tmp_avg2 = float(data_src[src_key + avg_suffix])
                 tmp_sum = tmp_avg2 * tmp_duration
 
-            # update our avg fields in obs
-            obs_j[target_key + '_sum'] = tmp_sum
-            obs_j[target_key + '_duration'] = tmp_duration
-            obs_j[target_key + avg_suffix] = tmp_avg
-            if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                obs_j[target_key + '_dir'] = int(data_src[src_key + "_dir"])
-
             # pass delta values to our aggregations
             delta_values[target_key + '_sum'] = tmp_sum
             delta_values[target_key + '_duration'] = tmp_duration
 
-        # in case of replacement, invalidate the value for our min/max in aggregations
-        if obs_j.__contains__(target_key) and obs_j[target_key] != my_value:
-            delta_values[target_key + '_maxmin_invalid_val_max'] = obs_j[target_key]
-            delta_values[target_key + '_maxmin_invalid_val_min'] = obs_j[target_key]
-
         # save our data
         obs_j[target_key] = my_value
         delta_values[target_key] = my_value
+        if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)) and my_value_dir is not None:
+            delta_values[target_key + '_dir'] = my_value_dir
+            obs_j[target_key + '_dir'] = my_value_dir
         if isOmm is True:
             # save for max/min processing and omm procesing
             delta_values[target_key + '_first_time'] = my_dat
-
-        obs_j['dv'] = delta_values
 
     def getDeltaFromObservation(self, my_measure: json, obs_meteor: ObsMeteor, json_key: str, delta_values: json) -> json:
         """
@@ -164,7 +168,8 @@ class AvgCompute(ProcessMeasure):
             return
 
         # for tracing, save inputed delta_values in dv
-        agg_j, m_agg_j = self.savedv_and_get_agg_magg(current_agg, delta_values, measures, measure_idx)
+        m_agg_j = self.get_agg_magg(current_agg, delta_values, measures, measure_idx)
+        agg_j = current_agg.data.j
 
         if my_measure['avg'] is True:
             tmp_sum = tmp_duration = None
@@ -232,20 +237,14 @@ class AvgCompute(ProcessMeasure):
         if isFlagged(my_measure['special'], MeasureProcessingBitMask.OnlyAggregateInHour) is True:
             dv_next = {"extremesFix": [], "maxminFix": []}
 
-    def savedv_and_get_agg_magg(self, current_agg: AggMeteor, delta_values: json, measures: json, measure_idx: int):
+    def get_agg_magg(self, current_agg: AggMeteor, delta_values: json, measures: json, measure_idx: int):
         """
-            savedv_and_get_agg_magg
+            get_agg_magg
 
             save delta_values in agg_j['dv']
 
             return agg json, and m_agg json
         """
-        agg_j = current_agg.data.j
-        if agg_j.__contains__('dv') is False:
-            agg_j['dv'] = {}
-        for akey in delta_values.items():
-            agg_j['dv'][akey[0]] = delta_values[akey[0]]
-
         # get aggregation values in measures
         m_agg_j = {}
         if measures.__contains__('data') and measures['data'][measure_idx].__contains__('aggregations'):
@@ -253,4 +252,4 @@ class AvgCompute(ProcessMeasure):
                 if a_j_agg['level'] == current_agg.agg_niveau:
                     m_agg_j = a_j_agg
                     break
-        return agg_j, m_agg_j
+        return m_agg_j

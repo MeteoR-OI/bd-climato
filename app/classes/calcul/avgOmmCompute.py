@@ -76,7 +76,8 @@ class AvgOmmCompute(AvgCompute):
             return
 
         # for tracing, save inputed delta_values in dv
-        agg_j, m_agg_j = self.savedv_and_get_agg_magg(current_agg, delta_values, measures, measure_idx)
+        m_agg_j = self.get_agg_magg(current_agg, delta_values, measures, measure_idx)
+        agg_j = current_agg.data.j
 
         tmp_sum = tmp_duration = None
 
@@ -184,7 +185,8 @@ class AvgOmmCompute(AvgCompute):
             update delta_values
         """
         # save our dv, and get agg_j, m_agg_j
-        agg_j, m_agg_j = self.savedv_and_get_agg_magg(my_aggreg, delta_values, measures, measure_idx)
+        m_agg_j = self.get_agg_magg(my_aggreg, delta_values, measures, measure_idx)
+        agg_j = my_aggreg.data.j
 
         for maxmin_suffix in ['_max', '_min']:
             maxmin_key = maxmin_suffix.split('_')[1]

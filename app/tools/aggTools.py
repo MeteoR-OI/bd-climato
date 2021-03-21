@@ -65,7 +65,7 @@ def getAggDuration(niveau_agg: str) -> int:
         print(inst)          # __str__ allows args to be printed directly,
 
 
-def calcAggDateNextLevel(niveau_agg: AggLevel, start_dt_utc: datetime, factor: float = 0) -> datetime:
+def calcAggDateNextLevel(niveau_agg: AggLevel, start_dt_utc: datetime, factor: float = 0, is_measure_date: bool = False) -> datetime:
     """
         Return the aggregation date of the next level, None when it's done
     """
@@ -79,17 +79,20 @@ def calcAggDateNextLevel(niveau_agg: AggLevel, start_dt_utc: datetime, factor: f
         next_niveau = 'A'
     else:
         return None
-    return calcAggDate(next_niveau, start_dt_utc, factor)
+    return calcAggDate(next_niveau, start_dt_utc, factor, is_measure_date)
 
 
-def calcAggDate(niveau_agg: AggLevel, start_dt_utc: datetime, factor: float = 0) -> datetime:
+def calcAggDate(niveau_agg: AggLevel, start_dt_utc: datetime, factor: float = 0, is_measure_date: bool = False) -> datetime:
     """
         calc_agg_date
 
         returns the start of the datetime of the aggregation level
     """
     if niveau_agg == "H":
-        delta_dt = datetime.timedelta(minutes=int(60 * (factor + ComputationParam.AddHourToMeasureInAggHour)))
+        if is_measure_date is True:
+            delta_dt = datetime.timedelta(minutes=int(60 * (factor + ComputationParam.AddHourToMeasureInAggHour)))
+        else:
+            delta_dt = datetime.timedelta(minutes=int(60 * factor))
         return datetime.datetime(start_dt_utc.year, start_dt_utc.month, start_dt_utc.day, start_dt_utc.hour, 0, 0, 0, datetime.timezone.utc) + delta_dt
 
     if niveau_agg == "D":

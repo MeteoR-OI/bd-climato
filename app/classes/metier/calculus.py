@@ -4,6 +4,7 @@ from app.classes.metier.posteMetier import PosteMetier
 from app.classes.metier.typeInstrumentAll import TypeInstrumentAll
 from app.tools.jsonPlus import JsonPlus
 from app.tools.jsonValidator import check
+import datetime
 import json
 
 
@@ -18,7 +19,7 @@ class Calculus():
         Agg_year.objects.all().delete()
         Agg_global.objects.all().delete()
 
-    def run(self, m_j: json, b_debug: bool, delete_flag: bool = True) -> json:
+    def run(self, m_j: json, trace_flag: bool, delete_flag: bool = True) -> json:
         all_instr = TypeInstrumentAll()
         ret = []
         if delete_flag:
@@ -34,21 +35,27 @@ class Calculus():
             pid = PosteMeteor.getPosteIdByMeteor(m_j['meteor'])
             if pid is None:
                 raise Exception('doCalculus', 'unknown code meteor: ' + m_j['meteor'])
-            self.my_poste = PosteMetier(pid)
-            self.my_obs = self.my_poste.observation(m_j['data'][idx]['current']['stop_dat'])
+            # we use the stop_dat of our measure json as the start date for our processing
+            m_stop_date_agg_start_date = m_j['data'][idx]['current']['stop_dat']
+            self.my_poste = PosteMetier(pid, m_stop_date_agg_start_date)
+            self.my_obs = self.my_poste.observation(m_stop_date_agg_start_date)
+            # load duration and stop_dat if not already loaded
             if self.my_obs.data.duration == 0:
                 self.my_obs.data.duration = m_j['data'][idx]['current']['duration']
-            self.my_agg_array = self.my_poste.aggregations(m_j['data'][idx]['current']['start_dat'], m_j['data'][idx]['current']['duration'])
+                measure_duration = datetime.timedelta(minutes=int(self.my_obs.data.duration))
+                self.my_obs.data.start_dat = self.my_obs.data.stop_dat - measure_duration
+            # the stop_dat of the measure is used as the start_dat in all agregations
+            self.my_agg_array = self.my_poste.aggregations(m_stop_date_agg_start_date, m_j['data'][idx]['current']['duration'], True)
 
             # call the method to update obs, and return delta_val
-            all_instr.process_json(self.my_poste, m_j, idx, self.my_obs, self.my_agg_array)
+            all_instr.process_json(self.my_poste, m_j, idx, self.my_obs, self.my_agg_array, trace_flag)
 
             # save our data
             self.my_obs.save()
             for i in (0, 1, 2, 3, 4, 5, 6):
                 # self.my_agg_array[i].data.j['dv'] = {}
                 self.my_agg_array[i].save()
-            if b_debug:
+            if trace_flag:
                 if idx == 0:
                     helper = ' - cut and paste this data into https://codebeautify.org/jsonviewer'
                 else:

@@ -16,12 +16,11 @@ class PosteMetier(PosteMeteor):
         Add obs/agg/exclu info to PosteMeteor
     """
 
-    def __init__(self, poste_id: int, start_date: datetime = datetime.datetime.now(datetime.timezone.utc), stop_date: datetime = datetime.datetime(2100, 12, 21, 0, 0, 0, 0, datetime.timezone.utc)):
+    def __init__(self, poste_id: int, start_date: datetime = datetime.datetime.now(datetime.timezone.utc)):
         """ load our instance from db, load exclusions at date_histo """
         super().__init__(poste_id)
-        self.exclus = ExcluMeteor.getAllForAPoste(self.data.id, start_date, stop_date)
-        self.start_date = start_date
-        self.stop_date = stop_date
+        self.exclus = ExcluMeteor.getAllForAPoste(self.data.id, start_date)
+        self.analysis_date = start_date
 
     def exclusion(self, type_intrument_id) -> json:
         """ retourne la premiere exclusion active pour le type instrument """
@@ -30,10 +29,10 @@ class PosteMetier(PosteMeteor):
                 return anExclu['value']
         return None
 
-    def getAllForAPoste(self, start_date: datetime = datetime.datetime.now(datetime.timezone.utc), stop_date: datetime = datetime.datetime(2100, 12, 21, 0, 0, 0, 0, datetime.timezone.utc)) -> json:
-        return ExcluMeteor.getAllForAPoste(self.data.id, start_date, stop_date)
+    def getAllForAPoste(self, start_dat: datetime = datetime.datetime.now(datetime.timezone.utc)) -> json:
+        return ExcluMeteor.getAllForAPoste(self.data.id, start_dat)
 
-    def aggregations(self, my_start_date_utc: datetime, duration: int) -> json:
+    def aggregations(self, my_start_date_utc: datetime, duration: int, is_measure_date: bool = False) -> json:
         """
         get_agg
 
@@ -57,7 +56,8 @@ class PosteMetier(PosteMeteor):
             ret = []
             # push aggregations of all levels for the given date
             for agg_niveau in AggLevel:
-                tmp_dt = calcAggDate(agg_niveau, my_start_date_utc)
+                # is_measure_date only used in agg_hour
+                tmp_dt = calcAggDate(agg_niveau, my_start_date_utc, 0, is_measure_date)
                 ret.append(AggMeteor(self.data.id, agg_niveau, tmp_dt))
 
             # get aggregation of day - 1 for measures that will aggregate yesteray
