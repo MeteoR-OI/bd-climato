@@ -28,6 +28,8 @@ class AvgOmmCompute(AvgCompute):
         delta_values: json,
         isOmm: bool = False,
     ):
+        # force the omm flag
+        my_measure['special'] = my_measure['special'] | MeasureProcessingBitMask.MeasureIsOmm
         """ generate deltaValues from ObsMeteor.data """
         super(AvgOmmCompute, self).loadObservationDatarow(
             my_measure,
@@ -74,7 +76,8 @@ class AvgOmmCompute(AvgCompute):
             return
 
         # for tracing, save inputed delta_values in dv
-        agg_j, m_agg_j = self.savedv_and_get_agg_magg(current_agg, delta_values, measures, measure_idx)
+        m_agg_j = self.get_agg_magg(current_agg, delta_values, measures, measure_idx)
+        agg_j = current_agg.data.j
 
         tmp_sum = tmp_duration = None
 
@@ -182,7 +185,8 @@ class AvgOmmCompute(AvgCompute):
             update delta_values
         """
         # save our dv, and get agg_j, m_agg_j
-        agg_j, m_agg_j = self.savedv_and_get_agg_magg(my_aggreg, delta_values, measures, measure_idx)
+        m_agg_j = self.get_agg_magg(my_aggreg, delta_values, measures, measure_idx)
+        agg_j = my_aggreg.data.j
 
         for maxmin_suffix in ['_max', '_min']:
             maxmin_key = maxmin_suffix.split('_')[1]
@@ -242,7 +246,7 @@ class AvgOmmCompute(AvgCompute):
                         agg_maxmin = current_maxmin - 1
 
                 # do we need to change our maxmin
-                if my_aggreg.data.level != 'H':
+                if my_aggreg.agg_niveau != 'H':
                     if (maxmin_suffix == '_max' and agg_maxmin < current_maxmin) or (maxmin_suffix == '_min' and agg_maxmin > current_maxmin):
                         b_change_maxmin = True
 

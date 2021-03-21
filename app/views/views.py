@@ -8,7 +8,7 @@ from app.classes.integrationTests.typeTemp import TypeTempTest
 from app.tools.jsonPlus import JsonPlus
 from app.views.v_agg import view_agg
 from app.views.v_poste import view_my_poste
-from django.template import loader
+from app.views.v_calc import view_my_calc
 
 
 # views well routed
@@ -38,6 +38,10 @@ def view_agg_all(request, poste_id, keys: str = '*', start_dt: str = '1900-01-11
 
 def view_poste(request, poste_id):
     return view_my_poste(request, poste_id)
+
+
+def views_calc(request, file_name: str):
+    return view_my_calc(request, file_name)
 
 
 # views to update

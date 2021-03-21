@@ -82,12 +82,9 @@ class JsonPlus():
             # print("serialize(" + json.dumps(j))
             for k, v in j.items():
                 # print("Decode: " + k + ":" + str(j[k]) + ", type: " + str(type(j[k])))
-                if 'dat' == k:
+                if 'start_dat' == k or 'stop_dat' == k or 'dat' == k:
                     j[k] = dateutil.parser.parse(str(j[k]))
                     # print("found dat, new type : " + str(type(j[k])))
-                if 'last_dat_rec' == k:
-                    j[k] = dateutil.parser.parse(str(j[k]))
-                    # print("found last_dat_rec, new type : " + str(type(j[k])))
                 if k.endswith('_time'):
                     j[k] = dateutil.parser.parse(str(j[k]))
                     # print("found xxx_time, new type : " + str(type(j[k])))

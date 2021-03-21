@@ -23,34 +23,28 @@ class ObsMeteor():
 
     """
 
-    def __init__(self, poste_id: int, dt_utc: datetime):
+    def __init__(self, poste_id: int, stop_dt_utc: datetime):
         """Init a new ObsMeteor object"""
         # todo: block if my_datetime_utc > previous dat+duration
-        try:
-            if Observation.objects.filter(poste_id_id=poste_id).filter(dat=dt_utc).exists():
-                self.data = Observation.objects.filter(poste_id_id=poste_id).filter(dat=dt_utc).first()
-                JsonPlus().deserialize(self.data.j)
-            else:
-                self.data = Observation(poste_id_id=poste_id, dat=dt_utc, start_dat=datetime.datetime(1900, 1, 1, 0, 0, tzinfo=pytz.UTC), last_rec_dat=dt_utc, duration=0, j={})
-                self.data.save()
-
-        except Exception as inst:
-            print(type(inst))    # the exception instance
-            print(inst.args)     # arguments stored in .args
-            print(inst)          # __str__ allows args to be printed directly,
+        if Observation.objects.filter(poste_id_id=poste_id).filter(stop_dat=stop_dt_utc).exists():
+            self.data = Observation.objects.filter(poste_id_id=poste_id).filter(stop_dat=stop_dt_utc).first()
+            JsonPlus().deserialize(self.data.j)
+        else:
+            tmp_dat = datetime.datetime(1900, 1, 1, 0, 0, tzinfo=pytz.UTC)
+            self.data = Observation(poste_id_id=poste_id, start_dat=tmp_dat, stop_dat=stop_dt_utc, duration=0, j={}, j_agg={})
 
     def save(self):
         """ save Poste and Exclusions """
-        try:
-            if self.data.j != {}:
-                JsonPlus().serialize(self.data.j)
+        # we only save if there is some data
+        if self.data.j != {} or self.data.j_agg != {}:
+            if self.data.start_dat == datetime.datetime(1900, 1, 1, 0, 0, tzinfo=pytz.UTC):
+                if self.data.duration == 0:
+                    raise Exception('obsMeteor', 'duration is null with data loaded')
+                measure_duration = datetime.timedelta(minutes=int(self.my_obs.data.duration))
+                self.my_obs.data.start_dat = self.my_obs.data.stop_dat - measure_duration
+            JsonPlus().serialize(self.data.j)
             self.data.save()
             JsonPlus().deserialize(self.data.j)
-
-        except Exception as inst:
-            print(type(inst))    # the exception instance
-            print(inst.args)     # arguments stored in .args
-            print(inst)          # __str__ allows args to be printed directly,
 
     def __str__(self):
         """print myself"""

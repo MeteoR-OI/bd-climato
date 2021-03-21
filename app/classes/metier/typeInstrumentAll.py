@@ -45,6 +45,7 @@ class TypeInstrumentAll():
         measure_idx: int,
         obs_meteor: ObsMeteor,
         agg_array: json,
+        trace_flag: bool = False,
     ):
         """process observation data for all our TypeInstrument"""
         try:
@@ -59,6 +60,7 @@ class TypeInstrumentAll():
                     obs_meteor,
                     agg_array,
                     delta_values,
+                    trace_flag,
                 )
             return
 

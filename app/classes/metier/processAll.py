@@ -12,7 +12,7 @@ class ProcessAll():
     """
     process_type = [
         {"agg": "avg", "object": AvgCompute()},
-        {"agg": "aggomm", "object": AvgOmmCompute()}
+        {"agg": "avgomm", "object": AvgOmmCompute()}
         {"agg": "rate", "object": RateCompute()}
     ]
 

@@ -1,6 +1,7 @@
 from app.models import Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global   #
 from app.tools.climConstant import AggLevel
 from app.tools.jsonPlus import JsonPlus
+from app.tools.aggTools import calcAggDate
 import datetime
 import pytest
 import logging
@@ -24,62 +25,44 @@ class AggMeteor():
 
     """
 
-    def __init__(self, poste_id: int, agg_niveau: AggLevel, dt_agg_utc: datetime):
+    def __init__(self, poste_id: int, agg_niveau: AggLevel, start_dt_agg_utc: datetime, is_measure_date: bool = False):
         """
             Init a new AggMeteor object
 
             poste: Poste object
             agg_niveau: 'H','D', 'M', 'Y', 'A'
-            dt_agg_utc: date rounded for the aggregation level
+            start_dt_agg_utc: start_date for the aggregation level, will be rounded
         """
-        try:
-            self.agg_niveau = agg_niveau
-            agg_object = self.getAggObject(agg_niveau)
-            if agg_object.objects.filter(poste_id_id=poste_id).filter(start_dat=dt_agg_utc).exists():
-                self.data = agg_object.objects.filter(poste_id_id=poste_id).filter(start_dat=dt_agg_utc).first()
-                JsonPlus().deserialize(self.data.j)
-            else:
-                self.data = agg_object(poste_id_id=poste_id, start_dat=dt_agg_utc, level=agg_niveau, last_rec_dat=dt_agg_utc, duration=0, j={})
-                # self.data.save()
-
-        except Exception as inst:
-            print(type(inst))    # the exception instance
-            print(inst.args)     # arguments stored in .args
-            print(inst)          # __str__ allows args to be printed directly,
+        self.agg_niveau = agg_niveau
+        my_start_date = calcAggDate(agg_niveau, start_dt_agg_utc, is_measure_date)
+        agg_object = self.getAggObject(agg_niveau)
+        if agg_object.objects.filter(poste_id_id=poste_id).filter(start_dat=my_start_date).exists():
+            self.data = agg_object.objects.filter(poste_id_id=poste_id).filter(start_dat=my_start_date).first()
+            JsonPlus().deserialize(self.data.j)
+        else:
+            self.data = agg_object(poste_id_id=poste_id, start_dat=my_start_date, duration_sum=0, j={})
 
     def save(self):
         """ save Poste and Exclusions """
-        try:
-            if self.data.j != {}:
-                JsonPlus().serialize(self.data.j)
+        if self.data.j != {}:
+            JsonPlus().serialize(self.data.j)
             self.data.save()
             JsonPlus().deserialize(self.data.j)
 
-        except Exception as inst:
-            print(type(inst))    # the exception instance
-            print(inst.args)     # arguments stored in .args
-            print(inst)          # __str__ allows args to be printed directly,
-
     def getAggObject(self, niveau_agg: str):
         """get the aggregation depending on the level"""
-        try:
-            if niveau_agg == "H":
-                return Agg_hour
-            elif niveau_agg == "D":
-                return Agg_day
-            elif niveau_agg == "M":
-                return Agg_month
-            elif niveau_agg == "Y":
-                return Agg_year
-            elif niveau_agg == "A":
-                return Agg_global
-            else:
-                raise Exception("get_agg_object", "wrong niveau_agg: " + niveau_agg)
-
-        except Exception as inst:
-            print(type(inst))    # the exception instance
-            print(inst.args)     # arguments stored in .args
-            print(inst)          # __str__ allows args to be printed directly,
+        if niveau_agg == "H":
+            return Agg_hour
+        elif niveau_agg == "D":
+            return Agg_day
+        elif niveau_agg == "M":
+            return Agg_month
+        elif niveau_agg == "Y":
+            return Agg_year
+        elif niveau_agg == "A":
+            return Agg_global
+        else:
+            raise Exception("get_agg_object", "wrong niveau_agg: " + niveau_agg)
 
     def __str__(self):
         """print myself"""
