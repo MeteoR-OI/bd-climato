@@ -6,123 +6,376 @@ OK#slurp
 LOW#slurp
 #end if
 #end def
+## fonction arrondi
 #def round($x,$y)
+#if $x is None
+#pass ## si valeur NULL on met rien
+#else 
+#if $y == 0 
+#set $res = round($x)
+#else
 #set $res = round($x,$y)
+#end if
 $res#slurp
+#end if
 #end def
+## fin fonction arrondi
+## fonction formatage date
+#def datef($x)
+#if $x is None
+#pass ## si valeur NULL on met rien
+#else 
+#set $d = datetime.fromtimestamp($x)
+#set $d = format($d,"%Y-%m-%dT%H:%M:%S+04:00")
+"$d"#slurp
+#end if
+#end def
+## fin fonction formatage date
+#from datetime import datetime, timedelta
+#import user.extensions
 {
   "meteor" : "$BootstrapLabels.station_id",
   "info" : {
-     "title":"Météo en direct",
-     "location":"$station.location",
-     "time":"$current.dateTime.formatted",
-     "lat":"$station.latitude[0] $station.latitude[1]' $station.latitude[2]",
-     "lon":"$station.longitude[0] $station.longitude[1]' $station.longitude[2]",
-     "alt":"$station.altitude",
-     "hardware":"$station.hardware",
-     "uptime":"$station.uptime.formatted",
-     "serverUptime":"$station.os_uptime",
-     "weewxVersion":"$station.version",
-     "monitors": {
-#if $day.txBatteryStatus.has_data
-     "txBatteryStatus": "$get_battery_status($current.txBatteryStatus.raw)",
-#end if
-     "signal_quality": "$current.rxCheckPercent",
-     "consBatteryVoltage" : "$current.consBatteryVoltage"
-	}
+     "title":"JSON pour BDClimato",
+     "time":"$current.dateTime",
+#set $last_timestamp=datetime.fromtimestamp($db_lookup.last_timestamp)
+     "last_update":"$last_timestamp",
+#set $last_update_stop = datetime.fromtimestamp(user.extensions.last_update_stop)
+     "last_update_before_stop":"$last_update_stop"
      },
   "data":
      [
+#set $datetime_cur = datetime.fromtimestamp($current.dateTime.raw)
+#set $start = 1 ## indique debut de la boucle sur les heures
+#set $boucle_obs = $hour($hours_ago=0) ## definit la periode a traiter
+###set $all_obs = $boucle_obs.rxCheckPercent.count.raw ## compte le nb obs presentes
+###set $all_obs = round($all_obs)
+###set $nb_obs = 0 ## numero obs en cours dans la boucle
+#for $obs in $boucle_obs.records ## debut boucle obs
+###set $nb_obs += 1 ## incremente numero obs
+#set $amin = round($obs.interval.raw) ##intervalle de la mesure
+#set $datetime_obs = datetime.fromtimestamp($obs.dateTime.raw) ## obs en cours de traitement
+#set $datetime_obs += timedelta(minutes=$amin) / 2 ## arrondi a interval pres
+#set $d = $datetime_obs
+#set $datetime_obs -= timedelta(minutes=$d.minute % $amin, seconds=$d.second, microseconds=$d.microsecond)
+#set $datetime_obsf = format($datetime_obs - timedelta(minutes=$amin),"%Y-%m-%dT%H:%M:%S+04:00")
+#set $duration = round($obs.interval.raw)
+#if $start == 1 ## si premiere obs, obs precedente initialisee
+#set $datetime_obs_prev = datetime.fromtimestamp($obs.dateTime.raw) - timedelta(minutes=$amin,seconds=-1)
+#set $start = 0
+#else
+}, ## apres la premiere obs on ferme proprement l'obs precedente (voir #slurp de fin)
+#end if ## fin test premiere obs
      {"current": {
-       "dat":"$current.dateTime.format("%Y-%m-%dT%H:%M:%S+04:00")",
-       "duration":5,
-       "out_temp":$round($current.outTemp.raw,1),
-       "windchill":$round($current.windchill.raw,1),
-       "heatIndex":$round($current.heatindex.raw,1),
-       "dewpoint":$round($current.dewpoint.raw,1),
-       "humidity":$round($current.outHumidity.raw,1),
-       "in_humidity":$round($current.inHumidity.raw,1),
-       "barometer":$round($current.barometer.raw,1),
-       "wind":$round($current.windSpeed.raw,1),
-       "wind_dir":$round($current.windDir.raw,1),
-       "wind_max":$round($current.windGust.raw,1),
-       "wind_max_dir":$round($current.windGustDir.raw,1),
-       "rain_rate":$round($current.rainRate.raw,1),
-       "rain":$round($current.rain.raw,1),
-#if $day.UV.has_data
-       "uv_indice":$round($current.UV.raw,1),
-#end if
-#if $day.ET.has_data and $day.ET.sum.raw > 0.0
-       "etp":$round($current.ET.raw,1),
-#end if
-#if $day.radiation.has_data  
-       "solar_radiation":$round($current.radiation.raw,1),
-#end if
-       "in_temp":$round($current.inTemp.raw,1),
-       "rx":$round($current.rxCheckPercent.raw,1),
-       "voltage":$round($current.consBatteryVoltage.raw,1)
-        },
-   "aggregations":
-     [ {
+       "start_dat":"$datetime_obsf",
+       "duration":$duration,
+       "out_temp":$round($obs.outTemp.raw,1),
+       "windchill":$round($obs.windchill.raw,1),
+       "heatIndex":$round($obs.heatindex.raw,1),
+       "dewpoint":$round($obs.dewpoint.raw,1),
+       "humidity":$round($obs.outHumidity.raw,1),
+       "in_humidity":$round($obs.inHumidity.raw,1),
+       "barometer":$round($obs.barometer.raw,1),
+       "wind":$round($obs.windSpeed.raw,1),
+       "wind_dir":$round($obs.windDir.raw,1),
+       "wind_max":$round($obs.windGust.raw,1),
+       "wind_max_dir":$round($obs.windGustDir.raw,1),
+       "rain_rate":$round($obs.rainRate.raw,1),
+       "rain":$round($obs.rain.raw,1),
+       #if $day.UV.has_data
+       "uv_indice":$round($obs.UV.raw,1),
+       #end if
+       #if $obs.ET.has_data and $day.ET.has_data and $day.ET.sum.raw >0.0
+       "etp":$round($obs.ET.raw,1),
+       #end if
+       #if $obs.radiation.has_data  
+       "solar_radiation":$round($obs.radiation.raw,1),
+       #end if
+       #if $obs.inTemp.has_data
+       "in_temp":$round($obs.inTemp.raw,1),
+       #end if
+       "rx":$round($obs.rxCheckPercent.raw,1),
+       "voltage":$round($obs.consBatteryVoltage.raw,1)
+###if ($datetime_obs.hour <> $datetime_obs_prev.hour) or ($datetime_obs == $datetime_cur) ## test change heure ou fin de boucle
+#if ($datetime_obs.day <> $datetime_obs_prev.day) or ($datetime_obs == $datetime_cur) ## test change jour ou fin de boucle
+#if $datetime_obs == $datetime_cur ## test obs current $delta tous a 0
+#set $delta_h = 0
+#set $delta_d = 0
+#set $delta_m = 0
+#set $delta_y = 0
+#else ## calcule les deltas pour agregations
+#set $delta_s = ($datetime_cur - $datetime_obs).seconds
+#set $delta_d = ($datetime_cur - $datetime_obs).days
+#set $delta_h = (($delta_d * 86400) + $delta_s) // 3600 + 1
+#set $date_ref = $datetime_cur.replace(hour=0,minute=0,second=0)
+#set $delta_d = ($date_ref - $datetime_obs).days + 1
+#set $delta_y = $datetime_cur.year - $datetime_obs.year
+#set $delta_m = ($datetime_cur.year - $datetime_obs.year) * 12
+#set $delta_m += $datetime_cur.month - $datetime_obs.month
+#if $datetime_obs.day == 1 and $datetime_obs.hour == 0 ## test fin de mois
+#set $delta_m += 1
+#end if ## fin test fin de mois
+#if $datetime_obs.month == 1 and $datetime_obs.day == 1 and $datetime_obs.hour == 0 ## fin annee
+#set $delta_y += 1
+#end if ## fin test fin annee
+#end if ## fin test derniere obs
+       },
+       "aggregations":
+       [{
+##        "level":"H",
+##        "dat":$datef($hour($hours_ago=$delta_h).dateTime.raw),
+##        "out_temp_max":$round($hour($hours_ago=$delta_h).outTemp.max.raw,1),
+##        "out_temp_max_time":$datef($hour($hours_ago=$delta_h).outTemp.maxtime.raw),
+##        "out_temp_min":$round($hour($hours_ago=$delta_h).outTemp.min.raw,1),
+##        "out_temp_min_time":$datef($hour($hours_ago=$delta_h).outTemp.mintime.raw),
+##        "out_temp_avg":$round($hour($hours_ago=$delta_h).outTemp.avg.raw,1),
+##        "heatindex_max":$round($hour($hours_ago=$delta_h).heatindex.max.raw,1),
+##        "heatindex_max_time":$datef($hour($hours_ago=$delta_h).heatindex.maxtime.raw),
+##        "windchill_min":$round($hour($hours_ago=$delta_h).windchill.min.raw,1),
+##        "windchill_min_time":$datef($hour($hours_ago=$delta_h).windchill.mintime.raw),
+##        "humidity_max":$round($hour($hours_ago=$delta_h).outHumidity.max.raw,1),
+##        "humidity_max_time":$datef($hour($hours_ago=$delta_h).outHumidity.maxtime.raw),
+##        "humidity_min":$round($hour($hours_ago=$delta_h).outHumidity.min.raw,1),
+##        "humidity_min_time":$datef($hour($hours_ago=$delta_h).outHumidity.mintime.raw),
+##        "dewpoint_max":$round($hour($hours_ago=$delta_h).dewpoint.max.raw,1),
+##        "dewpoint_max_time":$datef($hour($hours_ago=$delta_h).dewpoint.maxtime.raw),
+##        "dewpoint_min":$round($hour($hours_ago=$delta_h).dewpoint.min.raw,1),
+##        "dewpoint_min_time":$datef($hour($hours_ago=$delta_h).dewpoint.mintime.raw),
+##        "barometer_max":$round($hour($hours_ago=$delta_h).barometer.max.raw,1),
+##        "barometer_max_time":$datef($hour($hours_ago=$delta_h).barometer.maxtime.raw),
+##        "barometer_min":$round($hour($hours_ago=$delta_h).barometer.min.raw,1),
+##        "barometer_min_time":$datef($hour($hours_ago=$delta_h).barometer.mintime.raw),
+##        "rainSum":$round($hour($hours_ago=$delta_h).rain.sum.raw,1),
+##        "rain_rate_max":$round($hour($hours_ago=$delta_h).rainRate.max.raw,1),
+##        "rain_rate_max_time":$datef($hour($hours_ago=$delta_h).rainRate.maxtime.raw),
+##        "wind_max":$round($hour($hours_ago=$delta_h).windGust.max.raw,1),
+## ##       "wind_max_dir":$round($hour($hours_ago=$delta_h).gustdir.max.raw,1),
+##        "wind_max_time":$datef($hour($hours_ago=$delta_h).windGust.maxtime.raw),
+##        "wind_avg":$round($hour($hours_ago=$delta_h).windSpeed.avg.raw,1),
+## #if $day.UV.has_data
+##        "uv_indice_max":$round($hour($hours_ago=$delta_h).UV.max.raw,1),
+##        "uv_indice_max_time":$datef($hour($hours_ago=$delta_h).UV.maxtime.raw),
+## #end if
+## #if $day.ET.has_data and $day.ET.sum.raw >0.0
+##        "etp_sum":$round($hour($hours_ago=$delta_h).ET.max.raw,1),
+## #end if
+## #if $day.radiation.has_data
+##        "radiation_max":$round($hour($hours_ago=$delta_h).radiation.max.raw,1),
+##        "radiation_max_time":$datef($hour($hours_ago=$delta_h).radiation.maxtime.raw),
+##        "radiation_min":$round($hour($hours_ago=$delta_h).radiation.min.raw,1),
+##        "radiation_min_time":$datef($hour($hours_ago=$delta_h).radiation.mintime.raw),
+## #end if
+## #if $day.rxCheckPercent.has_data
+##        "rx_max":$round($hour($hours_ago=$delta_h).rxCheckPercent.max.raw,1),
+##        "rx_max_time":$datef($hour($hours_ago=$delta_h).rxCheckPercent.maxtime.raw),
+##        "rx_min":$round($hour($hours_ago=$delta_h).rxCheckPercent.min.raw,1),
+##        "rx_min_time":$datef($hour($hours_ago=$delta_h).rxCheckPercent.mintime.raw),
+## #end if
+## #if $day.consBatteryVoltage.has_data
+##        "voltage_max":$round($hour($hours_ago=$delta_h).consBatteryVoltage.max.raw,1),
+##        "voltage_max_time":$datef($hour($hours_ago=$delta_h).consBatteryVoltage.maxtime.raw),
+##        "voltage_min":$round($hour($hours_ago=$delta_h).consBatteryVoltage.min.raw,1),
+##        "voltage_min_time":$datef($hour($hours_ago=$delta_h).consBatteryVoltage.mintime.raw),
+## #end if
+##        "in_temp_max":$round($hour($hours_ago=$delta_h).inTemp.max.raw,1),
+##        "in_temp_max_time":$datef($hour($hours_ago=$delta_h).inTemp.maxtime.raw),
+##        "in_temp_min":$round($hour($hours_ago=$delta_h).inTemp.min.raw,1),
+##        "in_temp_min_time":$datef($hour($hours_ago=$delta_h).inTemp.mintime.raw)
+##        },
+##        {
        "level":"D",
-       "out_temp_max":$round($day.outTemp.max.raw,1),
-       "out_temp_max_time":"$day.outTemp.maxtime.format("%Y-%m-%dT%H:%M:%S+04:00")",
-       "out_temp_min":$round($day.outTemp.min.raw,1),
-       "out_temp_min_time":"$day.outTemp.mintime.format("%Y-%m-%dT%H:%M:%S+04:00")",
-       "out_temp_avg":$round($day.outTemp.avg.raw,1),
-       "heatindex_max":$round($day.heatindex.max.raw,1),
-       "heatindex_max_time":"$day.heatindex.maxtime.format("%Y-%m-%dT%H:%M:%S+04:00")",
-       "windchill_min":$round($day.windchill.min.raw,1),
-       "windchill_min_time":"$day.windchill.mintime.format("%Y-%m-%dT%H:%M:%S+04:00")",
-       "humidity_max":$round($day.outHumidity.max.raw,1),
-       "humidity_max_time":"$day.outHumidity.maxtime.format("%Y-%m-%dT%H:%M:%S+04:00")",
-       "humidity_min":$round($day.outHumidity.min.raw,1),
-       "humidity_min_time":"$day.outHumidity.mintime.format("%Y-%m-%dT%H:%M:%S+04:00")",
-       "dewpoint_max":$round($day.dewpoint.max.raw,1),
-       "dewpoint_max_time":"$day.dewpoint.maxtime.format("%Y-%m-%dT%H:%M:%S+04:00")",
-       "dewpoint_min":$round($day.dewpoint.min.raw,1),
-       "dewpoint_min_time":"$day.dewpoint.mintime.format("%Y-%m-%dT%H:%M:%S+04:00")",
-       "barometer_max":$round($day.barometer.max.raw,1),
-       "barometer_max_time":"$day.barometer.maxtime.format("%Y-%m-%dT%H:%M:%S+04:00")",
-       "barometer_min":$round($day.barometer.min.raw,1),
-       "barometer_min_time":"$day.barometer.mintime.format("%Y-%m-%dT%H:%M:%S+04:00")",
-       "rainSum":$round($day.rain.sum.raw,1),
-       "rain_rate_max":$round($day.rainRate.max.raw,1),
-       "rain_rate_max_time":"$day.rainRate.maxtime.format("%Y-%m-%dT%H:%M:%S+04:00")",
-       "wind_max":$round($day.wind.max.raw,1),
-       "wind_max_dir":$round($day.wind.gustdir.raw,1),
-       "wind_max_time":"$day.wind.maxtime.format("%Y-%m-%dT%H:%M:%S+04:00")",
-       "wind_avg":$round($day.wind.avg.raw,1),
+       "dat":$datef($day($days_ago=$delta_d).dateTime.raw),
+       "out_temp_max":$round($day($days_ago=$delta_d).outTemp.max.raw,1),
+       "out_temp_max_time":$datef($day($days_ago=$delta_d).outTemp.maxtime.raw),
+       "out_temp_min":$round($day($days_ago=$delta_d).outTemp.min.raw,1),
+       "out_temp_min_time":$datef($day($days_ago=$delta_d).outTemp.mintime.raw),
+       "out_temp_avg":$round($day($days_ago=$delta_d).outTemp.avg.raw,1),
+       "heatindex_max":$round($day($days_ago=$delta_d).heatindex.max.raw,1),
+       "heatindex_max_time":$datef($day($days_ago=$delta_d).heatindex.maxtime.raw),
+       "windchill_min":$round($day($days_ago=$delta_d).windchill.min.raw,1),
+       "windchill_min_time":$datef($day($days_ago=$delta_d).windchill.mintime.raw),
+       "humidity_max":$round($day($days_ago=$delta_d).outHumidity.max.raw,1),
+       "humidity_max_time":$datef($day($days_ago=$delta_d).outHumidity.maxtime.raw),
+       "humidity_min":$round($day($days_ago=$delta_d).outHumidity.min.raw,1),
+       "humidity_min_time":$datef($day($days_ago=$delta_d).outHumidity.mintime.raw),
+       "dewpoint_max":$round($day($days_ago=$delta_d).dewpoint.max.raw,1),
+       "dewpoint_max_time":$datef($day($days_ago=$delta_d).dewpoint.maxtime.raw),
+       "dewpoint_min":$round($day($days_ago=$delta_d).dewpoint.min.raw,1),
+       "dewpoint_min_time":$datef($day($days_ago=$delta_d).dewpoint.mintime.raw),
+       "barometer_max":$round($day($days_ago=$delta_d).barometer.max.raw,1),
+       "barometer_max_time":$datef($day($days_ago=$delta_d).barometer.maxtime.raw),
+       "barometer_min":$round($day($days_ago=$delta_d).barometer.min.raw,1),
+       "barometer_min_time":$datef($day($days_ago=$delta_d).barometer.mintime.raw),
+       "rainSum":$round($day($days_ago=$delta_d).rain.sum.raw,1),
+       "rain_rate_max":$round($day($days_ago=$delta_d).rainRate.max.raw,1),
+       "rain_rate_max_time":$datef($day($days_ago=$delta_d).rainRate.maxtime.raw),
+       "wind_max":$round($day($days_ago=$delta_d).wind.max.raw,1),
+       "wind_max_dir":$round($day($days_ago=$delta_d).wind.gustdir.raw,1),
+       "wind_max_time":$datef($day($days_ago=$delta_d).wind.maxtime.raw),
+       "wind_avg":$round($day($days_ago=$delta_d).wind.avg.raw,1),
 #if $day.UV.has_data
-       "uv_indice_max":$round($day.UV.max.raw,1),
-       "uv_indice_max_time":"$day.UV.maxtime.format("%Y-%m-%dT%H:%M:%S+04:00")",
+       "uv_indice_max":$round($day($days_ago=$delta_d).UV.max.raw,1),
+       "uv_indice_max_time":$datef($day($days_ago=$delta_d).UV.maxtime.raw),
 #end if
 #if $day.ET.has_data and $day.ET.sum.raw >0.0
-       "etp_sum":$round($day.ET.max.raw,1),
+       "etp_sum":$round($day($days_ago=$delta_d).ET.max.raw,1),
 #end if
 #if $day.radiation.has_data
-       "radiation_max":$round($day.radiation.max.raw,1),
-       "radiation_max_time":"$day.radiation.maxtime.format("%Y-%m-%dT%H:%M:%S+04:00")",
-       "radiation_min":$round($day.radiation.min.raw,1),
-       "radiation_min_time":"$day.radiation.mintime.format("%Y-%m-%dT%H:%M:%S+04:00")",
+       "radiation_max":$round($day($days_ago=$delta_d).radiation.max.raw,1),
+       "radiation_max_time":$datef($day($days_ago=$delta_d).radiation.maxtime.raw),
+       "radiation_min":$round($day($days_ago=$delta_d).radiation.min.raw,1),
+       "radiation_min_time":$datef($day($days_ago=$delta_d).radiation.mintime.raw),
 #end if
 #if $day.rxCheckPercent.has_data
-       "rx_max":$round($day.rxCheckPercent.max.raw,1),
-       "rx_max_time":"$day.rxCheckPercent.maxtime.format("%Y-%m-%dT%H:%M:%S+04:00")",
-       "rx_min":$round($day.rxCheckPercent.min.raw,1),
-       "rx_min_time":"$day.rxCheckPercent.mintime.format("%Y-%m-%dT%H:%M:%S+04:00")",
+       "rx_max":$round($day($days_ago=$delta_d).rxCheckPercent.max.raw,1),
+       "rx_max_time":$datef($day($days_ago=$delta_d).rxCheckPercent.maxtime.raw),
+       "rx_min":$round($day($days_ago=$delta_d).rxCheckPercent.min.raw,1),
+       "rx_min_time":$datef($day($days_ago=$delta_d).rxCheckPercent.mintime.raw),
 #end if
 #if $day.consBatteryVoltage.has_data
-       "voltage_max":$round($day.consBatteryVoltage.max.raw,1),
-       "voltage_max_time":"$day.consBatteryVoltage.maxtime.format("%Y-%m-%dT%H:%M:%S+04:00")",
-       "voltage_min":$round($day.consBatteryVoltage.min.raw,1),
-       "voltage_min_time":"$day.consBatteryVoltage.mintime.format("%Y-%m-%dT%H:%M:%S+04:00")",
+       "voltage_max":$round($day($days_ago=$delta_d).consBatteryVoltage.max.raw,1),
+       "voltage_max_time":$datef($day($days_ago=$delta_d).consBatteryVoltage.maxtime.raw),
+       "voltage_min":$round($day($days_ago=$delta_d).consBatteryVoltage.min.raw,1),
+       "voltage_min_time":$datef($day($days_ago=$delta_d).consBatteryVoltage.mintime.raw),
 #end if
-       "in_temp_max":$round($day.inTemp.max.raw,1),
-       "in_temp_max_time":"$day.inTemp.maxtime.format("%Y-%m-%dT%H:%M:%S+04:00")",
-       "in_temp_min":$round($day.inTemp.min.raw,1),
-       "in_temp_min_time":"$day.inTemp.mintime.format("%Y-%m-%dT%H:%M:%S+04:00")"
-	} ]
+       "in_temp_max":$round($day($days_ago=$delta_d).inTemp.max.raw,1),
+       "in_temp_max_time":$datef($day($days_ago=$delta_d).inTemp.maxtime.raw),
+       "in_temp_min":$round($day($days_ago=$delta_d).inTemp.min.raw,1),
+       "in_temp_min_time":$datef($day($days_ago=$delta_d).inTemp.mintime.raw)
+       ## },
+##        {
+##        "level":"M",
+##        "dat":$datef($month($months_ago=$delta_m).dateTime.raw),
+##        "out_temp_max":$round($month($months_ago=$delta_m).outTemp.max.raw,1),
+##        "out_temp_max_time":$datef($month($months_ago=$delta_m).outTemp.maxtime.raw),
+##        "out_temp_min":$round($month($months_ago=$delta_m).outTemp.min.raw,1),
+##        "out_temp_min_time":$datef($month($months_ago=$delta_m).outTemp.mintime.raw),
+##        "out_temp_avg":$round($month($months_ago=$delta_m).outTemp.avg.raw,1),
+##        "heatindex_max":$round($month($months_ago=$delta_m).heatindex.max.raw,1),
+##        "heatindex_max_time":$datef($month($months_ago=$delta_m).heatindex.maxtime.raw),
+##        "windchill_min":$round($month($months_ago=$delta_m).windchill.min.raw,1),
+##        "windchill_min_time":$datef($month($months_ago=$delta_m).windchill.mintime.raw),
+##        "humidity_max":$round($month($months_ago=$delta_m).outHumidity.max.raw,1),
+##        "humidity_max_time":$datef($month($months_ago=$delta_m).outHumidity.maxtime.raw),
+##        "humidity_min":$round($month($months_ago=$delta_m).outHumidity.min.raw,1),
+##        "humidity_min_time":$datef($month($months_ago=$delta_m).outHumidity.mintime.raw),
+##        "dewpoint_max":$round($month($months_ago=$delta_m).dewpoint.max.raw,1),
+##        "dewpoint_max_time":$datef($month($months_ago=$delta_m).dewpoint.maxtime.raw),
+##        "dewpoint_min":$round($month($months_ago=$delta_m).dewpoint.min.raw,1),
+##        "dewpoint_min_time":$datef($month($months_ago=$delta_m).dewpoint.mintime.raw),
+##        "barometer_max":$round($month($months_ago=$delta_m).barometer.max.raw,1),
+##        "barometer_max_time":$datef($month($months_ago=$delta_m).barometer.maxtime.raw),
+##        "barometer_min":$round($month($months_ago=$delta_m).barometer.min.raw,1),
+##        "barometer_min_time":$datef($month($months_ago=$delta_m).barometer.mintime.raw),
+##        "rainSum":$round($month($months_ago=$delta_m).rain.sum.raw,1),
+##        "rain_rate_max":$round($month($months_ago=$delta_m).rainRate.max.raw,1),
+##        "rain_rate_max_time":$datef($month($months_ago=$delta_m).rainRate.maxtime.raw),
+##        "wind_max":$round($month($months_ago=$delta_m).wind.max.raw,1),
+##        "wind_max_dir":$round($month($months_ago=$delta_m).wind.gustdir.raw,1),
+##        "wind_max_time":$datef($month($months_ago=$delta_m).wind.maxtime.raw),
+##        "wind_avg":$round($month($months_ago=$delta_m).wind.avg.raw,1),
+## #if $day.UV.has_data
+##        "uv_indice_max":$round($month($months_ago=$delta_m).UV.max.raw,1),
+##        "uv_indice_max_time":$datef($month($months_ago=$delta_m).UV.maxtime.raw),
+## #end if
+## #if $day.ET.has_data and $day.ET.sum.raw >0.0
+##        "etp_sum":$round($month($months_ago=$delta_m).ET.max.raw,1),
+## #end if
+## #if $day.radiation.has_data
+##        "radiation_max":$round($month($months_ago=$delta_m).radiation.max.raw,1),
+##        "radiation_max_time":$datef($month($months_ago=$delta_m).radiation.maxtime.raw),
+##        "radiation_min":$round($month($months_ago=$delta_m).radiation.min.raw,1),
+##        "radiation_min_time":$datef($month($months_ago=$delta_m).radiation.mintime.raw),
+## #end if
+## #if $day.rxCheckPercent.has_data
+##        "rx_max":$round($month($months_ago=$delta_m).rxCheckPercent.max.raw,1),
+##        "rx_max_time":$datef($month($months_ago=$delta_m).rxCheckPercent.maxtime.raw),
+##        "rx_min":$round($month($months_ago=$delta_m).rxCheckPercent.min.raw,1),
+##        "rx_min_time":$datef($month($months_ago=$delta_m).rxCheckPercent.mintime.raw),
+## #end if
+## #if $day.consBatteryVoltage.has_data
+##        "voltage_max":$round($month($months_ago=$delta_m).consBatteryVoltage.max.raw,1),
+##        "voltage_max_time":$datef($month($months_ago=$delta_m).consBatteryVoltage.maxtime.raw),
+##        "voltage_min":$round($month($months_ago=$delta_m).consBatteryVoltage.min.raw,1),
+##        "voltage_min_time":$datef($month($months_ago=$delta_m).consBatteryVoltage.mintime.raw),
+## #end if
+##        "in_temp_max":$round($month($months_ago=$delta_m).inTemp.max.raw,1),
+##        "in_temp_max_time":$datef($month($months_ago=$delta_m).inTemp.maxtime.raw),
+##        "in_temp_min":$round($month($months_ago=$delta_m).inTemp.min.raw,1),
+##        "in_temp_min_time":$datef($month($months_ago=$delta_m).inTemp.mintime.raw)
+##        },
+##        {
+##        "level":"Y",
+##        "dat":$datef($year($years_ago=$delta_y).dateTime.raw),
+##        "out_temp_max":$round($year($years_ago=$delta_y).outTemp.max.raw,1),
+##        "out_temp_max_time":$datef($year($years_ago=$delta_y).outTemp.maxtime.raw),
+##        "out_temp_min":$round($year($years_ago=$delta_y).outTemp.min.raw,1),
+##        "out_temp_min_time":$datef($year($years_ago=$delta_y).outTemp.mintime.raw),
+##        "out_temp_avg":$round($year($years_ago=$delta_y).outTemp.avg.raw,1),
+##        "heatindex_max":$round($year($years_ago=$delta_y).heatindex.max.raw,1),
+##        "heatindex_max_time":$datef($year($years_ago=$delta_y).heatindex.maxtime.raw),
+##        "windchill_min":$round($year($years_ago=$delta_y).windchill.min.raw,1),
+##        "windchill_min_time":$datef($year($years_ago=$delta_y).windchill.mintime.raw),
+##        "humidity_max":$round($year($years_ago=$delta_y).outHumidity.max.raw,1),
+##        "humidity_max_time":$datef($year($years_ago=$delta_y).outHumidity.maxtime.raw),
+##        "humidity_min":$round($year($years_ago=$delta_y).outHumidity.min.raw,1),
+##        "humidity_min_time":$datef($year($years_ago=$delta_y).outHumidity.mintime.raw),
+##        "dewpoint_max":$round($year($years_ago=$delta_y).dewpoint.max.raw,1),
+##        "dewpoint_max_time":$datef($year($years_ago=$delta_y).dewpoint.maxtime.raw),
+##        "dewpoint_min":$round($year($years_ago=$delta_y).dewpoint.min.raw,1),
+##        "dewpoint_min_time":$datef($year($years_ago=$delta_y).dewpoint.mintime.raw),
+##        "barometer_max":$round($year($years_ago=$delta_y).barometer.max.raw,1),
+##        "barometer_max_time":$datef($year($years_ago=$delta_y).barometer.maxtime.raw),
+##        "barometer_min":$round($year($years_ago=$delta_y).barometer.min.raw,1),
+##        "barometer_min_time":$datef($year($years_ago=$delta_y).barometer.mintime.raw),
+##        "rainSum":$round($year($years_ago=$delta_y).rain.sum.raw,1),
+##        "rain_rate_max":$round($year($years_ago=$delta_y).rainRate.max.raw,1),
+##        "rain_rate_max_time":$datef($year($years_ago=$delta_y).rainRate.maxtime.raw),
+##        "wind_max":$round($year($years_ago=$delta_y).wind.max.raw,1),
+##        "wind_max_dir":$round($year($years_ago=$delta_y).wind.gustdir.raw,1),
+##        "wind_max_time":$datef($year($years_ago=$delta_y).wind.maxtime.raw),
+##        "wind_avg":$round($year($years_ago=$delta_y).wind.avg.raw,1),
+## #if $day.UV.has_data
+##        "uv_indice_max":$round($year($years_ago=$delta_y).UV.max.raw,1),
+##        "uv_indice_max_time":$datef($year($years_ago=$delta_y).UV.maxtime.raw),
+## #end if
+## #if $day.ET.has_data and $day.ET.sum.raw >0.0
+##        "etp_sum":$round($year($years_ago=$delta_y).ET.max.raw,1),
+## #end if
+## #if $day.radiation.has_data
+##        "radiation_max":$round($year($years_ago=$delta_y).radiation.max.raw,1),
+##        "radiation_max_time":$datef($year($years_ago=$delta_y).radiation.maxtime.raw),
+##        "radiation_min":$round($year($years_ago=$delta_y).radiation.min.raw,1),
+##        "radiation_min_time":$datef($year($years_ago=$delta_y).radiation.mintime.raw),
+## #end if
+## #if $day.rxCheckPercent.has_data
+##        "rx_max":$round($year($years_ago=$delta_y).rxCheckPercent.max.raw,1),
+##        "rx_max_time":$datef($year($years_ago=$delta_y).rxCheckPercent.maxtime.raw),
+##        "rx_min":$round($year($years_ago=$delta_y).rxCheckPercent.min.raw,1),
+##        "rx_min_time":$datef($year($years_ago=$delta_y).rxCheckPercent.mintime.raw),
+## #end if
+## #if $day.consBatteryVoltage.has_data
+##        "voltage_max":$round($year($years_ago=$delta_y).consBatteryVoltage.max.raw,1),
+##        "voltage_max_time":$datef($year($years_ago=$delta_y).consBatteryVoltage.maxtime.raw),
+##        "voltage_min":$round($year($years_ago=$delta_y).consBatteryVoltage.min.raw,1),
+##        "voltage_min_time":$datef($year($years_ago=$delta_y).consBatteryVoltage.mintime.raw),
+## #end if
+##        "in_temp_max":$round($year($years_ago=$delta_y).inTemp.max.raw,1),
+##        "in_temp_max_time":$datef($year($years_ago=$delta_y).inTemp.maxtime.raw),
+##        "in_temp_min":$round($year($years_ago=$delta_y).inTemp.min.raw,1),
+##        "in_temp_min_time":$datef($year($years_ago=$delta_y).inTemp.mintime.raw)
+###if ($nb_obs < $all_obs) ## test derniere obs de la boucle
+       }]#slurp ## poursuite du traitement des obs apres agregation
+##       $nb_obs - $all_obs
+###else
+##       }]#slurp  ## fin du traitement
+###end if ## fin test derniere obs
+#else        
+       }#slurp ## derniere obs de la boucle
+#end if ## fin test change heure ou 
+#set $datetime_obs_prev = $datetime_obs ## garde en memoire obs traitee
+#end for ## fin boucle obs
+       
      }
-     ]
+   ]
 }
