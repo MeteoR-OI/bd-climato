@@ -52,9 +52,11 @@ class Calculus():
 
             # save our data
             self.my_obs.save()
-            for i in (0, 1, 2, 3, 4, 5, 6):
+            i = 0
+            while i < self.my_agg_array.__len__():
                 # self.my_agg_array[i].data.j['dv'] = {}
                 self.my_agg_array[i].save()
+                i += 1
             if trace_flag:
                 if idx == 0:
                     helper = ' - cut and paste this data into https://codebeautify.org/jsonviewer'

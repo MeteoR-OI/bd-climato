@@ -160,7 +160,7 @@ class AvgOmmCompute(AvgCompute):
                 delKey(agg_j, json_key + '_avg')
                 delKey(agg_j, json_key)
                 agg_j[json_key + '_delete_me'] = True
-                dv_next = {"extremesFix": [], "maxminFix": []}
+                dv_next = {"maxminFix": []}
             else:
                 # compute the new _avg
                 tmp_sum_new = agg_j[json_key + '_sum']

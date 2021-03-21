@@ -217,7 +217,7 @@ class AvgCompute(ProcessMeasure):
                 delKey(agg_j, json_key + avg_suffix)
                 delKey(agg_j, json_key)
                 agg_j[json_key + '_delete_me'] = True
-                dv_next = {"extremesFix": [], "maxminFix": []}
+                dv_next = {"maxminFix": []}
             else:
                 # compute the new _avg
                 tmp_sum_new = agg_j[json_key + '_sum']
@@ -235,7 +235,7 @@ class AvgCompute(ProcessMeasure):
 
         # return if the aggregation should not be sent to upper levels
         if isFlagged(my_measure['special'], MeasureProcessingBitMask.OnlyAggregateInHour) is True:
-            dv_next = {"extremesFix": [], "maxminFix": []}
+            dv_next = {"maxminFix": []}
 
     def get_agg_magg(self, current_agg: AggMeteor, delta_values: json, measures: json, measure_idx: int):
         """

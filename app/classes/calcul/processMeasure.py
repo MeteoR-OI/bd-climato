@@ -1,9 +1,10 @@
-import datetime
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.tools.climConstant import AggLevel, MeasureProcessingBitMask
 from app.tools.aggTools import isFlagged, delKey
 from app.tools.aggTools import getRightAggregation, shouldNullify
+from app.tools.aggTools import calcAggDate
 import json
+import datetime
 
 
 class ProcessMeasure():
@@ -97,25 +98,27 @@ class ProcessMeasure():
             return
 
         # load the current aggregations array for our anAgg
-        measure_dat = measures['data'][measure_idx]['current']['start_dat']
+        deca_hour = 0
+        if my_measure.__contains__('hour_deca') is True:
+            deca_hour = my_measure['hour_deca']
+            
+        measure_dat = calcAggDate('H', measures['data'][measure_idx]['current']['start_dat'], deca_hour, True)
 
         for anAgg in AggLevel:
+            measure_dat = calcAggDate(anAgg, measure_dat, 0, False)
+
             """loop for all aggregations in ascending level"""
-            dv_next = {"extremesFix": [], "maxminFix": []}
+            dv_next = {"maxminFix": []}
 
             # load our array of current aggregation, plus prev/next for agg_day only
-            all_agg = []
+            agg_deca = None
             for my_agg in aggregations:
-                if my_agg.agg_niveau == anAgg:
-                    all_agg.append(my_agg)
-                    if anAgg == "D":
-                        all_agg.append(aggregations[5])
-                        all_agg.append(aggregations[6])
+                if my_agg.agg_niveau == anAgg and my_agg.data.start_dat == measure_dat:
+                    agg_deca = my_agg
                     break
 
-            # get the rigth aggregation with hour_deca (only for day)
-            agg_deca = getRightAggregation(anAgg, measure_dat, my_measure['hour_deca'], all_agg)
-            all_agg = []
+            if agg_deca is None:
+                raise Exception('processAggregations', 'aggregation not loaded')
 
             # load data in our aggregation
             self.loadAggregationDatarows(

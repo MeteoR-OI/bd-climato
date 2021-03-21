@@ -48,7 +48,7 @@ class TypeInstrumentAll():
     ):
         """process observation data for all our TypeInstrument"""
         try:
-            delta_values = {"extremesFix": [], "maxminFix": []}
+            delta_values = {"maxminFix": []}
 
             # for all type_instruments
             for an_intrument in self.all_instruments:
