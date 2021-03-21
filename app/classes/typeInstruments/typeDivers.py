@@ -9,7 +9,7 @@ class TypeDivers(RootTypeInstrument):
             # type_instrument_id
             self.my_type_instr_id = 9
 
-            self.mesures = [
+            self.measures = [
                 # type_i : type_instrument_id
                 # key: key string in json
                 # field: db column name only if different. No value -> use key name

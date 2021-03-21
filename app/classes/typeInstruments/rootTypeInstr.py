@@ -1,4 +1,3 @@
-from app.classes.metier.posteMetier import PosteMetier
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.typeInstrumentMeteor import TypeInstrumentMeteor
 from app.classes.calcul.avgCompute import AvgCompute
@@ -48,7 +47,7 @@ class RootTypeInstrument:
 
     def processJson(
         self,
-        poste_metier: PosteMetier,
+        poste_metier,
         measures: json,
         measure_idx: int,
         obs_meteor: ObsMeteor,
@@ -61,7 +60,7 @@ class RootTypeInstrument:
         """
         try:
             # for all measures
-            for my_measure in self.mesures:
+            for my_measure in self.measures:
                 # find the calculus object for my_mesure
                 for a_calculus in self.all_calculus:
                     if a_calculus['agg'] == my_measure['agg']:

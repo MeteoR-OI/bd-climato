@@ -5,7 +5,7 @@ from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.aggMeteor import AggMeteor
 from app.classes.repository.excluMeteor import ExcluMeteor
 from app.classes.repository.posteMeteor import PosteMeteor
-# from app.classes.typeInstruments.rootTypeInstr import TypeInstrumentMeteor
+from app.classes.metier.typeInstrumentAll import TypeInstrumentAll
 from app.tools.aggTools import calcAggDate
 
 
@@ -32,47 +32,43 @@ class PosteMetier(PosteMeteor):
     def getAllForAPoste(self, start_dat: datetime = datetime.datetime.now(datetime.timezone.utc)) -> json:
         return ExcluMeteor.getAllForAPoste(self.data.id, start_dat)
 
-    def aggregations(self, my_start_date_utc: datetime, duration: int, is_measure_date: bool = False) -> json:
+    def aggregations(self, my_start_date_utc: datetime, is_measure_date: bool = False) -> json:
         """
-        get_agg
+            get_agg
 
-        my_start_date_utc: date en UTC.
+            my_start_date_utc: date en UTC.
+            return an array of aggregations needed by our calculus function
 
-        return an array of AggMeteor to be used by our process_xxx methods
-            [0] -> Agg_hour
-            [1] -> Agg_day
-            [2] -> Agg_month
-            [3] -> Agg-year
-            [4] -> Agg_all
-            [5] -> Agg_day for day - 1
-            [6] -> Agg_day for day + 1
-
-        create them if needed
+            load empty agg_xxxx if does not exist
         """
-        try:
-            # ti = TypeInstrumentMeteor()
-            # ti.all_instruments => {'type_id': 1, 'object': TypeTemp()},
-            # object.mesures => {'src_key': 'out_temp', 'hour_deca': 0, 'special': 0},
-            ret = []
-            # push aggregations of all levels for the given date
+        # determine all dates needed to process the measure at the given date
+        needed_dates = [my_start_date_utc]
+        calculated_deca = {"d0": True}
+        ti_all = TypeInstrumentAll()
+        for an_instru in ti_all.all_instruments:
+            for a_measure in an_instru['object'].measures:
+                if a_measure.__contains__('hour_deca') and calculated_deca.__contains__('d' + str(a_measure['hour_deca'])) is False:
+                    hour_deca = a_measure['hour_deca']
+                    # set the deca as computed
+                    calculated_deca['d' + str(hour_deca)] = True
+                    deca_duration = datetime.timedelta(hours=int(hour_deca))
+                    needed_dates.append(my_start_date_utc + deca_duration)
+
+        # now load the needed aggregations
+        ret = []
+        for a_needed_date in needed_dates:
+            tmp_dt = calcAggDate('H', a_needed_date, 0, True)
             for agg_niveau in AggLevel:
                 # is_measure_date only used in agg_hour
-                tmp_dt = calcAggDate(agg_niveau, my_start_date_utc, 0, is_measure_date)
-                ret.append(AggMeteor(self.data.id, agg_niveau, tmp_dt))
-
-            # get aggregation of day - 1 for measures that will aggregate yesteray
-            tmp_dt = calcAggDate('D', my_start_date_utc, -1)
-            ret.append(AggMeteor(self.data.id, 'D', tmp_dt))
-
-            # get aggregation of day + 1 for measures that will aggregate the day after
-            tmp_dt = calcAggDate('D', my_start_date_utc, 1)
-            ret.append(AggMeteor(self.data.id, 'D', tmp_dt))
-
-            return ret
-        except Exception as inst:
-            print(type(inst))    # the exception instance
-            print(inst.args)     # arguments stored in .args
-            print(inst)          # __str__ allows args to be printed directly,
+                tmp_dt = calcAggDate(agg_niveau, tmp_dt, 0, False)
+                already_loaded = False
+                for a_ret in ret:
+                    if a_ret.data.start_dat == tmp_dt:
+                        already_loaded = True
+                        break
+                if already_loaded is False:
+                    ret.append(AggMeteor(self.data.id, agg_niveau, tmp_dt))
+        return ret
 
     def observation(self, my_stop_date_utc: datetime) -> ObsMeteor:
         """get or create an observation at a given datetime"""

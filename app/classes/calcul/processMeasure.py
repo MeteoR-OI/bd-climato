@@ -1,5 +1,4 @@
 import datetime
-from app.classes.metier.posteMetier import PosteMetier
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.tools.climConstant import AggLevel, MeasureProcessingBitMask
 from app.tools.aggTools import isFlagged, delKey
@@ -18,7 +17,7 @@ class ProcessMeasure():
     # {'type_i': 1, 'src_key': 'out_temp', 'target_key': 'out_temp', 'avg': True, 'Min': True, 'max': True, 'hour_deca': 0, 'special': 0},
     def processObservation(
         self,
-        poste_metier: PosteMetier,
+        poste_metier,
         my_measure: json,
         measures: json,
         measure_idx: int,
@@ -79,7 +78,7 @@ class ProcessMeasure():
 
     def processAggregations(
         self,
-        poste_metier: PosteMetier,
+        poste_metier,
         my_measure: json,
         measures: json,
         measure_idx: int,

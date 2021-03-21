@@ -45,7 +45,7 @@ class Calculus():
                 measure_duration = datetime.timedelta(minutes=int(self.my_obs.data.duration))
                 self.my_obs.data.start_dat = self.my_obs.data.stop_dat - measure_duration
             # the stop_dat of the measure is used as the start_dat in all agregations
-            self.my_agg_array = self.my_poste.aggregations(m_stop_date_agg_start_date, m_j['data'][idx]['current']['duration'], True)
+            self.my_agg_array = self.my_poste.aggregations(m_stop_date_agg_start_date, True)
 
             # call the method to update obs, and return delta_val
             all_instr.process_json(self.my_poste, m_j, idx, self.my_obs, self.my_agg_array, trace_flag)

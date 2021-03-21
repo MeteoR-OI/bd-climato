@@ -1,5 +1,4 @@
 from app.classes.repository.obsMeteor import ObsMeteor
-from app.classes.metier.posteMetier import PosteMetier
 from app.classes.typeInstruments.typeTemp import TypeTemp
 from app.classes.typeInstruments.typeHumidity import TypeHumidity
 from app.classes.typeInstruments.typePression import TypePression
@@ -40,7 +39,7 @@ class TypeInstrumentAll():
 
     def process_json(
         self,
-        poste_metier: PosteMetier,
+        poste_metier,
         measures: json,
         measure_idx: int,
         obs_meteor: ObsMeteor,
