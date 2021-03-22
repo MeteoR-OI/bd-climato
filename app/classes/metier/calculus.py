@@ -32,6 +32,8 @@ class Calculus():
 
         idx = 0
         while idx < m_j['data'].__len__():
+            if idx == 240:
+                idx = 240
             pid = PosteMeteor.getPosteIdByMeteor(m_j['meteor'])
             if pid is None:
                 raise Exception('doCalculus', 'unknown code meteor: ' + m_j['meteor'])

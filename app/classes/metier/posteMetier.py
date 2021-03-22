@@ -32,16 +32,20 @@ class PosteMetier(PosteMeteor):
     def getAllForAPoste(self, start_dat: datetime = datetime.datetime.now(datetime.timezone.utc)) -> json:
         return ExcluMeteor.getAllForAPoste(self.data.id, start_dat)
 
-    def aggregations(self, my_start_date_utc: datetime, is_measure_date: bool = False) -> json:
+    def aggregations(self, start_date_utc: datetime, is_measure_date: bool = False) -> json:
         """
             get_agg
 
-            my_start_date_utc: date en UTC.
+            my_start_date_utc: date en UTC
+                aggregation start_dat, or obs.stop_date
             return an array of aggregations needed by our calculus function
 
             load empty agg_xxxx if does not exist
         """
         # determine all dates needed to process the measure at the given date
+        my_start_date_utc = start_date_utc
+        if is_measure_date is True:
+            my_start_date_utc = calcAggDate('H', start_date_utc, 0, True)
         needed_dates = [my_start_date_utc]
         calculated_deca = {"d0": True}
         ti_all = TypeInstrumentAll()
@@ -57,13 +61,13 @@ class PosteMetier(PosteMeteor):
         # now load the needed aggregations
         ret = []
         for a_needed_date in needed_dates:
-            tmp_dt = calcAggDate('H', a_needed_date, 0, True)
+            tmp_dt = a_needed_date
             for agg_niveau in AggLevel:
                 # is_measure_date only used in agg_hour
                 tmp_dt = calcAggDate(agg_niveau, tmp_dt, 0, False)
                 already_loaded = False
                 for a_ret in ret:
-                    if a_ret.data.start_dat == tmp_dt:
+                    if a_ret.data.start_dat == tmp_dt and a_ret.agg_niveau == agg_niveau:
                         already_loaded = True
                         break
                 if already_loaded is False:

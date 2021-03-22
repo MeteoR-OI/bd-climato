@@ -1,6 +1,7 @@
 from app.tools.climConstant import AggLevel, ComputationParam
 import json
 import datetime
+import dateutil.parser
 from dateutil.relativedelta import relativedelta
 
 
@@ -93,7 +94,12 @@ def calcAggDate(niveau_agg: AggLevel, start_dt_utc: datetime, factor: float = 0,
             delta_dt = datetime.timedelta(minutes=int(60 * (factor + ComputationParam.AddHourToMeasureInAggHour)))
         else:
             delta_dt = datetime.timedelta(minutes=int(60 * factor))
-        return datetime.datetime(start_dt_utc.year, start_dt_utc.month, start_dt_utc.day, start_dt_utc.hour, 0, 0, 0, datetime.timezone.utc) + delta_dt
+        if is_measure_date and start_dt_utc.minute == 0 and start_dt_utc.second == 0:
+            start_dt_utc = start_dt_utc - datetime.timedelta(hours=1)
+        tmp_dt = datetime.datetime(start_dt_utc.year, start_dt_utc.month, start_dt_utc.day, start_dt_utc.hour, 0, 0, 0, datetime.timezone.utc) + delta_dt
+        tmp_dt1 = tmp_dt.isoformat().replace('+00:00', '+04:00')
+        tmp_dt2 = dateutil.parser.parse(tmp_dt1)
+        return tmp_dt2
 
     if niveau_agg == "D":
         if int(factor) == 1:

@@ -1,7 +1,7 @@
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.tools.climConstant import AggLevel, MeasureProcessingBitMask
 from app.tools.aggTools import isFlagged, delKey
-from app.tools.aggTools import getRightAggregation, shouldNullify
+from app.tools.aggTools import shouldNullify
 from app.tools.aggTools import calcAggDate
 import json
 import datetime
@@ -101,8 +101,8 @@ class ProcessMeasure():
         deca_hour = 0
         if my_measure.__contains__('hour_deca') is True:
             deca_hour = my_measure['hour_deca']
-            
-        measure_dat = calcAggDate('H', measures['data'][measure_idx]['current']['start_dat'], deca_hour, True)
+
+        measure_dat = calcAggDate('H', measures['data'][measure_idx]['current']['stop_dat'], deca_hour, True)
 
         for anAgg in AggLevel:
             measure_dat = calcAggDate(anAgg, measure_dat, 0, False)
