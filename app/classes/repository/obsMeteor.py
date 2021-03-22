@@ -42,10 +42,18 @@ class ObsMeteor():
                     raise Exception('obsMeteor', 'duration is null with data loaded')
                 measure_duration = datetime.timedelta(minutes=int(self.my_obs.data.duration))
                 self.my_obs.data.start_dat = self.my_obs.data.stop_dat - measure_duration
-            JsonPlus().serialize(self.data.j)
+            if self.data.j != {}:
+                JsonPlus().serialize(self.data.j)
+            if self.data.j_agg != {}:
+                for a_jagg in self.data.j_agg:
+                    JsonPlus().serialize(a_jagg)
             self.data.save()
-            JsonPlus().deserialize(self.data.j)
-
+            if self.data.j != {}:
+                JsonPlus().deserialize(self.data.j)
+            if self.data.j_agg != {}:
+                for a_jagg in self.data.j_agg:
+                    JsonPlus().deserialize(a_jagg)
+ 
     def __str__(self):
         """print myself"""
         return "ObsMeteor id: " + str(self.data.id) + ", poste_id: " + str(self.data.poste_id.id) + ", date: " + str(self.data.dat)
