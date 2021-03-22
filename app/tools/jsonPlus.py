@@ -2,6 +2,7 @@
 import json
 import dateutil.parser
 import datetime
+from django.utils import timezone
 
 
 class JsonPlus():
@@ -78,19 +79,20 @@ class JsonPlus():
 
     def deserialize(self, j: dict):
         """ encode str fields into datetime for our well known keys """
+        current_tz = timezone.get_current_timezone()
         if isinstance(j, dict) or isinstance(j, JsonPlus):
             # print("serialize(" + json.dumps(j))
             for k, v in j.items():
                 # print("Decode: " + k + ":" + str(j[k]) + ", type: " + str(type(j[k])))
-                if 'start_dat' == k or 'stop_dat' == k or 'dat' == k:
-                    j[k] = dateutil.parser.parse(str(j[k]))
+                if 'start_dat' == k or 'stop_dat' == k or 'dat' == k or k.endswith('_time'):
+                    if str(type(j[k])) == "<class 'str'>":
+                        if '+04:00' in j[k]:
+                            j[k] = j[k].replace('+04:00', '')
+                        j[k] = current_tz.localize(dateutil.parser.parse(str(j[k])), is_dst=None)
                     # print("found dat, new type : " + str(type(j[k])))
-                if k.endswith('_time'):
-                    j[k] = dateutil.parser.parse(str(j[k]))
-                    # print("found xxx_time, new type : " + str(type(j[k])))
-                if isinstance(j[k], dict) or isinstance(j[k], JsonPlus):
-                    # print("** going down... **")
-                    self.deserialize(j[k])
+                # if isinstance(j[k], dict) or isinstance(j[k], JsonPlus):
+                #     # print("** going down... **")
+                #     self.deserialize(j[k])
                 if isinstance(j[k], list):
                     for akey in j[k]:
                         if isinstance(akey, dict) or isinstance(akey, JsonPlus):

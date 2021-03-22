@@ -67,7 +67,7 @@ class PosteMetier(PosteMeteor):
                 tmp_dt = calcAggDate(agg_niveau, tmp_dt, 0, False)
                 already_loaded = False
                 for a_ret in ret:
-                    if a_ret.data.start_dat == tmp_dt and a_ret.agg_niveau == agg_niveau:
+                    if str(a_ret.data.start_dat) == str(tmp_dt) and a_ret.agg_niveau == agg_niveau:
                         already_loaded = True
                         break
                 if already_loaded is False:

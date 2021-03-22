@@ -5,6 +5,7 @@ from app.tools.aggTools import calcAggDate
 import datetime
 import pytest
 import logging
+from django.utils import timezone
 
 
 @pytest.fixture(autouse=True)
@@ -39,6 +40,9 @@ class AggMeteor():
         if agg_object.objects.filter(poste_id_id=poste_id).filter(start_dat=my_start_date).exists():
             self.data = agg_object.objects.filter(poste_id_id=poste_id).filter(start_dat=my_start_date).first()
             JsonPlus().deserialize(self.data.j)
+            current_tz = timezone.get_current_timezone()
+            current_tz.normalize(self.data.start_dat)
+
         else:
             self.data = agg_object(poste_id_id=poste_id, start_dat=my_start_date, duration_sum=0, j={})
 

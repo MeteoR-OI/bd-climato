@@ -4,6 +4,7 @@ import datetime
 import pytz
 import pytest
 import logging
+from django.utils import timezone
 
 
 @pytest.fixture(autouse=True)
@@ -26,11 +27,15 @@ class ObsMeteor():
     def __init__(self, poste_id: int, stop_dt_utc: datetime):
         """Init a new ObsMeteor object"""
         # todo: block if my_datetime_utc > previous dat+duration
+        current_tz = timezone.get_current_timezone()
         if Observation.objects.filter(poste_id_id=poste_id).filter(stop_dat=stop_dt_utc).exists():
             self.data = Observation.objects.filter(poste_id_id=poste_id).filter(stop_dat=stop_dt_utc).first()
+            current_tz.normalize(self.data.start_dat)
+            current_tz.normalize(self.data.stop_dat)
             JsonPlus().deserialize(self.data.j)
         else:
-            tmp_dat = datetime.datetime(1900, 1, 1, 0, 0, tzinfo=pytz.UTC)
+            tmp_dat = datetime.datetime(1900, 1, 1, 0, 0)
+            tmp_dat = pytz.timezone('Indian/Reunion').localize(tmp_dat, is_dst=None)
             self.data = Observation(poste_id_id=poste_id, start_dat=tmp_dat, stop_dat=stop_dt_utc, duration=0, j={}, j_agg={})
 
     def save(self):
@@ -53,7 +58,7 @@ class ObsMeteor():
             if self.data.j_agg != {}:
                 for a_jagg in self.data.j_agg:
                     JsonPlus().deserialize(a_jagg)
- 
+
     def __str__(self):
         """print myself"""
         return "ObsMeteor id: " + str(self.data.id) + ", poste_id: " + str(self.data.poste_id.id) + ", date: " + str(self.data.dat)

@@ -27,12 +27,10 @@ def check(j: json) -> str:
 
         # print('idx: ' + str(idx) + ', ' + str(a_current['stop_dat']))
 
-        half_duration = datetime.timedelta(minutes=int(a_current['duration'])/2)
-        half_period = a_current['stop_dat'] - half_duration
         for key in a_current.__iter__():
             if str(key).endswith('_max') or str(key).endswith('_min'):
                 if a_current.__contains__(key + '_time') is False:
-                    new_val[key + '_time'] = half_period
+                    new_val[key + '_time'] = a_current['stop_dat']
         val_to_add.append(new_val)
         idx += 1
 
