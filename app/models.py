@@ -89,7 +89,7 @@ class Observation(models.Model):
     j_agg = models.JSONField(null=False, default=dict)
 
     def __str__(self):
-        return "observation id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
+        return "observation id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
 
     class Meta:
         db_table = "obs"
@@ -108,7 +108,7 @@ class Agg_hour(models.Model):
     j = models.JSONField(null=False, default=dict)
 
     def __str__(self):
-        return "agg_hour id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
+        return "agg_hour id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
 
     class Meta:
         db_table = "agg_hour"
@@ -127,7 +127,7 @@ class Agg_day(models.Model):
     j = models.JSONField(null=False, default=dict)
 
     def __str__(self):
-        return "agg_day id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
+        return "agg_day id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
 
     class Meta:
         db_table = "agg_day"
@@ -146,7 +146,7 @@ class Agg_month(models.Model):
     j = models.JSONField(null=False, default=dict)
 
     def __str__(self):
-        return "agg_month id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
+        return "agg_month id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
 
     class Meta:
         db_table = "agg_month"
@@ -165,7 +165,7 @@ class Agg_year(models.Model):
     j = models.JSONField(null=False, default=dict)
 
     def __str__(self):
-        return "agg_year id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
+        return "agg_year id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
 
     class Meta:
         db_table = "agg_year"
@@ -184,7 +184,7 @@ class Agg_global(models.Model):
     j = models.JSONField(null=False, default=dict)
 
     def __str__(self):
-        return "agg_global id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.dat)
+        return "agg_global id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
 
     class Meta:
         db_table = "agg_global"
