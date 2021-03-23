@@ -260,15 +260,20 @@ class ProcessMeasure():
                     delKey(m_agg_j, json_key + maxmin_suffix + '_first_time')
                     continue
 
+                if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
+                    current_maxmin_dir = None
+
                 # if the max-min is required in measure definition
                 current_maxmin = None
+                if delta_values.__contains__(json_key):
+                    current_maxmin = my_measure['dataType'](delta_values[json_key])
+                    current_maxmin_time = measures['data'][measure_idx]['current']['stop_dat']
 
                 if delta_values.__contains__(json_key + maxmin_suffix) is True:
                     # load from delta_values
                     current_maxmin = my_measure['dataType'](delta_values[json_key + maxmin_suffix])
                     current_maxmin_time = delta_values[json_key + maxmin_suffix + '_time']
                     if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                        current_maxmin_dir = None
                         if m_agg_j.__contains__(json_key + maxmin_suffix + '_dir') is True:
                             current_maxmin_dir = int(delta_values[json_key + maxmin_suffix + '_dir'])
 
@@ -277,7 +282,6 @@ class ProcessMeasure():
                     current_maxmin = my_measure['dataType'](m_agg_j[json_key + maxmin_suffix])
                     current_maxmin_time = m_agg_j[json_key + maxmin_suffix + '_time']
                     if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                        current_maxmin_dir = None
                         if m_agg_j.__contains__(json_key + maxmin_suffix + '_dir') is True:
                             current_maxmin_dir = int(m_agg_j[json_key + maxmin_suffix + '_dir'])
 

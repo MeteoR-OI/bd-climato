@@ -1,7 +1,4 @@
 from django.db import models
-from django.utils import timezone
-import datetime
-import pytz
 
 
 class Poste(models.Model):
@@ -40,8 +37,8 @@ class Poste(models.Model):
     country = models.CharField(null=True, max_length=50, default="", verbose_name="Country")
     latitude = models.FloatField(null=True, default=0, verbose_name="Latitude")
     longitude = models.FloatField(null=True, default=0, verbose_name="Longitude")
-    start_dat = models.DateTimeField(null=True, default=timezone.now, verbose_name="Date d'entrée dans le réseau")
-    stop_dat = models.DateTimeField(null=True, verbose_name="Date de sortie du réseau")
+    start_dat = models.CharField(null=False, max_length=20, default="1900-01-01T00:00:00", verbose_name="start date")
+    stop_dat = models.CharField(null=False, max_length=20, default="2100-12-31T23:59:59", verbose_name="stop date")
     comment = models.TextField(null=True, default="")
 
     def __str__(self):
@@ -65,8 +62,10 @@ class TypeInstrument(models.Model):
 class Exclusion(models.Model):
     poste_id = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
     type_instrument = models.ForeignKey(null=False, to="TypeInstrument", on_delete=models.CASCADE)
-    start_dat = models.DateTimeField(null=False, default=timezone.now)
-    stop_dat = models.DateTimeField(null=False, default=timezone.datetime(2100, 12, 21))
+    start_dat = models.CharField(null=False, max_length=20, verbose_name="start date")
+
+    start_dat = models.CharField(null=False, max_length=20, default="1900-01-01T00:00:00", verbose_name="start date")
+    stop_dat = models.CharField(null=False, max_length=20, default="2100-12-31T23:59:59", verbose_name="stop date")
     value = models.JSONField(null=False, default=dict, verbose_name="JsonB")
 
     def __str__(self):
@@ -78,8 +77,8 @@ class Exclusion(models.Model):
 
 class Observation(models.Model):
     poste_id = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
-    start_dat = models.DateTimeField(null=False, default=datetime.datetime(1900, 1, 1, 0, 0, tzinfo=pytz.UTC), verbose_name='start date of the measure period')
-    stop_dat = models.DateTimeField(null=False, default=datetime.datetime(1900, 1, 1, 0, 0, tzinfo=pytz.UTC), verbose_name='stop date of the measure period')
+    start_dat = models.CharField(null=False, max_length=20, default="1900-01-01T00:00:00", verbose_name="start date")
+    stop_dat = models.CharField(null=False, max_length=20, verbose_name="stop date")
     duration = models.IntegerField(null=False, verbose_name="duration in minutes", default=0)
 
     qa_modifications = models.IntegerField(null=False, default=0, verbose_name='qa_modifications')
@@ -98,7 +97,7 @@ class Observation(models.Model):
 
 class Agg_hour(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
-    start_dat = models.DateTimeField(null=False, verbose_name='date debut periode de l aggregation')
+    start_dat = models.CharField(null=False, max_length=20, verbose_name="start date")
 
     duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
@@ -117,7 +116,7 @@ class Agg_hour(models.Model):
 
 class Agg_day(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
-    start_dat = models.DateTimeField(null=False, verbose_name='date debut periode de l aggregation')
+    start_dat = models.CharField(null=False, max_length=20, verbose_name="start date")
 
     duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
@@ -136,7 +135,7 @@ class Agg_day(models.Model):
 
 class Agg_month(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
-    start_dat = models.DateTimeField(null=False, verbose_name='date debut periode de l aggregation')
+    start_dat = models.CharField(null=False, max_length=20, verbose_name="start date")
 
     duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
@@ -155,7 +154,7 @@ class Agg_month(models.Model):
 
 class Agg_year(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
-    start_dat = models.DateTimeField(null=False, verbose_name='date debut periode de l aggregation')
+    start_dat = models.CharField(null=False, max_length=20, verbose_name="start date")
 
     duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
@@ -174,7 +173,7 @@ class Agg_year(models.Model):
 
 class Agg_global(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
-    start_dat = models.DateTimeField(null=False, verbose_name='date debut periode de l aggregation')
+    start_dat = models.CharField(null=False, max_length=20, verbose_name="start date")
 
     duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)

@@ -18,4 +18,4 @@ htmlcov
 coverage.xml
 .coverage
 
-data/json_not_in_git/*.json
+data/json_not_in_git/

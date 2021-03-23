@@ -2,6 +2,7 @@ from app.models import Poste
 import datetime
 import pytest
 import logging
+from app.tools.dateTools import date_to_str, str_to_date
 
 
 @pytest.fixture(autouse=True)
@@ -24,6 +25,8 @@ class PosteMeteor:
         """ load our instance from db, load exclusions at date_histo """
         if Poste.objects.filter(id=poste_id).exists():
             self.data = Poste.objects.get(id=poste_id)
+            self.data.start_dat = str_to_date(self.data.start_dat)
+            self.data.stop_dat = str_to_date(self.data.stop_dat)
         else:
             self.data = Poste()
 
@@ -36,13 +39,11 @@ class PosteMeteor:
 
     def save(self):
         """ save Poste """
-        try:
-            self.data.save()
-
-        except Exception as inst:
-            print(type(inst))    # the exception instance
-            print(inst.args)     # arguments stored in .args
-            print(inst)          # __str__ allows args to be printed directly,
+        self.data.start_dat = date_to_str(self.data.start_dat)
+        self.data.stop_dat = date_to_str(self.data.stop_dat)
+        self.data.save()
+        self.data.start_dat = str_to_date(self.data.start_dat)
+        self.data.stop_dat = str_to_date(self.data.stop_dat)
 
     def cas_gestion_extreme(self):
         """ in future we will get the information from values in db """
