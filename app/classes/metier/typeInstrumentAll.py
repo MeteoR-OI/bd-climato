@@ -47,26 +47,20 @@ class TypeInstrumentAll():
         trace_flag: bool = False,
     ):
         """process observation data for all our TypeInstrument"""
-        try:
-            delta_values = {"maxminFix": []}
+        delta_values = {"maxminFix": []}
 
-            # for all type_instruments
-            for an_intrument in self.all_instruments:
-                an_intrument['object'].processJson(
-                    poste_metier,
-                    measures,
-                    measure_idx,
-                    obs_meteor,
-                    agg_array,
-                    delta_values,
-                    trace_flag,
-                )
-            return
-
-        except Exception as inst:
-            print(type(inst))    # the exception instance
-            print(inst.args)     # arguments stored in .args
-            print(inst)          # __str__ allows args to be printed directly,
+        # for all type_instruments
+        for an_intrument in self.all_instruments:
+            an_intrument['object'].processJson(
+                poste_metier,
+                measures,
+                measure_idx,
+                obs_meteor,
+                agg_array,
+                delta_values,
+                trace_flag,
+            )
+        return
 
     def __str__(self):
         """print myself"""
