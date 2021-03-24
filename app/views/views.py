@@ -54,59 +54,39 @@ def view_last_obs(request, poste_id):
 
 def testComputeJ0(request):
     """ debug environment"""
-    try:
-        tt = TypeTempTest()
-        ret_json = tt.doCalculusJ0()
-        ret = JsonPlus().dumps(ret_json)
-        return HttpResponse(ret)
-
-    except Exception as inst:
-        return HttpResponse(inst)
+    tt = TypeTempTest()
+    ret_json = tt.doCalculusJ0()
+    ret = JsonPlus().dumps(ret_json)
+    return HttpResponse(ret)
 
 
 def testComputeJ1(request):
     """ debug environment"""
-    try:
-        tt = TypeTempTest()
-        ret_json = tt.doCalculusJ1()
-        ret = JsonPlus().dumps(ret_json)
-        return HttpResponse(ret)
-
-    except Exception as inst:
-        return HttpResponse(inst)
+    tt = TypeTempTest()
+    ret_json = tt.doCalculusJ1()
+    ret = JsonPlus().dumps(ret_json)
+    return HttpResponse(ret)
 
 
 def testComputeJ2(request):
     """ debug environment"""
-    try:
-        tt = TypeTempTest()
-        ret_json = tt.doCalculusJ2()
-        ret = JsonPlus().dumps(ret_json)
-        return HttpResponse(ret)
-
-    except Exception as inst:
-        return HttpResponse(inst)
+    tt = TypeTempTest()
+    ret_json = tt.doCalculusJ2()
+    ret = JsonPlus().dumps(ret_json)
+    return HttpResponse(ret)
 
 
 def testComputeJ3(request):
     """ debug environment"""
-    try:
-        tt = TypeTempTest()
-        ret_json = tt.doCalculusJ3()
-        ret = JsonPlus().dumps(ret_json)
-        return HttpResponse(ret)
-
-    except Exception as inst:
-        return HttpResponse(inst)
+    tt = TypeTempTest()
+    ret_json = tt.doCalculusJ3()
+    ret = JsonPlus().dumps(ret_json)
+    return HttpResponse(ret)
 
 
 def testComputeJ4(request):
     """ debug environment"""
-    try:
-        tt = TypeTempTest()
-        ret_json = tt.doCalculusJ4()
-        ret = JsonPlus().dumps(ret_json)
-        return HttpResponse(ret)
-
-    except Exception as inst:
-        return HttpResponse(inst)
+    tt = TypeTempTest()
+    ret_json = tt.doCalculusJ4()
+    ret = JsonPlus().dumps(ret_json)
+    return HttpResponse(ret)

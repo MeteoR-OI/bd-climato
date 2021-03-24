@@ -28,7 +28,7 @@ class AvgOmmCompute(AvgCompute):
         delta_values: json,
         isOmm: bool = False,
     ):
-        # force the omm flag
+        # force the omm flag, which save the M_last_dat in the delta_values
         my_measure['special'] = my_measure['special'] | MeasureProcessingBitMask.MeasureIsOmm
         """ generate deltaValues from ObsMeteor.data """
         super(AvgOmmCompute, self).loadObservationDatarow(
@@ -115,19 +115,19 @@ class AvgOmmCompute(AvgCompute):
 
         # specific omm processing
         if current_agg.agg_niveau == 'H':
-            tmp_first_dt = delta_values[json_key + '_first_time']
-            if agg_j.__contains__(json_key + '_first_time'):
-                tmp_first_dt = agg_j[json_key + '_first_time']
+            tmp_last_dt = delta_values[json_key + '_last_time']
+            if agg_j.__contains__(json_key + '_last_time'):
+                tmp_last_dt = agg_j[json_key + '_last_time']
 
-            if tmp_first_dt < delta_values[json_key + '_first_time']:
+            if tmp_last_dt > delta_values[json_key + '_last_time']:
                 # no change in our current omm values
                 return
 
-            # save in our agg_h_sum, _duration _first_time
+            # save in our agg_h_sum, _duration _last_time
             tmp_val = tmp_sum / tmp_duration
             tmp_sum = tmp_val * 60
             tmp_duration = 60
-            agg_j[json_key + '_first_time'] = delta_values[json_key + '_first_time']
+            agg_j[json_key + '_last_time'] = delta_values[json_key + '_last_time']
             agg_j[json_key + '_sum'] = tmp_sum
             agg_j[json_key + '_duration'] = tmp_duration
             if isFlagged(my_measure['special'], MeasureProcessingBitMask.NoAvgField) is False:
@@ -199,7 +199,7 @@ class AvgOmmCompute(AvgCompute):
                     delKey(agg_j, json_key + maxmin_suffix + '_max_time')
                     delKey(agg_j, json_key + maxmin_suffix + '_min')
                     delKey(agg_j, json_key + maxmin_suffix + '_min_time')
-                    delKey(agg_j, json_key + maxmin_suffix + '_first_time')
+                    delKey(agg_j, json_key + maxmin_suffix + '_last_time')
                     continue
 
                 current_maxmin = None

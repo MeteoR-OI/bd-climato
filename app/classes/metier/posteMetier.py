@@ -76,12 +76,7 @@ class PosteMetier(PosteMeteor):
 
     def observation(self, my_stop_date_utc: datetime) -> ObsMeteor:
         """get or create an observation at a given datetime"""
-        try:
-            return ObsMeteor(self.data.id, my_stop_date_utc)
-        except Exception as inst:
-            print(type(inst))    # the exception instance
-            print(inst.args)     # arguments stored in .args
-            print(inst)          # __str__ allows args to be printed directly,
+        return ObsMeteor(self.data.id, my_stop_date_utc)
 
     def __str__(self):
         """print myself"""

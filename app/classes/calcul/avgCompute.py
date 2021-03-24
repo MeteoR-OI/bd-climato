@@ -117,7 +117,7 @@ class AvgCompute(ProcessMeasure):
             obs_j[target_key + '_dir'] = my_value_dir
         if isOmm is True:
             # save for max/min processing and omm procesing
-            delta_values[target_key + '_first_time'] = my_dat
+            delta_values[target_key + '_last_time'] = my_dat
 
     def getDeltaFromObservation(self, my_measure: json, obs_meteor: ObsMeteor, json_key: str, delta_values: json) -> json:
         """

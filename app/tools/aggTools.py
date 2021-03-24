@@ -47,24 +47,18 @@ def getRightAggregation(agg_niveau: str, start_dt_utc: datetime, hour_deca: int,
 
 def getAggDuration(niveau_agg: str) -> int:
     """get the aggregation (in sec) depending on the level"""
-    try:
-        if niveau_agg == "H":
-            return 60
-        elif niveau_agg == "D":
-            return 1440
-        elif niveau_agg == "M":
-            return 43920   # int(30.5 * 24 * 60)
-        elif niveau_agg == "Y":
-            return 525960    # int(365.25 * 24 * 60)
-        elif niveau_agg == "A":
-            raise Exception("get_gg_duration", "global has no duration")
-        else:
-            raise Exception("get_agg_duration", "wrong niveau_agg: " + niveau_agg)
-
-    except Exception as inst:
-        print(type(inst))    # the exception instance
-        print(inst.args)     # arguments stored in .args
-        print(inst)          # __str__ allows args to be printed directly,
+    if niveau_agg == "H":
+        return 60
+    elif niveau_agg == "D":
+        return 1440
+    elif niveau_agg == "M":
+        return 43920   # int(30.5 * 24 * 60)
+    elif niveau_agg == "Y":
+        return 525960    # int(365.25 * 24 * 60)
+    elif niveau_agg == "A":
+        raise Exception("get_gg_duration", "global has no duration")
+    else:
+        raise Exception("get_agg_duration", "wrong niveau_agg: " + niveau_agg)
 
 
 def calcAggDateNextLevel(niveau_agg: AggLevel, start_dt_utc: datetime, factor: float = 0, is_measure_date: bool = False) -> datetime:

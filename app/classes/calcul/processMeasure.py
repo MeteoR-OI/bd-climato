@@ -183,19 +183,19 @@ class ProcessMeasure():
             # no value processed
             return
 
-        half_period_len = datetime.timedelta(minutes=float(measures['data'][measure_idx]['current']['duration'] / 2))
-        half_period_time = measures['data'][measure_idx]['current']['stop_dat'] - half_period_len
+        last_measure_time = measures['data'][measure_idx]['current']['stop_dat']
         data_src = {}
         if measures['data'][measure_idx].__contains__('current'):
             data_src = measures['data'][measure_idx]['current']
 
-        for maxmin_suffix in ['_max', '_min']:
+        for maxmin_sufx in ['_max', '_min']:
             # is max or min needed for this measure
-            maxmin_key = maxmin_suffix.split('_')[1]
+            maxmin_key = maxmin_sufx.split('_')[1]
+            maxmin_suffix = maxmin_sufx
             if b_use_rate:
-                maxmin_suffix = '_rate' + maxmin_suffix
+                maxmin_suffix = '_rate' + maxmin_sufx
             if my_measure.__contains__(maxmin_key) is True and my_measure[maxmin_key] is True:
-                maxmin_time = half_period_time
+                maxmin_time = last_measure_time
 
                 # is there a M_max/M_min in the data_src ?
                 if data_src.__contains__(src_key + maxmin_suffix):
@@ -257,7 +257,7 @@ class ProcessMeasure():
                     delKey(m_agg_j, json_key + maxmin_suffix + '_max_time')
                     delKey(m_agg_j, json_key + maxmin_suffix + '_min')
                     delKey(m_agg_j, json_key + maxmin_suffix + '_min_time')
-                    delKey(m_agg_j, json_key + maxmin_suffix + '_first_time')
+                    delKey(m_agg_j, json_key + maxmin_suffix + '_last_time')
                     continue
 
                 if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
