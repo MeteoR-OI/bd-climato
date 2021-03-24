@@ -22,8 +22,6 @@ class Poste(models.Model):
 
     # optional fields
     meteofr = models.CharField(null=True, default='', max_length=10, verbose_name="Code Meteo France")
-    cas_gestion_extreme = models.SmallIntegerField(null=False, default=0, choices=GESTION_EXTREME, verbose_name="Gestion des extrêmes")
-    agg_min_extreme = models.CharField(null=False, max_length=1, default='', choices=NIVEAU_AGGREGATION, verbose_name="Niveau Agregation, Auto dans agregation")
     lock_calculus = models.SmallIntegerField(null=True, default=0, verbose_name="internal field used to lock the calculus on one poste")
 
     # la suite n'est pas utilise par climato - a revoir pour pages html...
