@@ -4,6 +4,7 @@ import datetime
 import pytest
 import logging
 from app.tools.dateTools import date_to_str, str_to_date
+from app.tools.aggTools import calcAggDate
 
 
 @pytest.fixture(autouse=True)
@@ -28,33 +29,30 @@ class ObsMeteor():
         # todo: block if my_datetime_utc > previous dat+duration
         if Observation.objects.filter(poste_id_id=poste_id).filter(stop_dat=stop_dt_utc).exists():
             self.data = Observation.objects.filter(poste_id_id=poste_id).filter(stop_dat=stop_dt_utc).first()
-            self.data.start_dat = str_to_date(self.data.start_dat)
+            self.data.agg_start_dat = str_to_date(self.data.agg_start_dat)
             self.data.stop_dat = str_to_date(self.data.stop_dat)
             JsonPlus().deserialize(self.data.j)
         else:
+            agg_start_dat = calcAggDate('H', stop_dt_utc, 0, True)
             stop_dt_utc = date_to_str(stop_dt_utc)
-            self.data = Observation(poste_id_id=poste_id, stop_dat=stop_dt_utc, duration=0, j={}, j_agg={})
-            self.data.start_dat = str_to_date(self.data.start_dat)
+            self.data = Observation(poste_id_id=poste_id, stop_dat=stop_dt_utc, duration=0, agg_start_dat=agg_start_dat, j={}, j_agg={})
+            self.data.agg_start_dat = str_to_date(self.data.agg_start_dat)
             self.data.stop_dat = str_to_date(self.data.stop_dat)
 
     def save(self):
         """ save Poste and Exclusions """
         # we only save if there is some data
         if self.data.j != {} or self.data.j_agg != {}:
-            if self.data.start_dat.year == 1900:
-                if self.data.duration == 0:
-                    raise Exception('obsMeteor', 'duration is null with data loaded')
-                measure_duration = datetime.timedelta(minutes=int(self.my_obs.data.duration))
-                self.my_obs.data.start_dat = self.my_obs.data.stop_dat - measure_duration
+            self.data.agg_start_dat = calcAggDate('H', self.data.stop_dat, 0, True)
             self.data.stop_dat = date_to_str(self.data.stop_dat)
-            self.data.start_dat = date_to_str(self.data.start_dat)
+            self.data.agg_start_dat = date_to_str(self.data.agg_start_dat)
             if self.data.j != {}:
                 JsonPlus().serialize(self.data.j)
             if self.data.j_agg != {}:
                 for a_jagg in self.data.j_agg:
                     JsonPlus().serialize(a_jagg)
             self.data.save()
-            self.data.start_dat = str_to_date(self.data.start_dat)
+            self.data.agg_start_dat = str_to_date(self.data.agg_start_dat)
             self.data.stop_dat = str_to_date(self.data.stop_dat)
             if self.data.j != {}:
                 JsonPlus().deserialize(self.data.j)

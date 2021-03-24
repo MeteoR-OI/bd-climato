@@ -77,8 +77,8 @@ class Exclusion(models.Model):
 
 class Observation(models.Model):
     poste_id = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
-    start_dat = models.CharField(null=False, max_length=20, default="1900-01-01T00:00:00", verbose_name="start date")
-    stop_dat = models.CharField(null=False, max_length=20, verbose_name="stop date")
+    agg_start_dat = models.CharField(null=False, max_length=20, default="1900-01-01T00:00:00", verbose_name="date agregation horaire utilisée")
+    stop_dat = models.CharField(null=False, max_length=20, verbose_name="stop date, date de la mesure")
     duration = models.IntegerField(null=False, verbose_name="duration in minutes", default=0)
 
     qa_modifications = models.IntegerField(null=False, default=0, verbose_name='qa_modifications')
