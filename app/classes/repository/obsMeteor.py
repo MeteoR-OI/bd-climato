@@ -27,14 +27,14 @@ class ObsMeteor():
     def __init__(self, poste_id: int, stop_dt_utc: datetime):
         """Init a new ObsMeteor object"""
         # todo: block if my_datetime_utc > previous dat+duration
+        stop_dt_utc = date_to_str(stop_dt_utc)
         if Observation.objects.filter(poste_id_id=poste_id).filter(stop_dat=stop_dt_utc).exists():
             self.data = Observation.objects.filter(poste_id_id=poste_id).filter(stop_dat=stop_dt_utc).first()
             self.data.agg_start_dat = str_to_date(self.data.agg_start_dat)
             self.data.stop_dat = str_to_date(self.data.stop_dat)
             JsonPlus().deserialize(self.data.j)
         else:
-            agg_start_dat = calcAggDate('H', stop_dt_utc, 0, True)
-            stop_dt_utc = date_to_str(stop_dt_utc)
+            agg_start_dat = calcAggDate('H', str_to_date(stop_dt_utc), 0, True)
             self.data = Observation(poste_id_id=poste_id, stop_dat=stop_dt_utc, duration=0, agg_start_dat=agg_start_dat, j={}, j_agg={})
             self.data.agg_start_dat = str_to_date(self.data.agg_start_dat)
             self.data.stop_dat = str_to_date(self.data.stop_dat)
