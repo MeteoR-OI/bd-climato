@@ -257,7 +257,7 @@ class ProcessMeasure():
                     delKey(m_agg_j, json_key + maxmin_suffix + '_max_time')
                     delKey(m_agg_j, json_key + maxmin_suffix + '_min')
                     delKey(m_agg_j, json_key + maxmin_suffix + '_min_time')
-                    delKey(m_agg_j, json_key + maxmin_suffix + '_last_time')
+                    delKey(m_agg_j, json_key + maxmin_suffix + '_first_time')
                     continue
 
                 if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
