@@ -74,7 +74,7 @@ class AvgCompute(ProcessMeasure):
         if obs_meteor.data.duration == 0:
             # need to load the duration in our observation dataRow
             obs_meteor.data.duration = tmp_duration
-            # save our agg_h.start_dat for faster retrieval of observation for a giben agg_h.start_dat
+            # save our agg_h.start_dat for faster retrieval of observation for a given agg_h.start_dat
             obs_meteor.data.start_dat = calcAggDate('H', obs_meteor.data.dat, tmp_duration)
         elif obs_meteor.data.duration != tmp_duration:
             raise Exception('loadObsDatarow', 'incompatible durations -> in table obs: ' + str(obs_meteor.data.duration) + ', in json: ' + str(tmp_duration))
