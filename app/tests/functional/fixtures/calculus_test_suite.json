@@ -5,7 +5,10 @@
         ],
         "results":[
             {"t": "O", "idx": 0, "out_temp": 20},
+            {"t": "O", "idx": 0, "count": 1},
             {"t": "H", "idx": 0, "out_temp_sum": 100, "out_temp_duration": 5},
+            {"t": "H", "idx": 0, "count": 1},
+            {"t": "H", "idx": 0, "count": 1, "stop_dat_mask": "13:00"},
             {"t": "D", "idx": 0, "out_temp_sum": 100, "out_temp_duration": 5},
             {"t": "M", "idx": 0, "out_temp_sum": 100, "out_temp_duration": 5},
             {"t": "Y", "idx": 0, "out_temp_sum": 100, "out_temp_duration": 5},

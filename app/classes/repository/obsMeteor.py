@@ -60,6 +60,12 @@ class ObsMeteor():
                 for a_jagg in self.data.j_agg:
                     JsonPlus().deserialize(a_jagg)
 
+    def count(self, poste_id: int = None, stop_dat_mask: str = '') -> int:
+        # return count of aggregations
+        if poste_id is None:
+            return Observation.objects.filter(stop_dat__contains=stop_dat_mask).count()
+        return Observation.objects.filter(poste_id=poste_id).filter(stop_dat__contains=stop_dat_mask).count()
+
     def __str__(self):
         """print myself"""
         return "ObsMeteor id: " + str(self.data.id) + ", poste_id: " + str(self.data.poste_id.id) + ", date: " + str(self.data.dat)

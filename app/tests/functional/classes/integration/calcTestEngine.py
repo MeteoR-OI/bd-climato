@@ -1,3 +1,4 @@
+from app.tools.aggTools import calcAggDate
 from app.classes.integrationTests.typeTemp import TypeTempTest
 from app.classes.metier.posteMetier import PosteMetier
 from app.classes.repository.obsMeteor import ObsMeteor
@@ -61,21 +62,51 @@ class CalcTestEngine():
                 }
                 # load list of resultset to load
                 for a_result in a_test['results']:
-                    result_set[a_result['t']].append(j_data[a_result['idx']]['current']['stop_dat'])
+                    if a_result.__contains__('idx'):
+                        result_set[a_result['t']].append(j_data[a_result['idx']]['current']['stop_dat'])
+                    # elif a_result.__contains__('count'):
+                    #     result_set[a_result['t']].append('count')
+                    else:
+                        raise Exception('calTestEngine', 'wrong test JSON file')
 
                 error_msg = []
                 # load list of resultset to load
                 for a_result in a_test['results']:
+                    obs_stop_dat = j_data[a_result['idx']]['current']['stop_dat']
                     if a_result["t"] == "O":
-                        tmp_o = ObsMeteor(pid, j_data[a_result['idx']]['current']['stop_dat'])
-                        for k in a_result.items():
-                            if k[0] == 't' or k[0] == 'idx':
-                                continue
-                            if a_result[k[0]] != tmp_o.data.j[k[0]]:
-                                err_txt = "t: " + a_result['t'] + ', idx: ' + str(a_result['idx']) + ', key:' + k[0]
-                                err_txt = err_txt + ' -> ' + str(tmp_o.data.j[k[0]]) + ' should be ' + str(a_result[k[0]])
-                                logging.error("error: " + str(err_txt))
-                                error_msg.append(err_txt)
+                        my_row = ObsMeteor(pid, obs_stop_dat)
+                        if a_result.__contains__('count'):
+                            stop_dat_mask = ''
+                            if a_result.__contains__('stop_dat_mask'):
+                                stop_dat_mask = a_result['stop_dat_mask']
+                            my_count = my_row.count(pid, stop_dat_mask)
+                            assert my_count == a_result['count']
+                            continue
+                    else:
+                        agg_start_dat = calcAggDate('H', obs_stop_dat, 0, True)
+                        hour_deca = 0
+                        if a_result.__contains__('hour_deca') is True:
+                            hour_deca = a_result['hour_deca']
+                        agg_start_dat = calcAggDate(a_result["t"], agg_start_dat, hour_deca, False)
+                        my_row = AggMeteor(pid, a_result['t'], agg_start_dat)
+                        if a_result.__contains__('count'):
+                            stop_dat_mask = ''
+                            if a_result.__contains__('stop_dat_mask'):
+                                stop_dat_mask = a_result['stop_dat_mask']
+                            my_count = my_row.count(a_result['t'], pid, stop_dat_mask)
+                            assert my_count == a_result['count']
+                            continue
+
+                    # check the result
+                    for k in a_result.items():
+                        if k[0] == 't' or k[0] == 'idx':
+                            continue
+
+                        if a_result[k[0]] != my_row.data.j[k[0]]:
+                            err_txt = "t: " + a_result['t'] + ', idx: ' + str(a_result['idx']) + ', key:' + k[0]
+                            err_txt = err_txt + ' -> ' + str(my_row.data.j[k[0]]) + ' should be ' + str(a_result[k[0]])
+                            logging.error("error: " + str(err_txt))
+                            error_msg.append(err_txt)
 
             assert error_msg.__len__() == 0
 

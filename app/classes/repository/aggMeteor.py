@@ -70,6 +70,13 @@ class AggMeteor():
         else:
             raise Exception("get_agg_object", "wrong niveau_agg: " + niveau_agg)
 
+    def count(self, niveau_agg: str, poste_id: int = None, start_dat_mask: str = '') -> int:
+        # return count of aggregations
+        agg_obj = self.getAggObject(niveau_agg)
+        if poste_id is None:
+            return agg_obj.objects.filter(start_dat__contains=start_dat_mask).count()
+        return agg_obj.objects.filter(poste_id=poste_id).filter(start_dat__contains=start_dat_mask).count()
+
     def __str__(self):
         """print myself"""
         return "AggMeteor id: " + str(self.data.id) + ", poste_id: " + str(self.data.poste_id.id) + ", date: " + str(self.data.dat) + ", level: " + self.agg_niveau
