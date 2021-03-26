@@ -20,7 +20,7 @@ def django_db_setup(django_db_blocker):
     settings.DATABASES['default']['NAME'] = 'clima_test'
 
     run_sql('DROP DATABASE IF EXISTS clima_test')
-    run_sql('CREATE DATABASE clima_test TEMPLATE climatest')
+    run_sql('CREATE DATABASE clima_test TEMPLATE clima_template')
 
     with django_db_blocker.unblock():
         call_command('loaddata', 'app/tests/functional/fixtures/climato_data.json')

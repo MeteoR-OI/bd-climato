@@ -58,6 +58,7 @@ class JsonPlus():
         }
         """
         return json_string
+
     def dumps(self, j: json) -> str:
         """ serialize json with date values """
         ret = json.dumps(j, cls=DateTimeEncoder)

@@ -52,55 +52,48 @@ class CalcTestEngine():
 
                 self.tt.doCalculus(my_json, True)
 
-                # check our results
-                result_set = {
-                    "O": [],
-                    "H": [],
-                    "D": [],
-                    "M": [],
-                    "Y": [],
-                    "A": [],
-                }
-                # load list of resultset to load
-                for a_result in a_test['results']:
-                    if a_result.__contains__('idx'):
-                        result_set[a_result['t']].append(j_data[a_result['idx']]['current']['stop_dat'])
-                    # elif a_result.__contains__('count'):
-                    #     result_set[a_result['t']].append('count')
-                    else:
-                        raise Exception('calTestEngine', 'wrong test JSON file')
-
                 error_msg = []
                 # load list of resultset to load
                 for a_result in a_test['results']:
-                    obs_stop_dat = j_data[a_result['idx']]['current']['stop_dat']
-                    if a_result["t"] == "O":
-                        my_row = ObsMeteor(pid, obs_stop_dat)
-                        if a_result.__contains__('count'):
-                            stop_dat_mask = ''
-                            if a_result.__contains__('stop_dat_mask'):
-                                stop_dat_mask = a_result['stop_dat_mask']
-                            my_count = my_row.count(pid, stop_dat_mask)
-                            assert my_count == a_result['count']
-                            continue
+                    b_compute_agg_date = False
+                    if a_result['t'] == "A":
+                        test_dat = "1900-12-31T00:00:00"
+                    elif a_result.__contains__('dat'):
+                        test_dat = a_result['dat']
+                    elif a_result.__contains__('idx'):
+                        test_dat = j_data[a_result['idx']]['current']['stop_dat']
+                        b_compute_agg_date = True
+                    elif a_result.__contains__('count'):
+                        test_dat = '1900-12-31T00:00:00+00:00'
                     else:
-                        agg_start_dat = calcAggDate('H', obs_stop_dat, 0, True)
-                        hour_deca = 0
-                        if a_result.__contains__('hour_deca') is True:
-                            hour_deca = a_result['hour_deca']
-                        agg_start_dat = calcAggDate(a_result["t"], agg_start_dat, hour_deca, False)
-                        my_row = AggMeteor(pid, a_result['t'], agg_start_dat)
-                        if a_result.__contains__('count'):
-                            stop_dat_mask = ''
-                            if a_result.__contains__('stop_dat_mask'):
-                                stop_dat_mask = a_result['stop_dat_mask']
+                        raise Exception('calTestEngine', 'wrong test JSON file')
+
+                    if a_result["t"] == "O":
+                        my_row = ObsMeteor(pid, test_dat)
+                    else:
+                        # if idx is given, need to compute agregation date for the level
+                        if b_compute_agg_date is True:
+                            test_dat = calcAggDate('H', test_dat, 0, True)
+                            hour_deca = 0
+                            if a_result.__contains__('hour_deca') is True:
+                                hour_deca = a_result['hour_deca']
+                            test_dat = calcAggDate(a_result["t"], test_dat, hour_deca, False)
+                        my_row = AggMeteor(pid, a_result['t'], test_dat)
+
+                    if a_result.__contains__('count'):
+                        stop_dat_mask = ''
+                        if a_result.__contains__('stop_dat_mask'):
+                            stop_dat_mask = a_result['stop_dat_mask']
+                        if a_result['t'] == 'O':
+                            my_count = my_row.count(pid, stop_dat_mask)
+                        else:
                             my_count = my_row.count(a_result['t'], pid, stop_dat_mask)
-                            assert my_count == a_result['count']
-                            continue
+                        assert my_count == a_result['count']
+                        continue
 
                     # check the result
                     for k in a_result.items():
-                        if k[0] == 't' or k[0] == 'idx':
+                        if k[0] == 't' or k[0] == 'idx' or k[0] == 'dat':
                             continue
 
                         if a_result[k[0]] != my_row.data.j[k[0]]:

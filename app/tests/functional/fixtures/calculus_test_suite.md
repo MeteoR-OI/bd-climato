@@ -1,3 +1,38 @@
+![logo](https://raw.githubusercontent.com/MeteoR-OI/bd-climato/master/doc/images/meteoi.re-logo_mini.png)
+**Projet BD Climato**
+
+<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
+
+<!-- code_chunk_output -->
+
+- [1.	Historique mises à jour](#1historique-mises-à-jour)
+- [2.    Format Fichier JSON de test calculus](#2----format-fichier-json-de-test-calculus)
+- [3.    Clé name](#3----clé-name)
+- [4.    Clé data](#4----clé-data)
+- [5.    Clé results](#5----clé-results)
+- [5a.](#5a)
+
+<!-- /code_chunk_output -->
+
+**Doc v 0.52**
+
+# 1.	Historique mises à jour
+- V0.5 : 26/03/2021. Version initiale
+
+# 2.    Format Fichier JSON de test calculus
+Clés name, data, results
+
+# 3.    Clé name
+Correspond a la string passée en paramêtre lors de l'appel de la fonction self.t_engine.run_test dans test_calculus.py
+
+# 4.    Clé data
+Clause [data] du fichier json
+
+# 5.    Clé results
+Contient un tableau des checks du resultat a faire
+
+Il y a deux parties:
+# 5a.   
 [
     {  "name": "1_simple_agg_hour",
         "data": [

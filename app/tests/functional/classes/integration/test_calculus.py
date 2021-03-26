@@ -16,12 +16,12 @@ class CalculusTestSuite(TestCase):
     def __init__(self, *args, **kwargs):
         TestCase.__init__(self, *args, **kwargs)
         self.t_engine = CalcTestEngine()
- 
+
     def test_1_simple_agg_hour(self):
         self.t_engine.run_test('1_simple_agg_hour')
 
-    # def test_simple_omm_aggregation(self):
-    #     self.t_engine.run_test('simple_omm_aggregation')
+    def test_1_simple_agg_hour_round_hour(self):
+        self.t_engine.run_test('1_simple_agg_hour_round_hour')
 
     def test_2_max_min_agg_same_day(self):
         self.t_engine.run_test('2_max_min_agg_same_day')
