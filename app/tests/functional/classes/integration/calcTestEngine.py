@@ -30,6 +30,7 @@ class CalcTestEngine():
             if pid is None:
                 p = PosteMetier(1)
                 p.data.meteor = 'BBF015'
+                p.data.fuseau = 4
                 p.save()
             for a_test in self.my_test_suite:
                 if a_test['name'] != name:

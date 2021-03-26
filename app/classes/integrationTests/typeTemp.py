@@ -438,7 +438,7 @@ class TypeTempTest():
             self.o_test = self.p_test.observation(m_j['data'][idx]['current']['stop_dat'])
             if self.o_test.data.duration == 0:
                 self.o_test.data.duration = m_j['data'][idx]['current']['duration']
-            self.a_test = self.p_test.aggregations(m_j['data'][idx]['current']['stop_dat'], m_j['data'][idx]['current']['duration'])
+            self.a_test = self.p_test.aggregations(m_j['data'][idx]['current']['stop_dat'], True)
 
             # call the method to update obs, and return delta_val
             all_instr.process_json(self.p_test, m_j, idx, self.o_test, self.a_test)

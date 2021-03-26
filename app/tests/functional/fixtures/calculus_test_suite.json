@@ -14,5 +14,132 @@
             {"t": "Y", "idx": 0, "out_temp_sum": 100, "out_temp_duration": 5},
             {"t": "A", "idx": 0, "out_temp_sum": 100, "out_temp_duration": 5}
         ]
-    }
+    },{ "name": "2_max_min_agg_same_day",
+        "data":
+        [
+            {"current" : {"stop_dat" : "2021-02-11T13:30:00+00:00", "duration" : 5, "out_temp" : 20}},
+            {"current" : {"stop_dat" : "2021-02-11T13:06:00+00:00", "duration" : 5, "out_temp" : 10}},
+            {"current" : {"stop_dat" : "2021-02-11T13:35:00+00:00", "duration" : 5, "out_temp" : 30}}
+        ],
+        "results": [
+            {"t": "O", "idx": 0, "out_temp": 20},
+            {"t": "H", "idx": 0, "out_temp_max": 30, "out_temp_max_time": "2021-02-11T13:35:00+00:00",  "out_temp_min": 10, "out_temp_min_time": "2021-02-11T13:06:00+00:00"},
+            {"t": "A", "idx": 0, "out_temp_max": 30, "out_temp_max_time": "2021-02-11T13:35:00+00:00",  "out_temp_min": 10, "out_temp_min_time": "2021-02-11T13:06:00+00:00"}
+        ]
+    },{ "name": "3_max_min_date_agg_different_days",
+        "data":
+        [
+            {"current" : {"stop_dat" : "2021-02-11T13:30:00+00:00", "duration" : 5, "out_temp" : 20}},
+            {"current" : {"stop_dat" : "2021-02-11T13:35:00+00:00", "duration" : 5, "out_temp" : 10}},
+            {"current" : {"stop_dat" : "2021-02-12T13:40:00+00:00", "duration" : 5, "out_temp" : 30}}
+        ],
+        "results": [
+            {"t": "O", "idx": 0, "out_temp": 20},
+            {"t": "H", "idx": 0, "out_temp_max": 20, "out_temp_max_time": "2021-02-11T13:30:00+00:00",  "out_temp_min": 10, "out_temp_min_time": "2021-02-11T13:35:00+00:00"},
+            {"t": "H", "idx": 2, "out_temp_max": 30, "out_temp_max_time": "2021-02-12T13:40:00+00:00",  "out_temp_min": 30, "out_temp_min_time": "2021-02-12T13:40:00+00:00"},
+            {"t": "D", "idx": 0, "out_temp_max": 20, "out_temp_max_time": "2021-02-11T13:30:00+00:00",  "out_temp_min": 10, "out_temp_min_time": "2021-02-11T13:35:00+00:00"},
+            {"t": "D", "idx": 2, "out_temp_max": 30, "out_temp_max_time": "2021-02-12T13:40:00+00:00",  "out_temp_min": 30, "out_temp_min_time": "2021-02-12T13:40:00+00:00"},
+            {"t": "M", "idx": 0, "out_temp_max": 30, "out_temp_max_time": "2021-02-12T13:40:00+00:00",  "out_temp_min": 10, "out_temp_min_time": "2021-02-11T13:35:00+00:00"},
+            {"t": "Y", "idx": 0, "out_temp_max": 30, "out_temp_max_time": "2021-02-12T13:40:00+00:00",  "out_temp_min": 10, "out_temp_min_time": "2021-02-11T13:35:00+00:00"},
+            {"t": "A", "idx": 0, "out_temp_max": 30, "out_temp_max_time": "2021-02-12T13:40:00+00:00",  "out_temp_min": 10, "out_temp_min_time": "2021-02-11T13:35:00+00:00"}
+        ]
+        },{ "name": "4_simple_omm_agg",
+            "data":
+            [
+                {"current" : {"stop_dat" : "2021-02-11T13:30:00+00:00", "duration" : 5, "out_temp" : 20}},
+                {"current" : {"stop_dat" : "2021-02-11T13:10:00+00:00", "duration" : 5, "out_temp" : 10}},
+                {"current" : {"stop_dat" : "2021-02-11T13:35:00+00:00", "duration" : 5, "out_temp" : 30}}
+            ],
+            "results": [
+                {"t": "O", "idx": 0, "out_temp": 10},
+                {"t": "O", "idx": 0, "count": 1},
+                {"t": "H", "idx": 0, "out_temp_omm_sum": 500, "out_temp_omm_duration": 5},
+                {"t": "D", "idx": 0, "out_temp_omm_sum": 500, "out_temp_omm_duration": 5},
+                {"t": "M", "idx": 0, "out_temp_omm_sum": 500, "out_temp_omm_duration": 5},
+                {"t": "Y", "idx": 0, "out_temp_omm_sum": 500, "out_temp_omm_duration": 5},
+                {"t": "A", "idx": 0, "out_temp_omm_sum": 500, "out_temp_omm_duration": 5}
+            ]
+        },{ "name": "5_simple_omm_agg_same_day",
+            "data":
+            [
+                {"current" : {"stop_dat" : "2021-02-11T13:30:00+00:00", "duration" : 5, "out_temp" : 20}},
+                {"current" : {"stop_dat" : "2021-02-11T13:10:00+00:00", "duration" : 5, "out_temp" : 10}},
+                {"current" : {"stop_dat" : "2021-02-11T13:35:00+00:00", "duration" : 5, "out_temp" : 30}}
+            ],
+            "results": [
+                {"t": "O", "idx": 0, "out_temp": 20},
+                {"t": "O", "idx": 1, "out_temp": 10},
+                {"t": "O", "idx": 2, "out_temp": 30},
+                {"t": "H", "idx": 0, "out_temp_omm": 10},
+                {"t": "D", "idx": 0, "out_temp_omm": 10},
+                {"t": "M", "idx": 0, "out_temp_omm": 10},
+                {"t": "Y", "idx": 0, "out_temp_omm": 10},
+                {"t": "A", "idx": 0, "out_temp_omm": 10}
+            ]
+            },{ "name": "6_simple_omm_agg_different_days",
+                "data":
+                [
+                    {"current" : {"stop_dat" : "2021-02-11T13:30:00+00:00", "duration" : 5, "out_temp" : 20}},
+                    {"current" : {"stop_dat" : "2021-02-11T13:10:00+00:00", "duration" : 5, "out_temp" : 10}},
+                    {"current" : {"stop_dat" : "2021-02-12T13:35:00+00:00", "duration" : 5, "out_temp" : 30}}
+                ],
+                "results": [
+                    {"t": "O", "idx": 0, "out_temp": 20},
+                    {"t": "O", "idx": 1, "out_temp": 10},
+                    {"t": "O", "idx": 2, "out_temp": 30},
+                    {"t": "H", "idx": 0, "out_temp_omm": 10},
+                    {"t": "H", "idx": 2, "out_temp_omm": 30},
+                    {"t": "D", "idx": 0, "out_temp_omm": 10},
+                    {"t": "M", "idx": 0, "out_temp_omm": 10},
+                    {"t": "Y", "idx": 0, "out_temp_omm": 10},
+                    {"t": "A", "idx": 0, "out_temp_omm": 10}
+                ]
+            },{ "name": "7_max_min_omm_agg_different_days",
+            "data":
+            [
+                {"current" : {"stop_dat" : "2021-02-11T13:30:00+00:00", "duration" : 5, "out_temp" : 20}},
+                {"current" : {"stop_dat" : "2021-02-12T13:06:00+00:00", "duration" : 5, "out_temp" : 10}},
+                {"current" : {"stop_dat" : "2021-02-12T13:35:00+00:00", "duration" : 5, "out_temp" : 30}}
+            ],
+            "results": [
+                {"t": "O", "idx": 0, "out_temp": 20},
+                {"t": "H", "idx": 0, "out_temp_max": 20, "out_temp_max_time": "2021-02-11T13:30:00+00:00",  "out_temp_min": 10, "out_temp_min_time": "2021-02-11T13:35:00+00:00"},
+                {"t": "H", "idx": 2, "out_temp_max": 30, "out_temp_max_time": "2021-02-12T13:40:00+00:00",  "out_temp_min": 30, "out_temp_min_time": "2021-02-12T13:40:00+00:00"},
+                {"t": "D", "idx": 0, "out_temp_max": 20, "out_temp_max_time": "2021-02-11T13:30:00+00:00",  "out_temp_min": 10, "out_temp_min_time": "2021-02-11T13:35:00+00:00"},
+                {"t": "D", "idx": 2, "out_temp_max": 30, "out_temp_max_time": "2021-02-12T13:40:00+00:00",  "out_temp_min": 30, "out_temp_min_time": "2021-02-12T13:40:00+00:00"},
+                {"t": "M", "idx": 0, "out_temp_max": 30, "out_temp_max_time": "2021-02-12T13:40:00+00:00",  "out_temp_min": 10, "out_temp_min_time": "2021-02-11T13:35:00+00:00"},
+                {"t": "Y", "idx": 0, "out_temp_max": 30, "out_temp_max_time": "2021-02-12T13:40:00+00:00",  "out_temp_min": 10, "out_temp_min_time": "2021-02-11T13:35:00+00:00"},
+                {"t": "A", "idx": 0, "out_temp_max": 30, "out_temp_max_time": "2021-02-12T13:40:00+00:00",  "out_temp_min": 10, "out_temp_min_time": "2021-02-11T13:35:00+00:00"}
+                ]
+        },{ "name": "8_max_min_omm_agg_regen",
+            "data":
+            [
+                {"current" : {"stop_dat" : "2021-02-11T13:10:00+00:00", "duration" : 5, "out_temp" : 20}},
+                {"current" : {"stop_dat" : "2021-02-12T13:30:00+00:00", "duration" : 5, "out_temp" : 10}},
+                {"current" : {"stop_dat" : "2021-02-12T13:10:00+00:00", "duration" : 5, "out_temp" : 30}}
+            ],
+            "results": [
+                // {"f": [0,"agg_month", "j", "out_temp_omm_max"], "v": "20.0"},
+                // {"f": [0,"agg_month", "j", "out_temp_omm_min"], "v": "20.0"},
+                // {"f": [1,"agg_month", "j", "out_temp_omm_max"], "v": "20.0"},
+                // {"f": [1,"agg_month", "j", "out_temp_omm_min"], "v": "10.0"},
+                // {"f": [2,"agg_month", "j", "out_temp_omm_max"], "v": "30.0"},
+                // {"f": [2,"agg_month", "j", "out_temp_omm_min"], "v": "30.0"},
+                // {"f": [2,"agg_month", "j", "out_temp_omm_sum"], "v": "3000.0"},
+                // {"f": [2,"agg_hour", "j", "dv", "maxminFix", 0, "valeur"], "v": "10.0"},
+                // {"f": [2,"agg_hour", "j", "dv", "maxminFix", 1, "valeur"], "v": "10.0"}
+            ]
+        },{ "name": "9_max_min_simple_replace",
+            "data":
+            [
+                {"current" : {"stop_dat" : "2021-02-11T13:30:00+00:00", "duration" : 5, "out_temp" : 20}},
+                {"current" : {"stop_dat" : "2021-02-11T13:30:00+00:00", "duration" : 5, "out_temp" : 10}}
+            ],
+            "results": [
+                // {"f": [0,"agg_month", "j", "out_temp_max"], "v": "20.0"},
+                // {"f": [0,"agg_month", "j", "out_temp_min"], "v": "20.0"},
+                // {"f": [1,"agg_month", "j", "out_temp_max"], "v": "10.0"},
+                // {"f": [1,"agg_month", "j", "out_temp_min"], "v": "10.0"}
+            ]
+        }
 ]
