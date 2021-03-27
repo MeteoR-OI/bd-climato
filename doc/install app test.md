@@ -7,6 +7,7 @@
 
 - [1. Historique mises à jour](#1-historique-mises-à-jour)
 - [2. Initialisation](#2-initialisation)
+- [3. Format Json test calculus](#3-format-json-test-calculus)
 
 <!-- /code_chunk_output -->
 
@@ -35,10 +36,8 @@ psql -U <user> -P <pass> -d climatest < ./data/appInit.sql
 - Test the following URLs:
   - http://127.0.0.1:8000/admin
     Log in, Look at the data in the db, do not edit them at this stage
-  - http://127.0.0.1:8000/app/poste/1
-  - http://127.0.0.1:8000/obs/poste/1 => see last observation for poste 1
-  - http://127.0.0.1:8000/app/hour/1 => see the last hour aggregation for poste 1
-  - http://127.0.0.1:8000/app/day/1 => see the last day aggregation for poste 1
-  - http://127.0.0.1:8000/app/month/1 => see the last month aggregation for poste 1
-  - http://127.0.0.1:8000/app/year/1 => see the last year aggregation for poste 1
-  - http://127.0.0.1:8000/app/all/1 => see the last global aggregation for poste 1
+  - http://localhost:8000/app/calc/test1.json => lance le calcul sur le fichier data/json_not_in_git/test1.json
+  [] est affiché dans le navigateur à la fin du calcul, mais les tables ont ete mises a jour dans la bd
+
+# 3. Format Json test calculus
+[lien](calculus_test_suite.md)

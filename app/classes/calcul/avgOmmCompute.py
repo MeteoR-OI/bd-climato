@@ -127,6 +127,7 @@ class AvgOmmCompute(AvgCompute):
             tmp_val = tmp_sum / tmp_duration
             tmp_sum = tmp_val * 60
             tmp_duration = 60
+            agg_j[json_key] = tmp_val
             agg_j[json_key + '_first_time'] = delta_values[json_key + '_first_time']
             agg_j[json_key + '_sum'] = tmp_sum
             agg_j[json_key + '_duration'] = tmp_duration

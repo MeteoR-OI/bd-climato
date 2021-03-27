@@ -97,7 +97,7 @@ class CalcTestEngine():
                             continue
 
                         if a_result[k[0]] != my_row.data.j[k[0]]:
-                            err_txt = "t: " + a_result['t'] + ', idx: ' + str(a_result['idx']) + ', key:' + k[0]
+                            err_txt = "t: " + a_result['t'] + ', key:' + k[0]
                             err_txt = err_txt + ' -> ' + str(my_row.data.j[k[0]]) + ' should be ' + str(a_result[k[0]])
                             logging.error("error: " + str(err_txt))
                             error_msg.append(err_txt)

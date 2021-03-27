@@ -20,17 +20,14 @@ class CalculusTestSuite(TestCase):
     def test_1_simple_agg_hour(self):
         self.t_engine.run_test('1_simple_agg_hour')
 
-    def test_1_simple_agg_hour_round_hour(self):
-        self.t_engine.run_test('1_simple_agg_hour_round_hour')
+    def test_2_simple_agg_hour_round_hour(self):
+        self.t_engine.run_test('2_simple_agg_hour_round_hour')
 
-    def test_2_max_min_agg_same_day(self):
-        self.t_engine.run_test('2_max_min_agg_same_day')
+    def test_3_max_min_agg_same_day(self):
+        self.t_engine.run_test('3_max_min_agg_same_day')
 
-    def test_3_max_min_date_agg_different_days(self):
-        self.t_engine.run_test('3_max_min_date_agg_different_days')
-
-    def test_4_simple_omm_agg(self):
-        self.t_engine.run_test('4_simple_omm_agg')
+    def test_4_max_min_date_agg_different_days(self):
+        self.t_engine.run_test('4_max_min_date_agg_different_days')
 
     def test_5_simple_omm_agg_same_day(self):
         self.t_engine.run_test('5_simple_omm_agg_same_day')
@@ -41,8 +38,8 @@ class CalculusTestSuite(TestCase):
     def test_7_max_min_omm_agg_different_days(self):
         self.t_engine.run_test('7_max_min_omm_agg_different_days')
 
-    def test_8_max_min_omm_agg_regen(self):
-        self.t_engine.run_test('8_max_min_omm_agg_regen')
+    # def test_8_max_min_omm_agg_regen(self):
+    #     self.t_engine.run_test('8_max_min_omm_agg_regen')
 
-    def test_9_max_min_simple_replace(self):
-        self.t_engine.run_test('9_max_min_simple_replace')
+    # def test_9_max_min_simple_replace(self):
+    #     self.t_engine.run_test('9_max_min_simple_replace')
