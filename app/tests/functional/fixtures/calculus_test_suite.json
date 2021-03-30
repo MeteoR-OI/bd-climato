@@ -129,6 +129,9 @@
                 {"current" : {"stop_dat" : "2021-02-11T13:30:00", "duration" : 5, "out_temp" : 10}}
             ],
             "results": [
+                {"t": "O", "idx":1, "out_temp": 10},
+                {"t": "H", "dat": "2021-02-11T14:00:00", "out_temp_sum": 50},
+                {"t": "D", "dat": "2021-02-11T00:00:00", "out_temp_min": 10, "out_temp_max": 10}
             ]
         }
 ]

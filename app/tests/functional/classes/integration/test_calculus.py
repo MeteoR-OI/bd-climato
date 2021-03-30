@@ -38,8 +38,9 @@ class CalculusTestSuite(TestCase):
     def test_7_max_min_omm_agg_different_days(self):
         self.t_engine.run_test('7_max_min_omm_agg_different_days')
 
+    # will write in a specific table
     # def test_8_max_min_omm_agg_regen(self):
     #     self.t_engine.run_test('8_max_min_omm_agg_regen')
 
-    # def test_9_max_min_simple_replace(self):
-    #     self.t_engine.run_test('9_max_min_simple_replace')
+    def test_9_max_min_simple_replace(self):
+        self.t_engine.run_test('9_max_min_simple_replace')

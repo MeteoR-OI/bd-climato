@@ -80,6 +80,10 @@ class CalcTestEngine():
                             test_dat = calcAggDate(a_result["t"], test_dat, hour_deca, False)
                         my_row = AggMeteor(pid, a_result['t'], test_dat)
 
+                    if a_result['t'] == "O":
+                        print('obs: ' + str(my_row.data.id) + ", dat: " + str(my_row.data.stop_dat) + ", j: " + JsonPlus().dumps(my_row.data.j))
+                    else:
+                        print('agg_' + a_result['t'] + ': ' + str(my_row.data.id) + ", dat: " + str(my_row.data.start_dat) + ", j: " + JsonPlus().dumps(my_row.data.j))
                     if a_result.__contains__('count'):
                         stop_dat_mask = ''
                         if a_result.__contains__('stop_dat_mask'):
