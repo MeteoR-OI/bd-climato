@@ -20,6 +20,7 @@ class PosteMeteorTest(TestCase):
     def test_poste_meteor_creation(self):
         w = self.create_poste_meteor()
         w.data.meteor = "BBF015"
+        w.data.fuseau = 4
         w.save()
         # print('Poste ' + str(w.data.id) + ', meteor: ' + w.data.meteor)
         self.assertTrue(isinstance(w, PosteMeteor))
