@@ -86,11 +86,38 @@ class Observation(models.Model):
     j_agg = models.JSONField(null=False, default=dict)
 
     def __str__(self):
-        return "observation id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
+        return "observation id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.stop_dat)
 
     class Meta:
         db_table = "obs"
         unique_together = (("poste_id", "stop_dat"))
+
+
+class Agg_todo(models.Model):
+    poste_id = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
+    stop_dat = models.CharField(null=False, max_length=20, verbose_name="stop date, date de la mesure")
+    obs_id = models.ForeignKey(null=False, to="Observation", on_delete=models.CASCADE)
+    j_dv = models.JSONField(null=False, default=dict)
+
+    def __str__(self):
+        return "Agg_todo id: " + str(self.id) + ", obs: " + str(self.obs_id) + ", poste: " + str(self.poste_id) + ", on " + str(self.stop_dat)
+
+    class Meta:
+        db_table = "agg_todo"
+
+
+class Extreme_todo(models.Model):
+    poste_id = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
+    level = models.CharField(null=False, max_length=1, verbose_name="Aggregation level")
+    start_dat = models.CharField(null=False, max_length=20, verbose_name="start date de l agregation'")
+    invalid_type = models.CharField(null=False, max_length=3, verbose_name="Type Invalidation (max or min)")
+    j_invalid = models.JSONField(null=False, default=dict)
+
+    def __str__(self):
+        return "Extreme_todo id: " + str(self.id) + ", level: " + self.level + ", start_dat: " + str(self.start_dat) + ", type: " + str.invalid_type
+
+    class Meta:
+        db_table = "extreme_todo"
 
 
 class Agg_hour(models.Model):
