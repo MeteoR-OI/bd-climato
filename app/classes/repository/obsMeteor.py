@@ -39,6 +39,13 @@ class ObsMeteor():
             self.data.agg_start_dat = str_to_date(self.data.agg_start_dat)
             self.data.stop_dat = str_to_date(self.data.stop_dat)
 
+    @staticmethod
+    def getById(id: int):
+        if Observation.objects.filter(id=id).exists():
+            my_obs = Observation.objects.filter(id=id).first()
+            return ObsMeteor(my_obs.poste_id_id, my_obs.stop_dat)
+        raise Exception('obsMeteor', 'no data for id: ' + str(id))
+
     def save(self):
         """ save Poste and Exclusions """
         # we only save if there is some data

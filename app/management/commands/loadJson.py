@@ -43,7 +43,7 @@ class Command(BaseCommand):
                     texte += str(aligne)
 
                 my_json = JsonPlus().loads(texte)
-                ret = calc.run(my_json, delete_flag, trace_flag)
+                ret = calc.loadJson(my_json, delete_flag, trace_flag)
                 if trace_flag is True:
                     self.stdout.write(JsonPlus().dumps(ret))
 

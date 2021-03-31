@@ -9,6 +9,7 @@ from app.tools.jsonPlus import JsonPlus
 from app.views.v_agg import view_agg
 from app.views.v_poste import view_my_poste
 from app.views.v_calc import view_my_calc
+from app.views.v_calc_v2 import view_my_calc_v2
 
 
 # views well routed
@@ -42,6 +43,10 @@ def view_poste(request, poste_id):
 
 def views_calc(request, file_name: str):
     return view_my_calc(request, file_name)
+
+
+def views_calc_v2(request, file_name: str):
+    return view_my_calc_v2(request, file_name)
 
 
 # views to update

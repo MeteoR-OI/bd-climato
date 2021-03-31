@@ -68,6 +68,7 @@ class RootTypeInstrument:
     ) -> json:
         """
             processJson
+            calculus v1
         """
         # for all measures
         for my_measure in self.measures:
@@ -81,6 +82,31 @@ class RootTypeInstrument:
                         a_calculus['object'].processAggregations(poste_metier, my_measure, measures, measure_idx, agg_array, delta_values, trace_flag)
                         # process xtremes
                         # todo call agg calculus
+                    break
+        return
+
+    def loadJson(
+        self,
+        poste_metier,
+        measures: json,
+        measure_idx: int,
+        obs_meteor: ObsMeteor,
+        delta_values: json,
+        trace_flag: bool = False,
+    ) -> json:
+        """
+            processJson
+
+            calculus v2
+        """
+        # for all measures
+        for my_measure in self.measures:
+            # find the calculus object for my_mesure
+            for a_calculus in self.all_calculus:
+                if a_calculus['agg'] == my_measure['agg']:
+                    if a_calculus['object'] is not None:
+                        # load our json in obs row
+                        a_calculus['object'].processObservation(poste_metier, my_measure, measures, measure_idx, obs_meteor, delta_values, trace_flag)
                     break
         return
 
