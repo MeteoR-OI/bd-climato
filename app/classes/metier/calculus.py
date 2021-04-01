@@ -120,7 +120,9 @@ class Calculus():
             raise Exception('calculus::processJson', check_result)
 
         measure_idx = 0
+        debut_process = datetime.datetime.now()
         while measure_idx < m_j['data'].__len__():
+            # print('processing idx: ' + str(measure_idx))
             # we use the stop_dat of our measure json as the start date for our processing
             m_stop_date_agg_start_date = m_j['data'][measure_idx]['current']['stop_dat']
             poste_metier = PosteMetier(m_j['poste_id'], m_stop_date_agg_start_date)
@@ -162,12 +164,15 @@ class Calculus():
                     'info': 'idx=' + str(measure_idx) + helper,
                     'start_dat': m_j['data'][measure_idx]['current']['start_dat'],
                     'stop_dat': m_j['data'][measure_idx]['current']['stop_dat'],
-                    'observation': JsonPlus().loads(JsonPlus().dumps(self.my_obs.data.j)),
-                    'delta_values': JsonPlus().loads(JsonPlus().dumps(a_todo.j_dv)),
-                    }
-                )
+                    'obs data': JsonPlus().loads(JsonPlus().dumps(self.my_obs.data.j)),
+                    'obs aggregations': JsonPlus().loads(JsonPlus().dumps(self.my_obs.data.j_agg)),
+                    'agg_todo dv': JsonPlus().loads(JsonPlus().dumps(a_todo.j_dv)),
+                })
             else:
                 ret = []
             measure_idx += 1
+
+        print('time to Exec for ' + str(m_j['data'].__len__()) + ' measures: ' + str(datetime.datetime.now() - debut_process))
+        print('                    1 measure: ' + str((datetime.datetime.now() - debut_process)/m_j['data'].__len__()))
 
         return ret
