@@ -27,6 +27,7 @@ class RateCompute(AvgCompute):
         target_key: str,
         exclusion: json,
         delta_values: json,
+        trace_flag: bool,
         isOmm: bool = False,
         avg_suffix: str = '_rate',
     ):
@@ -42,6 +43,7 @@ class RateCompute(AvgCompute):
             target_key,
             exclusion,
             delta_values,
+            trace_flag,
             False,
             '_rate'
         )

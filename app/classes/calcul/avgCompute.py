@@ -17,7 +17,8 @@ class AvgCompute(ProcessMeasure):
     """
 
     def loadObservationDatarow(
-        self, my_measure: json,
+        self,
+        my_measure: json,
         measures: json,
         measure_idx: int,
         obs_meteor: ObsMeteor,
@@ -25,6 +26,7 @@ class AvgCompute(ProcessMeasure):
         target_key: str,
         exclusion: json,
         delta_values: json,
+        trace_flag: bool,
         isOmm: bool = False,
         avg_suffix: str = '_avg',
     ):
@@ -32,15 +34,12 @@ class AvgCompute(ProcessMeasure):
             loadObservationDatarow
 
             load Observation dataRow from json measures
+
             load delta_values from json mesures
 
             isOmm: only to load more info in case of omm/avg
         """
         obs_j = obs_meteor.data.j
-
-        # save aggregations in obs for future recomputation if required
-        if measures['data'][measure_idx].__contains__('aggregations'):
-            obs_meteor.data.j_agg = measures['data'][measure_idx]['aggregations']
 
         # b_exclu = True -> load data from exclusion, False -> normal processing
         b_exclu = loadFromExclu(exclusion, src_key)
@@ -75,9 +74,15 @@ class AvgCompute(ProcessMeasure):
             # need to load the duration in our observation dataRow
             obs_meteor.data.duration = tmp_duration
             # save our agg_h.start_dat for faster retrieval of observation for a given agg_h.start_dat
-            obs_meteor.data.start_dat = calcAggDate('H', obs_meteor.data.dat, tmp_duration)
-        elif obs_meteor.data.duration != tmp_duration:
+            obs_meteor.data.agg_start_dat = calcAggDate('H', obs_meteor.data.stop_dat, tmp_duration, True)
+
+        # double check that the duration are compatible
+        if obs_meteor.data.duration != tmp_duration:
             raise Exception('loadObsDatarow', 'incompatible durations -> in table obs: ' + str(obs_meteor.data.duration) + ', in json: ' + str(tmp_duration))
+
+        # double check the stop_dat of the obs, is the same as the one in our json data
+        if obs_meteor.data.stop_dat != my_dat:
+            raise Exception('loadObsDatarow', 'incompatible dates -> in table obs: ' + str(obs_meteor.data.stop_dat) + ', in json(or exclusion): ' + str(my_dat))
 
         # we will save current value in obs, and propagate delta values to our aggregations
         if my_measure['avg'] is True:
@@ -91,6 +96,7 @@ class AvgCompute(ProcessMeasure):
                     tmp_sum = tmp_value_old
                 delta_values[target_key + '_sum_old'] = tmp_sum
                 delta_values[target_key + '_duration_old'] = tmp_duration_old
+
                 # in case of replacement, invalidate the value for our min/max in aggregations
                 if obs_j.__contains__(target_key) and obs_j[target_key] != my_value:
                     delta_values[target_key + '_maxmin_invalid_val_max'] = obs_j[target_key]

@@ -13,26 +13,25 @@ class ProcessMeasure():
 
         Computation specific to a measure type
 
+        calculus v2
+
     """
-    # p should be called with o.dat in case of delete !
-    # {'type_i': 1, 'src_key': 'out_temp', 'target_key': 'out_temp', 'avg': True, 'Min': True, 'max': True, 'hour_deca': 0, 'special': 0},
-    def processObservation(
-        self,
-        poste_metier,
-        my_measure: json,
-        measures: json,
-        measure_idx: int,
-        obs_meteor: ObsMeteor,
-        delta_values: json,
-        trace_flag: bool = False,
-    ):
+
+    def processObservation(self, poste_metier, my_measure: json, measures: json, measure_idx: int, obs_meteor: ObsMeteor, delta_values: json, trace_flag: bool = False):
         """
             getProcessObject
 
-            generate deltaValues and load Observation
+            calculus v2
+
+            load json data in Observation table
+
+            load max/min
+
+            return the delta_values to be added in all aggregations
 
             calculation methods are implemented as virtual in the xxxCompute module
         """
+
         # load field if defined in json
         src_key, target_key = self.get_src_key(my_measure)
 
@@ -41,40 +40,12 @@ class ProcessMeasure():
         if shouldNullify(exclusion, src_key) is True:
             return
 
-        # load obs record, and get the delta_values added
-        # should load dv[M_value], and dv[first_time] when in omm mode
-        self.loadObservationDatarow(
-            my_measure,
-            measures,
-            measure_idx,
-            obs_meteor,
-            src_key,
-            target_key,
-            exclusion,
-            delta_values,
-            trace_flag,
-        )
+        # load obs record, and get the delta_values
+        self.loadObservationDatarow(my_measure, measures, measure_idx, obs_meteor, src_key, target_key, exclusion, delta_values, trace_flag)
 
         # load Max/Min and update delta_values
-        self.loadMaxMinInObservation(
-            my_measure,
-            measures,
-            measure_idx,
-            obs_meteor,
-            src_key,
-            target_key,
-            exclusion,
-            delta_values,
-            trace_flag,
-        )
+        self.loadMaxMinInObservation(my_measure, measures, measure_idx, obs_meteor, src_key, target_key, exclusion, delta_values, trace_flag)
 
-        # save our delta_values if in trace mode
-        if trace_flag is True:
-            j_obs = obs_meteor.data.j
-            if j_obs.__contains__('dv') is False:
-                j_obs['dv'] = {}
-            for akey in delta_values.items():
-                j_obs['dv'][akey[0]] = delta_values[akey[0]]
         return
 
     def processAggregations(

@@ -5,12 +5,16 @@ from app.classes.repository.aggTodoMeteor import AggTodoMeteor
 from app.classes.metier.typeInstrumentAll import TypeInstrumentAll
 from app.tools.jsonPlus import JsonPlus
 from app.tools.jsonValidator import checkJson
+from app.tools.refManager import RefManager
 from django.db import transaction
 import datetime
 import json
 
 
 class Calculus():
+
+    def __init__(self):
+        self.ref_mgr = RefManager.GetInstance()
 
     def delete_obs_agg(self):
         """clean_up all our tables"""
@@ -155,24 +159,26 @@ class Calculus():
             a_todo.data.j_dv.append(delta_values)
             a_todo.save()
 
+            j_trace = {}
+            if measure_idx == 0:
+                j_trace['total_exec'] = str(datetime.datetime.now() - debut_process)
+                j_trace['item_processed'] = str(m_j['data'].__len__())
+                j_trace['one_exec'] = str((datetime.datetime.now() - debut_process)/m_j['data'].__len__())
+
             if trace_flag:
-                if measure_idx == 0:
-                    helper = ' - cut and paste this data into https://codebeautify.org/jsonviewer'
-                else:
-                    helper = ''
-                ret.append({
-                    'info': 'idx=' + str(measure_idx) + helper,
-                    'start_dat': m_j['data'][measure_idx]['current']['start_dat'],
-                    'stop_dat': m_j['data'][measure_idx]['current']['stop_dat'],
-                    'obs data': JsonPlus().loads(JsonPlus().dumps(self.my_obs.data.j)),
-                    'obs aggregations': JsonPlus().loads(JsonPlus().dumps(self.my_obs.data.j_agg)),
-                    'agg_todo dv': JsonPlus().loads(JsonPlus().dumps(a_todo.j_dv)),
-                })
-            else:
-                ret = []
+                j_trace['info'] = 'idx=' + str(measure_idx)
+                j_trace['url'] = '** cut and paste this data into https://codebeautify.org/jsonviewer **'
+                j_trace['total_exec'] = str(datetime.datetime.now() - debut_process)
+                j_trace['item_processed'] = str(m_j['data'].__len__())
+                j_trace['one_exec'] = str((datetime.datetime.now() - debut_process)/m_j['data'].__len__())
+                j_trace['start_dat'] = m_j['data'][measure_idx]['current']['start_dat']
+                j_trace['stop_dat'] = m_j['data'][measure_idx]['current']['stop_dat']
+                j_trace['obs data'] = JsonPlus().loads(JsonPlus().dumps(self.my_obs.data.j))
+                j_trace['obs aggregations'] = JsonPlus().loads(JsonPlus().dumps(self.my_obs.data.j_agg))
+                j_trace['agg_todo dv'] = JsonPlus().loads(JsonPlus().dumps(a_todo.j_dv))
+
+            if j_trace != {}:
+                ret.append(j_trace)
+
             measure_idx += 1
-
-        print('time to Exec for ' + str(m_j['data'].__len__()) + ' measures: ' + str(datetime.datetime.now() - debut_process))
-        print('                    1 measure: ' + str((datetime.datetime.now() - debut_process)/m_j['data'].__len__()))
-
         return ret

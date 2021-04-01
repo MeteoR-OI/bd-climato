@@ -26,6 +26,7 @@ class AvgOmmCompute(AvgCompute):
         target_key: str,
         exclusion: json,
         delta_values: json,
+        trace_flag: bool,
         isOmm: bool = False,
     ):
         # force the omm flag, which save the M_last_dat in the delta_values
@@ -40,6 +41,7 @@ class AvgOmmCompute(AvgCompute):
             target_key,
             exclusion,
             delta_values,
+            trace_flag,
             True,
         )
         # we will invalidate only if our omm value is changed

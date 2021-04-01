@@ -46,7 +46,9 @@ class TypeInstrumentAll():
         agg_array: json,
         trace_flag: bool = False,
     ):
-        """process observation data for all our TypeInstrument"""
+        """process observation data for all our TypeInstrument
+            calculus v1
+        """
         delta_values = {"maxminFix": []}
 
         # for all type_instruments
