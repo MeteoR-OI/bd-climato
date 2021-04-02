@@ -1,3 +1,4 @@
+from app.tools.aggTools import calcAggDate
 from app.models import Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, Agg_todo
 from app.classes.metier.posteMetier import PosteMetier
 from app.classes.repository.aggTodoMeteor import AggTodoMeteor
@@ -76,8 +77,7 @@ class Calculus():
             # load duration and stop_dat if not already loaded
             if obs_meteor.data.duration == 0:
                 obs_meteor.data.duration = m_j['data'][measure_idx]['current']['duration']
-                measure_duration = datetime.timedelta(minutes=int(obs_meteor.data.duration))
-                obs_meteor.data.start_dat = obs_meteor.data.stop_dat - measure_duration
+                obs_meteor.data.agg_start_dat = calcAggDate('H', obs_meteor.data.stop_dat, True)
 
             delta_values = {"maxminFix": []}
 
