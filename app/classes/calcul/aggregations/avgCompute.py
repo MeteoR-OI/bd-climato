@@ -1,12 +1,12 @@
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.aggMeteor import AggMeteor
 from app.tools.climConstant import MeasureProcessingBitMask
-from app.classes.calcul.processMeasure import ProcessMeasure
+from app.classes.calcul.observation.processJsonData import ProcessJsonData
 from app.tools.aggTools import addJson, isFlagged, getAggDuration, loadFromExclu, calcAggDate, delKey
 import json
 
 
-class AvgCompute(ProcessMeasure):
+class AvgCompute(ProcessJsonData):
     """
         AvgCompute
 

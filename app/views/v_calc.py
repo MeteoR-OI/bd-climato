@@ -3,7 +3,7 @@
 #
 from django.http import HttpResponse
 from app.tools.jsonPlus import JsonPlus
-from app.classes.metier.calculus import Calculus
+from app.classes.calcul.calculus import Calculus
 import os
 
 
@@ -11,11 +11,9 @@ import os
 def view_my_calc(request, file_name):
     try:
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        ret_json = processJson(base_dir + '/../data/json_not_in_git/' + file_name, False, True)
+        ret_json = loadJson(base_dir + '/../data/json_not_in_git/' + file_name, False, True)
         ret = JsonPlus().dumps(ret_json)
         return HttpResponse(ret)
-
-        return HttpResponse('Filename ' + file_name + ' not found')
 
     except Exception as inst:
         return HttpResponse(inst)
@@ -23,7 +21,7 @@ def view_my_calc(request, file_name):
         # print(inst)          # __str__ allows args to be printed directly,
 
 
-def processJson(file_name: str, delete_flag: bool, trace_flag: bool):
+def loadJson(file_name: str, delete_flag: bool, trace_flag: bool):
     calc = Calculus()
     texte = ''
 
@@ -33,5 +31,5 @@ def processJson(file_name: str, delete_flag: bool, trace_flag: bool):
             texte += str(aligne)
 
         my_json = JsonPlus().loads(texte)
-        ret = calc.run(my_json, delete_flag, trace_flag)
+        ret = calc.loadJson(my_json, delete_flag, trace_flag)
         return ret

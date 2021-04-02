@@ -1,9 +1,4 @@
-from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.typeInstrumentMeteor import TypeInstrumentMeteor
-from app.classes.calcul.avgCompute import AvgCompute
-from app.classes.calcul.avgOmmCompute import AvgOmmCompute
-from app.classes.calcul.rateCompute import RateCompute
-import json
 
 # ---------------------
 # Measure Definitions -
@@ -39,76 +34,18 @@ import json
 
 
 class RootTypeInstrument:
-    """ typeInstrument root object"""
-    all_calculus = [
-        {"agg": "avg", "object": AvgCompute()},
-        {"agg": "avgomm", "object": AvgOmmCompute()},
-        # {"agg": "no", "object": None},
-        # {"agg": "sum", "object": None},    # sumCompute()}
-        {"agg": "rate", "object": RateCompute()}    # rateCompute()}
-    ]
-
     def __init(self):
         tmpI = TypeInstrumentMeteor(self.my_type_instr_id)
         self.type_instrument = tmpI.data
 
-    def mapping(self):
-        """return current mapping"""
-        return self.mapping
+    # def mapping(self):
+    #     """return current mapping"""
+    #     return self.mapping
 
-    def processJson(
-        self,
-        poste_metier,
-        measures: json,
-        measure_idx: int,
-        obs_meteor: ObsMeteor,
-        agg_array: json,
-        delta_values: json,
-        trace_flag: bool = False,
-    ) -> json:
-        """
-            processJson
-            calculus v1
-        """
-        # for all measures
-        for my_measure in self.measures:
-            # find the calculus object for my_mesure
-            for a_calculus in self.all_calculus:
-                if a_calculus['agg'] == my_measure['agg']:
-                    if a_calculus['object'] is not None:
-                        # load our json in obs row
-                        a_calculus['object'].processObservation(poste_metier, my_measure, measures, measure_idx, obs_meteor, delta_values, trace_flag)
-                        # load our json in all aggregation rows
-                        a_calculus['object'].processAggregations(poste_metier, my_measure, measures, measure_idx, agg_array, delta_values, trace_flag)
-                        # process xtremes
-                        # todo call agg calculus
-                    break
-        return
-
-    def loadJson(
-        self,
-        poste_metier,
-        measures: json,
-        measure_idx: int,
-        obs_meteor: ObsMeteor,
-        delta_values: json,
-        trace_flag: bool = False,
-    ) -> json:
-        """
-            processJson
-
-            calculus v2
-        """
-        # for all measures
-        for my_measure in self.measures:
-            # find the calculus object for my_mesure
-            for a_calculus in self.all_calculus:
-                if a_calculus['agg'] == my_measure['agg']:
-                    if a_calculus['object'] is not None:
-                        # load our json in obs row
-                        a_calculus['object'].processObservation(poste_metier, my_measure, measures, measure_idx, obs_meteor, delta_values, trace_flag)
-                    break
-        return
+    def get_all_measures(self):
+        # iterator
+        for a_measure in self.measures:
+            yield a_measure
 
     def __str__(self):
         return "TypeInstrument, id: " + str(self.my_type_instr_id)

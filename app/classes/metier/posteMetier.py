@@ -5,7 +5,7 @@ from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.aggMeteor import AggMeteor
 from app.classes.repository.excluMeteor import ExcluMeteor
 from app.classes.repository.posteMeteor import PosteMeteor
-from app.classes.metier.typeInstrumentAll import TypeInstrumentAll
+from app.classes.typeInstruments.allTtypes import AllTypeInstruments
 from app.tools.aggTools import calcAggDate
 
 
@@ -48,8 +48,8 @@ class PosteMetier(PosteMeteor):
             my_start_date_utc = calcAggDate('H', start_date_utc, 0, True)
         needed_dates = [my_start_date_utc]
         calculated_deca = {"d0": True}
-        ti_all = TypeInstrumentAll()
-        for an_instru in ti_all.all_instruments:
+        ti_all = AllTypeInstruments()
+        for an_instru in ti_all.get_all_instruments():
             for a_measure in an_instru['object'].measures:
                 if a_measure.__contains__('hour_deca') and calculated_deca.__contains__('d' + str(a_measure['hour_deca'])) is False:
                     hour_deca = a_measure['hour_deca']

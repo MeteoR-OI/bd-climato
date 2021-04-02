@@ -7,9 +7,9 @@ import json
 import datetime
 
 
-class ProcessMeasure():
+class ProcessJsonData():
     """
-        ProcessMeasure
+        ProcessJsonData
 
         Computation specific to a measure type
 
@@ -58,7 +58,11 @@ class ProcessMeasure():
         delta_values: json,
         trace_flag: bool = False,
     ):
-        """ update all aggregation from the delta data, and aggregations key on json, return a list of extremes to recompute """
+        """
+
+            update all aggregation from the delta data, and aggregations key on json, return a list of extremes to recompute
+            calculus v1
+        """
 
         # load field if defined in json
         src_key, target_key = self.get_src_key(my_measure)
@@ -126,6 +130,7 @@ class ProcessMeasure():
         return
 
     def recomputeExtremes():
+        # calculus v1
         print('to do')
 
     # ----------------------------------------------------
@@ -148,6 +153,8 @@ class ProcessMeasure():
 
             load in obs max/min value if present
             update delta_values
+
+            calculus v2
         """
         obs_j = obs_meteor.data.j
         if delta_values.__contains__(target_key) is False:
@@ -210,6 +217,8 @@ class ProcessMeasure():
 
             load in obs max/min  i our aggregation value if present
             update dv_next for nest level
+
+            calculus v1
         """
         # save our dv, and get agg_j, m_agg_j
         m_agg_j = self.get_agg_magg(my_aggreg, delta_values, measures, measure_idx)
@@ -292,7 +301,12 @@ class ProcessMeasure():
                             dv_next[json_key + maxmin_suffix + '_dir'] = current_maxmin_dir
 
     def get_src_key(self, my_measure: json):
-        """ return the target key name """
+        """
+            return the target key name
+
+            calculus v1
+            calculus v2
+        """
         src_key = my_measure['src_key']
         target_key = src_key
         if my_measure.__contains__('target_key'):
@@ -302,6 +316,7 @@ class ProcessMeasure():
         return (src_key, target_key)
 
     def add_new_maxmin_fix(self, json_key: str, maxmin_key: str, measure_date: datetime, delta_values: json, my_aggreg):
+        # calculus v1
         delta_values['maxminFix'].append({
             "posteId": my_aggreg.data.poste_id_id,
             "startDat": my_aggreg.data.start_dat,
