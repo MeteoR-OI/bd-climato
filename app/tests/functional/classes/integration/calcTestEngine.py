@@ -1,5 +1,5 @@
 from app.tools.aggTools import calcAggDate
-from app.classes.integrationTests.typeTemp import TypeTempTest
+from app.classes.calcul.calculus import Calculus
 from app.classes.metier.posteMetier import PosteMetier
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.aggMeteor import AggMeteor
@@ -10,7 +10,7 @@ import logging
 
 class CalcTestEngine():
     def __init__(self, *args, **kwargs):
-        self.tt = TypeTempTest()
+        self.calc = Calculus()
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         file_name = os.path.join(base_dir, '../fixtures/calculus_test_suite.json')
         texte = ''
@@ -48,9 +48,9 @@ class CalcTestEngine():
                 j_data = a_test['data']
                 my_json['data'] = j_data
                 # remove any existing data
-                self.tt.delete_obs_agg()
+                self.calc.delete_obs_agg()
 
-                self.tt.doCalculus(my_json, True)
+                self.calc.loadJson(my_json, True, False)
 
                 error_msg = []
                 # load list of resultset to load
