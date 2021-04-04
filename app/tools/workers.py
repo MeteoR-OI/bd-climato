@@ -9,8 +9,12 @@ class Workers:
     """
     wkrs = []
     wrks_lock = threading.Lock()
+    nb_instances = 0
 
     def __init__(self, kill_freq: int = 30):
+        if Workers.nb_instances != 0:
+            raise Exception('Workers', 'Call Workers.GetInstance()')
+        Workers.nb_instances += 1
         # save our kill frequency on a global space
         self.ref_mgr = RefManager.GetInstance()
         self.ref_mgr.AddRef("worker_kill_frequency", kill_freq)
@@ -22,7 +26,15 @@ class Workers:
         self.register("monitor", self.monitor)
         self.start("monitor")
 
-    def monitor(self, kill_me: threading.Event):
+    @staticmethod
+    def GetInstance(kill_freq: int = 30):
+        # return the instance
+        ref_mgr = RefManager.GetInstance()
+        if ref_mgr.GetRef('workers') is None:
+            ref_mgr.AddRef('workers', Workers(kill_freq))
+        return ref_mgr.GetRef('workers')
+
+    def monitor(self, kill_me: threading.Event, stop_event: threading.Event):
         try:
             # print("......monitor thread started")
             while True:
@@ -54,8 +66,7 @@ class Workers:
                 self.thread_event.clear()
 
         finally:
-            # self.thread_event.set()
-            pass
+            stop_event.set()
 
     def register(self, name: str, fct):
         for a_worker in Workers.wkrs:
@@ -75,7 +86,7 @@ class Workers:
                     a_worker['run'] = True
                     Workers.wrks_lock.release()
                     lock_relased = True
-                    a_worker['fct'](a_worker['killMe'])
+                    a_worker['fct'](a_worker['killMe'], self.thread_event)
         finally:
             if lock_relased is False:
                 Workers.wrks_lock.release()

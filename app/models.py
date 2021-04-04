@@ -94,13 +94,13 @@ class Observation(models.Model):
 
 
 class Agg_todo(models.Model):
-    poste_id = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
-    stop_dat = models.CharField(null=False, max_length=20, verbose_name="stop date, date de la mesure")
     obs_id = models.ForeignKey(null=False, to="Observation", on_delete=models.CASCADE)
-    j_dv = models.JSONField(null=False, default=dict)
+    priority = models.IntegerField(null=True, default=9, verbose_name='priority, 0: one current-data, 9: multiple current-data')
+    status = models.IntegerField(null=False, default=0, verbose_name='status, 0: wait, 9: error, 99: processed')
+    j_dv = models.JSONField(null=False, default=dict, verbose_name='default_values coming from obs processing')
 
     def __str__(self):
-        return "Agg_todo id: " + str(self.id) + ", obs: " + str(self.obs_id) + ", poste: " + str(self.poste_id) + ", on " + str(self.stop_dat)
+        return "Agg_todo id: " + str(self.id) + ", obs: " + str(self.obs_id) + ", priority: " + str(self.priority)
 
     class Meta:
         db_table = "agg_todo"
@@ -111,6 +111,7 @@ class Extreme_todo(models.Model):
     level = models.CharField(null=False, max_length=1, verbose_name="Aggregation level")
     start_dat = models.CharField(null=False, max_length=20, verbose_name="start date de l agregation'")
     invalid_type = models.CharField(null=False, max_length=3, verbose_name="Type Invalidation (max or min)")
+    status = models.IntegerField(null=False, default=0, verbose_name='status, 0: wait, 9: error, 99: processed')
     j_invalid = models.JSONField(null=False, default=dict)
 
     def __str__(self):

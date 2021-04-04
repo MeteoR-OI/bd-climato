@@ -26,8 +26,7 @@ class AggTodoMeteor():
             self.data = Agg_todo.objects.filter(obs_id=obs_id).first()
             self.exist_in_db = True
         else:
-            o = ObsMeteor.getById(obs_id)
-            self.data = Agg_todo(poste_id=o.data.poste_id, stop_dat=o.data.stop_dat, obs_id_id=obs_id, j_dv=[])
+            self.data = Agg_todo(obs_id_id=obs_id, priority=9, j_dv=[])
             self.exist_in_db = False
 
     def save(self):
@@ -35,15 +34,23 @@ class AggTodoMeteor():
         if self.data.j_dv.__len__() > 0:
             for a_jdv in self.data.j_dv:
                 JsonPlus().serialize(a_jdv)
-            self.data.stop_dat = date_to_str(self.data.stop_dat)
             self.data.save()
             for a_jdv in self.data.j_dv:
                 JsonPlus().deserialize(a_jdv)
-            self.data.stop_dat = str_to_date(self.data.stop_dat)
         else:
             if self.exist_in_db:
                 Agg_todo.objects.delete()
 
+    @staticmethod
+    def popOne():
+        if Agg_todo.objects.filter(status=0).count() == 0:
+            return None
+        a_todo = Agg_todo.objects.filter(status=0).order_by("priority", "id").select_for_update(skip_locked=True).first()
+        a_todo.status = 9
+        a_todo.save()
+        agg_todo = AggTodoMeteor(a_todo.obs_id_id)
+        return agg_todo
+
     def __str__(self):
         """print myself"""
-        return "Agg_todo id: " + str(self.id) + ", obs: " + str(self.obs_id) + ", poste: " + str(self.poste_id) + ", on " + str(self.stop_dat)
+        return "Agg_todo id: " + str(self.data.id) + ", obs: " + str(self.data.obs_id_id) + ", poste: " + str(self.data.obs_id.poste_id_id) + ", on " + str(self.data.obs_id.stop_dat)

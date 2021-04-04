@@ -1,76 +1,102 @@
+from app.classes.metier.posteMetier import PosteMetier
 from app.classes.repository.obsMeteor import ObsMeteor
+from app.classes.repository.aggTodoMeteor import AggTodoMeteor
 from app.tools.climConstant import AggLevel, MeasureProcessingBitMask
-from app.tools.aggTools import isFlagged, delKey
-from app.tools.aggTools import shouldNullify
-from app.tools.aggTools import calcAggDate
+from app.classes.typeInstruments.allTtypes import AllTypeInstruments
+from app.tools.aggTools import isFlagged, delKey, shouldNullify, calcAggDate
+from app.tools.workers import Workers
+from app.tools.refManager import RefManager
+from django.db import transaction
 import json
 import datetime
+import threading
 
 
-class ProcessJsonData():
+class ProcessAggreg():
     """
-        ProcessJsonData
+        ProcessAggreg
 
         Computation specific to a measure type
 
         calculus v2
 
+        select_for_update(skip_locked=True)
+        select id, priority, status from agg_todo order by priority, id limit 1 for update  SKIP LOCKED
     """
 
-    def processObservation(self, poste_metier, my_measure: json, measures: json, measure_idx: int, obs_meteor: ObsMeteor, delta_values: json, trace_flag: bool = False):
+    def __init__(self, name: str):
+        if Workers.nb_instances != 0:
+            raise Exception(name, 'Call Workers.GetInstance()')
+        Workers.nb_instances += 1
+        self.name = name
+        self.ref_mgr = RefManager.GetInstance()
+        self.ref_mgr.AddRef("Event" + self.name, threading.Event())
+ 
+    @staticmethod
+    def GetInstance(kill_freq: int = 30):
+        # return the instance
+        name = 'ProcessAggreg'
+        ref_mgr = RefManager.GetInstance()
+        if ref_mgr.GetRef('Svc' + name) is None:
+            ref_mgr.AddRef('Svc' + name, ProcessAggreg(name))
+        return ref_mgr.GetRef('Svc' + name)
+
+    def start(self, kill_me: threading.Event, stop_event: threading.Event):
+        try:
+            # print("......monitor thread started")
+            my_event = self.ref_mgr.GetRef('Event' + self.name)
+            while True:
+                evt = my_event.wait(self.ref_mgr.GetRef("worker_kill_frequency"))
+                if evt is False:
+                    # check the kill flag for ourself
+                    if kill_me.isSet() is True:
+                        return
+                    continue
+                # we have something to process
+                self.runMe()
+        except Exception as exc:
+            print(exc)
+        finally:
+            stop_event.set()
+
+    def ComputeAggreg(a_todo: AggTodoMeteor):
         """
-            getProcessObject
+            ComputeAggreg
 
-            calculus v2
-
-            load json data in Observation table
-
-            load max/min
-
-            return the delta_values to be added in all aggregations
-
-            calculation methods are implemented as virtual in the xxxCompute module
+            send the delta values to all our measures
         """
+        all_instr = AllTypeInstruments()
+        # retrieve data we will need
+        m_stop_dat = a_todo.data.obs_id.stop_dat
+        a_start_dat = a_todo.data.obs_id.agg_start_dat
+        poste_metier = PosteMetier(a_todo.data.obs_id.poste_id_id, a_start_dat)
+        aggregations = poste_metier.aggregations(m_stop_dat, True)
+        delta_values = a_todo.data.j_dv
 
-        # load field if defined in json
-        src_key, target_key = self.get_src_key(my_measure)
+        # for all type_instruments
+        for an_intrument in all_instr.get_all_instruments():
+            # for all measures
+            for my_measure in an_intrument['object'].get_all_measures():
+                # find the calculus object for my_mesure
+                for a_calculus in self.all_calculus:
+                    if a_calculus['agg'] == my_measure['agg']:
+                        if a_calculus['calc_obs'] is not None:
+                            # load our json in obs row
+                            a_calculus['calc_obs'].loadInObs(poste_metier, my_measure, m_j, measure_idx, obs_meteor, delta_values, trace_flag)
+                        break
 
-        # get exclusion, and return if value is nullified
-        exclusion = poste_metier.exclusion(my_measure['type_i'])
-        if shouldNullify(exclusion, src_key) is True:
-            return
 
-        # load obs record, and get the delta_values
-        self.loadObservationDatarow(my_measure, measures, measure_idx, obs_meteor, src_key, target_key, exclusion, delta_values, trace_flag)
+    # def processAggregations(
+    #     self,
+    #     poste_metier,
+    #     my_measure: json,
+    #     measures: json,
+    #     measure_idx: int,
+    #     aggregations: list,
+    #     delta_values: json,
+    #     trace_flag: bool = False,
+    # ):
 
-        # load Max/Min and update delta_values
-        self.loadMaxMinInObservation(my_measure, measures, measure_idx, obs_meteor, src_key, target_key, exclusion, delta_values, trace_flag)
-
-        return
-
-    def processAggregations(
-        self,
-        poste_metier,
-        my_measure: json,
-        measures: json,
-        measure_idx: int,
-        aggregations: list,
-        delta_values: json,
-        trace_flag: bool = False,
-    ):
-        """
-
-            update all aggregation from the delta data, and aggregations key on json, return a list of extremes to recompute
-            calculus v1
-        """
-
-        # load field if defined in json
-        src_key, target_key = self.get_src_key(my_measure)
-
-        # get exclusion, and return if value is nullified
-        exclusion = poste_metier.exclusion(my_measure['type_i'])
-        if shouldNullify(exclusion, src_key) is True:
-            return
 
         # load the current aggregations array for our anAgg
         deca_hour = 0
