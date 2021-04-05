@@ -43,6 +43,7 @@ class CalcObs(Calculus):
             # print('processing idx: ' + str(measure_idx))
             # we use the stop_dat of our measure json as the start date for our processing
             m_stop_date_agg_start_date = m_j['data'][measure_idx]['current']['stop_dat']
+            m_duration = m_j['data'][measure_idx]['current']['duration']
             poste_metier = PosteMetier(m_j['poste_id'], m_stop_date_agg_start_date)
             obs_meteor = poste_metier.observation(m_stop_date_agg_start_date)
             if m_j['data'][measure_idx].__contains__('aggregations'):
@@ -53,7 +54,7 @@ class CalcObs(Calculus):
                 obs_meteor.data.duration = m_j['data'][measure_idx]['current']['duration']
                 obs_meteor.data.agg_start_dat = calcAggDate('H', obs_meteor.data.stop_dat, True)
 
-            delta_values = {"maxminFix": []}
+            delta_values = {"maxminFix": [], "duration": m_duration}
 
             # for all type_instruments
             for an_intrument in all_instr.get_all_instruments():

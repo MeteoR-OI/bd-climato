@@ -98,6 +98,7 @@ class Agg_todo(models.Model):
     priority = models.IntegerField(null=True, default=9, verbose_name='priority, 0: one current-data, 9: multiple current-data')
     status = models.IntegerField(null=False, default=0, verbose_name='status, 0: wait, 9: error, 99: processed')
     j_dv = models.JSONField(null=False, default=dict, verbose_name='default_values coming from obs processing')
+    j_error = models.JSONField(null=False, default=dict, verbose_name='error reporting')
 
     def __str__(self):
         return "Agg_todo id: " + str(self.id) + ", obs: " + str(self.obs_id) + ", priority: " + str(self.priority)

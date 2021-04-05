@@ -1,109 +1,34 @@
-from app.classes.metier.posteMetier import PosteMetier
-from app.classes.repository.obsMeteor import ObsMeteor
-from app.classes.repository.aggTodoMeteor import AggTodoMeteor
+from app.classes.repository.aggMeteor import AggMeteor
 from app.tools.climConstant import AggLevel, MeasureProcessingBitMask
-from app.classes.typeInstruments.allTtypes import AllTypeInstruments
-from app.tools.aggTools import isFlagged, delKey, shouldNullify, calcAggDate
-from app.tools.workers import Workers
-from app.tools.refManager import RefManager
-from django.db import transaction
+from app.tools.aggTools import isFlagged, delKey, calcAggDate
 import json
 import datetime
-import threading
 
 
-class ProcessAggreg():
+class AggCompute():
     """
         ProcessAggreg
 
         Computation specific to a measure type
 
         calculus v2
-
-        select_for_update(skip_locked=True)
-        select id, priority, status from agg_todo order by priority, id limit 1 for update  SKIP LOCKED
     """
 
-    def __init__(self, name: str):
-        if Workers.nb_instances != 0:
-            raise Exception(name, 'Call Workers.GetInstance()')
-        Workers.nb_instances += 1
-        self.name = name
-        self.ref_mgr = RefManager.GetInstance()
-        self.ref_mgr.AddRef("Event" + self.name, threading.Event())
- 
-    @staticmethod
-    def GetInstance(kill_freq: int = 30):
-        # return the instance
-        name = 'ProcessAggreg'
-        ref_mgr = RefManager.GetInstance()
-        if ref_mgr.GetRef('Svc' + name) is None:
-            ref_mgr.AddRef('Svc' + name, ProcessAggreg(name))
-        return ref_mgr.GetRef('Svc' + name)
-
-    def start(self, kill_me: threading.Event, stop_event: threading.Event):
-        try:
-            # print("......monitor thread started")
-            my_event = self.ref_mgr.GetRef('Event' + self.name)
-            while True:
-                evt = my_event.wait(self.ref_mgr.GetRef("worker_kill_frequency"))
-                if evt is False:
-                    # check the kill flag for ourself
-                    if kill_me.isSet() is True:
-                        return
-                    continue
-                # we have something to process
-                self.runMe()
-        except Exception as exc:
-            print(exc)
-        finally:
-            stop_event.set()
-
-    def ComputeAggreg(a_todo: AggTodoMeteor):
-        """
-            ComputeAggreg
-
-            send the delta values to all our measures
-        """
-        all_instr = AllTypeInstruments()
-        # retrieve data we will need
-        m_stop_dat = a_todo.data.obs_id.stop_dat
-        a_start_dat = a_todo.data.obs_id.agg_start_dat
-        poste_metier = PosteMetier(a_todo.data.obs_id.poste_id_id, a_start_dat)
-        aggregations = poste_metier.aggregations(m_stop_dat, True)
-        delta_values = a_todo.data.j_dv
-
-        # for all type_instruments
-        for an_intrument in all_instr.get_all_instruments():
-            # for all measures
-            for my_measure in an_intrument['object'].get_all_measures():
-                # find the calculus object for my_mesure
-                for a_calculus in self.all_calculus:
-                    if a_calculus['agg'] == my_measure['agg']:
-                        if a_calculus['calc_obs'] is not None:
-                            # load our json in obs row
-                            a_calculus['calc_obs'].loadInObs(poste_metier, my_measure, m_j, measure_idx, obs_meteor, delta_values, trace_flag)
-                        break
-
-
-    # def processAggregations(
-    #     self,
-    #     poste_metier,
-    #     my_measure: json,
-    #     measures: json,
-    #     measure_idx: int,
-    #     aggregations: list,
-    #     delta_values: json,
-    #     trace_flag: bool = False,
-    # ):
-
-
+    def loadAggregations(
+        self,
+        m_stop_date: datetime,
+        my_measure: json,
+        j_agg: json,
+        aggregations: list,
+        delta_values: json,
+        trace_flag: bool = False,
+    ):
         # load the current aggregations array for our anAgg
         deca_hour = 0
         if my_measure.__contains__('hour_deca') is True:
             deca_hour = my_measure['hour_deca']
 
-        measure_dat = calcAggDate('H', measures['data'][measure_idx]['current']['stop_dat'], deca_hour, True)
+        measure_dat = calcAggDate('H', m_stop_date, deca_hour, True)
 
         for anAgg in AggLevel:
             measure_dat = calcAggDate(anAgg, measure_dat, 0, False)
@@ -121,27 +46,29 @@ class ProcessAggreg():
             if agg_deca is None:
                 raise Exception('processAggregations', 'aggregation not loaded')
 
+            m_agg_j = self.get_agg_magg(anAgg, j_agg)
+
+            agg_deca.dirty = True
             # load data in our aggregation
-            self.loadAggregationDatarows(
+            self.loadLevelAggregation(
                 my_measure,
-                measures,
-                measure_idx,
+                m_stop_date,
                 agg_deca,
-                target_key,
+                m_agg_j,
                 delta_values,
                 dv_next,
+                trace_flag,
             )
 
             # get our extreme values
             self.loadMaxMinInAggregation(
                 my_measure,
-                measures,
-                measure_idx,
+                m_stop_date,
                 agg_deca,
-                target_key,
-                exclusion,
+                m_agg_j,
                 delta_values,
                 dv_next,
+                trace_flag,
             )
             # save our delta_values if in trace mode
             if trace_flag is True:
@@ -155,87 +82,18 @@ class ProcessAggreg():
             delta_values = dv_next
         return
 
-    def recomputeExtremes():
-        # calculus v1
-        print('to do')
-
     # ----------------------------------------------------
     # private or methods common to multiple sub-instances
     # ----------------------------------------------------
-    def loadMaxMinInObservation(
+    def loadMaxMinInAggregation(
         self,
         my_measure: json,
-        measures: json,
-        measure_idx: int,
-        obs_meteor: ObsMeteor,
-        src_key: str,
-        target_key: str,
-        exclusion: json,
-        delta_values: json,
-        b_use_rate: bool = False,
-    ):
-        """
-            loadMaxMinInObservation
-
-            load in obs max/min value if present
-            update delta_values
-
-            calculus v2
-        """
-        obs_j = obs_meteor.data.j
-        if delta_values.__contains__(target_key) is False:
-            # no value processed
-            return
-
-        last_measure_time = measures['data'][measure_idx]['current']['stop_dat']
-        data_src = {}
-        if measures['data'][measure_idx].__contains__('current'):
-            data_src = measures['data'][measure_idx]['current']
-
-        for maxmin_sufx in ['_max', '_min']:
-            # is max or min needed for this measure
-            maxmin_key = maxmin_sufx.split('_')[1]
-            maxmin_suffix = maxmin_sufx
-            if b_use_rate:
-                maxmin_suffix = '_rate' + maxmin_sufx
-            if my_measure.__contains__(maxmin_key) is True and my_measure[maxmin_key] is True:
-                maxmin_time = last_measure_time
-
-                # is there a M_max/M_min in the data_src ?
-                if data_src.__contains__(src_key + maxmin_suffix):
-                    # found, then load in in obs and delta_values
-                    my_maxmin_value = my_measure['dataType'](data_src[src_key + maxmin_suffix])
-                    obs_j[target_key + maxmin_suffix] = my_maxmin_value
-                    if data_src.__contains__(src_key + maxmin_suffix + '_time'):
-                        maxmin_time = data_src[src_key + maxmin_suffix + '_time']
-                    obs_j[target_key + maxmin_suffix + '_time'] = maxmin_time
-                    delta_values[target_key + maxmin_suffix] = my_maxmin_value
-                    delta_values[target_key + maxmin_suffix + '_time'] = maxmin_time
-                    if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)) and maxmin_suffix == '_max':
-                        """ save Wind_max_dir """
-                        if data_src.__contains__(src_key + maxmin_suffix + '_dir') is True:
-                            my_wind_dir = int(data_src[src_key + maxmin_suffix + '_dir'])
-                            obs_j[target_key + maxmin_suffix + '_dir'] = my_wind_dir
-                            delta_values[target_key + maxmin_suffix + '_dir'] = my_wind_dir
-                elif delta_values.__contains__(target_key):
-                    # on prend la valeur reportee, et le milieu de l'heure de la periode de la donnee elementaire
-                    if b_use_rate:
-                        # pour les "rate" on prend l'avg (qui est un rate)
-                        delta_values[target_key + maxmin_suffix] = delta_values[target_key + '_sum']
-                    else:
-                        # sinon on prend la valeur de la mesure
-                        delta_values[target_key + maxmin_suffix] = delta_values[target_key]
-                    delta_values[target_key + maxmin_suffix + '_time'] = maxmin_time
-
-    def loadMaxMinInAggregation(
-        self, my_measure: json,
-        measures: json,
-        measure_idx: int,
-        my_aggreg,
-        json_key: str,
-        exclusion: json,
+        m_stop_date: datetime,
+        my_aggreg: AggMeteor,
+        m_agg_j: json,
         delta_values: json,
         dv_next: json,
+        trace_flag: bool = False,
         b_use_rate: bool = False,
     ):
         """
@@ -243,11 +101,8 @@ class ProcessAggreg():
 
             load in obs max/min  i our aggregation value if present
             update dv_next for nest level
-
-            calculus v1
         """
-        # save our dv, and get agg_j, m_agg_j
-        m_agg_j = self.get_agg_magg(my_aggreg, delta_values, measures, measure_idx)
+        json_key = self.get_json_key(my_measure)
         agg_j = my_aggreg.data.j
 
         for maxmin_suffix in ['_max', '_min']:
@@ -273,7 +128,7 @@ class ProcessAggreg():
                 current_maxmin = None
                 if delta_values.__contains__(json_key):
                     current_maxmin = my_measure['dataType'](delta_values[json_key])
-                    current_maxmin_time = measures['data'][measure_idx]['current']['stop_dat']
+                    current_maxmin_time = m_stop_date
 
                 if delta_values.__contains__(json_key + maxmin_suffix) is True:
                     # load from delta_values
@@ -352,3 +207,27 @@ class ProcessAggreg():
             "valeur": my_aggreg.data.j[json_key + '_' + maxmin_key],
             "dat": measure_date,
         })
+
+    def get_agg_magg(self, agg_level: str, j_agg: json):
+        """
+            get_agg_magg
+        """
+        # get aggregation values in measures
+        m_agg_j = {}
+        if j_agg != {}:
+            for a_j_agg in j_agg:
+                if a_j_agg['level'] == agg_level:
+                    m_agg_j = a_j_agg
+                    break
+        return m_agg_j
+
+    def get_json_key(self, my_measure: json):
+        """
+            return the target key name
+        """
+        target_key = my_measure['src_key']
+        if my_measure.__contains__('target_key'):
+            target_key = my_measure['target_key']
+        elif isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm):
+            target_key += '_omm'
+        return target_key

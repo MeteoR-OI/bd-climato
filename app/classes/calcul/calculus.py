@@ -1,10 +1,8 @@
-from app.tools.aggTools import calcAggDate
 from app.models import Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, Agg_todo
-from app.classes.metier.posteMetier import PosteMetier
-from app.classes.repository.aggTodoMeteor import AggTodoMeteor
 from app.classes.calcul.observation.processJsonDataAvg import ProcessJsonDataAvg
 from app.classes.calcul.observation.processJsonDataAvgOmm import ProcessJsonDataAvgOmm
 from app.classes.calcul.observation.processJsonDataRate import ProcessJsonDataRate
+from app.classes.calcul.aggregations.aggAvgCompute import AggAvgCompute
 from app.classes.calcul.aggregations.svcAggreg import SvcAggreg
 from app.classes.typeInstruments.allTtypes import AllTypeInstruments
 from app.tools.jsonPlus import JsonPlus
@@ -17,7 +15,7 @@ import json
 
 class Calculus():
     all_calculus = [
-        {"agg": "avg", "calc_obs": ProcessJsonDataAvg(), "calc_agg": None},
+        {"agg": "avg", "calc_obs": ProcessJsonDataAvg(), "calc_agg": AggAvgCompute()},
         {"agg": "avgomm", "calc_obs": ProcessJsonDataAvgOmm(), "calc_agg": None},
         # {"agg": "no", "calc_obs": None, "calc_agg": None},
         # {"agg": "sum", "calc_obs": None, "calc_agg": None},    # sumCompute(), "calc_agg": None}

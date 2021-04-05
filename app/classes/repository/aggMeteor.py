@@ -49,11 +49,12 @@ class AggMeteor():
     def save(self):
         """ save Poste and Exclusions """
         if self.data.j != {}:
-            self.data.start_dat = date_to_str(self.data.start_dat)
-            JsonPlus().serialize(self.data.j)
-            self.data.save()
-            JsonPlus().deserialize(self.data.j)
-            self.data.start_dat = str_to_date(self.data.start_dat)
+            if self.__contains__('dirty') is False or self.dirty is True:
+                self.data.start_dat = date_to_str(self.data.start_dat)
+                JsonPlus().serialize(self.data.j)
+                self.data.save()
+                JsonPlus().deserialize(self.data.j)
+                self.data.start_dat = str_to_date(self.data.start_dat)
 
     def getAggObject(self, niveau_agg: str):
         """get the aggregation depending on the level"""

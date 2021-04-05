@@ -31,15 +31,30 @@ class AggTodoMeteor():
 
     def save(self):
         """ save or delete our AggTodo """
-        if self.data.j_dv.__len__() > 0:
-            for a_jdv in self.data.j_dv:
-                JsonPlus().serialize(a_jdv)
+        if self.data.j_err.__len__() > 0 or self.data.j_dv.__len__() > 0:
+            if self.data.j_err.__len__() > 0:
+                JsonPlus().serialize(self.data.j_err)
+            if self.data.j_dv.__len__() > 0:
+                for a_jdv in self.data.j_dv:
+                    JsonPlus().serialize(a_jdv)
             self.data.save()
-            for a_jdv in self.data.j_dv:
-                JsonPlus().deserialize(a_jdv)
+            if self.data.j_err.__len__() > 0:
+                JsonPlus().deserialize(self.data.j_err)
+            if self.data.j_err.__len__() > 0:
+                for a_jdv in self.data.j_dv:
+                    JsonPlus().deserialize(a_jdv)
         else:
             if self.exist_in_db:
                 Agg_todo.objects.delete()
+
+    def delete(self):
+        if self.exist_in_db:
+            Agg_todo.objects.delete()
+
+    def ReportError(self, err):
+        self.status = 9
+        self.data.j_err = {"Error": err}
+        self.save()
 
     @staticmethod
     def popOne():

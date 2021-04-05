@@ -17,37 +17,6 @@ class RateCompute(AvgCompute):
 
     """
 
-    def loadObservationDatarow(
-        self,
-        my_measure: json,
-        measures: json,
-        measure_idx: int,
-        obs_meteor: ObsMeteor,
-        src_key: str,
-        target_key: str,
-        exclusion: json,
-        delta_values: json,
-        trace_flag: bool,
-        isOmm: bool = False,
-        avg_suffix: str = '_rate',
-    ):
-        """ generate deltaValues from ObsMeteor.data """
-        # force avg to be computed
-        my_measure['avg'] = True
-        super(RateCompute, self).loadObservationDatarow(
-            my_measure,
-            measures,
-            measure_idx,
-            obs_meteor,
-            src_key,
-            target_key,
-            exclusion,
-            delta_values,
-            trace_flag,
-            False,
-            '_rate'
-        )
-
     def loadAggregationDatarows(
         self,
         my_measure: json,
@@ -67,31 +36,8 @@ class RateCompute(AvgCompute):
             json_key,
             delta_values,
             dv_next,
+            trace_flag,
             '_rate'
-        )
-
-    def loadMaxMinInObservation(
-        self,
-        my_measure: json,
-        measures: json,
-        measure_idx: int,
-        obs_meteor: ObsMeteor,
-        src_key: str,
-        target_key: str,
-        exclusion: json,
-        delta_values: json,
-        b_use_rate: bool = False,
-    ):
-        super(RateCompute, self).loadMaxMinInObservation(
-            my_measure,
-            measures,
-            measure_idx,
-            obs_meteor,
-            src_key,
-            target_key,
-            exclusion,
-            delta_values,
-            True,
         )
 
     def loadMaxMinInAggregation(
@@ -114,5 +60,6 @@ class RateCompute(AvgCompute):
             exclusion,
             delta_values,
             dv_next,
+            trace_flag,
             True,
         )

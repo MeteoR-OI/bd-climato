@@ -1,12 +1,11 @@
-from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.aggMeteor import AggMeteor
 from app.tools.climConstant import MeasureProcessingBitMask
-from app.classes.calcul.avgCompute import AvgCompute
+from app.classes.calcul.aggregations.aggCompute import AggCompute
 from app.tools.aggTools import addJson, isFlagged, getAggDuration, delKey
 import json
 
 
-class AvgOmmCompute(AvgCompute):
+class AvgOmmCompute(AggCompute):
     """
         AvgOmmCompute
 
@@ -15,38 +14,6 @@ class AvgOmmCompute(AvgCompute):
         must load dv[M_value], and dv[first_time] when in omm mode
 
     """
-
-    def loadObservationDatarow(
-        self,
-        my_measure: json,
-        measures: json,
-        measure_idx: int,
-        obs_meteor: ObsMeteor,
-        src_key: str,
-        target_key: str,
-        exclusion: json,
-        delta_values: json,
-        trace_flag: bool,
-        isOmm: bool = False,
-    ):
-        # force the omm flag, which save the M_last_dat in the delta_values
-        my_measure['special'] = my_measure['special'] | MeasureProcessingBitMask.MeasureIsOmm
-        """ generate deltaValues from ObsMeteor.data """
-        super(AvgOmmCompute, self).loadObservationDatarow(
-            my_measure,
-            measures,
-            measure_idx,
-            obs_meteor,
-            src_key,
-            target_key,
-            exclusion,
-            delta_values,
-            trace_flag,
-            True,
-        )
-        # we will invalidate only if our omm value is changed
-        delKey(delta_values, target_key + '_maxmin_invalid_val_max')
-        delKey(delta_values, target_key + '_maxmin_invalid_val_min')
 
     def loadAggregationDatarows(
         self,
