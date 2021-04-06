@@ -15,12 +15,11 @@ class AggAvgCompute(AggCompute):
         must load dv[M_value], and dv[first_time] when in omm mode
 
     """
-
-    def loadLevelAggregation(
+    def loadDVInAllAggregations(
         self,
         my_measure: json,
         m_stop_date: datetime,
-        current_agg: AggMeteor,
+        agg_deca: AggMeteor,
         m_agg_j: json,
         delta_values: json,
         dv_next: json,
@@ -36,7 +35,7 @@ class AggAvgCompute(AggCompute):
                 my_measure: measure definition
                 mesures: json data used as input
                 mesure_idx: indice in the data section
-                current_agg
+                agg_deca
                 json_key : key name (target_key)
                 delta_values: json for forced values
                 dv_next: delta_values for next level
@@ -48,12 +47,13 @@ class AggAvgCompute(AggCompute):
         if delta_values.__contains__(json_key) is False:
             return
 
+        dv_next["duration"] = delta_values["duration"]
+
         # mark our aggregation as dirty
-        current_agg.dirty = True
-        agg_j = current_agg.data.j
+        agg_deca.dirty = True
+        agg_j = agg_deca.data.j
 
         if my_measure['avg'] is True:
-            tmp_sum = tmp_duration = None
 
             # load old measure values (only in agg_hour)
             tmp_sum_old = tmp_duration_old = 0
@@ -61,45 +61,49 @@ class AggAvgCompute(AggCompute):
                 tmp_sum_old = delta_values[json_key + '_sum_old']
                 tmp_duration_old = delta_values[json_key + '_duration_old']
 
+            # ------------------------------------------------------------------
             # get our new data
+            # 1 from dv[json_key]
+            # 2 from dv[json_key_sum]
+            # 3 from m_agg_j[json_key_sum]
+            # 4 if m_agg_j[json_key_avg] is given, recompute a new json_key_sum
+            # ------------------------------------------------------------------
+            tmp_duration = float(delta_values["duration"])
+            tmp_sum = float(delta_values[json_key]) * tmp_duration
+
             if delta_values.__contains__(json_key + '_sum'):
                 tmp_sum = float(delta_values[json_key + '_sum'])
-                tmp_duration = float(delta_values[json_key + '_duration'])
+                if delta_values.__contains__(json_key + '_duration') is True:
+                    tmp_duration = float(delta_values[json_key + '_duration'])
 
-            # if we got a forced sum/duration
             if m_agg_j.__contains__(json_key + '_sum'):
-                tmp_sum = m_agg_j[json_key + '_sum']
-                if m_agg_j.__contains__(json_key + "_duration"):
-                    tmp_duration = m_agg_j[json_key + '_duration']
-                else:
-                    tmp_duration = delta_values["duration"]
+                tmp_sum = float(m_agg_j[json_key + '_sum'])
+                if m_agg_j.__contains__(json_key + '_duration') is True:
+                    tmp_duration = float(m_agg_j[json_key + '_duration'])
 
-            # we got a forced avg in the aggregation part of our json.
-            # avg can be given without a sum, or a duration...
             if m_agg_j.__contains__(json_key + avg_suffix):
                 tmp_avg = float(m_agg_j[json_key + avg_suffix])
                 if m_agg_j.__contains__(json_key + '_duration'):
                     tmp_duration = m_agg_j[json_key + '_duration']
-                else:
-                    tmp_duration = delta_values["duration"]
                 tmp_sum = tmp_avg * tmp_duration
+
+            # return if the aggregation should not be sent to upper levels
+            if isFlagged(my_measure['special'], MeasureProcessingBitMask.OnlyAggregateInHour) is True:
+                return
 
             addJson(agg_j, json_key + '_sum', tmp_sum - tmp_sum_old)
             addJson(agg_j, json_key + '_duration', tmp_duration - tmp_duration_old)
-
+            tmp_sum_new = agg_j[json_key + '_sum']
             tmp_duration_new = agg_j[json_key + '_duration']
+
             if tmp_duration_new == 0:
                 # no duration, delete all keys
                 delKey(agg_j, json_key + '_sum')
                 delKey(agg_j, json_key + '_duration')
                 delKey(agg_j, json_key + avg_suffix)
                 delKey(agg_j, json_key)
-                agg_j[json_key + '_delete_me'] = True
-                dv_next = {"maxminFix": []}
+                delta_values[json_key + '_delete_me'] = True
             else:
-                # compute the new _avg
-                tmp_sum_new = agg_j[json_key + '_sum']
-                tmp_duration_new = agg_j[json_key + '_duration']
                 if isFlagged(my_measure['special'], MeasureProcessingBitMask.NoAvgField) is False:
                     agg_j[json_key + avg_suffix] = tmp_sum_new / tmp_duration_new
 
@@ -111,7 +115,3 @@ class AggAvgCompute(AggCompute):
         # propagate our value to next level
         dv_next[json_key] = delta_values[json_key]
         dv_next["duration"] = delta_values["duration"]
-
-        # return if the aggregation should not be sent to upper levels
-        if isFlagged(my_measure['special'], MeasureProcessingBitMask.OnlyAggregateInHour) is True:
-            dv_next = {"maxminFix": []}

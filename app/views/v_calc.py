@@ -3,7 +3,7 @@
 #
 from django.http import HttpResponse
 from app.tools.jsonPlus import JsonPlus
-from app.classes.calcul.calculus import Calculus
+from app.classes.calcul.calculus import AllCalculus
 import os
 
 
@@ -22,7 +22,7 @@ def view_my_calc(request, file_name):
 
 
 def loadJson(file_name: str, delete_flag: bool, trace_flag: bool):
-    calc = Calculus()
+    calc = AllCalculus()
     texte = ''
 
     with open(file_name, "r") as f:

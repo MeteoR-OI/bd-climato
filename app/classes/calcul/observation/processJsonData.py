@@ -15,7 +15,7 @@ class ProcessJsonData():
 
     """
 
-    def loadInObs(self, poste_metier, my_measure: json, measures: json, measure_idx: int, obs_meteor: ObsMeteor, delta_values: json, trace_flag: bool = False):
+    def loadInObs(self, poste_metier, my_measure: json, json_file_data: json, measure_idx: int, obs_meteor: ObsMeteor, delta_values: json, trace_flag: bool = False):
         """
             processObservation
 
@@ -37,10 +37,10 @@ class ProcessJsonData():
             return
 
         # load obs record, and get the delta_values
-        self.loadData(my_measure, measures, measure_idx, obs_meteor, src_key, target_key, exclusion, delta_values, trace_flag)
+        self.loadData(my_measure, json_file_data, measure_idx, obs_meteor, src_key, target_key, exclusion, delta_values, trace_flag)
 
         # load Max/Min and update delta_values
-        self.loadMaxMin(my_measure, measures, measure_idx, obs_meteor, src_key, target_key, exclusion, delta_values, trace_flag)
+        self.loadMaxMin(my_measure, json_file_data, measure_idx, obs_meteor, src_key, target_key, exclusion, delta_values, trace_flag)
         return
 
     # ----------------------------------------------------------
@@ -49,7 +49,7 @@ class ProcessJsonData():
     def loadMaxMin(
         self,
         my_measure: json,
-        measures: json,
+        json_file_data: json,
         measure_idx: int,
         obs_meteor: ObsMeteor,
         src_key: str,
@@ -72,10 +72,10 @@ class ProcessJsonData():
             # no value processed
             return
 
-        last_measure_time = measures['data'][measure_idx]['current']['stop_dat']
+        last_measure_time = json_file_data['data'][measure_idx]['current']['stop_dat']
         data_src = {}
-        if measures['data'][measure_idx].__contains__('current'):
-            data_src = measures['data'][measure_idx]['current']
+        if json_file_data['data'][measure_idx].__contains__('current'):
+            data_src = json_file_data['data'][measure_idx]['current']
 
         for maxmin_sufx in ['_max', '_min']:
             # is max or min needed for this measure

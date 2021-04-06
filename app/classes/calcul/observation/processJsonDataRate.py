@@ -17,7 +17,7 @@ class ProcessJsonDataRate(ProcessJsonDataAvg):
     def loadData(
         self,
         my_measure: json,
-        measures: json,
+        json_file_data: json,
         measure_idx: int,
         obs_meteor: ObsMeteor,
         src_key: str,
@@ -33,7 +33,7 @@ class ProcessJsonDataRate(ProcessJsonDataAvg):
         my_measure['avg'] = True
         super(ProcessJsonDataRate, self).loadData(
             my_measure,
-            measures,
+            json_file_data,
             measure_idx,
             obs_meteor,
             src_key,

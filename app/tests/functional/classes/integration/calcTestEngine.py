@@ -1,5 +1,5 @@
 from app.tools.aggTools import calcAggDate
-from app.classes.calcul.calculus import Calculus
+from app.classes.calcul.calculus import AllCalculus
 from app.classes.metier.posteMetier import PosteMetier
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.aggMeteor import AggMeteor
@@ -10,7 +10,7 @@ import logging
 
 class CalcTestEngine():
     def __init__(self, *args, **kwargs):
-        self.calc = Calculus()
+        self.calc = AllCalculus()
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         file_name = os.path.join(base_dir, '../fixtures/calculus_test_suite.json')
         texte = ''

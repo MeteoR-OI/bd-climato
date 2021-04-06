@@ -18,7 +18,7 @@ class ProcessJsonDataAvg(ProcessJsonData):
     def loadData(
         self,
         my_measure: json,
-        measures: json,
+        json_file_data: json,
         measure_idx: int,
         obs_meteor: ObsMeteor,
         src_key: str,
@@ -43,9 +43,9 @@ class ProcessJsonDataAvg(ProcessJsonData):
         # b_exclu = True -> load data from exclusion, False -> normal processing
         b_exclu = loadFromExclu(exclusion, src_key)
 
-        if measures['data'][measure_idx].__contains__('current'):
+        if json_file_data['data'][measure_idx].__contains__('current'):
             # load our data from the measure (json)
-            data_src = measures['data'][measure_idx]['current']
+            data_src = json_file_data['data'][measure_idx]['current']
             if data_src.__contains__(src_key) is False:
                 # no data
                 return
@@ -67,7 +67,7 @@ class ProcessJsonDataAvg(ProcessJsonData):
                     my_value_dir = exclusion[src_key + '_dir']
 
         # get our duration, and save it in the obs_meteor if not set, or test if compatible
-        tmp_duration = int(measures['data'][measure_idx]['current']['duration'])
+        tmp_duration = int(json_file_data['data'][measure_idx]['current']['duration'])
 
         if obs_meteor.data.duration == 0:
             # need to load the duration in our observation dataRow
@@ -122,7 +122,7 @@ class ProcessJsonDataAvg(ProcessJsonData):
             obs_j[target_key + '_dir'] = my_value_dir
         if isOmm is True:
             # save for max/min processing and omm procesing
-            delta_values[target_key + '_first_time'] = my_dat
+            delta_values[target_key + '_omm_time'] = my_dat
 
     def getDeltaFromObservation(self, my_measure: json, obs_meteor: ObsMeteor, json_key: str, delta_values: json) -> json:
         """

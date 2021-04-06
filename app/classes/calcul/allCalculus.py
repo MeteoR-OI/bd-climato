@@ -3,17 +3,10 @@ from app.classes.calcul.observation.processJsonDataAvg import ProcessJsonDataAvg
 from app.classes.calcul.observation.processJsonDataAvgOmm import ProcessJsonDataAvgOmm
 from app.classes.calcul.observation.processJsonDataRate import ProcessJsonDataRate
 from app.classes.calcul.aggregations.aggAvgCompute import AggAvgCompute
-from app.classes.calcul.aggregations.svcAggreg import SvcAggreg
-from app.classes.typeInstruments.allTtypes import AllTypeInstruments
-from app.tools.jsonPlus import JsonPlus
-from app.tools.jsonValidator import checkJson
 from app.tools.refManager import RefManager
-from django.db import transaction
-import datetime
-import json
 
 
-class Calculus():
+class AllCalculus():
     all_calculus = [
         {"agg": "avg", "calc_obs": ProcessJsonDataAvg(), "calc_agg": AggAvgCompute()},
         {"agg": "avgomm", "calc_obs": ProcessJsonDataAvgOmm(), "calc_agg": None},

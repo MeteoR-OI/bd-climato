@@ -4,6 +4,7 @@ from app.classes.calcul.avgCompute import AvgCompute
 from app.classes.repository.aggMeteor import AggMeteor
 # from app.tools.aggTools import addJson, isFlagged, getAggDuration, loadFromExclu, calcAggDate, delKey
 import json
+import datetime
 
 
 class RateCompute(AvgCompute):
@@ -17,47 +18,44 @@ class RateCompute(AvgCompute):
 
     """
 
-    def loadAggregationDatarows(
+    def loadDVInAllAggregations(
         self,
         my_measure: json,
-        measures: json,
-        measure_idx: int,
-        current_agg: AggMeteor,
-        json_key: str,
+        m_stop_date: datetime,
+        agg_deca: AggMeteor,
+        m_agg_j: json,
         delta_values: json,
         dv_next: json,
-        avg_suffix: str = '_avg',
+        trace_flag: bool = False,
+        avg_suffix: str = '_rate',
     ):
-        super(RateCompute, self).loadAggregationDatarows(
+        super(RateCompute, self).loadDVInAllAggregations(
             my_measure,
-            measures,
-            measure_idx,
-            current_agg,
-            json_key,
+            m_stop_date,
+            agg_deca,
+            m_agg_j,
             delta_values,
             dv_next,
             trace_flag,
             '_rate'
         )
 
-    def loadMaxMinInAggregation(
-        self, my_measure: json,
-        measures: json,
-        measure_idx: int,
-        my_aggreg,
-        json_key: str,
-        exclusion: json,
+    def loadMaxMinInAllAggregations(
+        self,
+        my_measure: json,
+        m_stop_date: datetime,
+        agg_deca: AggMeteor,
+        m_agg_j: json,
         delta_values: json,
         dv_next: json,
+        trace_flag: bool = False,
         b_use_rate: bool = False,
     ):
-        super(RateCompute, self).loadMaxMinInObservation(
+        super(RateCompute, self).loadMaxMinInAllAggregations(
             my_measure,
-            measures,
-            measure_idx,
-            my_aggreg,
-            json_key,
-            exclusion,
+            m_stop_date,
+            agg_deca,
+            m_agg_j,
             delta_values,
             dv_next,
             trace_flag,
