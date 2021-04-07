@@ -14,10 +14,6 @@ class SvcAggreg(WorkerRoot):
         super(SvcAggreg, self).__init__(str(SvcAggreg), CalcAggreg().ComputeAggreg)
 
     @staticmethod
-    def CreateInstance():
-        return SvcAggreg()
-
-    @staticmethod
     def GetInstance(myClass: object = None):
         return WorkerRoot.GetInstance(SvcAggreg)
 

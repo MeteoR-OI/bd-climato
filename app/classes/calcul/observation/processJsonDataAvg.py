@@ -43,28 +43,39 @@ class ProcessJsonDataAvg(ProcessJsonData):
         # b_exclu = True -> load data from exclusion, False -> normal processing
         b_exclu = loadFromExclu(exclusion, src_key)
 
-        if json_file_data['data'][measure_idx].__contains__('current'):
+        my_value_instant = my_value_avg = None
+        my_value_dir = None
+        obs_stop_dat = obs_meteor.data.stop_dat
+
+        if b_exclu is False:
             # load our data from the measure (json)
             data_src = json_file_data['data'][measure_idx]['current']
-            if data_src.__contains__(src_key) is False:
-                # no data
-                return
-            my_value = my_measure['dataType'](data_src[src_key])
-            if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
+            if data_src.__contains__(src_key):
+                my_value_instant = my_measure['dataType'](data_src[src_key])
+            if data_src.__contains__(src_key + '_avg'):
+                my_value_avg = my_measure['dataType'](data_src[src_key + '_avg'])
+            if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)) and data_src.__contains__(src_key + '_dir'):
                 my_value_dir = data_src[src_key + '_dir']
-            my_dat = data_src['stop_dat']
-        elif b_exclu is False:
-            # no data, only aggregations, no exclusion, then m_agg_j will be processed in aggregation processing
-            return
-
-        if b_exclu is True:
+        else:
             # load the value from exclusion
             data_src = exclusion
-            my_value = my_measure['dataType'](exclusion[src_key])
-            if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                my_value_dir = None
-                if exclusion.__contains__(src_key + '_dir'):
-                    my_value_dir = exclusion[src_key + '_dir']
+            if exclusion.__contains__(src_key):
+                my_value_instant = my_measure['dataType'](exclusion[src_key])
+            if exclusion.__contains__(src_key + '_avg'):
+                my_value_avg = my_measure['dataType'](exclusion[src_key + '_avg'])
+            if my_value_avg == 'null' or my_value_instant == 'null':
+                return
+            if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)) and exclusion.__contains__(src_key + '_dir'):
+                my_value_dir = exclusion[src_key + '_dir']
+
+        # init value instantanee et avg
+        if my_value_avg is None:
+            if my_value_instant is None:
+                # no data
+                return
+            my_value_avg = my_value_instant
+        elif my_value_instant is None:
+            my_value_instant = my_value_avg
 
         # get our duration, and save it in the obs_meteor if not set, or test if compatible
         tmp_duration = int(json_file_data['data'][measure_idx]['current']['duration'])
@@ -80,49 +91,44 @@ class ProcessJsonDataAvg(ProcessJsonData):
             raise Exception('loadObsDatarow', 'incompatible durations -> in table obs: ' + str(obs_meteor.data.duration) + ', in json: ' + str(tmp_duration))
 
         # double check the stop_dat of the obs, is the same as the one in our json data
-        if obs_meteor.data.stop_dat != my_dat:
-            raise Exception('loadObsDatarow', 'incompatible dates -> in table obs: ' + str(obs_meteor.data.stop_dat) + ', in json(or exclusion): ' + str(my_dat))
+        if obs_meteor.data.stop_dat != obs_stop_dat:
+            raise Exception('loadObsDatarow', 'incompatible dates -> in table obs: ' + str(obs_meteor.data.stop_dat) + ', in json(or exclusion): ' + str(obs_stop_dat))
 
         # we will save current value in obs, and propagate delta values to our aggregations
         if my_measure['avg'] is True:
-
             # remove current values from our aggregations
-            if obs_j.__contains__(target_key):
-                tmp_value_old = obs_j[target_key]
+            if obs_j.__contains__(target_key):  # in obs only _avg are stored
+                tmp_value_old_avg = obs_j[target_key]
                 tmp_duration_old = obs_meteor.data.duration
-                tmp_sum = tmp_value_old * tmp_duration
+                tmp_sum_avg = tmp_value_old_avg * tmp_duration
                 if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
-                    tmp_sum = tmp_value_old
-                delta_values[target_key + '_sum_old'] = tmp_sum
+                    tmp_sum_avg = tmp_value_old_avg
+                delta_values[target_key + '_sum_old'] = tmp_sum_avg
                 delta_values[target_key + '_duration_old'] = tmp_duration_old
 
                 # in case of replacement, invalidate the value for our min/max in aggregations
-                if obs_j.__contains__(target_key) and obs_j[target_key] != my_value:
-                    delta_values[target_key + '_maxmin_invalid_val_max'] = obs_j[target_key]
-                    delta_values[target_key + '_maxmin_invalid_val_min'] = obs_j[target_key]
+                if tmp_value_old_avg != my_value_avg:
+                    delta_values[target_key + '_maxmin_invalid_val_max'] = tmp_value_old_avg
+                    delta_values[target_key + '_maxmin_invalid_val_min'] = tmp_value_old_avg
 
-            tmp_sum = my_value * tmp_duration
+            tmp_sum_avg = my_value_avg * tmp_duration
             if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
-                tmp_sum = my_value
-
-            if data_src.__contains__(src_key + avg_suffix):
-                # use the given _avg if any, and compute  new 'virtual' sum
-                tmp_avg2 = float(data_src[src_key + avg_suffix])
-                tmp_sum = tmp_avg2 * tmp_duration
+                tmp_sum_avg = tmp_value_old_avg
 
             # pass delta values to our aggregations
-            delta_values[target_key + '_sum'] = tmp_sum
+            delta_values[target_key + '_sum'] = tmp_sum_avg
             delta_values[target_key + '_duration'] = tmp_duration
 
-        # save our data
-        obs_j[target_key] = my_value
-        delta_values[target_key] = my_value
+        # save our data (avg)
+        obs_j[target_key] = my_value_avg
+        delta_values[target_key] = my_value_avg
+        delta_values[target_key + '_i'] = my_value_instant
         if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)) and my_value_dir is not None:
             delta_values[target_key + '_dir'] = my_value_dir
             obs_j[target_key + '_dir'] = my_value_dir
         if isOmm is True:
             # save for max/min processing and omm procesing
-            delta_values[target_key + '_omm_time'] = my_dat
+            delta_values[target_key + '_omm_time'] = obs_stop_dat
 
     def getDeltaFromObservation(self, my_measure: json, obs_meteor: ObsMeteor, json_key: str, delta_values: json) -> json:
         """

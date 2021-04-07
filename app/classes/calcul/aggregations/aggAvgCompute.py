@@ -54,8 +54,7 @@ class AggAvgCompute(AggCompute):
         agg_j = agg_deca.data.j
 
         if my_measure['avg'] is True:
-
-            # load old measure values (only in agg_hour)
+            # load old measure values in case of an update of Observation, and only in agg_hour
             tmp_sum_old = tmp_duration_old = 0
             if delta_values.__contains__(json_key + '_sum_old'):
                 tmp_sum_old = delta_values[json_key + '_sum_old']

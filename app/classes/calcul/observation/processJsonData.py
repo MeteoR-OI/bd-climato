@@ -72,7 +72,7 @@ class ProcessJsonData():
             # no value processed
             return
 
-        last_measure_time = json_file_data['data'][measure_idx]['current']['stop_dat']
+        m_stop_dat = json_file_data['data'][measure_idx]['current']['stop_dat']
         data_src = {}
         if json_file_data['data'][measure_idx].__contains__('current'):
             data_src = json_file_data['data'][measure_idx]['current']
@@ -84,7 +84,7 @@ class ProcessJsonData():
             if b_use_rate:
                 maxmin_suffix = '_rate' + maxmin_sufx
             if my_measure.__contains__(maxmin_key) is True and my_measure[maxmin_key] is True:
-                maxmin_time = last_measure_time
+                maxmin_time = m_stop_dat
 
                 # is there a M_max/M_min in the data_src ?
                 if data_src.__contains__(src_key + maxmin_suffix):
@@ -102,14 +102,14 @@ class ProcessJsonData():
                             my_wind_dir = int(data_src[src_key + maxmin_suffix + '_dir'])
                             obs_j[target_key + maxmin_suffix + '_dir'] = my_wind_dir
                             delta_values[target_key + maxmin_suffix + '_dir'] = my_wind_dir
-                elif delta_values.__contains__(target_key):
+                elif delta_values.__contains__(target_key + '_i'):
                     # on prend la valeur reportee, et le milieu de l'heure de la periode de la donnee elementaire
                     if b_use_rate:
                         # pour les "rate" on prend l'avg (qui est un rate)
                         delta_values[target_key + maxmin_suffix] = delta_values[target_key + '_sum']
                     else:
                         # sinon on prend la valeur de la mesure
-                        delta_values[target_key + maxmin_suffix] = delta_values[target_key]
+                        delta_values[target_key + maxmin_suffix] = delta_values[target_key + '_i']
                     delta_values[target_key + maxmin_suffix + '_time'] = maxmin_time
 
     def get_src_key(self, my_measure: json):
