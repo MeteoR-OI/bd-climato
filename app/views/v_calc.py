@@ -3,7 +3,8 @@
 #
 from django.http import HttpResponse
 from app.tools.jsonPlus import JsonPlus
-from app.classes.calcul.calculus import AllCalculus
+from app.classes.calcul.calcObservation import CalcObs
+from app.classes.workers.svcAggreg import SvcAggreg
 import os
 
 
@@ -22,7 +23,7 @@ def view_my_calc(request, file_name):
 
 
 def loadJson(file_name: str, delete_flag: bool, trace_flag: bool):
-    calc = AllCalculus()
+    calc_obs = CalcObs()
     texte = ''
 
     with open(file_name, "r") as f:
@@ -31,5 +32,7 @@ def loadJson(file_name: str, delete_flag: bool, trace_flag: bool):
             texte += str(aligne)
 
         my_json = JsonPlus().loads(texte)
-        ret = calc.loadJson(my_json, delete_flag, trace_flag)
-        return ret
+        ret = calc_obs.loadJson(my_json, delete_flag, trace_flag)
+        # start calculus of aggregation
+        SvcAggreg.RunIt()
+        return {'loadObs': ret, 'svcAgg': 'launched'}

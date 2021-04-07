@@ -7,7 +7,6 @@ from app.models import Poste, Observation
 from app.views.v_agg import view_agg
 from app.views.v_poste import view_my_poste
 from app.views.v_calc import view_my_calc
-from app.tools.jsonPlus import JsonPlus
 
 
 # views well routed

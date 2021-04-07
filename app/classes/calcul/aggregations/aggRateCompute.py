@@ -1,13 +1,10 @@
-from app.classes.repository.obsMeteor import ObsMeteor
-# from app.tools.climConstant import MeasureProcessingBitMask
-from app.classes.calcul.avgCompute import AvgCompute
 from app.classes.repository.aggMeteor import AggMeteor
-# from app.tools.aggTools import addJson, isFlagged, getAggDuration, loadFromExclu, calcAggDate, delKey
+from app.classes.calcul.aggregations.aggCompute import AggCompute
 import json
 import datetime
 
 
-class RateCompute(AvgCompute):
+class RateCompute(AggCompute):
     """
         RateCompute
 

@@ -20,3 +20,10 @@ class SvcAggreg(WorkerRoot):
     @staticmethod
     def GetInstance(name: str = ''):
         return WorkerRoot.GetInstance(SvcAggreg.name)
+
+    @staticmethod
+    def runMe():
+        svc_agg_instance = SvcAggreg.GetInstance()
+        if svc_agg_instance.Isrunning() is False:
+            svc_agg_instance.Start()
+        svc_agg_instance.RunIt()
