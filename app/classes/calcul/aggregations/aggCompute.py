@@ -113,7 +113,7 @@ class AggCompute():
             if my_measure.__contains__(maxmin_key) and my_measure[maxmin_key] is True:
                 current_maxmin = None
                 current_maxmin_dir = None
-    
+
                 # check if measure was deleted
                 if delta_values.__contains__(json_key + '_delete_me') is True:
                     # measure was deleted previously
@@ -129,7 +129,6 @@ class AggCompute():
                 # - load current value form delta_values
                 # - load current max/min from delta_values if given
                 # - load from "aggregations" clause in the json data file if given
-                # 
                 if delta_values.__contains__(json_key):
                     current_maxmin = my_measure['dataType'](delta_values[json_key])
                     current_maxmin_time = m_stop_date

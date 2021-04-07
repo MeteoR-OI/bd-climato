@@ -3,7 +3,6 @@ import json
 import datetime
 import dateutil.parser
 from dateutil.relativedelta import relativedelta
-from app.tools.refManager import RefManager
 
 
 def convertRelativeHour(mesure_dt: datetime, hour_deca: int):

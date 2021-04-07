@@ -34,5 +34,5 @@ def loadJson(file_name: str, delete_flag: bool, trace_flag: bool):
         my_json = JsonPlus().loads(texte)
         ret = calc_obs.loadJson(my_json, delete_flag, trace_flag)
         # start calculus of aggregation
-        SvcAggreg.RunIt()
+        SvcAggreg.GetInstance().RunIt()
         return {'loadObs': ret, 'svcAgg': 'launched'}

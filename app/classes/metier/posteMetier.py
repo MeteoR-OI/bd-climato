@@ -20,7 +20,7 @@ class PosteMetier(PosteMeteor):
         """ load our instance from db, load exclusions at date_histo """
         super().__init__(poste_id)
         self.exclus = ExcluMeteor.getAllForAPoste(self.data.id, start_date)
-        self.analysis_date = start_date
+        # self.analysis_date = start_date
 
     def exclusion(self, type_intrument_id) -> json:
         """ retourne la premiere exclusion active pour le type instrument """

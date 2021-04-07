@@ -31,12 +31,12 @@ class WorkerRoot:
         self.Start()
 
     @staticmethod
-    def GetInstance(name):
+    def GetInstance(myClass):
         # return the instance
         ref_mgr = RefManager.GetInstance()
-        if ref_mgr.GetRef('Svc' + name) is None:
-            ref_mgr.AddRef('Svc' + name, WorkerRoot.CreateInstance())
-        return ref_mgr.GetRef('Svc' + name)
+        if ref_mgr.GetRef('Svc' + str(myClass)) is None:
+            ref_mgr.AddRef('Svc' + str(myClass), myClass())
+        return ref_mgr.GetRef('Svc' + str(myClass))
 
     def RunIt(self):
         self.eventRun.set()
@@ -51,7 +51,7 @@ class WorkerRoot:
                     thread = threading.Thread(target=self.__runSvc, args=(a_worker,), daemon=True)
                     thread.setName(self.name)
                     # print("thread " + name + " started")
-                    thread.Start()
+                    thread.start()
                     # force the thread to start
                     time.sleep(1)
         finally:

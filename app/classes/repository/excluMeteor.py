@@ -3,7 +3,6 @@ import datetime
 import json
 import pytest
 import logging
-from app.tools.dateTools import date_to_str, str_to_date
 
 
 @pytest.fixture(autouse=True)
@@ -34,9 +33,6 @@ class ExcluMeteor():
 
         if Exclusion.objects.filter(poste_id_id=poste_id).filter(type_instrument=type_instrument_id).exists():
             self.data = Exclusion.objects.filter(poste_id_id=poste_id).filter(type_instrument=type_instrument_id).first()
-            # decode dates
-            self.data.start_dat = str_to_date(self.data.start_dat)
-            self.data.stop_dat = str_to_date(self.data.stop_dat)
         else:
             self.data = Exclusion(poste_id=poste_id, type_instrument=type_instrument_id)
 
@@ -60,11 +56,7 @@ class ExcluMeteor():
 
     def save(self):
         """ save Poste and Exclusions """
-        self.data.start_dat = date_to_str(self.data.start_dat)
-        self.data.stop_dat = date_to_str(self.data.stop_dat)
         self.data.save()
-        self.data.start_dat = str_to_date(self.data.start_dat)
-        self.data.stop_dat = str_to_date(self.data.stop_dat)
 
     def __str__(self):
         """print myself"""

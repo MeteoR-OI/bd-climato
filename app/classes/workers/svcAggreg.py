@@ -9,17 +9,17 @@ class SvcAggreg(WorkerRoot):
         Service for Aggregation Computations
     """
 
-    def __init__(self, name: str = 'SvcAggreg'):
+    def __init__(self):
         # call parent __init__
-        super(SvcAggreg, self).__init__(name, CalcAggreg.ComputeAggreg)
+        super(SvcAggreg, self).__init__(str(SvcAggreg), CalcAggreg().ComputeAggreg)
 
     @staticmethod
     def CreateInstance():
         return SvcAggreg()
 
     @staticmethod
-    def GetInstance(name: str = ''):
-        return WorkerRoot.GetInstance(SvcAggreg.name)
+    def GetInstance(myClass: object = None):
+        return WorkerRoot.GetInstance(SvcAggreg)
 
     @staticmethod
     def runMe():

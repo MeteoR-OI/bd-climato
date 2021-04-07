@@ -1,9 +1,7 @@
-from app.tools.dateTools import date_to_str, str_to_date
 from app.models import Agg_todo
-from app.classes.repository.obsMeteor import ObsMeteor
-from app.tools.jsonPlus import JsonPlus
 import pytest
 import logging
+from django.db import transaction
 
 
 @pytest.fixture(autouse=True)
@@ -31,18 +29,8 @@ class AggTodoMeteor():
 
     def save(self):
         """ save or delete our AggTodo """
-        if self.data.j_err.__len__() > 0 or self.data.j_dv.__len__() > 0:
-            if self.data.j_err.__len__() > 0:
-                JsonPlus().serialize(self.data.j_err)
-            if self.data.j_dv.__len__() > 0:
-                for a_jdv in self.data.j_dv:
-                    JsonPlus().serialize(a_jdv)
+        if self.data.j_error.__len__() > 0 or self.data.j_dv.__len__() > 0:
             self.data.save()
-            if self.data.j_err.__len__() > 0:
-                JsonPlus().deserialize(self.data.j_err)
-            if self.data.j_err.__len__() > 0:
-                for a_jdv in self.data.j_dv:
-                    JsonPlus().deserialize(a_jdv)
         else:
             if self.exist_in_db:
                 Agg_todo.objects.delete()
@@ -53,10 +41,11 @@ class AggTodoMeteor():
 
     def ReportError(self, err):
         self.status = 9
-        self.data.j_err = {"Error": err}
+        self.data.j_error = {"Error": err}
         self.save()
 
     @staticmethod
+    @transaction.atomic
     def popOne():
         if Agg_todo.objects.filter(status=0).count() == 0:
             return None
