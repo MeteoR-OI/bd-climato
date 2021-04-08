@@ -31,6 +31,9 @@ class ProcessJsonDataAvgOmm(ProcessJsonDataAvg):
         # force the omm flag, which save the M_last_dat in the delta_values
         my_measure['special'] = my_measure['special'] | MeasureProcessingBitMask.MeasureIsOmm
         """ generate deltaValues from ObsMeteor.data """
+        if obs_meteor.data.stop_dat.minute > 0 or obs_meteor.data.stop_dat.second > 1:
+            return
+
         super(ProcessJsonDataAvgOmm, self).loadData(
             my_measure,
             json_file_data,

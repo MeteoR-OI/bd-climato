@@ -53,6 +53,7 @@ class AggCompute():
             # load data in our aggregation
             self.loadDVInAllAggregations(
                 my_measure,
+                m_stop_date,
                 agg_deca,
                 m_agg_j,
                 delta_values,

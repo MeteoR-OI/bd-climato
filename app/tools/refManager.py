@@ -13,7 +13,7 @@ class RefManager:
         if RefManager.__dict__.__contains__('my_instance') is False:
             RefManager.my_instance = RefManager()
         return RefManager.my_instance
-    
+
     def AddRef(self, name: str, my_reference):
         if my_reference is None:
             self.all_refs.__delitem__(name)

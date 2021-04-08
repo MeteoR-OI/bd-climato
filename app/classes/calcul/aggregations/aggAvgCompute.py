@@ -18,7 +18,7 @@ class AggAvgCompute(AggCompute):
     def loadDVInAllAggregations(
         self,
         my_measure: json,
-        m_stop_date: datetime,
+        m_stop_dat: datetime,
         agg_deca: AggMeteor,
         m_agg_j: json,
         delta_values: json,

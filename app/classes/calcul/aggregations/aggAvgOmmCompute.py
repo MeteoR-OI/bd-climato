@@ -137,98 +137,22 @@ class AvgOmmCompute(AggCompute):
                 if isFlagged(my_measure['special'], MeasureProcessingBitMask.NoAvgField) is False:
                     agg_j[json_key + '_avg'] = tmp_sum_new / tmp_duration_new
 
-        # if tmp_sum_old != 0 and tmp_sum != tmp_sum_old:
-        #     # mark as potential candidate for max/min regeneration
-        #     delta_values[json_key + '_check_maxmin'] = True
-
         # propagate to next level if no limitation on aggregation level
         dv_next[json_key + '_sum'] = tmp_sum
         dv_next[json_key + '_duration'] = tmp_duration
         dv_next[json_key] = delta_values[json_key]
 
-    # def loadMaxMinInAllAggregations(self, my_measure: json, measures: json, measure_idx: int, agg_deca, json_key: str, exclusion: json, delta_values: json, dv_next: json):
-    #     """
-    #         loadMaxMinInAggregation
-
-    #         update agg_xx max/min
-    #         update delta_values
-    #     """
-    #     # save our dv, and get agg_j, m_agg_j
-    #     m_agg_j = self.get_agg_magg(agg_deca, delta_values, measures, measure_idx)
-    #     agg_j = agg_deca.data.j
-
-    #     for maxmin_suffix in ['_max', '_min']:
-    #         maxmin_key = maxmin_suffix.split('_')[1]
-
-    #         if my_measure.__contains__(maxmin_key) and my_measure[maxmin_key] is True:
-
-    #             if delta_values.__contains__(json_key + '_delete_me') is True:
-    #                 # measure was deleted previously
-    #                 if agg_j.__contains__(json_key + maxmin_suffix):
-    #                     # need to invalidate this value for next level
-    #                     invalid_value = agg_j[json_key + maxmin_suffix]
-    #                     dv_next[json_key + maxmin_suffix + '_invalidate'] = invalid_value
-    #                     self.add_new_maxmin_fix(json_key, maxmin_key, agg_deca.data.start_dat, delta_values, agg_deca)
-    #                 delKey(agg_j, json_key + maxmin_suffix)
-    #                 delKey(agg_j, json_key + maxmin_suffix + '_time')
-    #                 delKey(agg_j, json_key + maxmin_suffix + '_omm_time')
-    #                 continue
-
-    #             current_maxmin = None
-
-    #             if delta_values.__contains__(json_key + maxmin_suffix) is True:
-    #                 # load from delta_values
-    #                 current_maxmin = my_measure['dataType'](delta_values[json_key + maxmin_suffix])
-    #                 current_maxmin_time = delta_values[json_key + maxmin_suffix + '_time']
-    #                 if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-    #                     current_maxmin_dir = None
-    #                     if m_agg_j.__contains__(json_key + maxmin_suffix + '_dir') is True:
-    #                         current_maxmin_dir = int(delta_values[json_key + maxmin_suffix + '_dir'])
-
-    #             if m_agg_j.__contains__(json_key + maxmin_suffix):
-    #                 # load and use measure maxmin if given
-    #                 current_maxmin = my_measure['dataType'](m_agg_j[json_key + maxmin_suffix])
-    #                 current_maxmin_time = m_agg_j[json_key + maxmin_suffix + '_time']
-    #                 if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-    #                     current_maxmin_dir = None
-    #                     if m_agg_j.__contains__(json_key + maxmin_suffix + '_dir') is True:
-    #                         current_maxmin_dir = int(m_agg_j[json_key + maxmin_suffix + '_dir'])
-
-    #             if current_maxmin is None:
-    #                 # no values
-    #                 continue
-
-    #             b_change_maxmin = False
-    #             # load current data from our aggregation
-    #             if agg_j.__contains__(json_key + maxmin_suffix):
-    #                 agg_maxmin = agg_j[json_key + maxmin_suffix]
-
-    #                 # check if max/min value has to be replaced because omm changed
-    #                 if delta_values.__contains__(json_key + maxmin_suffix + '_invalidate') and agg_maxmin == delta_values[json_key + maxmin_suffix + '_invalidate']:
-    #                     # run a regeneration of our maxmin
-    #                     dv_next[json_key + maxmin_suffix + '_invalidate'] = agg_maxmin
-    #                     self.add_new_maxmin_fix(json_key, maxmin_key, agg_deca.data.start_dat, delta_values, agg_deca)
-    #                     b_change_maxmin = True
-    #             else:
-    #                 b_change_maxmin = True
-    #                 # force the usage of tmp_maxmin
-    #                 if maxmin_suffix == '_min':
-    #                     agg_maxmin = current_maxmin + 1
-    #                 else:
-    #                     agg_maxmin = current_maxmin - 1
-
-    #             # do we need to change our maxmin
-    #             if agg_deca.agg_niveau != 'H':
-    #                 if (maxmin_suffix == '_max' and agg_maxmin < current_maxmin) or (maxmin_suffix == '_min' and agg_maxmin > current_maxmin):
-    #                     b_change_maxmin = True
-
-    #             if b_change_maxmin is True:
-    #                 # we need to change the omm value
-    #                 agg_j[json_key + maxmin_suffix] = current_maxmin
-    #                 dv_next[json_key + maxmin_suffix] = current_maxmin
-    #                 agg_j[json_key + maxmin_suffix + '_time'] = current_maxmin_time
-    #                 dv_next[json_key + maxmin_suffix + '_time'] = current_maxmin_time
-    #                 if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-    #                     if current_maxmin_dir is not None:
-    #                         agg_j[json_key + maxmin_suffix + '_dir'] = current_maxmin_dir
-    #                         dv_next[json_key + maxmin_suffix + '_dir'] = current_maxmin_dir
+    def loadMaxMinInAllAggregations(
+        self,
+        my_measure: json,
+        m_stop_date: datetime,
+        agg_deca: AggMeteor,
+        m_agg_j: json,
+        delta_values: json,
+        dv_next: json,
+        trace_flag: bool = False,
+        b_use_rate: bool = False,
+    ):
+        if m_stop_date.minute > 0 or m_stop_date.second > 1:
+            return
+        super().loadMaxMinInAllAggregations(my_measure, m_stop_date, agg_deca, m_agg_j, delta_values, dv_next, trace_flag, False)
