@@ -43,8 +43,13 @@ class AggMeteor():
 
     def save(self):
         """ save Poste and Exclusions """
+        dirty_found = False
         if self.data.j != {}:
-            if self.__contains__('dirty') is False or self.dirty is True:
+            for akey in self.__dir__():
+                if akey == 'dirty':
+                    dirty_found = True
+                    break
+            if dirty_found is False or self.dirty is True:
                 self.data.save()
 
     def getAggObject(self, niveau_agg: str):

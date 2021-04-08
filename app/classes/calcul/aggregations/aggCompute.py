@@ -15,8 +15,8 @@ class AggCompute():
 
     def loadAggregations(
         self,
-        my_measure: json,
         m_stop_date: datetime,
+        my_measure: json,
         j_dv_agg: json,
         aggregations: list,
         delta_values: json,
@@ -226,7 +226,7 @@ class AggCompute():
         m_agg_j = {}
         if j_agg != {}:
             for a_j_agg in j_agg:
-                if a_j_agg['level'] == agg_level:
+                if a_j_agg.__contains__('level') and a_j_agg['level'] == agg_level:
                     m_agg_j = a_j_agg
                     break
         return m_agg_j
@@ -241,3 +241,16 @@ class AggCompute():
         elif isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm):
             target_key += '_omm'
         return target_key
+
+    def loadDVInAllAggregations(
+        self,
+        my_measure: json,
+        m_stop_date: datetime,
+        agg_deca: AggMeteor,
+        m_agg_j: json,
+        delta_values: json,
+        dv_next: json,
+        trace_flag: bool = False,
+        avg_suffix: str = '_rate',
+    ):
+        pass

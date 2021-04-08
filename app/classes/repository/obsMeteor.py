@@ -29,7 +29,7 @@ class ObsMeteor():
             self.data = Observation.objects.filter(poste_id_id=poste_id).filter(stop_dat=stop_dt_utc).first()
         else:
             agg_start_dat = calcAggDate('H', stop_dt_utc, 0, True)
-            self.data = Observation(poste_id_id=poste_id, stop_dat=stop_dt_utc, duration=0, agg_start_dat=agg_start_dat, j={}, j_agg={"a": 1})
+            self.data = Observation(poste_id_id=poste_id, stop_dat=stop_dt_utc, duration=0, agg_start_dat=agg_start_dat, j={}, j_agg={})
 
     @staticmethod
     def getById(id: int):

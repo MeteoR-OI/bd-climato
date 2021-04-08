@@ -75,6 +75,8 @@ class JsonPlus():
         return jsonDict
 
     def deserialize(self, j: dict):
+        if isinstance(j, str):
+            j = JsonPlus().loads(j)
         """ encode str fields into datetime for our well known keys """
         if isinstance(j, dict) or isinstance(j, JsonPlus):
             for k, v in j.items():

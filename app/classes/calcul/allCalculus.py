@@ -3,16 +3,18 @@ from app.classes.calcul.observation.processJsonDataAvg import ProcessJsonDataAvg
 from app.classes.calcul.observation.processJsonDataAvgOmm import ProcessJsonDataAvgOmm
 from app.classes.calcul.observation.processJsonDataRate import ProcessJsonDataRate
 from app.classes.calcul.aggregations.aggAvgCompute import AggAvgCompute
+from app.classes.calcul.aggregations.aggAvgOmmCompute import AvgOmmCompute
+from app.classes.calcul.aggregations.aggRateCompute import RateCompute
 from app.tools.refManager import RefManager
 
 
 class AllCalculus():
     all_calculus = [
         {"agg": "avg", "calc_obs": ProcessJsonDataAvg(), "calc_agg": AggAvgCompute()},
-        {"agg": "avgomm", "calc_obs": ProcessJsonDataAvgOmm(), "calc_agg": None},
+        {"agg": "avgomm", "calc_obs": ProcessJsonDataAvgOmm(), "calc_agg": AvgOmmCompute()},
         # {"agg": "no", "calc_obs": None, "calc_agg": None},
         # {"agg": "sum", "calc_obs": None, "calc_agg": None},    # sumCompute(), "calc_agg": None}
-        {"agg": "rate", "calc_obs": ProcessJsonDataRate(), "calc_agg": None}    # ProcessJsonDataRate()}
+        {"agg": "rate", "calc_obs": ProcessJsonDataRate(), "calc_agg": RateCompute()}    # ProcessJsonDataRate()}
     ]
 
     def __init__(self):

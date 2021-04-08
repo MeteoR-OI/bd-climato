@@ -37,7 +37,7 @@ class AggTodoMeteor():
 
     def delete(self):
         if self.exist_in_db:
-            Agg_todo.objects.delete()
+            self.data.delete()
 
     def ReportError(self, err):
         self.status = 9
