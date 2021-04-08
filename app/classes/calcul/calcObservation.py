@@ -97,11 +97,11 @@ class CalcObs(AllCalculus):
                 j_trace['total_exec'] = str(datetime.datetime.now() - debut_process)
                 j_trace['item_processed'] = str(json_file_data['data'].__len__())
                 j_trace['one_exec'] = str((datetime.datetime.now() - debut_process)/json_file_data['data'].__len__())
-                j_trace['start_dat'] = json_file_data['data'][measure_idx]['current']['start_dat']
+                # j_trace['start_dat'] = json_file_data['data'][measure_idx]['current']['start_dat']
                 j_trace['stop_dat'] = json_file_data['data'][measure_idx]['current']['stop_dat']
-                j_trace['obs data'] = JsonPlus().loads(JsonPlus().dumps(self.my_obs.data.j))
-                j_trace['obs aggregations'] = JsonPlus().loads(JsonPlus().dumps(self.my_obs.data.j_agg))
-                j_trace['agg_todo dv'] = JsonPlus().loads(JsonPlus().dumps(a_todo.j_dv))
+                j_trace['obs data'] = JsonPlus().loads(JsonPlus().dumps(obs_meteor.data.j))
+                j_trace['obs aggregations'] = JsonPlus().loads(JsonPlus().dumps(obs_meteor.data.j_agg))
+                j_trace['agg_todo dv'] = JsonPlus().loads(JsonPlus().dumps(a_todo.data.j_dv))
 
             if j_trace != {}:
                 ret.append(j_trace)

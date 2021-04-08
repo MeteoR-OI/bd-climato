@@ -95,32 +95,32 @@ class ProcessJsonDataAvg(ProcessJsonData):
             raise Exception('loadObsDatarow', 'incompatible dates -> in table obs: ' + str(obs_meteor.data.stop_dat) + ', in json(or exclusion): ' + str(obs_stop_dat))
 
         # we will save current value in obs, and propagate delta values to our aggregations
-        if my_measure['avg'] is True:
-            # remove current values from our aggregations
-            if obs_j.__contains__(target_key):  # in obs only _avg are stored
-                tmp_value_old_avg = obs_j[target_key]
-                tmp_duration_old = obs_meteor.data.duration
-                tmp_sum_avg = tmp_value_old_avg * tmp_duration
-                if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
-                    tmp_sum_avg = tmp_value_old_avg
-                delta_values[target_key + '_sum_old'] = tmp_sum_avg
-                delta_values[target_key + '_duration_old'] = tmp_duration_old
-
-                # in case of replacement, invalidate the value for our min/max in aggregations
-                if tmp_value_old_avg != my_value_avg:
-                    delta_values[target_key + '_maxmin_invalid_val_max'] = tmp_value_old_avg
-                    delta_values[target_key + '_maxmin_invalid_val_min'] = tmp_value_old_avg
-
-            tmp_sum_avg = my_value_avg * tmp_duration
+        # remove current values from our aggregations
+        if obs_j.__contains__(target_key):  # in obs only _avg are stored
+            tmp_value_old_avg = obs_j[target_key]
+            tmp_duration_old = obs_meteor.data.duration
+            tmp_sum_avg = tmp_value_old_avg * tmp_duration
             if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
                 tmp_sum_avg = tmp_value_old_avg
+            delta_values[target_key + '_sum_old'] = tmp_sum_avg
+            delta_values[target_key + '_duration_old'] = tmp_duration_old
 
-            # pass delta values to our aggregations
-            delta_values[target_key + '_sum'] = tmp_sum_avg
-            delta_values[target_key + '_duration'] = tmp_duration
+            # in case of replacement, invalidate the value for our min/max in aggregations
+            if tmp_value_old_avg != my_value_avg:
+                delta_values[target_key + '_maxmin_invalid_val_max'] = tmp_value_old_avg
+                delta_values[target_key + '_maxmin_invalid_val_min'] = tmp_value_old_avg
+
+        tmp_sum_avg = my_value_avg * tmp_duration
+        if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
+            tmp_sum_avg = my_value_avg
+
+        # pass delta values to our aggregations
+        delta_values[target_key + '_sum'] = tmp_sum_avg
+        delta_values[target_key + '_duration'] = tmp_duration
 
         # save our data (avg)
-        obs_j[target_key] = my_value_avg
+        obs_j[target_key] = my_value_instant
+        obs_j[target_key + '_avg'] = my_value_avg
         delta_values[target_key] = my_value_avg
         delta_values[target_key + '_i'] = my_value_instant
         if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)) and my_value_dir is not None:
