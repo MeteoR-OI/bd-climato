@@ -89,15 +89,17 @@ def calcAggDate(niveau_agg: AggLevel, start_dt_utc: datetime, factor: float = 0,
         returns the start of the datetime of the aggregation level
     """
     if niveau_agg == "H":
-        if is_measure_date is True:
-            delta_dt = datetime.timedelta(minutes=int(60 * (factor + ComputationParam.AddHourToMeasureInAggHour)))
-        else:
-            delta_dt = datetime.timedelta(minutes=int(60 * factor))
+        # if is_measure_date is True:
+        #     delta_dt = datetime.timedelta(minutes=int(60 * (factor + ComputationParam.AddHourToMeasureInAggHour)))
+        # else:
+        delta_dt = datetime.timedelta(minutes=int(60 * factor))
         if is_measure_date and start_dt_utc.minute == 0 and start_dt_utc.second == 0:
             start_dt_utc = start_dt_utc - datetime.timedelta(hours=1)
         return fixUtcDate(datetime.datetime(start_dt_utc.year, start_dt_utc.month, start_dt_utc.day, start_dt_utc.hour, 0, 0, 0, datetime.timezone.utc) + delta_dt)
 
     if niveau_agg == "D":
+        if is_measure_date and start_dt_utc.minute == 0 and start_dt_utc.second == 0:
+            start_dt_utc = start_dt_utc - datetime.timedelta(hours=1)
         if int(factor) == 1:
             return fixUtcDate(datetime.datetime(start_dt_utc.year, start_dt_utc.month, start_dt_utc.day, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(days=1))
         if int(factor) == -1:
@@ -105,6 +107,8 @@ def calcAggDate(niveau_agg: AggLevel, start_dt_utc: datetime, factor: float = 0,
         return fixUtcDate(datetime.datetime(start_dt_utc.year, start_dt_utc.month, start_dt_utc.day, 0, 0, 0, 0, datetime.timezone.utc) + datetime.timedelta(hours=int(24 * factor)))
 
     elif niveau_agg == "M":
+        if is_measure_date and start_dt_utc.minute == 0 and start_dt_utc.second == 0:
+            start_dt_utc = start_dt_utc - datetime.timedelta(hours=1)
         if int(factor) == 1:
             return fixUtcDate(datetime.datetime(start_dt_utc.year, start_dt_utc.month, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(months=1))
         if int(factor) == -1:
@@ -112,6 +116,8 @@ def calcAggDate(niveau_agg: AggLevel, start_dt_utc: datetime, factor: float = 0,
         return fixUtcDate(datetime.datetime(start_dt_utc.year, start_dt_utc.month, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(days=int(30.5 * factor)))
 
     elif niveau_agg == "Y":
+        if is_measure_date and start_dt_utc.minute == 0 and start_dt_utc.second == 0:
+            start_dt_utc = start_dt_utc - datetime.timedelta(hours=1)
         if int(factor) == 1:
             return fixUtcDate(datetime.datetime(start_dt_utc.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(years=1))
         if int(factor) == -1:
