@@ -6,6 +6,9 @@ from app.classes.repository.typeInstrumentMeteor import TypeInstrumentMeteor
 # type_i : type_instrument_id
 # src_key: key string in measures json (coming from the station)
 # target_key: json key name only if different. Used in obs and all aggregations
+# measureType: default = both
+#   avg -> only use the average value ([field]_avg)
+#   inst -> only use the instantaneous value ie [field]
 # agg: Type aggregation: avg, avgomm, rate
 #   avg: classic average
 #   avgomm: classic average, but use the last measure of the hour as the value for the full hour

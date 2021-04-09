@@ -47,12 +47,21 @@ class ProcessJsonDataAvg(ProcessJsonData):
         my_value_dir = None
         obs_stop_dat = obs_meteor.data.stop_dat
 
+        measure_type = 3
+        if my_measure.__contains__('measureType'):
+            if my_measure['measureType'] == 'avg':
+                measure_type = 1
+            elif my_measure['measureType'] == 'inst':
+                measure_type = 2
+            elif my_measure['measureType'] != 'both':
+                raise Exception('processJsonDataAvg::loadData', 'invalid measureType: ' + my_measure['measureType'] + ' for ' + src_key)
+
         if b_exclu is False:
             # load our data from the measure (json)
             data_src = json_file_data['data'][measure_idx]['current']
-            if data_src.__contains__(src_key):
+            if data_src.__contains__(src_key) and (measure_type & 2) == 2:
                 my_value_instant = my_measure['dataType'](data_src[src_key])
-            if data_src.__contains__(src_key + '_avg'):
+            if data_src.__contains__(src_key + '_avg') and (measure_type & 1) == 1:
                 my_value_avg = my_measure['dataType'](data_src[src_key + '_avg'])
             if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)) and data_src.__contains__(src_key + '_dir'):
                 my_value_dir = data_src[src_key + '_dir']

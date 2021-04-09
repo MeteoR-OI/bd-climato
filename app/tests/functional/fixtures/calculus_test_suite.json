@@ -133,5 +133,13 @@
                 {"t": "H", "dat": "2021-02-11T14:00:00", "out_temp_sum": 50},
                 {"t": "D", "dat": "2021-02-11T00:00:00", "out_temp_min": 10, "out_temp_max": 10}
             ]
+        },{ "name": "10_wind_inst_do_not_use_avg",
+            "data":
+            [
+                {"stop_dat" : "2021-02-11T13:30:00", "current": {"duration" : 5, "wind_inst_avg" : 20, "out_temp": 22}}
+            ],
+            "results": [
+                {"t": "O", "idx":0, "out_temp": 22, "wind_inst": 20}
+            ]
         }
 ]
