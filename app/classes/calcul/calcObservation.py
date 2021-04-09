@@ -14,7 +14,7 @@ class CalcObs(AllCalculus):
     """
         Control all the processing of a json data, with our Observation table
     """
-    def loadJson(self, json_file_data: json, trace_flag: bool = False, delete_flag: bool = False) -> json:
+    def loadJson(self, json_file_data_array: json, trace_flag: bool = False, delete_flag: bool = False) -> json:
         """
             processJson
 
@@ -25,14 +25,40 @@ class CalcObs(AllCalculus):
             self.delete_obs_agg()
 
         try:
-            return self.loadJson_ttx(json_file_data, trace_flag)
+            return self._loadJson_array_ttx(json_file_data_array, trace_flag)
 
         except Exception as err:
             print("CalcObs::loadJson: Exception: " + str(err))
             raise err
 
     @transaction.atomic
-    def loadJson_ttx(self, json_file_data: json, trace_flag: bool = False) -> json:
+    def _loadJson_array_ttx(self, json_file_data_array: json, trace_flag: bool = False) -> json:
+        debut_full_process = datetime.datetime.now()
+        ret_data = []
+        item_processed = 0
+
+        # validate our json
+        check_result = checkJson(json_file_data_array)
+        if check_result is not None:
+            raise Exception('calculus::processJson', check_result)
+
+        idx = 0
+        while idx < json_file_data_array.__len__():
+            json_file_data = json_file_data_array[idx]
+            item_processed += json_file_data['data'].__len__()
+            ret = self._loadJson(json_file_data, trace_flag)
+            if trace_flag is True:
+                ret_data.append({"item": idx, "ret": ret})
+            idx += 1
+
+        ret_data.append({
+            'total_exec': str(datetime.datetime.now() - debut_full_process),
+            'item_processed': item_processed,
+            'one_exec': str((datetime.datetime.now() - debut_full_process)/item_processed)
+        })
+        return ret_data
+
+    def _loadJson(self, json_file_data: json, trace_flag: bool = False) -> json:
         """
             processJson
 
@@ -41,17 +67,12 @@ class CalcObs(AllCalculus):
         all_instr = AllTypeInstruments()
         ret = []
 
-        # validate our json
-        check_result = checkJson(json_file_data)
-        if check_result is not None:
-            raise Exception('calculus::processJson', check_result)
-
         measure_idx = 0
         debut_process = datetime.datetime.now()
         while measure_idx < json_file_data['data'].__len__():
             # print('processing idx: ' + str(measure_idx))
             # we use the stop_dat of our measure json as the start date for our processing
-            m_stop_date_agg_start_date = json_file_data['data'][measure_idx]['current']['stop_dat']
+            m_stop_date_agg_start_date = json_file_data['data'][measure_idx]['stop_dat']
             m_duration = json_file_data['data'][measure_idx]['current']['duration']
             poste_metier = PosteMetier(json_file_data['poste_id'], m_stop_date_agg_start_date)
             try:
@@ -88,19 +109,14 @@ class CalcObs(AllCalculus):
                 a_todo.save()
 
                 j_trace = {}
-                if measure_idx == 0:
-                    j_trace['total_exec'] = str(datetime.datetime.now() - debut_process)
-                    j_trace['item_processed'] = str(json_file_data['data'].__len__())
-                    j_trace['one_exec'] = str((datetime.datetime.now() - debut_process)/json_file_data['data'].__len__())
 
                 if trace_flag:
                     j_trace['info'] = 'idx=' + str(measure_idx)
-                    j_trace['url'] = '** cut and paste this data into https://codebeautify.org/jsonviewer **'
                     j_trace['total_exec'] = str(datetime.datetime.now() - debut_process)
                     j_trace['item_processed'] = str(json_file_data['data'].__len__())
                     j_trace['one_exec'] = str((datetime.datetime.now() - debut_process)/json_file_data['data'].__len__())
                     # j_trace['start_dat'] = json_file_data['data'][measure_idx]['current']['start_dat']
-                    j_trace['stop_dat'] = json_file_data['data'][measure_idx]['current']['stop_dat']
+                    j_trace['stop_dat'] = json_file_data['data'][measure_idx]['stop_dat']
                     j_trace['obs data'] = JsonPlus().loads(JsonPlus().dumps(obs_meteor.data.j))
                     j_trace['obs aggregations'] = JsonPlus().loads(JsonPlus().dumps(obs_meteor.data.j_agg))
                     j_trace['agg_todo dv'] = JsonPlus().loads(JsonPlus().dumps(a_todo.data.j_dv))

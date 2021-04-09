@@ -32,8 +32,8 @@ def loadJson(file_name: str, delete_flag: bool, trace_flag: bool):
             texte += str(aligne)
 
         my_json_array = JsonPlus().loads(texte)
-        for my_json in my_json_array:
-            ret = calc_obs.loadJson(my_json, delete_flag, trace_flag)
+        ret = calc_obs.loadJson(my_json_array, delete_flag, trace_flag)
+
         # start in sync the calculus if our aggregations
         CalcAggreg().ComputeAggreg()
         # SvcAggreg.GetInstance().RunIt()

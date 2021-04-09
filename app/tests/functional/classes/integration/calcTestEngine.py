@@ -60,7 +60,7 @@ class CalcTestEngine():
                 self.calc.delete_obs_agg()
 
                 if ((option & 1) == 1):
-                    self.calc_obs.loadJson(my_json, True, True)
+                    self.calc_obs.loadJson([my_json], True, True)
 
                 if ((option & 2) == 2):
                     self.calc_agg.ComputeAggreg()
@@ -74,7 +74,7 @@ class CalcTestEngine():
                     elif a_result.__contains__('dat'):
                         test_dat = a_result['dat']
                     elif a_result.__contains__('idx'):
-                        test_dat = j_data[a_result['idx']]['current']['stop_dat']
+                        test_dat = j_data[a_result['idx']]['stop_dat']
                         b_compute_agg_date = True
                     elif a_result.__contains__('count'):
                         test_dat = '1900-12-31T00:00:00+00:00'

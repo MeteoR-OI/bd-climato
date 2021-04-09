@@ -32,7 +32,7 @@ class PosteMetier(PosteMeteor):
 
             Les calculs obs, et aggregation se passent avec toutes les données en memoire, donc il est important
             de serialiser la periode lecture/update de ces donnees.
-            
+
             Cela doit se faire par poste, donc gerer les locks a ce niveau est la meilleure (et plus simple a coder) approche
         """
         self.lock_event.set()

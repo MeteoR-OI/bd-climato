@@ -72,7 +72,7 @@ class ProcessJsonData():
             # no value processed
             return
 
-        m_stop_dat = json_file_data['data'][measure_idx]['current']['stop_dat']
+        m_stop_dat = json_file_data['data'][measure_idx]['stop_dat']
         data_src = {}
         if json_file_data['data'][measure_idx].__contains__('current'):
             data_src = json_file_data['data'][measure_idx]['current']
