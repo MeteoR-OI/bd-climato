@@ -1,0 +1,78 @@
+[
+{
+  "meteor" : "MTG320",
+  "info" : {
+     "title":"JSON pour BDClimato",
+     "version":2,
+     "time":"09/04/2021 à 15h00",
+     "uptime":"0 jours, 2 heures, 34 minutes",
+     "last_update":"2021-04-09 15:00:00",
+     "last_update_before_stop":"2021-04-09 12:25:00" 
+     },
+  "data":
+     [
+      {
+       "start_dat":"2021-04-09T14:55:00",
+       "stop_dat":"2021-04-09T15:00:00",
+       "current": { 
+       "duration":5.0,
+       "out_temp":25.9,
+       "windchill":25.9,
+       "heatIndex":25.9,
+       "dewpoint":22.6,
+       "humidity":82.0,
+       "in_humidity":65.0,
+       "barometer":1012.0,
+       "pressure":976.2,
+       "wind_avg":9.7,
+       "wind_dir":90.0,
+       "wind_max":24.1,
+       "wind_max_dir":90.0,
+       "rain_rate":0.0,
+       "rain":0.0,
+       "in_temp":28.6,
+       "out_temp_min":25.9,       
+       "out_temp_min_time":"2021-04-09T14:59:25",
+       "out_temp_avg":26.04,       
+       "out_temp_max":26.1,       
+       "out_temp_max_time":"2021-04-09T14:55:01",
+       "windchill_min":25.9,       
+       "windchill_min_time":"2021-04-09T14:59:25",
+       "windchill_avg":26.04, 
+       "heatindex_max":26.1,       
+       "heatindex_max_time":"2021-04-09T14:55:01",
+       "heatindex_avg":26.04,       
+       "dewpoint_avg":22.66,
+       "dewpoint_min":22.4,       
+       "dewpoint_min_time":"2021-04-09T14:55:01",
+       "dewpoint_max":22.8,       
+       "dewpoint_max_time":"2021-04-09T14:56:07",
+       "humidity_min":80.0,       
+       "humidity_min_time":"2021-04-09T14:55:01",
+       "humidity_avg":81.72,
+       "humidity_max":82.0,       
+       "humidity_max_time":"2021-04-09T14:56:07",
+       "barometer_min":1011.9,       
+       "barometer_min_time":"2021-04-09T14:55:03",
+       "barometer_avg":1011.98,       
+       "barometer_max":1012.1,       
+       "barometer_max_time":"2021-04-09T14:55:01",
+       "pressure_avg":976.21,
+       "wind10_avg":11.3,     
+       "wind_max_time":"2021-04-09T14:55:01",    
+       "rain_rate_max_time":"2021-04-09T14:55:01", 
+       "in_temp_avg":28.61,       
+       "in_humidity_avg":65.0,       
+       "rx":97.4,
+       "voltage":4.6
+       },
+       "aggregations":
+       [{
+       "level":"H",
+       "start_dat":"2021-04-09T14:00:00",
+       "etp_sum":0.0
+       }]
+     }
+   ]
+}
+]
