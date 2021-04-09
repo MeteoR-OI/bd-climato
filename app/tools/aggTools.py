@@ -1,4 +1,4 @@
-from app.tools.climConstant import AggLevel, ComputationParam
+from app.tools.climConstant import AggLevel
 import json
 import datetime
 import dateutil.parser

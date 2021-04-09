@@ -1,6 +1,7 @@
 from app.tools.climConstant import AggLevel
 import datetime
 import json
+import threading
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.aggMeteor import AggMeteor
 from app.classes.repository.excluMeteor import ExcluMeteor
@@ -20,7 +21,25 @@ class PosteMetier(PosteMeteor):
         """ load our instance from db, load exclusions at date_histo """
         super().__init__(poste_id)
         self.exclus = ExcluMeteor.getAllForAPoste(self.data.id, start_date)
+        self.lock_event = threading.Event()
         # self.analysis_date = start_date
+
+    def lock(self):
+        """
+            lock
+
+            lock le poste Metier pour serialiser les ajouts d'observation, ou calcul des agregations
+
+            Les calculs obs, et aggregation se passent avec toutes les données en memoire, donc il est important
+            de serialiser la periode lecture/update de ces donnees.
+            
+            Cela doit se faire par poste, donc gerer les locks a ce niveau est la meilleure (et plus simple a coder) approche
+        """
+        self.lock_event.set()
+
+    def unlock(self):
+        if self.lock_event.is_set():
+            self.lock_event.clear()
 
     def exclusion(self, type_intrument_id) -> json:
         """ retourne la premiere exclusion active pour le type instrument """

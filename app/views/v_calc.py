@@ -4,7 +4,7 @@
 from django.http import HttpResponse
 from app.tools.jsonPlus import JsonPlus
 from app.classes.calcul.calcObservation import CalcObs
-from app.classes.workers.svcAggreg import SvcAggreg
+from app.classes.calcul.calcAggreg import CalcAggreg
 import os
 
 
@@ -31,8 +31,10 @@ def loadJson(file_name: str, delete_flag: bool, trace_flag: bool):
         for aligne in lignes:
             texte += str(aligne)
 
-        my_json = JsonPlus().loads(texte)
-        ret = calc_obs.loadJson(my_json, delete_flag, trace_flag)
-        # start calculus of aggregation
-        SvcAggreg.GetInstance().RunIt()
-        return {'loadObs': ret, 'svcAgg': 'launched'}
+        my_json_array = JsonPlus().loads(texte)
+        for my_json in my_json_array:
+            ret = calc_obs.loadJson(my_json, delete_flag, trace_flag)
+        # start in sync the calculus if our aggregations
+        CalcAggreg().ComputeAggreg()
+        # SvcAggreg.GetInstance().RunIt()
+        return {'loadObs': ret, 'svcAgg': 'done'}
