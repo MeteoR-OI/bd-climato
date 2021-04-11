@@ -20,9 +20,4 @@ urlpatterns = [
     path('all/<int:poste_id>/<str:keys>', views.view_agg_all),
     path('all/<int:poste_id>', views.view_agg_all),
     path('calc/<str:file_name>', views.views_calc),
-    path('debug0', views.testComputeJ0),
-    path('debug1', views.testComputeJ1),
-    path('debug2', views.testComputeJ2),
-    path('debug3', views.testComputeJ3),
-    path('debug4', views.testComputeJ4)
 ]

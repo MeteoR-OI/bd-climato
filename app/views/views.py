@@ -4,8 +4,6 @@
 from django.http import HttpResponse
 import json
 from app.models import Poste, Observation
-from app.classes.integrationTests.typeTemp import TypeTempTest
-from app.tools.jsonPlus import JsonPlus
 from app.views.v_agg import view_agg
 from app.views.v_poste import view_my_poste
 from app.views.v_calc import view_my_calc
@@ -44,49 +42,8 @@ def views_calc(request, file_name: str):
     return view_my_calc(request, file_name)
 
 
-# views to update
 def view_last_obs(request, poste_id):
     p = Poste.objects.get(id=poste_id)
     o = Observation.objects.filter(poste_id=poste_id).order_by("dat").last()
     data_details = {'poste_id': p.id, 'meteor': p.meteor, 'dat': str(o.dat), 'rain': str(o.j['rain'])}
     return HttpResponse(json.dumps(data_details))
-
-
-def testComputeJ0(request):
-    """ debug environment"""
-    tt = TypeTempTest()
-    ret_json = tt.doCalculusJ0()
-    ret = JsonPlus().dumps(ret_json)
-    return HttpResponse(ret)
-
-
-def testComputeJ1(request):
-    """ debug environment"""
-    tt = TypeTempTest()
-    ret_json = tt.doCalculusJ1()
-    ret = JsonPlus().dumps(ret_json)
-    return HttpResponse(ret)
-
-
-def testComputeJ2(request):
-    """ debug environment"""
-    tt = TypeTempTest()
-    ret_json = tt.doCalculusJ2()
-    ret = JsonPlus().dumps(ret_json)
-    return HttpResponse(ret)
-
-
-def testComputeJ3(request):
-    """ debug environment"""
-    tt = TypeTempTest()
-    ret_json = tt.doCalculusJ3()
-    ret = JsonPlus().dumps(ret_json)
-    return HttpResponse(ret)
-
-
-def testComputeJ4(request):
-    """ debug environment"""
-    tt = TypeTempTest()
-    ret_json = tt.doCalculusJ4()
-    ret = JsonPlus().dumps(ret_json)
-    return HttpResponse(ret)

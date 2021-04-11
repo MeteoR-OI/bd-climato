@@ -1,5 +1,7 @@
 from app.tools.aggTools import calcAggDate
-from app.classes.integrationTests.typeTemp import TypeTempTest
+from app.classes.calcul.calcObservation import CalcObs
+from app.classes.calcul.allCalculus import AllCalculus
+from app.classes.calcul.calcAggreg import CalcAggreg
 from app.classes.metier.posteMetier import PosteMetier
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.aggMeteor import AggMeteor
@@ -10,7 +12,9 @@ import logging
 
 class CalcTestEngine():
     def __init__(self, *args, **kwargs):
-        self.tt = TypeTempTest()
+        self.calc = AllCalculus()
+        self.calc_obs = CalcObs()
+        self.calc_agg = CalcAggreg()
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         file_name = os.path.join(base_dir, '../fixtures/calculus_test_suite.json')
         texte = ''
@@ -21,9 +25,14 @@ class CalcTestEngine():
                 texte += str(aligne)
             self.my_test_suite = JsonPlus().loads(texte)
 
-    def run_test(self, name):
+    def run_test(self, name, option: int = 255):
         """
             Run all tests in our suite test
+
+            option:
+                1: load Obs
+                3: load Aggregations
+                7: load extremeFix
         """
         try:
             pid = PosteMetier.getPosteIdByMeteor('BBF015')
@@ -48,9 +57,13 @@ class CalcTestEngine():
                 j_data = a_test['data']
                 my_json['data'] = j_data
                 # remove any existing data
-                self.tt.delete_obs_agg()
+                self.calc.delete_obs_agg()
 
-                self.tt.doCalculus(my_json, True)
+                if ((option & 1) == 1):
+                    self.calc_obs.loadJson([my_json], True, True)
+
+                if ((option & 2) == 2):
+                    self.calc_agg.ComputeAggreg()
 
                 error_msg = []
                 # load list of resultset to load
@@ -61,7 +74,7 @@ class CalcTestEngine():
                     elif a_result.__contains__('dat'):
                         test_dat = a_result['dat']
                     elif a_result.__contains__('idx'):
-                        test_dat = j_data[a_result['idx']]['current']['stop_dat']
+                        test_dat = j_data[a_result['idx']]['stop_dat']
                         b_compute_agg_date = True
                     elif a_result.__contains__('count'):
                         test_dat = '1900-12-31T00:00:00+00:00'

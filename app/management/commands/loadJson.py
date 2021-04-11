@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from app.tools.jsonPlus import JsonPlus
-from app.classes.metier.calculus import Calculus
+from app.classes.calcul.calcObservation import CalcObs
 import os
 import glob
 
@@ -34,7 +34,7 @@ class Command(BaseCommand):
 
     def processJson(self, file_name: str, delete_flag: bool, trace_flag: bool):
         try:
-            calc = Calculus()
+            calc = CalcObs()
             texte = ''
 
             with open(file_name, "r") as f:
@@ -43,7 +43,8 @@ class Command(BaseCommand):
                     texte += str(aligne)
 
                 my_json = JsonPlus().loads(texte)
-                ret = calc.run(my_json, delete_flag, trace_flag)
+
+                ret = calc.loadJson(my_json, trace_flag, True)
                 if trace_flag is True:
                     self.stdout.write(JsonPlus().dumps(ret))
 

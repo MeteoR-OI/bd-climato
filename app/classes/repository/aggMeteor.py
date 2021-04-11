@@ -1,11 +1,9 @@
 from app.models import Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global   #
 from app.tools.climConstant import AggLevel
-from app.tools.jsonPlus import JsonPlus
 from app.tools.aggTools import calcAggDate
 import datetime
 import pytest
 import logging
-from app.tools.dateTools import date_to_str, str_to_date
 
 
 @pytest.fixture(autouse=True)
@@ -36,24 +34,23 @@ class AggMeteor():
         """
         self.agg_niveau = agg_niveau
         my_start_date = calcAggDate(agg_niveau, start_dt_agg_utc, 0, is_measure_date)
-        my_start_date = date_to_str(my_start_date)
+        # my_start_date = date_to_str(my_start_date)
         agg_object = self.getAggObject(agg_niveau)
         if agg_object.objects.filter(poste_id_id=poste_id).filter(start_dat=my_start_date).exists():
             self.data = agg_object.objects.filter(poste_id_id=poste_id).filter(start_dat=my_start_date).first()
-            JsonPlus().deserialize(self.data.j)
         else:
             self.data = agg_object(poste_id_id=poste_id, start_dat=my_start_date, duration_sum=0, j={})
-        # decode start_dat
-        self.data.start_dat = str_to_date(self.data.start_dat)
 
     def save(self):
         """ save Poste and Exclusions """
+        dirty_found = False
         if self.data.j != {}:
-            self.data.start_dat = date_to_str(self.data.start_dat)
-            JsonPlus().serialize(self.data.j)
-            self.data.save()
-            JsonPlus().deserialize(self.data.j)
-            self.data.start_dat = str_to_date(self.data.start_dat)
+            for akey in self.__dir__():
+                if akey == 'dirty':
+                    dirty_found = True
+                    break
+            if dirty_found is False or self.dirty is True:
+                self.data.save()
 
     def getAggObject(self, niveau_agg: str):
         """get the aggregation depending on the level"""

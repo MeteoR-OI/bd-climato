@@ -1,9 +1,7 @@
 from app.models import Observation
-from app.tools.jsonPlus import JsonPlus
 import datetime
 import pytest
 import logging
-from app.tools.dateTools import date_to_str, str_to_date
 from app.tools.aggTools import calcAggDate
 
 
@@ -27,38 +25,25 @@ class ObsMeteor():
     def __init__(self, poste_id: int, stop_dt_utc: datetime):
         """Init a new ObsMeteor object"""
         # todo: block if my_datetime_utc > previous dat+duration
-        stop_dt_utc = date_to_str(stop_dt_utc)
         if Observation.objects.filter(poste_id_id=poste_id).filter(stop_dat=stop_dt_utc).exists():
             self.data = Observation.objects.filter(poste_id_id=poste_id).filter(stop_dat=stop_dt_utc).first()
-            self.data.agg_start_dat = str_to_date(self.data.agg_start_dat)
-            self.data.stop_dat = str_to_date(self.data.stop_dat)
-            JsonPlus().deserialize(self.data.j)
         else:
-            agg_start_dat = calcAggDate('H', str_to_date(stop_dt_utc), 0, True)
+            agg_start_dat = calcAggDate('H', stop_dt_utc, 0, True)
             self.data = Observation(poste_id_id=poste_id, stop_dat=stop_dt_utc, duration=0, agg_start_dat=agg_start_dat, j={}, j_agg={})
-            self.data.agg_start_dat = str_to_date(self.data.agg_start_dat)
-            self.data.stop_dat = str_to_date(self.data.stop_dat)
+
+    @staticmethod
+    def getById(id: int):
+        if Observation.objects.filter(id=id).exists():
+            my_obs = Observation.objects.filter(id=id).first()
+            return ObsMeteor(my_obs.poste_id_id, my_obs.stop_dat)
+        raise Exception('obsMeteor', 'no data for id: ' + str(id))
 
     def save(self):
         """ save Poste and Exclusions """
         # we only save if there is some data
         if self.data.j != {} or self.data.j_agg != {}:
             self.data.agg_start_dat = calcAggDate('H', self.data.stop_dat, 0, True)
-            self.data.stop_dat = date_to_str(self.data.stop_dat)
-            self.data.agg_start_dat = date_to_str(self.data.agg_start_dat)
-            if self.data.j != {}:
-                JsonPlus().serialize(self.data.j)
-            if self.data.j_agg != {}:
-                for a_jagg in self.data.j_agg:
-                    JsonPlus().serialize(a_jagg)
             self.data.save()
-            self.data.agg_start_dat = str_to_date(self.data.agg_start_dat)
-            self.data.stop_dat = str_to_date(self.data.stop_dat)
-            if self.data.j != {}:
-                JsonPlus().deserialize(self.data.j)
-            if self.data.j_agg != {}:
-                for a_jagg in self.data.j_agg:
-                    JsonPlus().deserialize(a_jagg)
 
     def count(self, poste_id: int = None, stop_dat_mask: str = '') -> int:
         # return count of aggregations

@@ -1,4 +1,3 @@
-from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.typeInstruments.typeTemp import TypeTemp
 from app.classes.typeInstruments.typeHumidity import TypeHumidity
 from app.classes.typeInstruments.typePression import TypePression
@@ -7,14 +6,13 @@ from app.classes.typeInstruments.typeWind import TypeWind
 from app.classes.typeInstruments.typeSolar import TypeSolar
 from app.classes.typeInstruments.typeInterieur import TypeInterieur
 from app.classes.typeInstruments.typeDivers import TypeDivers
-import json
 
 
-class TypeInstrumentAll():
+class AllTypeInstruments():
     """
-        TypeInstrumentRepository
+        AllTypeInstruments
 
-        Objet climato type_instrument
+        Repository of all our typeInstruments
     """
 
     def __init__(self):
@@ -34,33 +32,13 @@ class TypeInstrumentAll():
         """ get TypeInstrument object """
         for atype in self.all_instruments:
             if atype['type_id'] == type_instrument_id:
-                return atype.object
+                return atype['object']
         raise Exception("all_instrument_meteor.get", "invalid type_instrument_id: " + str(type_instrument_id))
 
-    def process_json(
-        self,
-        poste_metier,
-        measures: json,
-        measure_idx: int,
-        obs_meteor: ObsMeteor,
-        agg_array: json,
-        trace_flag: bool = False,
-    ):
-        """process observation data for all our TypeInstrument"""
-        delta_values = {"maxminFix": []}
-
-        # for all type_instruments
-        for an_intrument in self.all_instruments:
-            an_intrument['object'].processJson(
-                poste_metier,
-                measures,
-                measure_idx,
-                obs_meteor,
-                agg_array,
-                delta_values,
-                trace_flag,
-            )
-        return
+    def get_all_instruments(self):
+        # iterator
+        for an_instrument in self.all_instruments:
+            yield an_instrument
 
     def __str__(self):
         """print myself"""
