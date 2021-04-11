@@ -117,8 +117,8 @@ class ProcessJsonDataAvg(ProcessJsonData):
 
             # in case of replacement, invalidate the value for our min/max in aggregations
             if tmp_value_old_avg != my_value_avg:
-                delta_values[target_key + '_maxmin_invalid_val_max'] = tmp_value_old_avg
-                delta_values[target_key + '_maxmin_invalid_val_min'] = tmp_value_old_avg
+                delta_values[target_key + '_invalidate_max'] = tmp_value_old_avg
+                delta_values[target_key + '_invalidate_min'] = tmp_value_old_avg
 
         tmp_sum_avg = my_value_avg * tmp_duration
         if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):

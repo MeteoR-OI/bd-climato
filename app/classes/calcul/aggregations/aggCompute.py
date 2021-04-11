@@ -127,21 +127,50 @@ class AggCompute():
                     continue
 
                 # load current max/min value from our aggregation
+                agg_maxmin = None
                 if agg_j.__contains__(json_key + maxmin_suffix):
                     agg_maxmin = agg_j[json_key + maxmin_suffix]
-                else:
-                    # force the usage of current_maxmin
+
+                """
+                invalidation decision tree for [field]_max
+
+                current_maxmin  +   agg_maxmin  +  invalid_maxmin_value +   action
+                basic
+                    10          +               +           No          +       update
+                    10          +       5       +           No          +       update
+                    10          +       15      +           No          +       pass
+
+                invalidate value
+                    10          +       5       +           5           +       update -> auto
+
+                    10          +       10      +           10          +       pass -> auto
+
+                    10          +       15      +           11          +       pass -> auto
+                    10          +       15      +           15          +       recompute
+                """
+                if delta_values.__contains__(json_key + '_invalidate' + maxmin_suffix):
+                    if agg_maxmin is None:
+                        raise Exception('loadMaxMinInAllAggregations', 'Invalidate and no data in aggregation...')
+                    invalid_maxmin_value = delta_values[json_key + '_invalidate' + maxmin_suffix]
+                    if maxmin_suffix == '_max':
+                        if agg_maxmin == invalid_maxmin_value and current_maxmin < agg_maxmin:
+                            agg_maxmin = None
+                            dv_next[json_key + '_invalidate' + maxmin_suffix] = invalid_maxmin_value
+                            self.add_new_maxmin_fix(json_key, maxmin_key, agg_deca, delta_values)
+                    else:
+                        if agg_maxmin == invalid_maxmin_value and current_maxmin > agg_maxmin:
+                            agg_maxmin = None
+                            dv_next[json_key + '_invalidate' + maxmin_suffix] = invalid_maxmin_value
+                            self.add_new_maxmin_fix(json_key, maxmin_key, agg_deca, delta_values)
+
+                if agg_maxmin is None:
+                    # force the update i agg_deca for our current_maxmin
                     if maxmin_suffix == '_min':
                         agg_maxmin = current_maxmin + 1
                     else:
                         agg_maxmin = current_maxmin - 1
 
                 b_change_maxmin = False
-                if delta_values.__contains__(json_key + maxmin_suffix + '_invalidate') and agg_maxmin == delta_values[json_key + maxmin_suffix + '_invalidate']:
-                    self.add_new_maxmin_fix(json_key, maxmin_key, agg_deca, delta_values)
-                    dv_next[json_key + maxmin_suffix + '_invalidate'] = agg_maxmin
-                    b_change_maxmin = True
-
                 # compare the measure data and current maxmin
                 if maxmin_suffix == '_max' and agg_maxmin < current_maxmin:
                     b_change_maxmin = True
@@ -186,7 +215,7 @@ class AggCompute():
         }
         delta_values['maxminFix'].append(max_min_fix)
         # write an extreme_todo record
-        e_todo = ExtremeTodoMeteor(agg_deca.data.poste_id_id, agg_deca.agg_niveau, agg_deca.data.start_dat)
+        e_todo = ExtremeTodoMeteor(agg_deca.data.poste_id_id, agg_deca.agg_niveau, agg_deca.data.start_dat, maxmin_key)
         e_todo.data.j_invalid = max_min_fix
         e_todo.save()
 
