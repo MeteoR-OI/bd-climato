@@ -42,9 +42,11 @@ class AggAvgCompute(AggCompute):
                 flag: True=insert, False=delete
         """
         json_key = self.get_json_key(my_measure)
+        if json_key == 'etp':
+            json_key = 'etp'
 
         # if we get no data, return
-        if delta_values.__contains__(json_key) is False:
+        if delta_values.__contains__(json_key) is False and m_agg_j.__contains__(json_key) is False:
             return
 
         dv_next["duration"] = delta_values["duration"]
@@ -66,8 +68,14 @@ class AggAvgCompute(AggCompute):
         # 3 from m_agg_j[json_key_sum]
         # 4 if m_agg_j[json_key_avg] is given, recompute a new json_key_sum
         # ------------------------------------------------------------------
+        if delta_values.__contains__(json_key) is True:
+            tmp_value = delta_values[json_key]
+        if m_agg_j.__contains__(json_key) is True:
+            tmp_value = m_agg_j[json_key]
         tmp_duration = float(delta_values["duration"])
-        tmp_sum = float(delta_values[json_key]) * tmp_duration
+        tmp_sum = tmp_value * tmp_duration
+        if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum) is True:
+            tmp_sum = tmp_value
 
         if delta_values.__contains__(json_key + '_sum'):
             tmp_sum = float(delta_values[json_key + '_sum'])
@@ -84,6 +92,8 @@ class AggAvgCompute(AggCompute):
             if m_agg_j.__contains__(json_key + '_duration'):
                 tmp_duration = m_agg_j[json_key + '_duration']
             tmp_sum = tmp_avg * tmp_duration
+            if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum) is True:
+                tmp_sum = tmp_avg
 
         # return if the aggregation should not be sent to upper levels
         if isFlagged(my_measure['special'], MeasureProcessingBitMask.OnlyAggregateInHour) is True:
@@ -108,8 +118,5 @@ class AggAvgCompute(AggCompute):
         # propagate to next level if no limitation on aggregation level
         dv_next[json_key + '_sum'] = tmp_sum - tmp_sum_old
         dv_next[json_key + '_duration'] = tmp_duration - tmp_duration_old
-        dv_next[json_key] = delta_values[json_key]
-
-        # propagate our value to next level
-        dv_next[json_key] = delta_values[json_key]
+        dv_next[json_key] = tmp_value
         dv_next["duration"] = delta_values["duration"]

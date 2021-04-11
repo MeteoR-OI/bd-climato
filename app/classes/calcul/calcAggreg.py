@@ -108,7 +108,7 @@ class CalcAggreg(AllCalculus):
                         an_agg.save()
 
             # we're done
-            print("a_todo " + str (a_todo.data.id) + ' processed. on queue: ' + str(a_todo.count()))
+            print("a_todo " + str(a_todo.data.id) + ' processed. on queue: ' + str(a_todo.count()))
             a_todo.delete()
         finally:
             poste_metier.unlock()
