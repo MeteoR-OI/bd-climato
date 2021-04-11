@@ -97,7 +97,7 @@ class AvgOmmCompute(AggCompute):
             tmp_sum = tmp_val * 60
             tmp_duration = 60
             agg_j[json_key] = tmp_val
-            agg_j[json_key + '_omm_time'] = m_stop_date
+            agg_j[json_key + '_time'] = m_stop_date
             agg_j[json_key + '_sum'] = tmp_sum
             agg_j[json_key + '_duration'] = tmp_duration
             if isFlagged(my_measure['special'], MeasureProcessingBitMask.NoAvgField) is False:
@@ -129,7 +129,7 @@ class AvgOmmCompute(AggCompute):
                 delKey(agg_j, json_key + '_sum')
                 delKey(agg_j, json_key + '_duration')
                 delKey(agg_j, json_key + '_avg')
-                delKey(agg_j, json_key + '_omm_time')
+                delKey(agg_j, json_key + '_time')
                 delKey(agg_j, json_key)
                 delta_values[json_key + '_delete_me'] = True
             else:

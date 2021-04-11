@@ -72,6 +72,7 @@ class PosteMetier(PosteMeteor):
             for a_measure in an_instru['object'].measures:
                 if a_measure.__contains__('hour_deca') and calculated_deca.__contains__('d' + str(a_measure['hour_deca'])) is False:
                     hour_deca = a_measure['hour_deca']
+
                     # set the deca as computed
                     calculated_deca['d' + str(hour_deca)] = True
                     deca_duration = datetime.timedelta(hours=int(hour_deca))

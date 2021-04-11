@@ -45,5 +45,8 @@ class CalculusTestSuite(TestCase):
     def test_09_max_min_simple_replace(self):
         self.t_engine.run_test('9_max_min_simple_replace')
 
-    def test_10_wind_inst_do_not_use_avg(self):
-        self.t_engine.run_test('10_wind_inst_do_not_use_avg')
+    def test_10_max_min_simple_replace(self):
+        self.t_engine.run_test('10_max_min_omm_simple_replace')
+
+    def test_11_wind_inst_do_not_use_avg(self):
+        self.t_engine.run_test('11_wind_inst_do_not_use_avg')

@@ -1,7 +1,7 @@
 from app.classes.repository.aggMeteor import AggMeteor
 from app.classes.repository.extremeTodoMeteor import ExtremeTodoMeteor
-from app.tools.climConstant import AggLevel, MeasureProcessingBitMask
-from app.tools.aggTools import isFlagged, delKey, calcAggDate
+from app.tools.climConstant import MeasureProcessingBitMask
+from app.tools.aggTools import isFlagged, delKey
 import json
 import datetime
 
@@ -17,70 +17,41 @@ class AggCompute():
         self,
         m_stop_date: datetime,
         my_measure: json,
-        j_dv_agg: json,
-        aggregations: list,
         delta_values: json,
+        agg_deca: AggMeteor,
+        m_agg_j: json,
+        dv_next: json,
         trace_flag: bool = False,
     ):
-        # get our deca_hour
-        deca_hour = 0
-        if my_measure.__contains__('hour_deca') is True:
-            deca_hour = my_measure['hour_deca']
 
-        # get the start date of the lowest aggregation
-        measure_dat = calcAggDate('H', m_stop_date, deca_hour, True)
+        # load data in our aggregation
+        self.loadDVInAllAggregations(
+            my_measure,
+            m_stop_date,
+            agg_deca,
+            m_agg_j,
+            delta_values,
+            dv_next,
+            trace_flag,
+        )
 
-        for anAgg in AggLevel:
-            # adjust start date, depending on the aggregation level
-            measure_dat = calcAggDate(anAgg, measure_dat, 0, False)
-
-            # dv_next is the delta_values for next level
-            dv_next = {"maxminFix": []}
-
-            # load the needed aggregation
-            agg_deca = None
-            for my_agg in aggregations:
-                if my_agg.agg_niveau == anAgg and my_agg.data.start_dat == measure_dat:
-                    agg_deca = my_agg
-                    break
-
-            if agg_deca is None:
-                raise Exception('aggCompute::loadAggregations', 'aggregation not loaded ' + anAgg + ", " + str(measure_dat))
-
-            m_agg_j = self.get_agg_magg(anAgg, j_dv_agg)
-
-            agg_deca.dirty = True
-            # load data in our aggregation
-            self.loadDVInAllAggregations(
-                my_measure,
-                m_stop_date,
-                agg_deca,
-                m_agg_j,
-                delta_values,
-                dv_next,
-                trace_flag,
-            )
-
-            # get our extreme values
-            self.loadMaxMinInAllAggregations(
-                my_measure,
-                m_stop_date,
-                agg_deca,
-                m_agg_j,
-                delta_values,
-                dv_next,
-                trace_flag,
-            )
-            # save our delta_values if in trace mode
-            if trace_flag is True:
-                j_dv_agg = agg_deca[0].data.j
-                if j_dv_agg.__contains__('dv') is False:
-                    j_dv_agg['dv'] = {}
-                for akey in delta_values.items():
-                    j_dv_agg['dv'][akey[0]] = delta_values[akey[0]]
-
-            # we will pass our new delta_values to the next level
-            delta_values = dv_next
+        # get our extreme values
+        self.loadMaxMinInAllAggregations(
+            my_measure,
+            m_stop_date,
+            agg_deca,
+            m_agg_j,
+            delta_values,
+            dv_next,
+            trace_flag,
+        )
+        # save our delta_values if in trace mode
+        if trace_flag is True:
+            j_dv_agg = agg_deca[0].data.j
+            if j_dv_agg.__contains__('dv') is False:
+                j_dv_agg['dv'] = {}
+            for akey in delta_values.items():
+                j_dv_agg['dv'][akey[0]] = delta_values[akey[0]]
         return
 
     # ----------------------------------------------------
@@ -218,19 +189,6 @@ class AggCompute():
         e_todo = ExtremeTodoMeteor(agg_deca.data.poste_id_id, agg_deca.agg_niveau, agg_deca.data.start_dat)
         e_todo.data.j_invalid = max_min_fix
         e_todo.save()
-
-    def get_agg_magg(self, agg_level: str, j_agg: json):
-        """
-            get_agg_magg
-        """
-        # get aggregation values in measures
-        m_agg_j = {}
-        if j_agg != {}:
-            for a_j_agg in j_agg:
-                if a_j_agg.__contains__('level') and a_j_agg['level'] == agg_level:
-                    m_agg_j = a_j_agg
-                    break
-        return m_agg_j
 
     def get_json_key(self, my_measure: json):
         """

@@ -105,13 +105,14 @@ class ProcessJsonDataAvg(ProcessJsonData):
 
         # we will save current value in obs, and propagate delta values to our aggregations
         # remove current values from our aggregations
+        tmp_sum_avg_old = tmp_duration_old = 0
         if obs_j.__contains__(target_key):  # in obs only _avg are stored
             tmp_value_old_avg = obs_j[target_key]
             tmp_duration_old = obs_meteor.data.duration
-            tmp_sum_avg = tmp_value_old_avg * tmp_duration
+            tmp_sum_avg_old = tmp_value_old_avg * tmp_duration
             if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsSum)):
                 tmp_sum_avg = tmp_value_old_avg
-            delta_values[target_key + '_sum_old'] = tmp_sum_avg
+            delta_values[target_key + '_sum_old'] = tmp_sum_avg_old
             delta_values[target_key + '_duration_old'] = tmp_duration_old
 
             # in case of replacement, invalidate the value for our min/max in aggregations
@@ -137,7 +138,7 @@ class ProcessJsonDataAvg(ProcessJsonData):
             obs_j[target_key + '_dir'] = my_value_dir
         if isOmm is True:
             # save for max/min processing and omm procesing
-            delta_values[target_key + '_omm_time'] = obs_stop_dat
+            delta_values[target_key + '_time'] = obs_stop_dat
 
     def getDeltaFromObservation(self, my_measure: json, obs_meteor: ObsMeteor, json_key: str, delta_values: json) -> json:
         """

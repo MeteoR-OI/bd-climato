@@ -84,7 +84,6 @@ class CalcObs(AllCalculus):
                 # load duration and stop_dat if not already loaded
                 if obs_meteor.data.duration == 0:
                     obs_meteor.data.duration = json_file_data['data'][measure_idx]['current']['duration']
-                    obs_meteor.data.agg_start_dat = calcAggDate('H', obs_meteor.data.stop_dat, True)
 
                 delta_values = {"maxminFix": [], "duration": m_duration}
 

@@ -98,31 +98,27 @@ def calcAggDate(niveau_agg: AggLevel, start_dt_utc: datetime, factor: float = 0,
         return fixUtcDate(datetime.datetime(start_dt_utc.year, start_dt_utc.month, start_dt_utc.day, start_dt_utc.hour, 0, 0, 0, datetime.timezone.utc) + delta_dt)
 
     if niveau_agg == "D":
+        delta_dt = datetime.timedelta(minutes=int(60 * factor))
         if is_measure_date and start_dt_utc.minute == 0 and start_dt_utc.second == 0:
             start_dt_utc = start_dt_utc - datetime.timedelta(hours=1)
-        if int(factor) == 1:
-            return fixUtcDate(datetime.datetime(start_dt_utc.year, start_dt_utc.month, start_dt_utc.day, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(days=1))
-        if int(factor) == -1:
-            return fixUtcDate(datetime.datetime(start_dt_utc.year, start_dt_utc.month, start_dt_utc.day, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(days=-1))
-        return fixUtcDate(datetime.datetime(start_dt_utc.year, start_dt_utc.month, start_dt_utc.day, 0, 0, 0, 0, datetime.timezone.utc) + datetime.timedelta(hours=int(24 * factor)))
-
+        if delta_dt != 0:
+            start_dt_utc = start_dt_utc + delta_dt
+        return fixUtcDate(datetime.datetime(start_dt_utc.year, start_dt_utc.month, start_dt_utc.day, 0, 0, 0, 0, datetime.timezone.utc))
     elif niveau_agg == "M":
+        delta_dt = datetime.timedelta(minutes=int(60 * factor))
         if is_measure_date and start_dt_utc.minute == 0 and start_dt_utc.second == 0:
             start_dt_utc = start_dt_utc - datetime.timedelta(hours=1)
-        if int(factor) == 1:
-            return fixUtcDate(datetime.datetime(start_dt_utc.year, start_dt_utc.month, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(months=1))
-        if int(factor) == -1:
-            return fixUtcDate(datetime.datetime(start_dt_utc.year, start_dt_utc.month, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(months=-1))
-        return fixUtcDate(datetime.datetime(start_dt_utc.year, start_dt_utc.month, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(days=int(30.5 * factor)))
+        if delta_dt != 0:
+            start_dt_utc = start_dt_utc + delta_dt
+        return fixUtcDate(datetime.datetime(start_dt_utc.year, start_dt_utc.month, 1, 0, 0, 0, 0, datetime.timezone.utc))
 
     elif niveau_agg == "Y":
+        delta_dt = datetime.timedelta(minutes=int(60 * factor))
         if is_measure_date and start_dt_utc.minute == 0 and start_dt_utc.second == 0:
             start_dt_utc = start_dt_utc - datetime.timedelta(hours=1)
-        if int(factor) == 1:
-            return fixUtcDate(datetime.datetime(start_dt_utc.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(years=1))
-        if int(factor) == -1:
-            return fixUtcDate(datetime.datetime(start_dt_utc.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(years=-1))
-        return fixUtcDate(datetime.datetime(start_dt_utc.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc) + relativedelta(months=int(12 * factor)))
+        if delta_dt != 0:
+            start_dt_utc = start_dt_utc + delta_dt
+        return fixUtcDate(datetime.datetime(start_dt_utc.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc))
 
     elif niveau_agg == "A":
         return fixUtcDate(datetime.datetime(1900, 1, 1, 0, 0, 0, 0, datetime.timezone.utc))
