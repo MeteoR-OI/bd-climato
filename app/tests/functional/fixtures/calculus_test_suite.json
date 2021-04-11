@@ -143,7 +143,7 @@
                 ],
                 "results": [
                     {"t": "O", "idx":1, "out_temp": 10},
-                    {"t": "H", "dat": "2021-02-11T14:00:00", "out_temp_omm_sum": 600},
+                    {"t": "H", "dat": "2021-02-11T13:00:00", "out_temp_omm_sum": 600},
                     {"t": "D", "dat": "2021-02-11T00:00:00", "out_temp_omm_min": 10, "out_temp_omm_max": 10}
                 ]
             },{ "name": "11_wind_inst_do_not_use_avg",
