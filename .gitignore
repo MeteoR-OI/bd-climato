@@ -6,6 +6,7 @@
 db.sqlite3
 db.sqlite3-journal
 Clim_MeteoR/settings.py
+app/tests/functional/settings.py
 static/**/*.png
 data/**/*.csv
 *.pyc
