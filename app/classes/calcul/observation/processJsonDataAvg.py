@@ -64,7 +64,8 @@ class ProcessJsonDataAvg(ProcessJsonData):
             if data_src.__contains__(src_key + '_avg') and (measure_type & 1) == 1:
                 my_value_avg = my_measure['dataType'](data_src[src_key + '_avg'])
             if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)) and data_src.__contains__(src_key + '_dir'):
-                my_value_dir = data_src[src_key + '_dir']
+                if data_src[src_key + '_dir'] != 'n/a':
+                    my_value_dir = data_src[src_key + '_dir']
         else:
             # load the value from exclusion
             data_src = exclusion
@@ -75,7 +76,8 @@ class ProcessJsonDataAvg(ProcessJsonData):
             if my_value_avg == 'null' or my_value_instant == 'null':
                 return
             if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)) and exclusion.__contains__(src_key + '_dir'):
-                my_value_dir = exclusion[src_key + '_dir']
+                if exclusion[src_key + '_dir'] != 'n/a':
+                    my_value_dir = exclusion[src_key + '_dir']
 
         # init value instantanee et avg
         if my_value_avg is None:

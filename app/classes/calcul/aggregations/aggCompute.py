@@ -105,21 +105,21 @@ class AggCompute():
                     current_maxmin = my_measure['dataType'](delta_values[json_key])
                     current_maxmin_time = m_stop_date
                     if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                        if delta_values.__contains__(json_key + '_dir') is True:
+                        if delta_values.__contains__(json_key + maxmin_suffix + '_dir') is True and delta_values[json_key + maxmin_suffix + '_dir'] != 'n/a':
                             current_maxmin_dir = int(delta_values[json_key + maxmin_suffix + '_dir'])
 
                 if delta_values.__contains__(json_key + maxmin_suffix) is True:
                     current_maxmin = my_measure['dataType'](delta_values[json_key + maxmin_suffix])
                     current_maxmin_time = delta_values[json_key + maxmin_suffix + '_time']
                     if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                        if m_agg_j.__contains__(json_key + maxmin_suffix + '_dir') is True:
+                        if m_agg_j.__contains__(json_key + maxmin_suffix + '_dir') is True and delta_values[json_key + maxmin_suffix + '_dir'] != 'n/a':
                             current_maxmin_dir = int(delta_values[json_key + maxmin_suffix + '_dir'])
 
                 if m_agg_j.__contains__(json_key + maxmin_suffix):
                     current_maxmin = my_measure['dataType'](m_agg_j[json_key + maxmin_suffix])
                     current_maxmin_time = m_agg_j[json_key + maxmin_suffix + '_time']
                     if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                        if m_agg_j.__contains__(json_key + maxmin_suffix + '_dir') is True:
+                        if m_agg_j.__contains__(json_key + maxmin_suffix + '_dir') is True and m_agg_j[json_key + maxmin_suffix + '_dir'] != 'n/a':
                             current_maxmin_dir = int(m_agg_j[json_key + maxmin_suffix + '_dir'])
 
                 if current_maxmin is None:

@@ -98,7 +98,7 @@ class ProcessJsonData():
                     delta_values[target_key + maxmin_suffix + '_time'] = maxmin_time
                     if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)) and maxmin_suffix == '_max':
                         """ save Wind_max_dir """
-                        if data_src.__contains__(src_key + maxmin_suffix + '_dir') is True:
+                        if data_src.__contains__(src_key + maxmin_suffix + '_dir') is True and data_src[src_key + maxmin_suffix + '_dir'] != 'n/a':
                             my_wind_dir = int(data_src[src_key + maxmin_suffix + '_dir'])
                             obs_j[target_key + maxmin_suffix + '_dir'] = my_wind_dir
                             delta_values[target_key + maxmin_suffix + '_dir'] = my_wind_dir
