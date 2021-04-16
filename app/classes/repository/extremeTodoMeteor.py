@@ -1,4 +1,4 @@
-from app.models import Extreme_todo
+from app.models import ExtremeTodo, TmpExtremeTodo
 import datetime
 import pytest
 import logging
@@ -6,7 +6,7 @@ import logging
 
 @pytest.fixture(autouse=True)
 def enable_db_access_for_all_tests(db):
-    logging.info('fixture Agg_todoMeteor::enable_db_access_for_all_tests called')
+    logging.info('fixture ExtremeTodoMeteor::enable_db_access_for_all_tests called')
     pass
 
 
@@ -18,9 +18,12 @@ class ExtremeTodoMeteor():
     """
 
     def __init__(self, poste_id: int, agg_niveau: str, start_dat: datetime, invalid_type: str):
-        """Init a new Agg_todoMeteor object"""
+        """Init a new ExtremeTodoMeteor object"""
 
-        self.data = Extreme_todo(poste_id_id=poste_id, level=agg_niveau, start_dat=start_dat, invalid_type=invalid_type, j_invalid={})
+        if agg_niveau.__len__() > 1:
+            self.data = TmpExtremeTodo(poste_id_id=poste_id, level=agg_niveau, start_dat=start_dat, invalid_type=invalid_type, j_invalid={})
+        else:
+            self.data = ExtremeTodo(poste_id_id=poste_id, level=agg_niveau, start_dat=start_dat, invalid_type=invalid_type, j_invalid={})
 
     def save(self):
         """ save or delete our ExtremeTodo """
@@ -29,4 +32,7 @@ class ExtremeTodoMeteor():
 
     def __str__(self):
         """print myself"""
-        return "Extreme_todo id: " + str(self.id) + ", level: " + self.level + ", start_dat: " + str(self.start_dat) + ", type: " + str.invalid_type
+
+        if self.level.__len__() > 1:
+            return "TmpExtremeTodo id: " + str(self.id) + ", level: " + self.level + ", start_dat: " + str(self.start_dat) + ", type: " + str.invalid_type
+        return "ExtremeTodo id: " + str(self.id) + ", level: " + self.level + ", start_dat: " + str(self.start_dat) + ", type: " + str.invalid_type

@@ -9,7 +9,7 @@ class SvcAggreg(WorkerRoot):
         Service for Aggregation Computations
     """
 
-    def __init__(self):
+    def __init__(self, is_tmp: bool = None):
         # call parent __init__
         super(SvcAggreg, self).__init__(str(SvcAggreg), CalcAggreg().ComputeAggreg)
 

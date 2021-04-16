@@ -1,5 +1,5 @@
 # do not use db object, but xxxMeteor objects
-from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, Exclusion, TypeInstrument   #
+from app.models import Poste, Observation, AggHour, AggDay, AggMonth, AggYear, AggAll, Exclusion, TypeInstrument   #
 import datetime
 from dateutil.relativedelta import relativedelta
 from app.classes.repository.obsMeteor import ObsMeteor

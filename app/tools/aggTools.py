@@ -1,8 +1,15 @@
-from app.tools.climConstant import AggLevel
 import json
 import datetime
 import dateutil.parser
-from dateutil.relativedelta import relativedelta
+
+
+def getAggLevels(is_tmp: bool = None):
+    """ return aggregation levels for our computation """
+    if is_tmp is None:
+        raise Exception('getAggLevel', 'is_tmp not given')
+    if is_tmp is False:
+        return ['H', 'D', 'M', 'Y', 'A']
+    return['HT', 'DT', 'MT', 'YT', 'AT']
 
 
 def convertRelativeHour(mesure_dt: datetime, hour_deca: int):
@@ -46,21 +53,21 @@ def getRightAggregation(agg_niveau: str, start_dt_utc: datetime, hour_deca: int,
 
 def getAggDuration(niveau_agg: str) -> int:
     """get the aggregation (in sec) depending on the level"""
-    if niveau_agg == "H":
+    if niveau_agg == "H" or niveau_agg == "HT":
         return 60
-    elif niveau_agg == "D":
+    elif niveau_agg == "D" or niveau_agg == "DT":
         return 1440
-    elif niveau_agg == "M":
+    elif niveau_agg == "M" or niveau_agg == "MT":
         return 43920   # int(30.5 * 24 * 60)
-    elif niveau_agg == "Y":
+    elif niveau_agg == "Y" or niveau_agg == "YT":
         return 525960    # int(365.25 * 24 * 60)
-    elif niveau_agg == "A":
+    elif niveau_agg == "A" or niveau_agg == "AT":
         raise Exception("get_gg_duration", "global has no duration")
     else:
         raise Exception("get_agg_duration", "wrong niveau_agg: " + niveau_agg)
 
 
-def calcAggDateNextLevel(niveau_agg: AggLevel, start_dt_utc: datetime, factor: float = 0, is_measure_date: bool = False) -> datetime:
+def calcAggDateNextLevel(niveau_agg: str, start_dt_utc: datetime, factor: float = 0, is_measure_date: bool = False) -> datetime:
     """
         Return the aggregation date of the next level, None when it's done
     """
@@ -72,6 +79,14 @@ def calcAggDateNextLevel(niveau_agg: AggLevel, start_dt_utc: datetime, factor: f
         next_niveau = 'Y'
     elif niveau_agg == 'Y':
         next_niveau = 'A'
+    elif niveau_agg == 'HT':
+        next_niveau = 'DT'
+    elif niveau_agg == 'DT':
+        next_niveau = 'MT'
+    elif niveau_agg == 'MT':
+        next_niveau = 'YT'
+    elif niveau_agg == 'YT':
+        next_niveau = 'AT'
     else:
         return None
     return calcAggDate(next_niveau, start_dt_utc, factor, is_measure_date)
@@ -82,13 +97,13 @@ def fixUtcDate(my_date: datetime) -> datetime:
     return dateutil.parser.parse(tmp_dt1)
 
 
-def calcAggDate(niveau_agg: AggLevel, start_dt_utc: datetime, factor: float = 0, is_measure_date: bool = False) -> datetime:
+def calcAggDate(niveau_agg: str, start_dt_utc: datetime, factor: float = 0, is_measure_date: bool = False) -> datetime:
     """
         calc_agg_date
 
         returns the start of the datetime of the aggregation level
     """
-    if niveau_agg == "H":
+    if niveau_agg == "H" or niveau_agg == 'HT':
         # if is_measure_date is True:
         #     delta_dt = datetime.timedelta(minutes=int(60 * (factor + ComputationParam.AddHourToMeasureInAggHour)))
         # else:
@@ -97,14 +112,14 @@ def calcAggDate(niveau_agg: AggLevel, start_dt_utc: datetime, factor: float = 0,
             start_dt_utc = start_dt_utc - datetime.timedelta(hours=1)
         return fixUtcDate(datetime.datetime(start_dt_utc.year, start_dt_utc.month, start_dt_utc.day, start_dt_utc.hour, 0, 0, 0, datetime.timezone.utc) + delta_dt)
 
-    if niveau_agg == "D":
+    if niveau_agg == "D" or niveau_agg == 'DT':
         delta_dt = datetime.timedelta(minutes=int(60 * factor))
         if is_measure_date and start_dt_utc.minute == 0 and start_dt_utc.second == 0:
             start_dt_utc = start_dt_utc - datetime.timedelta(hours=1)
         if delta_dt != 0:
             start_dt_utc = start_dt_utc + delta_dt
         return fixUtcDate(datetime.datetime(start_dt_utc.year, start_dt_utc.month, start_dt_utc.day, 0, 0, 0, 0, datetime.timezone.utc))
-    elif niveau_agg == "M":
+    elif niveau_agg == "M" or niveau_agg == 'MT':
         delta_dt = datetime.timedelta(minutes=int(60 * factor))
         if is_measure_date and start_dt_utc.minute == 0 and start_dt_utc.second == 0:
             start_dt_utc = start_dt_utc - datetime.timedelta(hours=1)
@@ -112,7 +127,7 @@ def calcAggDate(niveau_agg: AggLevel, start_dt_utc: datetime, factor: float = 0,
             start_dt_utc = start_dt_utc + delta_dt
         return fixUtcDate(datetime.datetime(start_dt_utc.year, start_dt_utc.month, 1, 0, 0, 0, 0, datetime.timezone.utc))
 
-    elif niveau_agg == "Y":
+    elif niveau_agg == "Y" or niveau_agg == 'YT':
         delta_dt = datetime.timedelta(minutes=int(60 * factor))
         if is_measure_date and start_dt_utc.minute == 0 and start_dt_utc.second == 0:
             start_dt_utc = start_dt_utc - datetime.timedelta(hours=1)
@@ -120,7 +135,7 @@ def calcAggDate(niveau_agg: AggLevel, start_dt_utc: datetime, factor: float = 0,
             start_dt_utc = start_dt_utc + delta_dt
         return fixUtcDate(datetime.datetime(start_dt_utc.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc))
 
-    elif niveau_agg == "A":
+    elif niveau_agg == "A" or niveau_agg == 'AT':
         return fixUtcDate(datetime.datetime(1900, 1, 1, 0, 0, 0, 0, datetime.timezone.utc))
 
     else:

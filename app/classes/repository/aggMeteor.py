@@ -1,5 +1,5 @@
-from app.models import Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global   #
-from app.tools.climConstant import AggLevel
+from app.models import AggHour, AggDay, AggMonth, AggYear, AggAll   #
+from app.models import TmpAggHour, TmpAggDay, TmpAggMonth, TmpAggYear, TmpAggAll   #
 from app.tools.aggTools import calcAggDate
 import datetime
 import pytest
@@ -24,7 +24,7 @@ class AggMeteor():
 
     """
 
-    def __init__(self, poste_id: int, agg_niveau: AggLevel, start_dt_agg_utc: datetime, is_measure_date: bool = False):
+    def __init__(self, poste_id: int, agg_niveau: str, start_dt_agg_utc: datetime, is_measure_date: bool = False):
         """
             Init a new AggMeteor object
 
@@ -55,15 +55,25 @@ class AggMeteor():
     def getAggObject(self, niveau_agg: str):
         """get the aggregation depending on the level"""
         if niveau_agg == "H":
-            return Agg_hour
+            return AggHour
         elif niveau_agg == "D":
-            return Agg_day
+            return AggDay
         elif niveau_agg == "M":
-            return Agg_month
+            return AggMonth
         elif niveau_agg == "Y":
-            return Agg_year
+            return AggYear
         elif niveau_agg == "A":
-            return Agg_global
+            return AggAll
+        elif niveau_agg == "HT":
+            return TmpAggHour
+        elif niveau_agg == "DT":
+            return TmpAggDay
+        elif niveau_agg == "MT":
+            return TmpAggMonth
+        elif niveau_agg == "YT":
+            return TmpAggYear
+        elif niveau_agg == "AT":
+            return TmpAggAll
         else:
             raise Exception("get_agg_object", "wrong niveau_agg: " + niveau_agg)
 
@@ -71,7 +81,12 @@ class AggMeteor():
         # return count of aggregations
         agg_obj = self.getAggObject(niveau_agg)
         if poste_id is None:
-            return agg_obj.objects.filter(start_dat__contains=start_dat_mask).count()
+            if start_dat_mask == '':
+                return agg_obj.objects.count()
+            else:
+                return agg_obj.objects.filter(start_dat__contains=start_dat_mask).count()
+        if start_dat_mask == '':
+            return agg_obj.objects.filter(poste_id=poste_id).count()
         return agg_obj.objects.filter(poste_id=poste_id).filter(start_dat__contains=start_dat_mask).count()
 
     def __str__(self):

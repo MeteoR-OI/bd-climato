@@ -1,4 +1,3 @@
-from app.tools.climConstant import AggLevel
 import datetime
 import json
 import threading
@@ -7,7 +6,7 @@ from app.classes.repository.aggMeteor import AggMeteor
 from app.classes.repository.excluMeteor import ExcluMeteor
 from app.classes.repository.posteMeteor import PosteMeteor
 from app.classes.typeInstruments.allTtypes import AllTypeInstruments
-from app.tools.aggTools import calcAggDate
+from app.tools.aggTools import calcAggDate, getAggLevels
 
 
 class PosteMetier(PosteMeteor):
@@ -51,7 +50,7 @@ class PosteMetier(PosteMeteor):
     def getAllForAPoste(self, start_dat: datetime = datetime.datetime.now(datetime.timezone.utc)) -> json:
         return ExcluMeteor.getAllForAPoste(self.data.id, start_dat)
 
-    def aggregations(self, start_date_utc: datetime, is_measure_date: bool = False) -> json:
+    def aggregations(self, start_date_utc: datetime, is_measure_date: bool = False, is_tmp: bool = None) -> json:
         """
             get_agg
 
@@ -82,7 +81,7 @@ class PosteMetier(PosteMeteor):
         ret = []
         for a_needed_date in needed_dates:
             tmp_dt = a_needed_date
-            for agg_niveau in AggLevel:
+            for agg_niveau in getAggLevels(is_tmp):
                 # is_measure_date only used in agg_hour
                 tmp_dt = calcAggDate(agg_niveau, tmp_dt, 0, False)
                 already_loaded = False
@@ -91,12 +90,12 @@ class PosteMetier(PosteMeteor):
                         already_loaded = True
                         break
                 if already_loaded is False:
-                    ret.append(AggMeteor(self.data.id, agg_niveau, tmp_dt))
+                    ret.append(AggMeteor(self.data.id, agg_niveau, tmp_dt, False))
         return ret
 
-    def observation(self, my_stop_date_utc: datetime) -> ObsMeteor:
+    def observation(self, my_stop_date_utc: datetime, is_tmp: bool = None) -> ObsMeteor:
         """get or create an observation at a given datetime"""
-        return ObsMeteor(self.data.id, my_stop_date_utc)
+        return ObsMeteor(self.data.id, my_stop_date_utc, is_tmp)
 
     def __str__(self):
         """print myself"""

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from app.models import Poste, Observation, Agg_hour, Agg_day, Agg_month, Agg_year, Agg_global, TypeInstrument, Exclusion
+from app.models import Poste, Observation, AggHour, AggDay, AggMonth, AggYear, AggAll, TypeInstrument, Exclusion
 
 admin.site.register(TypeInstrument)
 
@@ -47,7 +47,7 @@ class ObservationAdmin(admin.ModelAdmin):
 admin.site.register(Observation, ObservationAdmin)
 
 
-class Agg_hourAdmin(admin.ModelAdmin):
+class AggHourAdmin(admin.ModelAdmin):
     fields = (
         ('poste_id'),
         ('start_dat'),
@@ -55,10 +55,11 @@ class Agg_hourAdmin(admin.ModelAdmin):
         ('j')
     )
 
-admin.site.register(Agg_hour, Agg_hourAdmin)
+
+admin.site.register(AggHour, AggHourAdmin)
 
 
-class Agg_dayAdmin(admin.ModelAdmin):
+class AggDayAdmin(admin.ModelAdmin):
     fields = (
         ('poste_id'),
         ('start_dat'),
@@ -66,10 +67,11 @@ class Agg_dayAdmin(admin.ModelAdmin):
         ('j')
     )
 
-admin.site.register(Agg_day, Agg_dayAdmin)
+
+admin.site.register(AggDay, AggDayAdmin)
 
 
-class Agg_monthAdmin(admin.ModelAdmin):
+class AggMonthAdmin(admin.ModelAdmin):
     fields = (
         ('poste_id'),
         ('start_dat'),
@@ -77,10 +79,11 @@ class Agg_monthAdmin(admin.ModelAdmin):
         ('j')
     )
 
-admin.site.register(Agg_month, Agg_monthAdmin)
+
+admin.site.register(AggMonth, AggMonthAdmin)
 
 
-class Agg_yearAdmin(admin.ModelAdmin):
+class AggYearAdmin(admin.ModelAdmin):
     fields = (
         ('poste_id'),
         ('start_dat'),
@@ -88,10 +91,11 @@ class Agg_yearAdmin(admin.ModelAdmin):
         ('j')
     )
 
-admin.site.register(Agg_year, Agg_yearAdmin)
+
+admin.site.register(AggYear, AggYearAdmin)
 
 
-class Agg_globalAdmin(admin.ModelAdmin):
+class AggAllAdmin(admin.ModelAdmin):
     fields = (
         ('poste_id'),
         ('start_dat'),
@@ -99,4 +103,5 @@ class Agg_globalAdmin(admin.ModelAdmin):
         ('j')
     )
 
-admin.site.register(Agg_global, Agg_globalAdmin)
+
+admin.site.register(AggAll, AggAllAdmin)
