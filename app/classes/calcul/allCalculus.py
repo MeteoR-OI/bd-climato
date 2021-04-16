@@ -1,4 +1,5 @@
-from app.models import Observation, AggHour, AggDay, AggMonth, AggYear, AggAll, AggTodo, ExtremeTodo, TmpObservation, TmpAggHour, TmpAggDay, TmpAggMonth, TmpAggYear, TmpAggAll, TmpAggTodo, TmpExtremeTodo
+from app.models import Observation, AggHour, AggDay, AggMonth, AggYear, AggAll, AggTodo, ExtremeTodo
+from app.models import TmpObservation, TmpAggHour, TmpAggDay, TmpAggMonth, TmpAggYear, TmpAggAll, TmpAggTodo, TmpExtremeTodo
 from app.classes.calcul.observation.processJsonDataAvg import ProcessJsonDataAvg
 from app.classes.calcul.observation.processJsonDataAvgOmm import ProcessJsonDataAvgOmm
 from app.classes.calcul.observation.processJsonDataRate import ProcessJsonDataRate

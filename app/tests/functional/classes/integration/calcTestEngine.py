@@ -60,7 +60,7 @@ class CalcTestEngine():
                 self.calc.delete_obs_agg(True)
 
                 if ((option & 1) == 1):
-                    self.calc_obs.loadJson([my_json], True, True)
+                    self.calc_obs.loadJson([my_json], True, is_tmp=True)
 
                 if ((option & 2) == 2):
                     self.calc_agg.ComputeAggreg(True)
@@ -102,7 +102,7 @@ class CalcTestEngine():
                         if a_result.__contains__('stop_dat_mask'):
                             stop_dat_mask = a_result['stop_dat_mask']
                         if a_result['t'] == 'O':
-                            my_count = my_row.count(pid, stop_dat_mask)
+                            my_count = my_row.count(pid, stop_dat_mask, True)
                         else:
                             my_count = my_row.count(a_result['t'], pid, stop_dat_mask)
                         assert my_count == a_result['count']
