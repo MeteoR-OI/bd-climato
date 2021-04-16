@@ -2,7 +2,6 @@ from app.classes.calcul.allCalculus import AllCalculus
 from app.classes.metier.posteMetier import PosteMetier
 from app.classes.repository.aggTodoMeteor import AggTodoMeteor
 from app.classes.typeInstruments.allTtypes import AllTypeInstruments
-from app.tools.aggTools import calcAggDate
 from app.tools.jsonPlus import JsonPlus
 from app.tools.jsonValidator import checkJson
 from django.db import transaction
@@ -14,7 +13,7 @@ class CalcObs(AllCalculus):
     """
         Control all the processing of a json data, with our Observation table
     """
-    def loadJson(self, json_file_data_array: json, trace_flag: bool = False, delete_flag: bool = False) -> json:
+    def loadJson(self, json_file_data_array: json, trace_flag: bool = False, delete_flag: bool = False, is_tmp: bool = None) -> json:
         """
             processJson
 
@@ -22,17 +21,17 @@ class CalcObs(AllCalculus):
         """
         if delete_flag:
             # delete is not part of the transaction
-            self.delete_obs_agg()
+            self.delete_obs_agg(is_tmp)
 
         try:
-            return self._loadJson_array_ttx(json_file_data_array, trace_flag)
+            return self._loadJson_array_ttx(json_file_data_array, trace_flag, is_tmp)
 
         except Exception as err:
             print("CalcObs::loadJson: Exception: " + str(err))
             raise err
 
     @transaction.atomic
-    def _loadJson_array_ttx(self, json_file_data_array: json, trace_flag: bool = False) -> json:
+    def _loadJson_array_ttx(self, json_file_data_array: json, trace_flag: bool = False, is_tmp: bool = None) -> json:
         debut_full_process = datetime.datetime.now()
         ret_data = []
         item_processed = 0
@@ -46,7 +45,7 @@ class CalcObs(AllCalculus):
         while idx < json_file_data_array.__len__():
             json_file_data = json_file_data_array[idx]
             item_processed += json_file_data['data'].__len__()
-            ret = self._loadJson(json_file_data, trace_flag)
+            ret = self._loadJson(json_file_data, trace_flag, is_tmp)
             if trace_flag is True:
                 ret_data.append({"item": idx, "ret": ret})
             idx += 1
@@ -58,7 +57,7 @@ class CalcObs(AllCalculus):
         })
         return ret_data
 
-    def _loadJson(self, json_file_data: json, trace_flag: bool = False) -> json:
+    def _loadJson(self, json_file_data: json, trace_flag: bool = False, is_tmp: bool = False) -> json:
         """
             processJson
 
@@ -77,7 +76,7 @@ class CalcObs(AllCalculus):
             poste_metier = PosteMetier(json_file_data['poste_id'], m_stop_date_agg_start_date)
             try:
                 poste_metier.lock()
-                obs_meteor = poste_metier.observation(m_stop_date_agg_start_date)
+                obs_meteor = poste_metier.observation(m_stop_date_agg_start_date, is_tmp)
                 if json_file_data['data'][measure_idx].__contains__('aggregations'):
                     obs_meteor.data.j_agg = json_file_data['data'][measure_idx]['aggregations']
 
@@ -101,7 +100,7 @@ class CalcObs(AllCalculus):
 
                 # save our new data
                 obs_meteor.save()
-                a_todo = AggTodoMeteor(obs_meteor.data.id)
+                a_todo = AggTodoMeteor(obs_meteor.data.id, is_tmp)
                 a_todo.data.j_dv.append(delta_values)
                 if measure_idx < json_file_data['data'].__len__() <= 1:
                     a_todo.data.priority = 0

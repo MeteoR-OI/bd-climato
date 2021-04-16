@@ -3,8 +3,7 @@ from app.classes.metier.posteMetier import PosteMetier
 from app.classes.repository.aggTodoMeteor import AggTodoMeteor
 from app.classes.typeInstruments.allTtypes import AllTypeInstruments
 from app.tools.refManager import RefManager
-from app.tools.climConstant import AggLevel
-from app.tools.aggTools import calcAggDate
+from app.tools.aggTools import calcAggDate, getAggLevels
 from django.db import transaction
 import json
 
@@ -16,7 +15,7 @@ class CalcAggreg(AllCalculus):
         Handle all the update of our aggregation, after a change in observation table
     """
 
-    def ComputeAggreg(self):
+    def ComputeAggreg(self, is_tmp: bool = False):
         """
             ComputeAggreg
 
@@ -25,18 +24,18 @@ class CalcAggreg(AllCalculus):
             send the delta values to all aggregations related to our measure
         """
         while True:
-            a_todo = AggTodoMeteor.popOne()
+            a_todo = AggTodoMeteor.popOne(is_tmp)
             if a_todo is None:
                 # no more data to update, return to sleep
                 return
             try:
-                self.__processTodo(a_todo)
+                self.__processTodo(a_todo, is_tmp)
             except Exception as exc:
                 # our transaction should ebe rolledback here
                 a_todo.ReportError(exc)
 
     @transaction.atomic
-    def __processTodo(self, a_todo):
+    def __processTodo(self, a_todo, is_tmp: bool = None):
         """
             __processTodo
 
@@ -55,13 +54,13 @@ class CalcAggreg(AllCalculus):
 
         try:
             poste_metier.lock()
-            aggregations = poste_metier.aggregations(m_stop_dat, True)
+            aggregations = poste_metier.aggregations(m_stop_dat, True, is_tmp)
             for delta_values in a_todo.data.j_dv:
                 # mark all aggregation as clean. only dirty aggregation will be saved
                 for an_agg in aggregations:
                     an_agg.dirty = False
 
-                for anAgg in AggLevel:
+                for anAgg in getAggLevels(is_tmp):
                     # adjust start date, depending on the aggregation level
 
                     # dv_next is the delta_values for next level

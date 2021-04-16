@@ -7,19 +7,6 @@ class ClimConstants(Constants):
     JSON_AGGREGATE = 'aggregate'
 
 
-class AggLevelConstant(Constants):
-    """ code agregation - non Sorted """
-    Hour = 'H'
-    Day = 'D'
-    Month = 'M'
-    Year = 'Y'
-    All = 'A'
-
-
-# sorted list of Aggregation levels
-AggLevel = ['H', 'D', 'M', 'Y', 'A']
-
-
 class MeasureProcessingBitMask(Constants):
     """ special measure processing"""
     Standard = 0

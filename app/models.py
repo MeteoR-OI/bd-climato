@@ -52,20 +52,6 @@ class DateJSONField(models.JSONField):
         # self.default = dict
         super(DateJSONField, self).__init__(*args, **kwargs)
 
-    # def get_prep_value(self, value):
-    #     ret = value
-    #     try:
-    #         if value is None or value == {}:
-    #             return {}
-    #         if value == []:
-    #             return []
-    #         ret = JsonPlus().serialize(value)
-    #     except Exception:
-    #         pass
-    #     finally:
-    #         print("DateJSONField..get_prep_value called for " + str(self.attname) + " with " + str(value) + " => " + str(ret))
-    #         return ret
-
     def from_db_value(self, value, expression, connection):
         ret = value
         try:
@@ -180,14 +166,34 @@ class Observation(models.Model):
     j_agg = DateJSONField(encoder=DjangoJSONEncoder, null=False)
 
     def __str__(self):
-        return "observation id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.stop_dat)
+        return "Observation id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.stop_dat)
 
     class Meta:
         db_table = "obs"
         unique_together = (("poste_id", "stop_dat"))
 
 
-class Agg_todo(models.Model):
+class TmpObservation(models.Model):
+    poste_id = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
+    agg_start_dat = DateCharField(null=False, max_length=20, default="1900-01-01T00:00:00", verbose_name="date agregation horaire utilisée")
+    stop_dat = DateCharField(null=False, max_length=20, verbose_name="stop date, date de la mesure")
+    duration = models.IntegerField(null=False, verbose_name="duration in minutes", default=0)
+
+    qa_modifications = models.IntegerField(null=False, default=0, verbose_name='qa_modifications')
+    qa_incidents = models.IntegerField(null=False, default=0, verbose_name='qa_incidents')
+    qa_check_done = models.BooleanField(null=False, default=False, verbose_name='qa_check_done')
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+    j_agg = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+
+    def __str__(self):
+        return "TmpObservation id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.stop_dat)
+
+    class Meta:
+        db_table = "tmp_obs"
+        unique_together = (("poste_id", "stop_dat"))
+
+
+class AggTodo(models.Model):
     obs_id = models.ForeignKey(null=False, to="Observation", on_delete=models.CASCADE)
     priority = models.IntegerField(null=True, default=9, verbose_name='priority, 0: one current-data, 9: multiple current-data')
     status = models.IntegerField(null=False, default=0, verbose_name='status, 0: wait, 9: error, 99: processed')
@@ -195,13 +201,27 @@ class Agg_todo(models.Model):
     j_error = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='error reporting')
 
     def __str__(self):
-        return "Agg_todo id: " + str(self.id) + ", obs: " + str(self.obs_id) + ", priority: " + str(self.priority)
+        return "AggTodo id: " + str(self.id) + ", obs: " + str(self.obs_id) + ", priority: " + str(self.priority)
 
     class Meta:
         db_table = "agg_todo"
 
 
-class Extreme_todo(models.Model):
+class TmpAggTodo(models.Model):
+    obs_id = models.ForeignKey(null=False, to="TmpObservation", on_delete=models.CASCADE)
+    priority = models.IntegerField(null=True, default=9, verbose_name='priority, 0: one current-data, 9: multiple current-data')
+    status = models.IntegerField(null=False, default=0, verbose_name='status, 0: wait, 9: error, 99: processed')
+    j_dv = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='default_values coming from obs processing')
+    j_error = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='error reporting')
+
+    def __str__(self):
+        return "Tmp_agg_todo id: " + str(self.id) + ", obs: " + str(self.obs_id) + ", priority: " + str(self.priority)
+
+    class Meta:
+        db_table = "tmp_agg_todo"
+
+
+class ExtremeTodo(models.Model):
     poste_id = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
     level = models.CharField(null=False, max_length=1, verbose_name="Aggregation level")
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date de l agregation'")
@@ -210,13 +230,28 @@ class Extreme_todo(models.Model):
     j_invalid = DateJSONField(encoder=DjangoJSONEncoder, null=False)
 
     def __str__(self):
-        return "Extreme_todo id: " + str(self.id) + ", level: " + self.level + ", start_dat: " + str(self.start_dat) + ", type: " + str.invalid_type
+        return "ExtremeTodo id: " + str(self.id) + ", level: " + self.level + ", start_dat: " + str(self.start_dat) + ", type: " + str.invalid_type
 
     class Meta:
         db_table = "extreme_todo"
 
 
-class Agg_hour(models.Model):
+class TmpExtremeTodo(models.Model):
+    poste_id = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
+    level = models.CharField(null=False, max_length=1, verbose_name="Aggregation level")
+    start_dat = DateCharField(null=False, max_length=20, verbose_name="start date de l agregation'")
+    invalid_type = models.CharField(null=False, max_length=3, verbose_name="Type Invalidation (max or min)")
+    status = models.IntegerField(null=False, default=0, verbose_name='status, 0: wait, 9: error, 99: processed')
+    j_invalid = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+
+    def __str__(self):
+        return "ExtremeTodo id: " + str(self.id) + ", level: " + self.level + ", start_dat: " + str(self.start_dat) + ", type: " + str.invalid_type
+
+    class Meta:
+        db_table = "tmp_extreme_todo"
+
+
+class AggHour(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
@@ -228,14 +263,14 @@ class Agg_hour(models.Model):
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
 
     def __str__(self):
-        return "agg_hour id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
+        return "AggHour id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
 
     class Meta:
         db_table = "agg_hour"
         unique_together = (("poste_id", "start_dat"))
 
 
-class Agg_day(models.Model):
+class TmpAggHour(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
@@ -247,14 +282,33 @@ class Agg_day(models.Model):
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
 
     def __str__(self):
-        return "agg_day id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
+        return "TmpAggHour id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
+
+    class Meta:
+        db_table = "tmp_agg_hour"
+        unique_together = (("poste_id", "start_dat"))
+
+
+class AggDay(models.Model):
+    poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
+    start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
+
+    duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
+    qa_modifications = models.IntegerField(null=False, default=0)
+    qa_incidents = models.IntegerField(null=False, default=0)
+    qa_check_done = models.BooleanField(null=False, default=False)
+
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+
+    def __str__(self):
+        return "AggDay id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
 
     class Meta:
         db_table = "agg_day"
         unique_together = (("poste_id", "start_dat"))
 
 
-class Agg_month(models.Model):
+class TmpAggDay(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
@@ -266,14 +320,33 @@ class Agg_month(models.Model):
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
 
     def __str__(self):
-        return "agg_month id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
+        return "TmpAggDay id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
+
+    class Meta:
+        db_table = "tmp_agg_day"
+        unique_together = (("poste_id", "start_dat"))
+
+
+class AggMonth(models.Model):
+    poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
+    start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
+
+    duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
+    qa_modifications = models.IntegerField(null=False, default=0)
+    qa_incidents = models.IntegerField(null=False, default=0)
+    qa_check_done = models.BooleanField(null=False, default=False)
+
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+
+    def __str__(self):
+        return "AggMonth id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
 
     class Meta:
         db_table = "agg_month"
         unique_together = (("poste_id", "start_dat"))
 
 
-class Agg_year(models.Model):
+class TmpAggMonth(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
@@ -285,14 +358,33 @@ class Agg_year(models.Model):
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
 
     def __str__(self):
-        return "agg_year id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
+        return "TmpAggMonth id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
+
+    class Meta:
+        db_table = "tmp_agg_month"
+        unique_together = (("poste_id", "start_dat"))
+
+
+class AggYear(models.Model):
+    poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
+    start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
+
+    duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
+    qa_modifications = models.IntegerField(null=False, default=0)
+    qa_incidents = models.IntegerField(null=False, default=0)
+    qa_check_done = models.BooleanField(null=False, default=False)
+
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+
+    def __str__(self):
+        return "AggYear id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
 
     class Meta:
         db_table = "agg_year"
         unique_together = (("poste_id", "start_dat"))
 
 
-class Agg_global(models.Model):
+class TmpAggYear(models.Model):
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
@@ -304,8 +396,46 @@ class Agg_global(models.Model):
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
 
     def __str__(self):
-        return "agg_global id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
+        return "TmpAggYear id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
 
     class Meta:
-        db_table = "agg_global"
+        db_table = "tmp_agg_year"
+        unique_together = (("poste_id", "start_dat"))
+
+
+class AggAll(models.Model):
+    poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
+    start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
+
+    duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
+    qa_modifications = models.IntegerField(null=False, default=0)
+    qa_incidents = models.IntegerField(null=False, default=0)
+    qa_check_done = models.BooleanField(null=False, default=False)
+
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+
+    def __str__(self):
+        return "AggAll id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
+
+    class Meta:
+        db_table = "agg_all"
+        unique_together = (("poste_id", "start_dat"))
+
+
+class TmpAggAll(models.Model):
+    poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
+    start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
+
+    duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
+    qa_modifications = models.IntegerField(null=False, default=0)
+    qa_incidents = models.IntegerField(null=False, default=0)
+    qa_check_done = models.BooleanField(null=False, default=False)
+
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+
+    def __str__(self):
+        return "TmpAggAll id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
+
+    class Meta:
+        db_table = "tmp_agg_all"
         unique_together = (("poste_id", "start_dat"))

@@ -57,19 +57,19 @@ class CalcTestEngine():
                 j_data = a_test['data']
                 my_json['data'] = j_data
                 # remove any existing data
-                self.calc.delete_obs_agg()
+                self.calc.delete_obs_agg(True)
 
                 if ((option & 1) == 1):
                     self.calc_obs.loadJson([my_json], True, True)
 
                 if ((option & 2) == 2):
-                    self.calc_agg.ComputeAggreg()
+                    self.calc_agg.ComputeAggreg(True)
 
                 error_msg = []
                 # load list of resultset to load
                 for a_result in a_test['results']:
                     b_compute_agg_date = False
-                    if a_result['t'] == "A":
+                    if a_result['t'] == "A" or a_result['t'] == "AT":
                         test_dat = "1900-12-31T00:00:00"
                     elif a_result.__contains__('dat'):
                         test_dat = a_result['dat']
@@ -82,7 +82,7 @@ class CalcTestEngine():
                         raise Exception('calTestEngine', 'wrong test JSON file')
 
                     if a_result["t"] == "O":
-                        my_row = ObsMeteor(pid, test_dat)
+                        my_row = ObsMeteor(pid, test_dat, True)
                     else:
                         # if idx is given, need to compute agregation date for the level
                         if b_compute_agg_date is True:
