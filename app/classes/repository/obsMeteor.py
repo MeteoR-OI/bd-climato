@@ -55,7 +55,7 @@ class ObsMeteor():
         """ save Poste and Exclusions """
         # we only save if there is some data
         if self.data.j != {} or self.data.j_agg != {}:
-            self.data.agg_start_dat = calcAggDate('H', self.data.stop_dat, 0, True)
+            # self.data.agg_start_dat = calcAggDate('H', self.data.stop_dat, 0, True)
             self.data.save()
 
     def count(self, poste_id: int = None, stop_dat_mask: str = '', is_tmp: bool = None) -> int:

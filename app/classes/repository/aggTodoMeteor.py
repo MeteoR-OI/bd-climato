@@ -21,7 +21,7 @@ class AggTodoMeteor():
         """Init a new AggTodoMeteor object"""
 
         myModelObj = self.getAggTodoObject(is_tmp)
-        self.isTemp = is_tmp
+        self.is_tmp = is_tmp
         if myModelObj.objects.filter(obs_id_id=obs_id).exists():
             self.data = myModelObj.objects.filter(obs_id=obs_id).first()
             self.exist_in_db = True
