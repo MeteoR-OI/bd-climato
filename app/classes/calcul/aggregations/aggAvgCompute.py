@@ -112,7 +112,7 @@ class AggAvgCompute(AggCompute):
             delKey(agg_j, json_key)
             delta_values[json_key + '_delete_me'] = True
         else:
-            if my_measure['avg'] is True:
+            if my_measure.__contains__('avg') is False or my_measure['avg'] is True:
                 agg_j[json_key + avg_suffix] = tmp_sum_new / tmp_duration_new
 
         # propagate to next level if no limitation on aggregation level

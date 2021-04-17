@@ -22,6 +22,7 @@ SET default_table_access_method = heap;
 
 COPY public.poste (id, meteor, meteofr, title, "owner", email, phone, "address", zip, city, country, latitude, longitude, start_dat, stop_dat, comment, fuseau, lock_calculus) FROM stdin;
 1	BBF015	MF	Bain Boeuf - MRU	Nicolas	nicolas@cuvillier.net	+230	CP B1	33701	BB	MRU	-20	-57	2021-02-09 10:42:18	2021-06-11 10:43:31	Hello	4	0
+2	MTG320	MF	REU	Nicolas	nicolas@cuvillier.net	+230	CP B1	33701	BB	MRU	-20	-57	2021-02-09 10:42:18	2021-06-11 10:43:31	Hello	4	0
 \.
 SELECT pg_catalog.setval('public.poste_id_seq', 1, true);
 

@@ -20,6 +20,6 @@ class SvcAggreg(WorkerRoot):
     @staticmethod
     def runMe():
         svc_agg_instance = SvcAggreg.GetInstance()
-        if svc_agg_instance.Isrunning() is False:
+        if svc_agg_instance.IsRunning() is False:
             svc_agg_instance.Start()
         svc_agg_instance.RunIt()
