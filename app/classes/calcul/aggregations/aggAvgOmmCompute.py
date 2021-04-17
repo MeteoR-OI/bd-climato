@@ -100,7 +100,7 @@ class AvgOmmCompute(AggCompute):
             agg_j[json_key + '_time'] = m_stop_date
             agg_j[json_key + '_sum'] = tmp_sum
             agg_j[json_key + '_duration'] = tmp_duration
-            if isFlagged(my_measure['special'], MeasureProcessingBitMask.NoAvgField) is False:
+            if my_measure.__contains__('avg') is False or my_measure['avg'] is True:
                 agg_j[json_key + '_avg'] = tmp_sum / tmp_duration
 
             # invalidate max/min if omm value is changed
@@ -134,7 +134,7 @@ class AvgOmmCompute(AggCompute):
                 delta_values[json_key + '_delete_me'] = True
             else:
                 # compute the new _avg
-                if isFlagged(my_measure['special'], MeasureProcessingBitMask.NoAvgField) is False:
+                if my_measure.__contains__('avg') is False or my_measure['avg'] is True:
                     agg_j[json_key + '_avg'] = tmp_sum_new / tmp_duration_new
 
         # propagate to next level if no limitation on aggregation level

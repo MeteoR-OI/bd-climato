@@ -30,9 +30,9 @@ from app.classes.repository.typeInstrumentMeteor import TypeInstrumentMeteor
 # special: special processing:
 #   Standard(0) : no specific processing
 #   MeasureIsSum(1) : Measure is a sum (no need to multiplu by duration)
+#                     in the json the value can be specified in [src_key] or [src_key + '_sum']
 #   MeasureIsWind(2) : Measure is wind (need to save the xxx_dir)
 #   OnlyAggregateInHour(4)
-#   NoAvgField(8) : Compute xx_sum and xx_duration but not xxx_avg
 #   MeasureIsOmm(16) : This flag is set by the app when agg == 'ommAvg', no need to use it
 
 
