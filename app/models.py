@@ -48,9 +48,23 @@ class DateJSONField(models.JSONField):
     # description = "JSON field, with date enabled fields"
 
     def __init__(self, *args, **kwargs):
-        # self.max_length = 64000
+        self.max_length = 64000
         # self.default = dict
         super(DateJSONField, self).__init__(*args, **kwargs)
+
+    # def get_prep_value(self, value):
+    #     ret = value
+    #     try:
+    #         if value is None or value == {}:
+    #             return {}
+    #         if value == []:
+    #             return []
+    #         ret = JsonPlus().serialize(value)
+    #     except Exception:
+    #         pass
+    #     finally:
+    #         # print("DateJSONField..from_db_value called for " + str(self.attname) + " with " + str(value) + " => " + str(ret))
+    #         return ret
 
     def from_db_value(self, value, expression, connection):
         ret = value
@@ -223,7 +237,7 @@ class TmpAggTodo(models.Model):
 
 class ExtremeTodo(models.Model):
     poste_id = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
-    level = models.CharField(null=False, max_length=1, verbose_name="Aggregation level")
+    level = models.CharField(null=False, max_length=2, verbose_name="Aggregation level")
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date de l agregation'")
     invalid_type = models.CharField(null=False, max_length=3, verbose_name="Type Invalidation (max or min)")
     status = models.IntegerField(null=False, default=0, verbose_name='status, 0: wait, 9: error, 99: processed')
@@ -238,7 +252,7 @@ class ExtremeTodo(models.Model):
 
 class TmpExtremeTodo(models.Model):
     poste_id = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
-    level = models.CharField(null=False, max_length=1, verbose_name="Aggregation level")
+    level = models.CharField(null=False, max_length=2, verbose_name="Aggregation level")
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date de l agregation'")
     invalid_type = models.CharField(null=False, max_length=3, verbose_name="Type Invalidation (max or min)")
     status = models.IntegerField(null=False, default=0, verbose_name='status, 0: wait, 9: error, 99: processed')
