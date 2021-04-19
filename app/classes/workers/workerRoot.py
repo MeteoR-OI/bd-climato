@@ -1,5 +1,6 @@
 import threading
 import time
+import datetime
 from app.tools.refManager import RefManager
 
 
@@ -11,8 +12,9 @@ class WorkerRoot:
     wrks_lock = threading.Lock()
     instances = {}
 
-    def __init__(self, name, fct):
+    def __init__(self, name, fct, frequency: int = 120):
         self.name = name
+        self.frequency = frequency
         self.ref_mgr = RefManager.GetInstance()
 
         # check globally that only one instance was created for the name
@@ -20,7 +22,7 @@ class WorkerRoot:
             raise Exception(name, 'Multiple instances called')
 
         # save a default kill frequency on a global space
-        self.ref_mgr.SetRefIfNotExist("worker_kill_frequency", 30)
+        self.ref_mgr.SetRefIfNotExist("worker_kill_frequency", 15)
 
         # event to notify when a thread is exited
         self.eventKill = threading.Event()
@@ -28,7 +30,6 @@ class WorkerRoot:
 
         # register and start our service
         self.__register(name, fct)
-        self.Start()
 
     @staticmethod
     def GetInstance(myClass):
@@ -81,7 +82,7 @@ class WorkerRoot:
             for a_worker in WorkerRoot.wkrs:
                 if a_worker['name'] == self.name:
                     if a_worker['run'] != thread_found:
-                        print(self.name + " has a wring status: " + str(a_worker['run']) + ' instead of ' + str(thread_found))
+                        print(self.name + " has a wrong status: " + str(a_worker['run']) + ' instead of ' + str(thread_found))
                         a_worker['run'] = thread_found
             return thread_found
         finally:
@@ -110,15 +111,23 @@ class WorkerRoot:
     def __runSvc(self, a_worker):
         # print("......monitor thread started")
         try:
+            used_fequency = self.frequency
+            check_exit = self.ref_mgr.GetRef("worker_kill_frequency")
+            # print(self.name + "svc running - ts: " + str(datetime.datetime.now()) + ", check_time_out: " + str(check_exit))
             while True:
                 try:
-                    evt = self.eventRun.wait(self.ref_mgr.GetRef("worker_kill_frequency"))
-                    if evt is False:
+                    # print(self.name + "event waiting - ts: " + str(datetime.datetime.now()) + ", freq: " + str(self.frequency) + ", used_freq: " + str(used_fequency))
+                    evt = self.eventRun.wait(check_exit)
+                    used_fequency -= check_exit
+                    # print(self.name + " event released  - ts: " + str(datetime.datetime.now()) + ", status: " + str(evt))
+                    if evt is False and used_fequency > 0:
                         # check the kill flag for ourself
                         if self.eventKill.isSet() is True:
                             return
                         continue
                     # we have something to process
+                    used_fequency = self.frequency
+                    # print(self.name + " func called  - ts: " + str(datetime.datetime.now()))
                     a_worker['fct']()
                 except Exception as exc:
                     print(exc)
