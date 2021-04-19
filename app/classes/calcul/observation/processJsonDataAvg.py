@@ -61,6 +61,8 @@ class ProcessJsonDataAvg(ProcessJsonData):
             data_src = json_file_data['data'][measure_idx]['current']
             if data_src.__contains__(src_key) and (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
                 my_value_instant = my_measure['dataType'](data_src[src_key])
+            if data_src.__contains__(src_key) and (measure_type & 2) == 2:
+                my_value_instant = my_measure['dataType'](data_src[src_key])
             if data_src.__contains__(src_key + '_avg') and (measure_type & 1) == 1:
                 my_value_avg = my_measure['dataType'](data_src[src_key + '_avg'])
             # get synonym [field]_sum for sum fields, if no [field] is given

@@ -205,13 +205,13 @@ class AggCompute():
     def add_new_maxmin_fix(self, json_key: str, maxmin_key: str, agg_deca: AggMeteor, delta_values: json):
         # calculus v1
         max_min_fix = {
-            "posteId": agg_deca.data.poste_id_id,
-            "startDat": agg_deca.data.start_dat,
+            "poste_id": agg_deca.data.poste_id_id,
+            "stop_dat": agg_deca.data.poste_id.stop_dat,
             "level": agg_deca.agg_niveau,
             "maxmin": maxmin_key,
             "key": json_key,
             "valeur": agg_deca.data.j[json_key + '_' + maxmin_key],
-            "dat": agg_deca.data.start_dat,
+            "start_dat": agg_deca.data.start_dat,
         }
         delta_values['maxminFix'].append(max_min_fix)
         # write an extreme_todo record

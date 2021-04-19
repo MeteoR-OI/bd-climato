@@ -78,7 +78,7 @@ class CalcObs(AllCalculus):
                 poste_metier.lock()
                 obs_meteor = poste_metier.observation(m_stop_date_agg_start_date, is_tmp)
                 if obs_meteor.data.id is not None and json_file_data['data'][measure_idx].__contains__('update_me') is False:
-                    print('_loadJson: skipping obs id: ' + obs_meteor.data.id + ' already loaded')
+                    print('_loadJson: skipping obs id: ' + str(obs_meteor.data.id) + ' already loaded')
                     continue
                 if json_file_data['data'][measure_idx].__contains__('aggregations'):
                     obs_meteor.data.j_agg = json_file_data['data'][measure_idx]['aggregations']
@@ -107,7 +107,8 @@ class CalcObs(AllCalculus):
                 a_todo.data.j_dv.append(delta_values)
                 if measure_idx < json_file_data['data'].__len__() <= 1:
                     a_todo.data.priority = 0
-                a_todo.save()
+                if obs_meteor.data.id is not None:
+                    a_todo.save()
 
                 j_trace = {}
 
@@ -120,13 +121,13 @@ class CalcObs(AllCalculus):
                     j_trace['stop_dat'] = json_file_data['data'][measure_idx]['stop_dat']
                     j_trace['obs data'] = JsonPlus().loads(JsonPlus().dumps(obs_meteor.data.j))
                     j_trace['obs aggregations'] = JsonPlus().loads(JsonPlus().dumps(obs_meteor.data.j_agg))
-                    j_trace['agg_todo dv'] = JsonPlus().loads(JsonPlus().dumps(a_todo.data.j_dv))
+                    j_trace['agg_todo dv'] = JsonPlus().loads(JsonPlus().dumps(a_todo.data.j_dv)) if not (a_todo.data.id is None) else '{}'
 
                 if j_trace != {}:
                     ret.append(j_trace)
 
-                measure_idx += 1
             finally:
+                measure_idx += 1
                 poste_metier.unlock()
 
         return ret

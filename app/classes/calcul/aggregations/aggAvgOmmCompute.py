@@ -87,7 +87,7 @@ class AvgOmmCompute(AggCompute):
             tmp_sum = tmp_avg * tmp_duration
 
         # specific omm processing
-        if agg_deca.agg_niveau == 'H':
+        if agg_deca.agg_niveau == 'H' or agg_deca.agg_niveau == 'HT':
             # we only store values a round hours
             if m_stop_date.minute > 0 or m_stop_date.second > 1:
                 return
