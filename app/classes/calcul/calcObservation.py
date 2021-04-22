@@ -78,7 +78,7 @@ class CalcObs(AllCalculus):
                 poste_metier.lock()
                 obs_meteor = poste_metier.observation(m_stop_date_agg_start_date, is_tmp)
                 if obs_meteor.data.id is not None and json_file_data['data'][measure_idx].__contains__('update_me') is False:
-                    print('_loadJson: skipping obs id: ' + str(obs_meteor.data.id) + ' already loaded')
+                    print('CalcObs: skipping obs id: ' + str(obs_meteor.data.id) + ' already loaded')
                     continue
                 if json_file_data['data'][measure_idx].__contains__('aggregations'):
                     obs_meteor.data.j_agg = json_file_data['data'][measure_idx]['aggregations']

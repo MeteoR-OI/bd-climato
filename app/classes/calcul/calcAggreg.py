@@ -6,6 +6,7 @@ from app.tools.refManager import RefManager
 from app.tools.aggTools import calcAggDate, getAggLevels
 from django.db import transaction
 import json
+import datetime
 
 
 class CalcAggreg(AllCalculus):
@@ -41,6 +42,7 @@ class CalcAggreg(AllCalculus):
 
             Process an agg_todo
         """
+        time_start = datetime.datetime.now()
         all_instr = AllTypeInstruments()
         if RefManager.GetInstance().GetRef("trace_flag") is None:
             trace_flag = False
@@ -107,7 +109,7 @@ class CalcAggreg(AllCalculus):
                         an_agg.save()
 
             # we're done
-            print("a_todo " + str(a_todo.data.id) + ' processed. on queue: ' + str(a_todo.count()))
+            print("a_todo " + str(a_todo.data.id) + ' processed in ' + str(datetime.datetime.now() - time_start) + ', still on queue: ' + str(a_todo.count()))
             a_todo.delete()
         finally:
             poste_metier.unlock()

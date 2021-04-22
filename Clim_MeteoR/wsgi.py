@@ -8,9 +8,14 @@ https://docs.djangoproject.com/en/2.0/howto/deployment/wsgi/
 """
 
 import os
+from app.classes.workers.svcAggreg import SvcAggreg
+from app.classes.workers.svcAutoLoad import SvcAutoLoad
 
 from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Clim_MeteoR.settings")
 
 application = get_wsgi_application()
+
+SvcAutoLoad.GetInstance().Start()
+SvcAggreg.GetInstance().Start()
