@@ -11,9 +11,13 @@ class WorkerRoot:
     wkrs = []
     wrks_lock = threading.Lock()
     instances = {}
+    all_syn = []
 
-    def __init__(self, name, fct, frequency: int = 120):
+    def __init__(self, name, fct, frequency: int = 120, synonym: dict = ['']):
         self.name = name
+        self.synonym = synonym
+        for a_syn in synonym:
+            WorkerRoot.all_syn.append({"s": a_syn, "svc": name})
         self.frequency = frequency
         self.ref_mgr = RefManager.GetInstance()
 
@@ -38,6 +42,11 @@ class WorkerRoot:
         if ref_mgr.GetRef('Svc' + str(myClass)) is None:
             ref_mgr.AddRef('Svc' + str(myClass), myClass())
         return ref_mgr.GetRef('Svc' + str(myClass))
+
+    @staticmethod
+    def GetSynonym():
+        # return the instance
+        return WorkerRoot.all_syn
 
     def RunIt(self):
         self.eventRun.set()
@@ -109,17 +118,17 @@ class WorkerRoot:
         WorkerRoot.wrks_lock.release()
 
     def __runSvc(self, a_worker):
-        # print("......monitor thread started")
+        print("......monitor thread started")
         try:
             used_fequency = self.frequency
             check_exit = self.ref_mgr.GetRef("worker_kill_frequency")
-            # print(self.name + "svc running - ts: " + str(datetime.datetime.now()) + ", check_time_out: " + str(check_exit))
+            print(self.name + "svc running - ts: " + str(datetime.datetime.now()) + ", check_time_out: " + str(check_exit))
             while True:
                 try:
-                    # print(self.name + "event waiting - ts: " + str(datetime.datetime.now()) + ", freq: " + str(self.frequency) + ", used_freq: " + str(used_fequency))
+                    print(self.name + "event waiting - ts: " + str(datetime.datetime.now()) + ", freq: " + str(self.frequency) + ", used_freq: " + str(used_fequency))
                     evt = self.eventRun.wait(check_exit)
                     used_fequency -= check_exit
-                    # print(self.name + " event released  - ts: " + str(datetime.datetime.now()) + ", status: " + str(evt))
+                    print(self.name + " event released  - ts: " + str(datetime.datetime.now()) + ", status: " + str(evt))
                     if evt is False and used_fequency > 0:
                         # check the kill flag for ourself
                         if self.eventKill.isSet() is True:

@@ -11,7 +11,7 @@ class SvcAggreg(WorkerRoot):
 
     def __init__(self, is_tmp: bool = None):
         # call parent __init__
-        super(SvcAggreg, self).__init__(str(SvcAggreg), CalcAggreg().ComputeAggreg, 120)
+        super(SvcAggreg, self).__init__(str(SvcAggreg), CalcAggreg().ComputeAggreg, 120, ['aggreg', 'agreg', 'agregation', 'aggregation'])
 
     @staticmethod
     def GetInstance(myClass: object = None):

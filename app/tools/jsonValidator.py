@@ -59,7 +59,7 @@ def checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
         for key in a_current.__iter__():
             if str(key).endswith('_max') or str(key).endswith('_min'):
                 if a_current.__contains__(key + '_time') is False:
-                    new_val[key + '_time'] =  j['data'][idx]['stop_dat']
+                    new_val[key + '_time'] = j['data'][idx]['stop_dat']
                     val_to_add.append(new_val)
             if str(key).endswith('_sum') and a_current.__contains(key[:-4] + '_duration') is False:
                 new_val[key[:-4] + '_duration'] = measure_duration

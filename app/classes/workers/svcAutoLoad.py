@@ -16,7 +16,7 @@ class SvcAutoLoad(WorkerRoot):
 
     def __init__(self, is_tmp: bool = None):
         # call parent __init__
-        super(SvcAutoLoad, self).__init__(str(SvcAutoLoad), self.CheckFiles, 60)
+        super(SvcAutoLoad, self).__init__(str(SvcAutoLoad), self.CheckFiles, 60, ['autoload', 'auto'])
 
     @staticmethod
     def GetInstance(myClass: object = None):
