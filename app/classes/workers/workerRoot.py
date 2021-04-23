@@ -12,12 +12,14 @@ class WorkerRoot:
     wrks_lock = threading.Lock()
     instances = {}
     all_syn = []
+    trace_flags = []
 
     def __init__(self, name, fct, frequency: int = 120, synonym: dict = ['']):
         self.name = name
         self.synonym = synonym
         for a_syn in synonym:
             WorkerRoot.all_syn.append({"s": a_syn, "svc": name})
+        WorkerRoot.trace_flags.append({"s": name, "trace_flag": False})
         self.frequency = frequency
         self.ref_mgr = RefManager.GetInstance()
 
@@ -48,6 +50,21 @@ class WorkerRoot:
         # return the instance
         return WorkerRoot.all_syn
 
+    def GetTraceFlag(name: str) -> bool:
+        all_trc = WorkerRoot.trace_flags
+        for a_trc in all_trc:
+            if a_trc['s'] == name:
+                return a_trc['trace_flag']
+        return None
+
+    def SetTraceFlag(name: str, trace_flag: bool):
+        all_trc = WorkerRoot.trace_flags
+        for a_trc in all_trc:
+            if a_trc['s'] == name:
+                a_trc['trace_flag'] = trace_flag
+                return
+        raise Exception('workerRoot::SetTraceFlag', 'service ' + name + ' not found')
+
     def RunIt(self):
         self.eventRun.set()
 
@@ -60,7 +77,8 @@ class WorkerRoot:
                         raise Exception('workers::Start', self.name + ' already running')
                     thread = threading.Thread(target=self.__runSvc, args=(a_worker,), daemon=True)
                     thread.setName(self.name)
-                    # print("thread " + name + " started")
+                    if self.GetTraceFlag(self.name) is True:
+                        print("thread " + self.name + " started")
                     thread.start()
                     # force the thread to start
                     time.sleep(1)
@@ -118,17 +136,22 @@ class WorkerRoot:
         WorkerRoot.wrks_lock.release()
 
     def __runSvc(self, a_worker):
-        print("......monitor thread started")
+        trace_flag = self.GetTraceFlag(self.name)
+        if trace_flag is True:
+            print("......monitor thread started")
         try:
             used_fequency = self.frequency
             check_exit = self.ref_mgr.GetRef("worker_kill_frequency")
-            print(self.name + "svc running - ts: " + str(datetime.datetime.now()) + ", check_time_out: " + str(check_exit))
+            if trace_flag is True:
+                print(self.name + "svc running - ts: " + str(datetime.datetime.now()) + ", check_time_out: " + str(check_exit))
             while True:
                 try:
-                    print(self.name + "event waiting - ts: " + str(datetime.datetime.now()) + ", freq: " + str(self.frequency) + ", used_freq: " + str(used_fequency))
+                    if trace_flag is True:
+                        print(self.name + "event waiting - ts: " + str(datetime.datetime.now()) + ", freq: " + str(self.frequency) + ", used_freq: " + str(used_fequency))
                     evt = self.eventRun.wait(check_exit)
                     used_fequency -= check_exit
-                    print(self.name + " event released  - ts: " + str(datetime.datetime.now()) + ", status: " + str(evt))
+                    if trace_flag is True:
+                        print(self.name + " event released  - ts: " + str(datetime.datetime.now()) + ", status: " + str(evt))
                     if evt is False and used_fequency > 0:
                         # check the kill flag for ourself
                         if self.eventKill.isSet() is True:
@@ -136,7 +159,8 @@ class WorkerRoot:
                         continue
                     # we have something to process
                     used_fequency = self.frequency
-                    # print(self.name + " func called  - ts: " + str(datetime.datetime.now()))
+                    if trace_flag is True:
+                        print(self.name + " func called  - ts: " + str(datetime.datetime.now()))
                     a_worker['fct']()
                 except Exception as exc:
                     print(exc)
