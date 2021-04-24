@@ -3,6 +3,7 @@ from app.views import views
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('svc', views.view_control_svc),
     path('poste/<int:poste_id>', views.view_poste, name='poste'),
     path('obs/<int:poste_id>', views.view_last_obs, name='poste'),
     path('hour/<int:poste_id>/<str:keys>/<str:start_dt>/<str:end_dt>', views.viewAggHour),

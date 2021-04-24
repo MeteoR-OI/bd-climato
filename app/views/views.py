@@ -7,11 +7,18 @@ from app.models import Poste, Observation
 from app.views.v_agg import viewAgg
 from app.views.v_poste import view_my_poste
 from app.views.v_calc import view_my_calc
+from app.views.v_rpcSrv import viewControlSvc
+from django.views.decorators.csrf import csrf_exempt
 
 
 # views well routed
 def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
+
+
+@csrf_exempt
+def view_control_svc(request):
+    return viewControlSvc(request)
 
 
 def viewAggHour(request, poste_id, keys: str = '*', start_dt: str = '1900-01-11 00:00:00+04', end_dt: str = '2100-12-31 23:59:00+04'):

@@ -16,6 +16,15 @@ class MeasureProcessingBitMask(Constants):
     MeasureIsOmm = 16
 
 
+class SvcRequestType(Constants):
+    Nope = 0
+    Start = 1
+    Stop = 2
+    Status = 4
+    List = 8
+    Run = 16
+
+
 class ComputationParam(Constants):
     # parameter for calculus module
     AddHourToMeasureInAggHour = 1

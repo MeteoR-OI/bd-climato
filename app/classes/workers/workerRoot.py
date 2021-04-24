@@ -16,9 +16,13 @@ class WorkerRoot:
 
     def __init__(self, name, fct, frequency: int = 120, synonym: dict = ['']):
         self.name = name
+        try:
+            self.display = str(name).replace("<class 'app.classes.workers.", "")
+            self.display = self.display.split('.')[0]
+        except Exception:
+            self.display = name
         self.synonym = synonym
-        for a_syn in synonym:
-            WorkerRoot.all_syn.append({"s": a_syn, "svc": name})
+        WorkerRoot.all_syn.append({"s": synonym, "svc": name, "name": self.display, "instance": self})
         WorkerRoot.trace_flags.append({"s": name, "trace_flag": False})
         self.frequency = frequency
         self.ref_mgr = RefManager.GetInstance()
@@ -50,20 +54,20 @@ class WorkerRoot:
         # return the instance
         return WorkerRoot.all_syn
 
-    def GetTraceFlag(name: str) -> bool:
+    def GetTraceFlag(self) -> bool:
         all_trc = WorkerRoot.trace_flags
         for a_trc in all_trc:
-            if a_trc['s'] == name:
+            if a_trc['s'] == self.name:
                 return a_trc['trace_flag']
         return None
 
-    def SetTraceFlag(name: str, trace_flag: bool):
+    def SetTraceFlag(self, trace_flag: bool):
         all_trc = WorkerRoot.trace_flags
         for a_trc in all_trc:
-            if a_trc['s'] == name:
+            if a_trc['s'] == self.name:
                 a_trc['trace_flag'] = trace_flag
                 return
-        raise Exception('workerRoot::SetTraceFlag', 'service ' + name + ' not found')
+        raise Exception('workerRoot::SetTraceFlag', 'service ' + self.name + ' not found')
 
     def RunIt(self):
         self.eventRun.set()
@@ -77,9 +81,10 @@ class WorkerRoot:
                         raise Exception('workers::Start', self.name + ' already running')
                     thread = threading.Thread(target=self.__runSvc, args=(a_worker,), daemon=True)
                     thread.setName(self.name)
-                    if self.GetTraceFlag(self.name) is True:
+                    if self.GetTraceFlag() is True:
                         print("thread " + self.name + " started")
                     thread.start()
+                    a_worker['run'] = True
                     # force the thread to start
                     time.sleep(1)
         finally:
@@ -94,7 +99,7 @@ class WorkerRoot:
                         raise Exception('workers::Stop', self.name + ' already stopped')
                     self.eventKill.set()
                     a_worker['run'] = False
-                    time.sleep(self.ref_mgr.GetRef("worker_kill_frequency"))
+                    # time.sleep(self.ref_mgr.GetRef("worker_kill_frequency"))
         finally:
             WorkerRoot.wrks_lock.release()
 
@@ -136,7 +141,7 @@ class WorkerRoot:
         WorkerRoot.wrks_lock.release()
 
     def __runSvc(self, a_worker):
-        trace_flag = self.GetTraceFlag(self.name)
+        trace_flag = self.GetTraceFlag()
         if trace_flag is True:
             print("......monitor thread started")
         try:
@@ -146,9 +151,11 @@ class WorkerRoot:
                 print(self.name + "svc running - ts: " + str(datetime.datetime.now()) + ", check_time_out: " + str(check_exit))
             while True:
                 try:
+                    trace_flag = self.GetTraceFlag()
                     if trace_flag is True:
                         print(self.name + "event waiting - ts: " + str(datetime.datetime.now()) + ", freq: " + str(self.frequency) + ", used_freq: " + str(used_fequency))
                     evt = self.eventRun.wait(check_exit)
+                    trace_flag = self.GetTraceFlag()
                     used_fequency -= check_exit
                     if trace_flag is True:
                         print(self.name + " event released  - ts: " + str(datetime.datetime.now()) + ", status: " + str(evt))
@@ -157,8 +164,10 @@ class WorkerRoot:
                         if self.eventKill.isSet() is True:
                             return
                         continue
+                    self.eventRun.clear()
                     # we have something to process
                     used_fequency = self.frequency
+                    trace_flag = self.GetTraceFlag()
                     if trace_flag is True:
                         print(self.name + " func called  - ts: " + str(datetime.datetime.now()))
                     a_worker['fct']()
