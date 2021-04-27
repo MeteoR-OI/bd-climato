@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'gestion',
     'django_extensions',
-    "django_cron"
+    'django_json_widget',
+    'django_cron'
 ]
 
 CRON_CLASSES = [

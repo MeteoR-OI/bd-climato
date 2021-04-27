@@ -1,6 +1,9 @@
 from django.contrib import admin
+from django.db import models
 
-from app.models import Poste, Observation, AggHour, AggDay, AggMonth, AggYear, AggAll, TypeInstrument, Exclusion
+from app.models import DateJSONField, Poste, Observation, AggHour, AggDay, AggMonth, AggYear, AggAll, TypeInstrument, Exclusion
+
+from django_json_widget.widgets import JSONEditorWidget
 
 admin.site.register(TypeInstrument)
 
@@ -35,9 +38,13 @@ class ObservationAdmin(admin.ModelAdmin):
     # ('uv_indice', 'radiation', 'etp'),
     # ('in_temp', 'in_humidity'),
     # ('rx', 'voltage')
+    formfield_overrides = {
+        DateJSONField: {'widget': JSONEditorWidget},
+    }
+
     fields = (
         ('poste_id'),
-        ('start_dat', 'stop_dat'),
+        ('stop_dat'),
         ('duration'),
         ('j'),
         ('j_agg')
@@ -48,6 +55,11 @@ admin.site.register(Observation, ObservationAdmin)
 
 
 class AggHourAdmin(admin.ModelAdmin):
+
+    formfield_overrides = {
+        DateJSONField: {'widget': JSONEditorWidget},
+    }
+
     fields = (
         ('poste_id'),
         ('start_dat'),
@@ -60,6 +72,11 @@ admin.site.register(AggHour, AggHourAdmin)
 
 
 class AggDayAdmin(admin.ModelAdmin):
+
+    formfield_overrides = {
+        DateJSONField: {'widget': JSONEditorWidget},
+    }
+
     fields = (
         ('poste_id'),
         ('start_dat'),
@@ -72,6 +89,11 @@ admin.site.register(AggDay, AggDayAdmin)
 
 
 class AggMonthAdmin(admin.ModelAdmin):
+
+    formfield_overrides = {
+        DateJSONField: {'widget': JSONEditorWidget},
+    }
+
     fields = (
         ('poste_id'),
         ('start_dat'),
@@ -84,6 +106,11 @@ admin.site.register(AggMonth, AggMonthAdmin)
 
 
 class AggYearAdmin(admin.ModelAdmin):
+
+    formfield_overrides = {
+        DateJSONField: {'widget': JSONEditorWidget},
+    }
+
     fields = (
         ('poste_id'),
         ('start_dat'),
@@ -96,6 +123,10 @@ admin.site.register(AggYear, AggYearAdmin)
 
 
 class AggAllAdmin(admin.ModelAdmin):
+    formfield_overrides = {
+        DateJSONField: {'widget': JSONEditorWidget},
+    }
+
     fields = (
         ('poste_id'),
         ('start_dat'),
