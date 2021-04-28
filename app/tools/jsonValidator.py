@@ -65,6 +65,9 @@ def checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
                 new_val[key[:-4] + '_duration'] = measure_duration
                 val_to_add.append(new_val)
 
+        if j['data'][idx]['current'].__contains__('aggregations'):
+            return 'aggregations is under the key current, should be at same level'
+
         if j['data'][idx].__contains__('aggregations'):
             all_aggreg = j['data'][idx]['aggregations']
             idx2 = 0

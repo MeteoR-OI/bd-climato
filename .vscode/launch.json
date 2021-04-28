@@ -32,7 +32,7 @@
             "args": [
                 // "${fileBasenameNoExtension}"
                 "loadJson",
-                "nic_day.json",
+                "dev.agg.json",
                 "--tmp"
             ]
         },

@@ -87,12 +87,12 @@ def analyseAggreg(poste_id: int, from_dt: datetime, to_dt: datetime, disp_detail
                     tmp_agg_done = True
 
                 if tmp_agg_done is True or str(my_agg.start_dat) < str(my_tmp_agg.start_dat):
-                    display_missing_left(my_agg, disp_details)
+                    display_missing_tmp_agg(my_agg, disp_details)
                     idx += 1
                     continue
 
                 if agg_done is True or str(my_agg.start_dat) > str(my_tmp_agg.start_dat):
-                    display_missing_right(my_tmp_agg, disp_details)
+                    display_missing_agg(my_tmp_agg, disp_details)
                     idx_tmp += 1
                     continue
 
@@ -125,8 +125,7 @@ def analyseAggreg(poste_id: int, from_dt: datetime, to_dt: datetime, disp_detail
                         cols.append(str(v))
                         data_output.append(cols)
                 if data_output.__len__() > 0:
-                    # display('')
-                    display_line('start_dat', my_tmp_agg.start_dat, my_agg.start_dat)
+                    display_hdr(my_tmp_agg.start_dat, my_agg.start_dat)
                     # data_sorted = data_output.sort(key=lambda x: x[0])
                     for line in data_output:
                         display_line('   ' + line[0], line[1], line[2])
@@ -141,22 +140,29 @@ def display(msg: str):
     print(msg)
 
 
-def display_missing_left(one_agg: AggMeteor, disp_details: bool):
+def display_missing_tmp_agg(one_agg: AggMeteor, disp_details: bool):
     # display('')
-    display_line('start_dat', '           ?????', one_agg.start_dat)
+    display_hdr('           ?????', one_agg.start_dat)
     # if disp_details is True:
     #     for k, v in one_agg.j.items():
     #         display_line('   ' + k, str(v), '')
 
 
-def display_missing_right(one_agg: AggMeteor, disp_details: bool):
-    # display('')
-    display_line('start_dat', one_agg.start_dat, '           ?????')
+def display_missing_agg(one_agg: AggMeteor, disp_details: bool):
+    display_hdr(one_agg.start_dat, '           ?????')
     # if disp_details is True:
     #     for k, v in one_agg.j.items():
     #         display_line('   ' + k, '', str(v))
 
 
 def display_line(key, left, right):
-    # {:<10}".format('toto')[0:10]
     print("{:<20}".format(str(key))[0:20] + " I " + "{:<30}".format(str(left))[0:30] + " I " + "{:<30}".format(str(right))[0:30])
+
+
+def display_hdr(tmp_agg_data, agg_data):
+    tirets = '---------------------------------------------------------------------------------'
+    display_line(tirets, tirets, tirets)
+    display_line('      key', '      tmp_agg_xxx', '     agg_xxx')
+    display_line(tirets, tirets, tirets)
+    display_line('start_dat', str(tmp_agg_data), str(agg_data))
+    

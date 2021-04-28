@@ -80,8 +80,8 @@ class CalcObs(AllCalculus):
                 if obs_meteor.data.id is not None and json_file_data['data'][measure_idx].__contains__('update_me') is False:
                     print('CalcObs: skipping obs id: ' + str(obs_meteor.data.id) + ' already loaded')
                     continue
-                if json_file_data['data'][measure_idx]['current'].__contains__('aggregations'):
-                    obs_meteor.data.j_agg = json_file_data['data'][measure_idx]['current']['aggregations']
+                if json_file_data['data'][measure_idx].__contains__('aggregations'):
+                    obs_meteor.data.j_agg = json_file_data['data'][measure_idx]['aggregations']
 
                 # load duration and stop_dat if not already loaded
                 if obs_meteor.data.duration == 0:
