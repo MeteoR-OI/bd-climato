@@ -23,6 +23,18 @@
                 "DJANGO_SETTINGS_MODULE": "Clim_MeteoR.settings",
             },
             "django": true
+        },
+        {
+            "name": "loadJson",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                // "${fileBasenameNoExtension}"
+                "loadJson",
+                "nic_day.json",
+                "--tmp"
+            ]
         }
     ]
 }

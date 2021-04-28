@@ -7,7 +7,6 @@ from app.classes.calcul.calcObservation import CalcObs
 from app.classes.calcul.calcAggreg import CalcAggreg
 from app.classes.workers.svcAggreg import SvcAggreg
 from app.classes.repository.aggTodoMeteor import AggTodoMeteor
-from app.classes.metier.posteMetier import PosteMetier
 import os
 import datetime
 

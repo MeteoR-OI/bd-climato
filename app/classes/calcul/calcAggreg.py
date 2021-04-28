@@ -122,7 +122,7 @@ class CalcAggreg(AllCalculus):
         m_agg_j = {}
         if j_agg != {}:
             for a_j_agg in j_agg:
-                if a_j_agg.__contains__('level') and a_j_agg['level'] == agg_level:
+                if a_j_agg.__contains__('level') and a_j_agg['level'][0] == agg_level[0]:
                     m_agg_j = a_j_agg
                     break
         return m_agg_j
