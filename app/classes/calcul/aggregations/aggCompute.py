@@ -76,6 +76,7 @@ class AggCompute():
         """
         json_key = self.get_json_key(my_measure)
         agg_j = agg_deca.data.j
+        agg_deca.dirty = True
 
         for maxmin_suffix in ['_max', '_min']:
             maxmin_key = maxmin_suffix.split('_')[1]

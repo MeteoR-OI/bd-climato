@@ -70,7 +70,7 @@ class Command(BaseCommand):
                 self.stderr.write('Error: protocol error')
 
         except Exception as inst:
-            self.stderr.write('Error (bug): ' + inst)
+            self.stderr.write('Error (bug): ' + str(inst))
 
     def display_help(self):
         self.stdout.write('python manage svc --list   -> List all available services')
