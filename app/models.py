@@ -1,4 +1,5 @@
 from django.db import models
+import datetime
 from app.tools.jsonPlus import JsonPlus
 from app.tools.dateTools import str_to_date, date_to_str
 from django.core.serializers.json import DjangoJSONEncoder
@@ -180,7 +181,7 @@ class Observation(models.Model):
     j_agg = DateJSONField(encoder=DjangoJSONEncoder, null=False)
 
     def __str__(self):
-        return "Observation id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.stop_dat)
+        return "Observation id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", de " + str(self.stop_dat - datetime.timedelta(minutes=self.duration)) + " a: " + str(self.stop_dat)
 
     class Meta:
         db_table = "obs"
@@ -200,7 +201,7 @@ class TmpObservation(models.Model):
     j_agg = DateJSONField(encoder=DjangoJSONEncoder, null=False)
 
     def __str__(self):
-        return "TmpObservation id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.stop_dat)
+        return "TmpObservation id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", stop_dat: " + str(self.stop_dat)
 
     class Meta:
         db_table = "tmp_obs"
@@ -277,7 +278,7 @@ class AggHour(models.Model):
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
 
     def __str__(self):
-        return "AggHour id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
+        return "AggHour id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", start_dat: " + str(self.start_dat) + ' for an hour'
 
     class Meta:
         db_table = "agg_hour"
@@ -296,7 +297,7 @@ class TmpAggHour(models.Model):
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
 
     def __str__(self):
-        return "TmpAggHour id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
+        return "TmpAggHour id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", start_dat: " + str(self.start_dat) + ' for an hour'
 
     class Meta:
         db_table = "tmp_agg_hour"
@@ -315,7 +316,7 @@ class AggDay(models.Model):
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
 
     def __str__(self):
-        return "AggDay id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
+        return "AggDay id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", start_dat: " + str(self.start_dat) + ' for a day'
 
     class Meta:
         db_table = "agg_day"
@@ -334,7 +335,7 @@ class TmpAggDay(models.Model):
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
 
     def __str__(self):
-        return "TmpAggDay id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
+        return "TmpAggDay id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", start_dat: " + str(self.start_dat) + ' for a day'
 
     class Meta:
         db_table = "tmp_agg_day"
@@ -353,7 +354,7 @@ class AggMonth(models.Model):
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
 
     def __str__(self):
-        return "AggMonth id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
+        return "AggMonth id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", start_dat: " + str(self.start_dat) + ' for a month'
 
     class Meta:
         db_table = "agg_month"
@@ -372,7 +373,7 @@ class TmpAggMonth(models.Model):
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
 
     def __str__(self):
-        return "TmpAggMonth id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
+        return "TmpAggMonth id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", start_dat: " + str(self.start_dat) + ' for a month'
 
     class Meta:
         db_table = "tmp_agg_month"
@@ -391,7 +392,7 @@ class AggYear(models.Model):
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
 
     def __str__(self):
-        return "AggYear id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
+        return "AggYear id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", start_dat: " + str(self.start_dat) + ' for a year'
 
     class Meta:
         db_table = "agg_year"
@@ -410,7 +411,7 @@ class TmpAggYear(models.Model):
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
 
     def __str__(self):
-        return "TmpAggYear id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
+        return "TmpAggYear id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", start_dat: " + str(self.start_dat) + ' for a year'
 
     class Meta:
         db_table = "tmp_agg_year"
@@ -429,7 +430,7 @@ class AggAll(models.Model):
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
 
     def __str__(self):
-        return "AggAll id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
+        return "AggAll id: " + str(self.id) + ", poste: " + str(self.poste_id) + " for ever"
 
     class Meta:
         db_table = "agg_all"
@@ -448,7 +449,7 @@ class TmpAggAll(models.Model):
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
 
     def __str__(self):
-        return "TmpAggAll id: " + str(self.id) + ", poste: " + str(self.poste_id) + ", on " + str(self.start_dat)
+        return "TmpAggAll id: " + str(self.id) + ", poste: " + str(self.poste_id) + " for ever"
 
     class Meta:
         db_table = "tmp_agg_all"

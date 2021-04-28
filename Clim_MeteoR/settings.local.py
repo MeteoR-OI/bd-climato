@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'gestion',
     'django_extensions',
     'django_json_widget',
-    'django_cron'
+    'django_cron',
+    'django_json_widget',
 ]
 
 CRON_CLASSES = [
