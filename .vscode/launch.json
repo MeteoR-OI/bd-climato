@@ -35,6 +35,19 @@
                 "nic_day.json",
                 "--tmp"
             ]
+        },
+        {
+            "name": "compAgg",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                // "${fileBasenameNoExtension}"
+                "compAgg",
+                "2",
+                "--hour",
+                "--details"
+            ]
         }
     ]
 }

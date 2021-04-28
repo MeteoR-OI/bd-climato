@@ -77,6 +77,31 @@ class AggMeteor():
         else:
             raise Exception("get_agg_object", "wrong niveau_agg: " + niveau_agg)
 
+    @staticmethod
+    def GetAggObj(niveau_agg: str):
+        """get the aggregation depending on the level"""
+        if niveau_agg == "H":
+            return AggHour
+        elif niveau_agg == "D":
+            return AggDay
+        elif niveau_agg == "M":
+            return AggMonth
+        elif niveau_agg == "Y":
+            return AggYear
+        elif niveau_agg == "A":
+            return AggAll
+        elif niveau_agg == "HT":
+            return TmpAggHour
+        elif niveau_agg == "DT":
+            return TmpAggDay
+        elif niveau_agg == "MT":
+            return TmpAggMonth
+        elif niveau_agg == "YT":
+            return TmpAggYear
+        elif niveau_agg == "AT":
+            return TmpAggAll
+        else:
+            raise Exception("get_agg_object", "wrong niveau_agg: " + niveau_agg)
     def count(self, niveau_agg: str, poste_id: int = None, start_dat_mask: str = '') -> int:
         # return count of aggregations
         agg_obj = self.getAggObject(niveau_agg)
