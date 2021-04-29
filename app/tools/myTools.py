@@ -44,3 +44,42 @@ def logInfo(message: str, span_id: str = None, params: json = {}, return_string:
 def logTrace(message: str, span_id: str = None, params: json = {}, return_string: bool = False):
     return _logMe(message, 'trace', span_id, params, 1, return_string)
 
+
+def CopyJson(src: json, dest: json):
+    if "'list'" in str(type(src)):
+        for one_src in src:
+            type_val = str(type(one_src))
+            if "'dict'" in type_val:
+                new_array = {}
+                dest.append(new_array)
+                CopyJson(one_src, new_array)
+            elif "'list'" in type_val:
+                new_array = []
+                dest.append(new_array)
+                CopyJson(one_src, new_array)
+            else:
+                dest.append(one_src)
+    else:
+        for k, v in src.items():
+            _copyJson(src, dest, k, v)
+
+
+def _copyJson(src: json, dest: json, k: str, v):
+    # print(str(k) + ":" + str(v))
+    type_val = str(type(v))
+    if "'dict'" in type_val:
+        if dest.__contains__(k) is False:
+            dest[k] = {}
+        elif str(type(dest[k])).index("'dict'") is False:
+            raise Exception('CopyJson', 'type michmatch on key: ' + str(k) + ' type: ' + str(type(dest[k])))
+        CopyJson(src[k], dest[k])
+        return
+
+    if "'list'" in type_val:
+        if dest.__contains__(k) is False:
+            dest[k] = []
+        elif str(type(dest[k])).index("'list'") is False:
+            raise Exception('CopyJson', 'type michmatch on key: ' + str(k) + ' type: ' + str(type(dest[k])))
+        CopyJson(src[k], dest[k])
+        return
+    dest[k] = v

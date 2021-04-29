@@ -1,6 +1,7 @@
 import json
 import datetime
 from app.classes.repository.posteMeteor import PosteMeteor
+from app.tools.aggTools import calcAggDate
 # from app.tools.jsonPlus import JsonPlus
 
 
@@ -44,11 +45,15 @@ def checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
             return 'no duration in j.data[' + str(idx) + '].current'
         measure_duration = a_current['duration']
 
+        tmp_stop_dat = None
         if j['data'][idx].__contains__('stop_dat') is False:
             if j['data'][idx].__contains__('start_dat') is False:
                 return 'no start and stop_dat in j.data[' + str(idx) + '].current'
             measure_duration = datetime.timedelta(minutes=int(a_current['duration']))
             new_val['stop_dat'] = j['data'][idx]['start_dat'] + measure_duration
+            tmp_stop_dat = new_val['stop_dat']
+        else:
+            tmp_stop_dat = j['data'][idx]['stop_dat']
 
         if j['data'][idx].__contains__('start_dat') is False:
             measure_duration = datetime.timedelta(minutes=int(a_current['duration']))
@@ -78,8 +83,29 @@ def checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
                 lvl = a_aggreg['level']
                 if lvl != 'H' and lvl != 'D' and lvl != 'M' and lvl != 'Y' and lvl != 'A':
                     return lvl + ' is invalid level in data[' + str(idx) + '].aggregations[' + str(idx2) + ']'
+                if a_aggreg.__contains__('start_dat'):
+                    tmp_dat = calcAggDate(lvl, tmp_stop_dat, 0, True)
+                    if str(tmp_dat) != str(a_aggreg['start_dat']):
+                        return 'aggregations start_dat: ' + str(a_aggreg['start_dat']) + ' is not the same as the computed date using the obs.stop_dat: ' + str(tmp_dat)
+                idx2 += 1
+
+        if j['data'][idx].__contains__('validation'):
+            all_aggreg = j['data'][idx]['validation']
+            idx2 = 0
+            while idx2 < all_aggreg.__len__():
+                a_aggreg = j['data'][idx]['validation'][idx2]
+                if a_aggreg.__contains__('level') is False:
+                    return 'no level in data[' + str(idx) + '].validation[' + str(idx2) + ']'
+                lvl = a_aggreg['level']
+                if lvl != 'H' and lvl != 'D' and lvl != 'M' and lvl != 'Y' and lvl != 'A':
+                    return lvl + ' is invalid level in data[' + str(idx) + '].validation[' + str(idx2) + ']'
+                if a_aggreg.__contains__('start_dat'):
+                    tmp_dat = calcAggDate(lvl, tmp_stop_dat, 0, True)
+                    if str(tmp_dat) != str(a_aggreg['start_dat']):
+                        return 'validation start_dat: ' + str(a_aggreg['start_dat']) + ' is not the same as the computed date using the obs.stop_dat: ' + str(tmp_dat)
 
                 idx2 += 1
+
         idx += 1
 
     # print('check step2')

@@ -4,6 +4,7 @@ from app.classes.repository.aggTodoMeteor import AggTodoMeteor
 from app.classes.typeInstruments.allTtypes import AllTypeInstruments
 from app.tools.jsonPlus import JsonPlus
 from app.tools.jsonValidator import checkJson
+from app.tools.myTools import CopyJson
 from django.db import transaction
 import datetime
 import json
@@ -13,7 +14,7 @@ class CalcObs(AllCalculus):
     """
         Control all the processing of a json data, with our Observation table
     """
-    def loadJson(self, json_file_data_array: json, trace_flag: bool = False, delete_flag: bool = False, is_tmp: bool = None) -> json:
+    def loadJson(self, json_file_data_array: json, trace_flag: bool = False, delete_flag: bool = False, is_tmp: bool = None, use_validation: bool = False) -> json:
         """
             processJson
 
@@ -24,14 +25,14 @@ class CalcObs(AllCalculus):
             self.delete_obs_agg(is_tmp)
 
         try:
-            return self._loadJson_array_ttx(json_file_data_array, trace_flag, is_tmp)
+            return self._loadJson_array_ttx(json_file_data_array, trace_flag, is_tmp, use_validation)
 
         except Exception as err:
             print("CalcObs::loadJson: Exception: " + str(err))
             raise err
 
     @transaction.atomic
-    def _loadJson_array_ttx(self, json_file_data_array: json, trace_flag: bool = False, is_tmp: bool = None) -> json:
+    def _loadJson_array_ttx(self, json_file_data_array: json, trace_flag: bool = False, is_tmp: bool = None, use_validation: bool = False) -> json:
         debut_full_process = datetime.datetime.now()
         ret_data = []
         item_processed = 0
@@ -45,7 +46,7 @@ class CalcObs(AllCalculus):
         while idx < json_file_data_array.__len__():
             json_file_data = json_file_data_array[idx]
             item_processed += json_file_data['data'].__len__()
-            ret = self._loadJson(json_file_data, trace_flag, is_tmp)
+            ret = self._loadJson(json_file_data, trace_flag, is_tmp, use_validation)
             if trace_flag is True:
                 ret_data.append({"item": idx, "ret": ret})
             idx += 1
@@ -57,7 +58,7 @@ class CalcObs(AllCalculus):
         })
         return ret_data
 
-    def _loadJson(self, json_file_data: json, trace_flag: bool = False, is_tmp: bool = False) -> json:
+    def _loadJson(self, json_file_data: json, trace_flag: bool = False, is_tmp: bool = False, use_validation: bool = False) -> json:
         """
             processJson
 
@@ -78,10 +79,24 @@ class CalcObs(AllCalculus):
                 poste_metier.lock()
                 obs_meteor = poste_metier.observation(m_stop_date_agg_start_date, is_tmp)
                 if obs_meteor.data.id is not None and json_file_data['data'][measure_idx].__contains__('update_me') is False:
-                    print('CalcObs: skipping obs id: ' + str(obs_meteor.data.id) + ' already loaded')
+                    print('CalcObs: skipping data[' + str(measure_idx) + '], stop_dat: ' + str(m_stop_date_agg_start_date) + ' already loaded')
                     continue
-                if json_file_data['data'][measure_idx].__contains__('aggregations'):
-                    obs_meteor.data.j_agg = json_file_data['data'][measure_idx]['aggregations']
+                if use_validation is True:
+                    tmp_agg = []
+                    if json_file_data['data'][measure_idx].__contains__('aggregations'):
+                        CopyJson(json_file_data['data'][measure_idx]['aggregations'], tmp_agg)
+                    if json_file_data['data'][measure_idx].__contains__('validation'):
+                        CopyJson(json_file_data['data'][measure_idx]['validation'], tmp_agg)
+                    obs_meteor.data.j_agg = tmp_agg
+                    if tmp_agg.__len__() == 0:
+                        print('CalcObs: skipping data[' + str(measure_idx) + '], stop_dat: ' + str(m_stop_date_agg_start_date))
+                        continue
+                    json_file_data['data'][measure_idx]['current'] = {
+                        "duration": m_duration
+                    }
+                else:
+                    if json_file_data['data'][measure_idx].__contains__('aggregations'):
+                        obs_meteor.data.j_agg = json_file_data['data'][measure_idx]['aggregations']
 
                 # load duration and stop_dat if not already loaded
                 if obs_meteor.data.duration == 0:

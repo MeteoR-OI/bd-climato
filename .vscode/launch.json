@@ -32,8 +32,9 @@
             "args": [
                 // "${fileBasenameNoExtension}"
                 "loadJson",
-                "dev.agg.json",
-                "--tmp"
+                "dev.obs.json",
+                "--tmp",
+                "--validation"
             ]
         },
         {
@@ -45,8 +46,7 @@
                 // "${fileBasenameNoExtension}"
                 "compAgg",
                 "2",
-                "--hour",
-                "--details"
+                "--day",
             ]
         }
     ]
