@@ -35,7 +35,7 @@ class ProcessJsonData():
         exclusion = poste_metier.exclusion(my_measure['type_i'])
         if shouldNullify(exclusion, src_key) is True:
             return
-
+#si mesure.options NotAllowedInCurrent -> erreur
         # load obs record, and get the delta_values
         self.loadData(my_measure, json_file_data, measure_idx, obs_meteor, src_key, target_key, exclusion, delta_values, trace_flag)
 

@@ -13,6 +13,7 @@ class MeasureProcessingBitMask(Constants):
     MeasureIsSum = 1
     MeasureIsWind = 2
     OnlyAggregateInHour = 4
+    NotAllowedInCurrent = 8
     MeasureIsOmm = 16
 
 
