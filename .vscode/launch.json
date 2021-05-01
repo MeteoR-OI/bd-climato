@@ -32,9 +32,9 @@
             "args": [
                 // "${fileBasenameNoExtension}"
                 "loadJson",
-                "dev.obs.json",
-                "--tmp",
-                "--validation"
+                "dev.obs.json"
+                // "--tmp",
+                // "--validation"
             ]
         },
         {

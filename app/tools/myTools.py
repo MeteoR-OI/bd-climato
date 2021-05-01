@@ -3,46 +3,16 @@ import datetime
 import inspect
 
 
-def _logMe(message: str, level: str = None, span_id: str = None, params: json = {}, stack_level: int = 0, return_string: bool = False):
-    """ centralized log output function """
-    stack_line = inspect.stack()[1 + stack_level]
-    location = stack_line.function + '::' + str(stack_line.lineno)
-
-    if level.lower() not in ['info', '???', 'error', 'trace']:
-        level = '??? ' + level
-
-    # build our json
-    log_j = {
-        "ts": datetime.datetime.now(),
-        "loc": location,
-        "msg": message
-    }
-    # add level
-    if level is not None:
-        log_j['level'] = level
-    # add span_id
-    if span_id is not None:
-        log_j['span_id'] = span_id
-    # add our json Keys/Values
-    for k, v in params.items():
-        log_j[k] = v
-
-    if return_string:
-        return log_j
-    else:
-        print(JsonPlus().dumps(log_j))
+def LogException(inst, my_span=None, params: json = {}, return_string: bool = False):
+    return _logMe(str(inst), 'error', my_span, params, 1, return_string)
 
 
-def logException(inst, span_id: str = None, params: json = {}, return_string: bool = False):
-    return _logMe(str(inst), 'error', span_id, params, 1, return_string)
+def logInfo(message: str, my_span=None, params: json = {}, return_string: bool = False):
+    return _logMe(message, 'info', my_span, params, 1, return_string)
 
 
-def logInfo(message: str, span_id: str = None, params: json = {}, return_string: bool = False):
-    return _logMe(message, 'info', span_id, params, 1, return_string)
-
-
-def logTrace(message: str, span_id: str = None, params: json = {}, return_string: bool = False):
-    return _logMe(message, 'trace', span_id, params, 1, return_string)
+def logTrace(message: str, my_span=None, params: json = {}, return_string: bool = False):
+    return _logMe(message, 'trace', my_span, params, 1, return_string)
 
 
 def CopyJson(src: json, dest: json):
@@ -83,3 +53,37 @@ def _copyJson(src: json, dest: json, k: str, v):
         CopyJson(src[k], dest[k])
         return
     dest[k] = v
+
+
+def _logMe(message: str, level: str = None, my_span=None, params: json = {}, stack_level: int = 0, return_string: bool = False):
+    """ centralized log output function """
+    span_id = None
+    if my_span is not None:
+        span_id = my_span.get_span_context().span_id
+
+    stack_line = inspect.stack()[1 + stack_level]
+    location = stack_line.function + '::' + str(stack_line.lineno)
+
+    if level.lower() not in ['info', '???', 'error', 'trace']:
+        level = '??? ' + level
+
+    # build our json
+    log_j = {
+        "ts": datetime.datetime.now(),
+        "loc": location,
+        "msg": message
+    }
+    # add level
+    if level is not None:
+        log_j['level'] = level
+    # add span_id
+    if span_id is not None:
+        log_j['span_id'] = span_id
+    # add our json Keys/Values
+    for k, v in params.items():
+        log_j[k] = v
+
+    if return_string:
+        return log_j
+    else:
+        print(JsonPlus().dumps(log_j))

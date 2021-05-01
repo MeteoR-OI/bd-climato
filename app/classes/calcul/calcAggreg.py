@@ -4,6 +4,7 @@ from app.classes.repository.aggTodoMeteor import AggTodoMeteor
 from app.classes.typeInstruments.allTtypes import AllTypeInstruments
 from app.tools.refManager import RefManager
 from app.tools.aggTools import calcAggDate, getAggLevels
+from app.tools.telemetry import Telemetry
 from django.db import transaction
 import json
 import datetime
@@ -15,6 +16,9 @@ class CalcAggreg(AllCalculus):
 
         Handle all the update of our aggregation, after a change in observation table
     """
+
+    def __init__(self):
+        self.tracer = Telemetry.Start("calculus", __name__)
 
     def ComputeAggreg(self, is_tmp: bool = False):
         """
@@ -29,14 +33,11 @@ class CalcAggreg(AllCalculus):
             if a_todo is None:
                 # no more data to update, return to sleep
                 return
-            try:
-                self.__processTodo(a_todo, is_tmp)
-            except Exception as exc:
-                # our transaction should ebe rolledback here
-                a_todo.ReportError(exc)
+
+            self.__processTodo(a_todo, is_tmp)
 
     @transaction.atomic
-    def __processTodo(self, a_todo, is_tmp: bool = None):
+    def __processTodo(self, a_todo, is_tmp: bool = False):
         """
             __processTodo
 
@@ -49,70 +50,77 @@ class CalcAggreg(AllCalculus):
         else:
             trace_flag = RefManager.GetInstance().GetRef("trace_flag")
 
-        # retrieve data we will need
-        m_stop_dat = a_todo.data.obs_id.stop_dat
-        a_start_dat = a_todo.data.obs_id.agg_start_dat
-        poste_metier = PosteMetier(a_todo.data.obs_id.poste_id_id, a_start_dat)
-
-        try:
+        with self.tracer.start_as_current_span('Agg') as my_span:
+            my_span.set_attribute("obs_id", a_todo.data.obs_id_id)
+            my_span.set_attribute("poste_id", a_todo.data.obs_id.poste_id_id)
+            # my_span.set_attribute("meteor", a_todo.data.obs_id.poste_id.meteor)
+            # retrieve data we will need
+            tmp_span = self.tracer.start_span('loadData')
+            m_stop_dat = a_todo.data.obs_id.stop_dat
+            a_start_dat = a_todo.data.obs_id.agg_start_dat
+            poste_metier = PosteMetier(a_todo.data.obs_id.poste_id_id, a_start_dat)
             poste_metier.lock()
             aggregations = poste_metier.aggregations(m_stop_dat, True, is_tmp)
-            for delta_values in a_todo.data.j_dv:
-                # mark all aggregation as clean. only dirty aggregation will be saved
-                for an_agg in aggregations:
-                    an_agg.dirty = False
+            tmp_span.set_attribute('agg_count', aggregations.__len__())
+            tmp_span.end()
+            try:
+                for delta_values in a_todo.data.j_dv:
+                    # mark all aggregation as clean. only dirty aggregation will be saved
+                    for an_agg in aggregations:
+                        an_agg.dirty = False
 
-                for anAgg in getAggLevels(is_tmp):
-                    # adjust start date, depending on the aggregation level
+                    for anAgg in getAggLevels(is_tmp):
+                        with self.tracer.start_span('level ' + anAgg):
+                            # adjust start date, depending on the aggregation level
 
-                    # dv_next is the delta_values for next level
-                    dv_next = {"maxminFix": []}
+                            # dv_next is the delta_values for next level
+                            dv_next = {"maxminFix": []}
 
-                    # for all type_instruments
-                    for an_intrument in all_instr.get_all_instruments():
+                            # for all type_instruments
+                            for an_intrument in all_instr.get_all_instruments():
 
-                        # for all measures
-                        for my_measure in an_intrument['object'].get_all_measures():
+                                # for all measures
+                                for my_measure in an_intrument['object'].get_all_measures():
 
-                            # get our deca_hour
-                            deca_hour = 0
-                            if my_measure.__contains__('hour_deca') is True:
-                                deca_hour = my_measure['hour_deca']
-                            a_start_dat_level = calcAggDate(anAgg, m_stop_dat, deca_hour, True)
+                                    # get our deca_hour
+                                    deca_hour = 0
+                                    if my_measure.__contains__('hour_deca') is True:
+                                        deca_hour = my_measure['hour_deca']
+                                    a_start_dat_level = calcAggDate(anAgg, m_stop_dat, deca_hour, True)
 
-                            # load the needed aggregation for this measure
-                            agg_deca = None
-                            for my_agg in aggregations:
-                                if my_agg.agg_niveau == anAgg and my_agg.data.start_dat == a_start_dat_level:
-                                    agg_deca = my_agg
-                                    break
-                            if agg_deca is None:
-                                raise Exception('aggCompute::loadAggregations', 'aggregation not loaded ' + anAgg + ", " + str(a_start_dat_level))
+                                    # load the needed aggregation for this measure
+                                    agg_deca = None
+                                    for my_agg in aggregations:
+                                        if my_agg.agg_niveau == anAgg and my_agg.data.start_dat == a_start_dat_level:
+                                            agg_deca = my_agg
+                                            break
+                                    if agg_deca is None:
+                                        raise Exception('aggCompute::loadAggregations', 'aggregation not loaded ' + anAgg + ", " + str(a_start_dat_level))
 
-                            m_agg_j = self.get_agg_magg(anAgg, a_todo.data.obs_id.j_agg)
+                                    m_agg_j = self.get_agg_magg(anAgg, a_todo.data.obs_id.j_agg)
 
-                            # find the calculus object for my_mesure
-                            for a_calculus in self.all_calculus:
-                                if a_calculus['agg'] == my_measure['agg']:
-                                    if a_calculus['calc_obs'] is not None:
+                                    # find the calculus object for my_mesure
+                                    for a_calculus in self.all_calculus:
+                                        if a_calculus['agg'] == my_measure['agg']:
+                                            if a_calculus['calc_obs'] is not None:
 
-                                        # load our json in obs row
-                                        a_calculus['calc_agg'].loadAggregations(m_stop_dat, my_measure, delta_values, agg_deca, m_agg_j, dv_next, trace_flag)
-                                    break
+                                                # load our json in obs row
+                                                a_calculus['calc_agg'].loadAggregations(m_stop_dat, my_measure, delta_values, agg_deca, m_agg_j, dv_next, trace_flag)
+                                            break
 
-                    # loop to the next AggLevel
-                    delta_values = dv_next
+                            # loop to the next AggLevel
+                            delta_values = dv_next
 
-                # save our aggregations for this delta_values
-                for an_agg in aggregations:
-                    if an_agg.dirty is True:
-                        an_agg.save()
+                    # save our aggregations for this delta_values
+                    for an_agg in aggregations:
+                        if an_agg.dirty is True:
+                            an_agg.save()
 
-            # we're done
-            print("a_todo " + str(a_todo.data.id) + ' processed in ' + str(datetime.datetime.now() - time_start) + ', still on queue: ' + str(a_todo.count()))
-            a_todo.delete()
-        finally:
-            poste_metier.unlock()
+                # we're done
+                print("a_todo " + str(a_todo.data.id) + ' processed in ' + str(datetime.datetime.now() - time_start) + ', still on queue: ' + str(a_todo.count()))
+                a_todo.delete()
+            finally:
+                poste_metier.unlock()
 
     def get_agg_magg(self, agg_level: str, j_agg: json):
         """

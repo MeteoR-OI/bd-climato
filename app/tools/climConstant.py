@@ -28,3 +28,9 @@ class SvcRequestType(Constants):
 class ComputationParam(Constants):
     # parameter for calculus module
     AddHourToMeasureInAggHour = 1
+
+
+TelemetryConf = {
+    "collector_endpoint": "localhost:14250",
+    "insecure": True
+}

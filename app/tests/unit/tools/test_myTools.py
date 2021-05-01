@@ -1,15 +1,15 @@
 # Line number should match in lines 10, 20, 30
 from app.tools.jsonPlus import JsonPlus
-from app.tools.myTools import CopyJson, logException, logInfo, logTrace
+from app.tools.myTools import CopyJson, LogException, logInfo, logTrace
 import pytest
 
 
 @pytest.mark.unit
-def test_logException():
+def test_LogException():
     inst = Exception('test_logE', 'this is an Exception')
-    log_e = logException(inst, "12345", {"a": 1}, True)
+    log_e = LogException(inst, "12345", {"a": 1}, True)
     assert log_e['span_id'] == "12345"
-    assert log_e['loc'] == "test_logException::10"
+    assert log_e['loc'] == "test_LogException::10"
     assert log_e['level'] == 'error'
     assert log_e["a"] == 1
 

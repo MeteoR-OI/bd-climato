@@ -14,7 +14,8 @@
 - [4. app tests](#4-app-tests)
 - [5. Problemes courants](#5-problemes-courants)
 - [6. Demarrer avec GIT](#6-demarrer-avec-git)
-- [7. Notes Generales](#7-notes-generales)
+- [7. Telemetry](#7-telemetry)
+- [8. Notes Generales](#8-notes-generales)
 
 <!-- /code_chunk_output -->
 
@@ -26,25 +27,28 @@
 
 # 2. Installation Outils de developpement
 # 2.1 MacOs 
-[lien](doc/install%20dev%20tools-MacOs.md)
+[Mac](doc/install%20dev%20tools-MacOs.md)
 
 # 3. Database Schema
 Le schema de la base de donnees va etre profondement revu...
 
 # 3.1 Django Tables 
-[lien](doc/bd%20schema/django%20tables.png)
+[tables](doc/bd%20schema/django%20tables.png)
 
 # 3.2 Climato données météo
-[lien](doc/bd%20schema/climato_data.png)
+[data](doc/bd%20schema/climato_data.png)
 
 # 4. app tests
-[lien](doc/install%20app%20test.md)
+[testing](doc/install%20app%20test.md)
 
 # 5. Problemes courants
-[lien](doc/problemes%20courant.md)
+[pb courants](doc/problemes%20courant.md)
 
 # 6. Demarrer avec GIT
-[lien](doc/gitBasic.md)
+[Intro Git](doc/gitBasic.md)
 
-# 7. Notes Generales
-[lien](doc/globalNotes.md)
+# 7. Telemetry
+[Telemetry](doc/telemetry.md)
+
+# 8. Notes Generales
+[Notes](doc/globalNotes.md)

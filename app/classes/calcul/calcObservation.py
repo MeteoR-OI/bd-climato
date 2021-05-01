@@ -4,7 +4,8 @@ from app.classes.repository.aggTodoMeteor import AggTodoMeteor
 from app.classes.typeInstruments.allTtypes import AllTypeInstruments
 from app.tools.jsonPlus import JsonPlus
 from app.tools.jsonValidator import checkJson
-from app.tools.myTools import CopyJson
+from app.tools.myTools import CopyJson, LogException
+from app.tools.telemetry import Telemetry
 from django.db import transaction
 import datetime
 import json
@@ -14,6 +15,9 @@ class CalcObs(AllCalculus):
     """
         Control all the processing of a json data, with our Observation table
     """
+    def __init__(self):
+        self.tracer = Telemetry.Start("calculus", __name__)
+
     def loadJson(self, json_file_data_array: json, trace_flag: bool = False, delete_flag: bool = False, is_tmp: bool = None, use_validation: bool = False) -> json:
         """
             processJson
@@ -24,12 +28,18 @@ class CalcObs(AllCalculus):
             # delete is not part of the transaction
             self.delete_obs_agg(is_tmp)
 
-        try:
-            return self._loadJson_array_ttx(json_file_data_array, trace_flag, is_tmp, use_validation)
+        with self.tracer.start_as_current_span('Obs') as my_span:
+            ret = {}
+            try:
+                ret = self._loadJson_array_ttx(json_file_data_array, trace_flag, is_tmp, use_validation)
+                my_span.set_attribute("items_processed", ret[ret.__len__() - 1].get('item_processed'))
 
-        except Exception as err:
-            print("CalcObs::loadJson: Exception: " + str(err))
-            raise err
+            except Exception as exc:
+                LogException(exc, my_span)
+                ret.append({"Exception": str(exc), "args": str(exc.args)})
+
+            finally:
+                return ret
 
     @transaction.atomic
     def _loadJson_array_ttx(self, json_file_data_array: json, trace_flag: bool = False, is_tmp: bool = None, use_validation: bool = False) -> json:
@@ -69,12 +79,17 @@ class CalcObs(AllCalculus):
 
         measure_idx = 0
         debut_process = datetime.datetime.now()
+        my_span = self.tracer.get_current_span()
+
         while measure_idx < json_file_data['data'].__len__():
             # print('processing idx: ' + str(measure_idx))
             # we use the stop_dat of our measure json as the start date for our processing
             m_stop_date_agg_start_date = json_file_data['data'][measure_idx]['stop_dat']
             m_duration = json_file_data['data'][measure_idx]['current']['duration']
             poste_metier = PosteMetier(json_file_data['poste_id'], m_stop_date_agg_start_date)
+            if measure_idx == 0:
+                my_span.set_attribute("poste_id", str(poste_metier.data.id))
+                my_span.set_attribute("stopDat", str(m_stop_date_agg_start_date))
             try:
                 poste_metier.lock()
                 obs_meteor = poste_metier.observation(m_stop_date_agg_start_date, is_tmp)
