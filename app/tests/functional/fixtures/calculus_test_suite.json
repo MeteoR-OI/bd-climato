@@ -22,8 +22,8 @@
             {"t": "O", "dat": "2021-02-11T13:00:00", "idx": 0, "out_temp": 20},
             {"t": "O", "dat": "2021-02-11T13:00:00", "idx": 0, "count": 1},
             {"t": "HT", "dat": "2021-02-11T12:00:00", "idx": 0, "out_temp_sum": 100, "out_temp_duration": 5},
-            {"t": "HT", "dat": "2021-02-11T12:00:00", "idx": 0, "count": 1},
-            {"t": "HT", "dat": "2021-02-11T12:00:00", "idx": 0, "count": 1, "dat_mask": "13:00"},
+            {"t": "HT", "dat": "2021-02-11T12:00:00", "idx": 0, "count": 3},
+            {"t": "HT", "dat": "2021-02-11T12:00:00", "idx": 0, "count": 3, "dat_mask": "13:00"},
             {"t": "DT", "dat": "2021-02-11T00:00:00", "idx": 0, "out_temp_sum": 100, "out_temp_duration": 5},
             {"t": "MT", "dat": "2021-02-11T00:00:00", "idx": 0, "out_temp_sum": 100, "out_temp_duration": 5},
             {"t": "YT", "dat": "2021-02-01T00:00:00", "idx": 0, "out_temp_sum": 100, "out_temp_duration": 5},
@@ -69,12 +69,12 @@
             ],
             "results": [
                 {"t": "O", "dat": "2021-02-11T13:30:00", "idx": 0, "out_temp": 20},
-                {"t": "HT", "dat": "2021-02-11T12:00:00", "idx": 0, "out_temp7_omm_sum": 600, "out_temp7_omm_duration": 60, "out_temp7_omm_avg": 10, "out_temp7_omm_time": "2021-02-11T13:00:00"},
-                {"t": "HT", "dat": "2021-02-11T13:00:00", "idx": 0, "out_temp7_omm_sum": 1800, "out_temp7_omm_duration": 60, "out_temp7_omm_avg": 30, "out_temp7_omm_time": "2021-02-11T14:00:00"},
-                {"t": "DT", "dat": "2021-02-11T00:00:00", "idx": 0, "out_temp7_omm_sum": 2400, "out_temp7_omm_duration": 120, "out_temp7_omm_avg": 20},
-                {"t": "MT", "dat": "2021-02-01T00:00:00", "idx": 0, "out_temp7_omm_sum": 2400, "out_temp7_omm_duration": 120, "out_temp7_omm_avg": 20},
-                {"t": "YT", "dat": "2021-01-01T00:00:00", "idx": 0, "out_temp7_omm_sum": 2400, "out_temp7_omm_duration": 120, "out_temp7_omm_avg": 20},
-                {"t": "AT", "out_temp7_omm_sum": 2400, "out_temp7_omm_duration": 120, "out_temp7_omm_avg": 20}
+                {"t": "HT", "dat": "2021-02-11T12:00:00", "idx": 0, "temp_omm_sum": 600, "temp_omm_duration": 60, "temp_omm_avg": 10, "temp_omm_time": "2021-02-11T13:00:00"},
+                {"t": "HT", "dat": "2021-02-11T13:00:00", "idx": 0, "temp_omm_sum": 1800, "temp_omm_duration": 60, "temp_omm_avg": 30, "temp_omm_time": "2021-02-11T14:00:00"},
+                {"t": "DT", "dat": "2021-02-11T00:00:00", "idx": 0, "temp_omm_sum": 2400, "temp_omm_duration": 120, "temp_omm_avg": 20},
+                {"t": "MT", "dat": "2021-02-01T00:00:00", "idx": 0, "temp_omm_sum": 2400, "temp_omm_duration": 120, "temp_omm_avg": 20},
+                {"t": "YT", "dat": "2021-01-01T00:00:00", "idx": 0, "temp_omm_sum": 2400, "temp_omm_duration": 120, "temp_omm_avg": 20},
+                {"t": "AT", "temp_omm_sum": 2400, "temp_omm_duration": 120, "temp_omm_avg": 20}
             ]
             },{ "name": "6_simple_omm_agg_different_days",
                 "data":
@@ -85,15 +85,15 @@
                 ],
                 "results": [
                     {"t": "O", "dat": "2021-02-11T14:30:00", "out_temp": 20},
-                    {"t": "O", "dat": "2021-02-11T14:00:00", "out_temp7_omm": 10},
-                    {"t": "O", "dat": "2021-02-12T14:00:00", "out_temp7_omm": 30},
-                    {"t": "HT", "dat": "2021-02-11T13:00:00",  "out_temp7_omm": 10, "out_temp7_omm_avg": 10},
-                    {"t": "HT", "dat": "2021-02-12T13:00:00",  "out_temp7_omm": 30, "out_temp7_omm_avg": 30},
-                    {"t": "DT", "dat": "2021-02-11T00:00:00", "out_temp7_omm_avg": 10},
-                    {"t": "DT", "dat": "2021-02-12T00:00:00", "out_temp7_omm_avg": 30},
-                    {"t": "MT", "dat": "2021-02-01T00:00:00", "out_temp7_omm_avg": 20},
-                    {"t": "YT", "dat": "2021-01-01T00:00:00", "out_temp7_omm_avg": 20},
-                    {"t": "AT", "out_temp7_omm_avg": 20}
+                    {"t": "O", "dat": "2021-02-11T14:00:00", "temp_omm": 10},
+                    {"t": "O", "dat": "2021-02-12T14:00:00", "temp_omm": 30},
+                    {"t": "HT", "dat": "2021-02-11T13:00:00",  "temp_omm": 10, "temp_omm_avg": 10},
+                    {"t": "HT", "dat": "2021-02-12T13:00:00",  "temp_omm": 30, "temp_omm_avg": 30},
+                    {"t": "DT", "dat": "2021-02-11T00:00:00", "temp_omm_avg": 10},
+                    {"t": "DT", "dat": "2021-02-12T00:00:00", "temp_omm_avg": 30},
+                    {"t": "MT", "dat": "2021-02-01T00:00:00", "temp_omm_avg": 20},
+                    {"t": "YT", "dat": "2021-01-01T00:00:00", "temp_omm_avg": 20},
+                    {"t": "AT", "temp_omm_avg": 20}
                 ]
             },{ "name": "7_max_min_omm_agg_different_days",
             "data":
@@ -103,17 +103,17 @@
                 {"stop_dat" : "2021-02-12T14:00:00", "current": {"duration" : 5, "out_temp" : 30}}
             ],
             "results": [
-                {"t": "O", "dat": "2021-02-11T14:00:00", "out_temp7_omm": 20},
-                {"t": "O", "dat": "2021-02-11T15:00:00", "out_temp7_omm": 10},
-                {"t": "O", "dat": "2021-02-12T14:00:00", "out_temp7_omm": 30},
-                {"t": "HT", "dat": "2021-02-11T13:00:00", "out_temp7_omm_max": 20, "out_temp7_omm_max_time": "2021-02-11T14:00:00", "out_temp7_omm_min": 20, "out_temp7_omm_min_time": "2021-02-11T14:00:00", "out_temp7_omm_avg": 20},
-                {"t": "HT", "dat": "2021-02-11T14:00:00", "out_temp7_omm_max": 10, "out_temp7_omm_max_time": "2021-02-11T15:00:00", "out_temp7_omm_min": 10, "out_temp7_omm_min_time": "2021-02-11T15:00:00", "out_temp7_omm_avg": 10},
-                {"t": "HT", "dat": "2021-02-12T13:00:00", "out_temp7_omm_max": 30, "out_temp7_omm_max_time": "2021-02-12T14:00:00", "out_temp7_omm_min": 30, "out_temp7_omm_min_time": "2021-02-12T14:00:00", "out_temp7_omm_avg": 30},
-                {"t": "DT", "dat": "2021-02-11T00:00:00", "out_temp7_omm_max": 20, "out_temp7_omm_max_time": "2021-02-11T14:00:00", "out_temp7_omm_min": 10, "out_temp7_omm_min_time": "2021-02-11T15:00:00", "out_temp7_omm_avg": 15},
-                {"t": "DT", "dat": "2021-02-12T00:00:00", "out_temp7_omm_max": 30, "out_temp7_omm_max_time": "2021-02-12T14:00:00", "out_temp7_omm_min": 30, "out_temp7_omm_min_time": "2021-02-12T14:00:00", "out_temp7_omm_avg": 30},
-                {"t": "MT", "dat": "2021-02-01T00:00:00", "out_temp7_omm_max": 30, "out_temp7_omm_max_time": "2021-02-12T14:00:00", "out_temp7_omm_min": 10, "out_temp7_omm_min_time": "2021-02-11T15:00:00", "out_temp7_omm_avg": 20},
-                {"t": "YT", "dat": "2021-01-01T00:00:00", "out_temp7_omm_max": 30, "out_temp7_omm_max_time": "2021-02-12T14:00:00", "out_temp7_omm_min": 10, "out_temp7_omm_min_time": "2021-02-11T15:00:00", "out_temp7_omm_avg": 20},
-                {"t": "AT", "out_temp7_omm_max": 30, "out_temp7_omm_max_time": "2021-02-12T14:00:00", "out_temp7_omm_min": 10, "out_temp7_omm_min_time": "2021-02-11T15:00:00", "out_temp7_omm_avg": 20}
+                {"t": "O", "dat": "2021-02-11T14:00:00", "temp_omm": 20},
+                {"t": "O", "dat": "2021-02-11T15:00:00", "temp_omm": 10},
+                {"t": "O", "dat": "2021-02-12T14:00:00", "temp_omm": 30},
+                {"t": "HT", "dat": "2021-02-11T13:00:00", "temp7_omm_max": 20, "temp7_omm_max_time": "2021-02-11T14:00:00", "temp-5_omm_min": 20, "temp-5_omm_min_time": "2021-02-11T14:00:00", "temp_omm_avg": 20},
+                {"t": "HT", "dat": "2021-02-11T14:00:00", "temp7_omm_max": 10, "temp7_omm_max_time": "2021-02-11T15:00:00", "temp-5_omm_min": 10, "temp-5_omm_min_time": "2021-02-11T15:00:00", "temp_omm_avg": 10},
+                {"t": "HT", "dat": "2021-02-12T13:00:00", "temp7_omm_max": 30, "temp7_omm_max_time": "2021-02-12T14:00:00", "temp-5_omm_min": 30, "temp-5_omm_min_time": "2021-02-12T14:00:00", "temp_omm_avg": 30},
+                {"t": "DT", "dat": "2021-02-11T00:00:00", "temp7_omm_max": 20, "temp7_omm_max_time": "2021-02-11T14:00:00", "temp-5_omm_min": 10, "temp-5_omm_min_time": "2021-02-11T15:00:00", "temp_omm_avg": 15},
+                {"t": "DT", "dat": "2021-02-12T00:00:00", "temp7_omm_max": 30, "temp7_omm_max_time": "2021-02-12T14:00:00", "temp-5_omm_min": 30, "temp-5_omm_min_time": "2021-02-12T14:00:00", "temp_omm_avg": 30},
+                {"t": "MT", "dat": "2021-02-01T00:00:00", "temp7_omm_max": 30, "temp7_omm_max_time": "2021-02-12T14:00:00", "temp-5_omm_min": 10, "temp-5_omm_min_time": "2021-02-11T15:00:00", "temp_omm_avg": 20},
+                {"t": "YT", "dat": "2021-01-01T00:00:00", "temp7_omm_max": 30, "temp7_omm_max_time": "2021-02-12T14:00:00", "temp-5_omm_min": 10, "temp-5_omm_min_time": "2021-02-11T15:00:00", "temp_omm_avg": 20},
+                {"t": "AT", "temp7_omm_max": 30, "temp7_omm_max_time": "2021-02-12T14:00:00", "temp-5_omm_min": 10, "temp-5_omm_min_time": "2021-02-11T15:00:00", "temp_omm_avg": 20}
                 ]
         },{ "name": "8_max_min_omm_agg_regen",
             "data":
@@ -143,8 +143,8 @@
                 ],
                 "results": [
                     {"t": "O", "idx":1, "out_temp": 20},
-                    {"t": "HT", "dat": "2021-02-11T13:00:00", "out_temp7_omm_sum": 1200},
-                    {"t": "DT", "dat": "2021-02-11T00:00:00", "out_temp7_omm_min": 20, "out_temp7_omm_max": 20}
+                    {"t": "HT", "dat": "2021-02-11T13:00:00", "temp_omm_sum": 1200},
+                    {"t": "DT", "dat": "2021-02-11T00:00:00", "temp-5_omm_min": 20, "temp7_omm_max": 20}
                 ]
             },{ "name": "11_max_min_forced_replace",
                 "data":
@@ -165,8 +165,8 @@
                     ],
                     "results": [
                         {"t": "O", "idx":1, "out_temp": 10},
-                        {"t": "HT", "dat": "2021-02-11T13:00:00", "out_temp7_omm_sum": 600},
-                        {"t": "DT", "dat": "2021-02-11T00:00:00", "out_temp7_omm_min": 10, "out_temp7_omm_max": 10}
+                        {"t": "HT", "dat": "2021-02-11T13:00:00", "temp_omm_sum": 600},
+                        {"t": "DT", "dat": "2021-02-11T00:00:00", "temp-5_omm_min": 10, "temp7_omm_max": 10}
                     ]
                 },{ "name": "14_wind_inst_do_not_use_avg",
                 "data":

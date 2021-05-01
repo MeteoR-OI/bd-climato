@@ -7,8 +7,7 @@ import pytest
 @pytest.mark.unit
 def test_LogException():
     inst = Exception('test_logE', 'this is an Exception')
-    log_e = LogException(inst, "12345", {"a": 1}, True)
-    assert log_e['span_id'] == "12345"
+    log_e = LogException(inst, None, {"a": 1}, True)
     assert log_e['loc'] == "test_LogException::10"
     assert log_e['level'] == 'error'
     assert log_e["a"] == 1
@@ -16,20 +15,18 @@ def test_LogException():
 
 @pytest.mark.unit
 def test_logInfo():
-    log_e = logInfo("my message", "12345", {"a": 1}, True)
+    log_e = logInfo("my message", None, {"a": 1}, True)
     assert log_e['msg'] == 'my message'
-    assert log_e['span_id'] == "12345"
-    assert log_e['loc'] == "test_logInfo::19"
+    assert log_e['loc'] == "test_logInfo::18"
     assert log_e['level'] == 'info'
     assert log_e["a"] == 1
 
 
 @pytest.mark.unit
 def test_logTrace():
-    log_e = logTrace("my message", "12345", {"a": 1}, True)
+    log_e = logTrace("my message", None, {"a": 1}, True)
     assert log_e['msg'] == 'my message'
-    assert log_e['span_id'] == "12345"
-    assert log_e['loc'] == "test_logTrace::29"
+    assert log_e['loc'] == "test_logTrace::27"
     assert log_e['level'] == 'trace'
     assert log_e["a"] == 1
 
