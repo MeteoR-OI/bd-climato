@@ -94,7 +94,7 @@ class Telemetry:
 
             trace.set_tracer_provider(
                 TracerProvider(
-                    resource=Resource.create({SERVICE_NAME: "django4"})
+                    resource=Resource.create({SERVICE_NAME: "django6"})
                     # resource=Resource.create({SERVICE_NAME: service_name})
                 )
             )

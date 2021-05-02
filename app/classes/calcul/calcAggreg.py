@@ -85,7 +85,7 @@ class CalcAggreg(AllCalculus):
                         an_agg.dirty = False
 
                     for anAgg in getAggLevels(is_tmp):
-                        with self.tracer.start_span('level ' + anAgg):
+                        with self.tracer.start_span('level ' + anAgg) as span_lvl:
                             # adjust start date, depending on the aggregation level
 
                             # dv_next is the delta_values for next level
@@ -120,6 +120,7 @@ class CalcAggreg(AllCalculus):
                                             if a_calculus['calc_obs'] is not None:
 
                                                 # load our json in obs row
+                                                span_lvl.set_attribute('start_dat', str(agg_deca.data.start_dat))
                                                 a_calculus['calc_agg'].loadAggregations(m_stop_dat, my_measure, delta_values, agg_deca, m_agg_j, dv_next, trace_flag)
                                             break
 
