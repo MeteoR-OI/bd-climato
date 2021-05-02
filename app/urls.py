@@ -1,5 +1,28 @@
 from django.urls import path
 from app.views import views
+import logging
+
+
+logging.basicConfig()
+
+
+def skip_unreadable_post(record):
+    return False
+
+
+# disable default django output
+logging.config.dictConfig(
+    {
+        'version': 1,
+        'disable_existing_loggers': True,
+        "filters": {
+            "skip_unreadable_posts": {
+                "()": "django.utils.log.CallbackFilter",
+                "callback": skip_unreadable_post,
+            }
+        },
+        "handlers": {}
+    })
 
 urlpatterns = [
     path('', views.index, name='index'),

@@ -5,6 +5,7 @@ from app.classes.typeInstruments.allTtypes import AllTypeInstruments
 from app.tools.refManager import RefManager
 from app.tools.aggTools import calcAggDate, getAggLevels
 from app.tools.telemetry import Telemetry
+import app.tools.myTools as t
 from django.db import transaction
 import json
 import datetime
@@ -20,6 +21,14 @@ class CalcAggreg(AllCalculus):
     def __init__(self):
         self.tracer = Telemetry.Start("calculus", __name__)
 
+    def ComputAggregFromSvc(self, data: json):
+        params = data['p']
+        # trace_flag = data['tf']
+        is_tmp = False
+        if params.get('is_tmp') is not None:
+            is_tmp = params['is_tmp']
+        self.ComputeAggreg(is_tmp)
+
     def ComputeAggreg(self, is_tmp: bool = False):
         """
             ComputeAggreg
@@ -31,8 +40,10 @@ class CalcAggreg(AllCalculus):
         while True:
             a_todo = AggTodoMeteor.popOne(is_tmp)
             if a_todo is None:
-                # no more data to update, return to sleep
-                return
+                a_todo = AggTodoMeteor.popOne(not is_tmp)
+                if a_todo is None:
+                    # no more data to update, return to sleep
+                    return
 
             self.__processTodo(a_todo, is_tmp)
 
@@ -50,9 +61,13 @@ class CalcAggreg(AllCalculus):
         else:
             trace_flag = RefManager.GetInstance().GetRef("trace_flag")
 
-        with self.tracer.start_as_current_span('Agg') as my_span:
+        span_name = 'Agg'
+        if is_tmp is True:
+            span_name += '_tmp'
+        with self.tracer.start_as_current_span(span_name) as my_span:
             my_span.set_attribute("obs_id", a_todo.data.obs_id_id)
             my_span.set_attribute("poste_id", a_todo.data.obs_id.poste_id_id)
+            my_span.set_attribute("is_tmp", is_tmp)
             # my_span.set_attribute("meteor", a_todo.data.obs_id.poste_id.meteor)
             # retrieve data we will need
             tmp_span = self.tracer.start_span('loadData')
@@ -117,7 +132,13 @@ class CalcAggreg(AllCalculus):
                             an_agg.save()
 
                 # we're done
-                print("a_todo " + str(a_todo.data.id) + ' processed in ' + str(datetime.datetime.now() - time_start) + ', still on queue: ' + str(a_todo.count()))
+                t.logInfo(
+                    "a_todo " + str(a_todo.data.id) + ' processed ' + str(datetime.datetime.now() - time_start) + ', still on queue: ' + str(a_todo.count()),
+                    my_span,
+                    {
+                        "time_exec": (datetime.datetime.now() - time_start).seconds,
+                        "queue_length": a_todo.count()
+                    })
                 a_todo.delete()
             finally:
                 poste_metier.unlock()

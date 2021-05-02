@@ -81,17 +81,3 @@ class Command(BaseCommand):
         self.stdout.write('   --status    get the status of the service')
         self.stdout.write('   --trace     ask to trace the service')
         self.stdout.write('   --notrace   stop the trace of the service')
-
-    def callService(self, service_name: str, command: int, trace_flag: bool):
-        try:
-            url = "http://localhost:8000"
-            data = {"svc": service_name, "cde": command, "trace_flag": trace_flag}
-            headers = {'content-type': 'application/json'}
-            r = requests.post(url, data=JsonPlus().dumps(data), headers=headers)
-            rj = r.json()
-            for a_result in rj['result']:
-                self.stdout.write(a_result)
-
-        except Exception as inst:
-            print(inst.args)     # arguments stored in .args
-            print(inst)          # __str__ allows args to be printed directly,

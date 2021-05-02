@@ -1,10 +1,11 @@
 from app.classes.calcul.allCalculus import AllCalculus
 from app.classes.metier.posteMetier import PosteMetier
 from app.classes.repository.aggTodoMeteor import AggTodoMeteor
+from app.classes.workers.svcAggreg import SvcAggreg
 from app.classes.typeInstruments.allTtypes import AllTypeInstruments
 from app.tools.jsonPlus import JsonPlus
 from app.tools.jsonValidator import checkJson
-from app.tools.myTools import CopyJson, LogException
+import app.tools.myTools as t
 from app.tools.telemetry import Telemetry
 from django.db import transaction
 import datetime
@@ -18,6 +19,21 @@ class CalcObs(AllCalculus):
     def __init__(self):
         self.tracer = Telemetry.Start("calculus", __name__)
 
+    def loadJsonFromSvc(self, data: json):
+        if data.get('p') is None or data['p'] == {}:
+            return
+        params = data["p"]
+        trace_flag = data["tf"]
+        is_tmp = delete_flag = use_validation = False
+        if params.get('is_tmp') is not None:
+            is_tmp = params['is_tmp']
+        if params.get('delete') is not None:
+            delete_flag = params['delete']
+        if params.get('validation') is not None:
+            use_validation = params['validation']
+        my_json = params['json']
+        self.loadJson(my_json, trace_flag, delete_flag, is_tmp, use_validation)
+
     def loadJson(self, json_file_data_array: json, trace_flag: bool = False, delete_flag: bool = False, is_tmp: bool = None, use_validation: bool = False) -> json:
         """
             processJson
@@ -28,18 +44,20 @@ class CalcObs(AllCalculus):
             # delete is not part of the transaction
             self.delete_obs_agg(is_tmp)
 
-        with self.tracer.start_as_current_span('Obs') as my_span:
-            ret = {}
+        ret = []
+        span_name = 'Obs'
+        if is_tmp is True:
+            span_name += '_tmp'
+        with self.tracer.start_as_current_span(span_name) as my_span:
             try:
-                ret = self._loadJson_array_ttx(json_file_data_array, trace_flag, is_tmp, use_validation)
-                my_span.set_attribute("items_processed", ret[ret.__len__() - 1].get('item_processed'))
-
+                ret.append(self._loadJson_array_ttx(json_file_data_array, trace_flag, is_tmp, use_validation))
+                my_span.set_attribute("items_processed", ret[0][ret.__len__() - 1].get('item_processed'))
             except Exception as exc:
-                LogException(exc, my_span)
+                t.LogException(exc, my_span)
                 ret.append({"Exception": str(exc), "args": str(exc.args)})
 
-            finally:
-                return ret
+        SvcAggreg.runMe({"is_tmp": is_tmp, "trace_flag": trace_flag})
+        return ret[0]
 
     @transaction.atomic
     def _loadJson_array_ttx(self, json_file_data_array: json, trace_flag: bool = False, is_tmp: bool = None, use_validation: bool = False) -> json:
@@ -82,7 +100,6 @@ class CalcObs(AllCalculus):
         my_span = self.tracer.get_current_span()
 
         while measure_idx < json_file_data['data'].__len__():
-            # print('processing idx: ' + str(measure_idx))
             # we use the stop_dat of our measure json as the start date for our processing
             m_stop_date_agg_start_date = json_file_data['data'][measure_idx]['stop_dat']
             m_duration = json_file_data['data'][measure_idx]['current']['duration']
@@ -90,21 +107,22 @@ class CalcObs(AllCalculus):
             if measure_idx == 0:
                 my_span.set_attribute("poste_id", str(poste_metier.data.id))
                 my_span.set_attribute("stopDat", str(m_stop_date_agg_start_date))
+                my_span.set_attribute("is_tmp", is_tmp)
             try:
                 poste_metier.lock()
                 obs_meteor = poste_metier.observation(m_stop_date_agg_start_date, is_tmp)
                 if obs_meteor.data.id is not None and json_file_data['data'][measure_idx].__contains__('update_me') is False:
-                    print('CalcObs: skipping data[' + str(measure_idx) + '], stop_dat: ' + str(m_stop_date_agg_start_date) + ' already loaded')
+                    t.logInfo('skipping data[' + str(measure_idx) + '], stop_dat: ' + str(m_stop_date_agg_start_date) + ' already loaded', my_span)
                     continue
                 if use_validation is True:
                     tmp_agg = []
                     if json_file_data['data'][measure_idx].__contains__('aggregations'):
-                        CopyJson(json_file_data['data'][measure_idx]['aggregations'], tmp_agg)
+                        t.CopyJson(json_file_data['data'][measure_idx]['aggregations'], tmp_agg)
                     if json_file_data['data'][measure_idx].__contains__('validation'):
-                        CopyJson(json_file_data['data'][measure_idx]['validation'], tmp_agg)
+                        t.CopyJson(json_file_data['data'][measure_idx]['validation'], tmp_agg)
                     obs_meteor.data.j_agg = tmp_agg
                     if tmp_agg.__len__() == 0:
-                        print('CalcObs: skipping data[' + str(measure_idx) + '], stop_dat: ' + str(m_stop_date_agg_start_date))
+                        t.logInfo('skipping data[' + str(measure_idx) + '], stop_dat: ' + str(m_stop_date_agg_start_date), my_span)
                         continue
                     json_file_data['data'][measure_idx]['current'] = {
                         "duration": m_duration

@@ -10,7 +10,13 @@ from opentelemetry.trace.propagation import get_current_span, Span
 from django.conf import settings
 
 
+class ContextMok:
+    span_id = None
+
+
 class SpanMok:
+    ctx = ContextMok()
+
     def __init__(self):
         if hasattr(settings, 'TELEMETRY') is True and settings.TELEMETRY is True:
             raise Exception('SpanMok', 'Calling Mok while telemetry is active')
@@ -36,12 +42,17 @@ class SpanMok:
     def add_event(event_name: str, j_val: json):
         return
 
+    def get_span_context(self):
+        return self.ctx
+
 
 class TracerTriage:
     def __init__(self, tracer: Tracer = None):
-        if tracer is None:
+        if hasattr(settings, 'TELEMETRY') is False or settings.TELEMETRY is False:
             self.real_tracer = self
         else:
+            if tracer is None:
+                raise Exception('TracerTriage', 'no tracer given')
             self.real_tracer = tracer
 
     def __enter__(self):
@@ -73,33 +84,38 @@ class TracerTriage:
 
 
 class Telemetry:
+    tracer: Tracer = None
+
     @staticmethod
     def Start(service_name: str, caller_name: str = __name__):
-        if hasattr(settings, 'TELEMETRY') is False or settings.TELEMETRY is False:
-            return TracerTriage()
+        if Telemetry.tracer is None:
+            if hasattr(settings, 'TELEMETRY') is False or settings.TELEMETRY is False:
+                return TracerTriage()
 
-        trace.set_tracer_provider(
-            TracerProvider(
-                resource=Resource.create({SERVICE_NAME: service_name})
+            trace.set_tracer_provider(
+                TracerProvider(
+                    resource=Resource.create({SERVICE_NAME: "django4"})
+                    # resource=Resource.create({SERVICE_NAME: service_name})
+                )
             )
-        )
-        tracer = trace.get_tracer(caller_name)
+            tracer = trace.get_tracer(__name__)
 
-        # Create a JaegerExporter to send spans with gRPC
-        # If there is no encryption or authentication set `insecure` to True
-        # If server has authentication with SSL/TLS you can set the
-        # parameter credentials=ChannelCredentials(...) or the environment variable
-        # `EXPORTER_JAEGER_CERTIFICATE` with file containing creds.
+            # Create a JaegerExporter to send spans with gRPC
+            # If there is no encryption or authentication set `insecure` to True
+            # If server has authentication with SSL/TLS you can set the
+            # parameter credentials=ChannelCredentials(...) or the environment variable
+            # `EXPORTER_JAEGER_CERTIFICATE` with file containing creds.
 
-        jaeger_exporter = grpc.JaegerExporter(
-            collector_endpoint=TelemetryConf.get("collector"),
-            insecure=TelemetryConf.get('insecure')
-        )
+            jaeger_exporter = grpc.JaegerExporter(
+                collector_endpoint=TelemetryConf.get("collector"),
+                insecure=TelemetryConf.get('insecure')
+            )
 
-        # create a BatchSpanProcessor and add the exporter to it
-        span_processor = BatchSpanProcessor(jaeger_exporter)
+            # create a BatchSpanProcessor and add the exporter to it
+            span_processor = BatchSpanProcessor(jaeger_exporter)
 
-        # add to the tracer factory
-        trace.get_tracer_provider().add_span_processor(span_processor)
+            # add to the tracer factory
+            trace.get_tracer_provider().add_span_processor(span_processor)
+            Telemetry.tracer = tracer
 
-        return TracerTriage(tracer)
+        return TracerTriage(Telemetry.tracer)

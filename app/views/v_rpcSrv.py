@@ -3,6 +3,7 @@ from app.classes.workers.workerRoot import WorkerRoot
 from app.tools.climConstant import SvcRequestType
 from app.tools.jsonPlus import JsonPlus
 from django.views.decorators.csrf import csrf_exempt
+import json
 
 
 @csrf_exempt
@@ -27,7 +28,10 @@ def viewControlSvc(request):
         svc_control = SvcRequestType.Start | SvcRequestType.Stop | SvcRequestType.Status | SvcRequestType.Run
         if (my_cde & svc_control) != SvcRequestType.Nope:
             svc_instance = getSvcInstance(j_request['svc'])
-            ControlSvc(j_resp, svc_instance, my_cde)
+            params = {}
+            if j_request.get('params') is not None:
+                params = j_request['params']
+            ControlSvc(j_resp, svc_instance, my_cde, params)
 
     except Exception as inst:
         j_resp = {"status": "err", "message": str(inst)}
@@ -49,11 +53,11 @@ def getSvcInstance(name: str):
     raise Exception('getSvcInstance', 'service ' + name + ' not found')
 
 
-def ControlSvc(j_resp: dict, svc_instance, cde: SvcRequestType):
+def ControlSvc(j_resp: dict, svc_instance, cde: SvcRequestType, params: json = {}):
     try:
         j_resp['status'] = 'ok'
         if cde == SvcRequestType.Run:
-            svc_instance.RunIt()
+            svc_instance.RunIt(params)
             j_resp['result'].append('service ' + svc_instance.display + ' activated')
             return True
 

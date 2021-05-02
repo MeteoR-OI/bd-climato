@@ -1,12 +1,12 @@
 from app.models import ExtremeTodo, TmpExtremeTodo
 import datetime
 import pytest
-import logging
+import app.tools.myTools as t
 
 
 @pytest.fixture(autouse=True)
 def enable_db_access_for_all_tests(db):
-    logging.info('fixture ExtremeTodoMeteor::enable_db_access_for_all_tests called')
+    t.logInfo('fixture ExtremeTodoMeteor::enable_db_access_for_all_tests called')
     pass
 
 

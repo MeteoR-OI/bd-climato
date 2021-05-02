@@ -1,10 +1,13 @@
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
 from app.classes.calcul.calcAggreg import CalcAggreg
+from app.tools.climConstant import SvcRequestType
 from app.tools.jsonPlus import JsonPlus
-from app.classes.calcul.calcObservation import CalcObs
+import app.tools.myTools as t
 import os
 import glob
+import requests
+import json
 
 
 class Command(BaseCommand):
@@ -55,7 +58,7 @@ class Command(BaseCommand):
         for a_file in glob.glob(base_dir + '/../../data/json_not_in_git/*.json'):
             if options['filename'] == '*' or a_file.endswith(options['filename']):
                 b_file_found = True
-                self.processJson(a_file, delete_flag, trace_flag, is_tmp, validation_flag)
+                self.callRemoteObsSvc(a_file, delete_flag, trace_flag, is_tmp, validation_flag)
 
         if b_file_found is False:
             self.stderr.write('no file found, exiting')
@@ -68,9 +71,8 @@ class Command(BaseCommand):
             else:
                 call_command('svc', 'aggreg', '--run')
 
-    def processJson(self, file_name: str, delete_flag: bool, trace_flag: bool, is_tmp, use_validation: bool = False):
+    def callRemoteObsSvc(self, file_name: str, delete_flag: bool, trace_flag: bool, is_tmp, use_validation: bool = False):
         try:
-            calc = CalcObs()
             texte = ''
 
             with open(file_name, "r") as f:
@@ -80,11 +82,27 @@ class Command(BaseCommand):
 
                 my_json = JsonPlus().loads(texte)
 
-                ret = calc.loadJson(my_json, trace_flag, False, is_tmp, use_validation)
-                if trace_flag is True:
-                    self.stdout.write(JsonPlus().dumps(ret))
+                params = {
+                    "json": my_json,
+                    "delete": delete_flag,
+                    "is_tmp": is_tmp,
+                    "validation": use_validation
+                }
+                self.callService('loadobs', SvcRequestType.Run, False, params)
 
         except Exception as inst:
-            print('in ' + file_name + ':')
-            print(inst.args)     # arguments stored in .args
-            print(inst)          # __str__ allows args to be printed directly,
+            t.LogException(inst)
+
+    def callService(self, service_name: str, command: int, trace_flag: bool, params: json):
+        try:
+            url = "http://localhost:8000/app/svc"
+            data = {"svc": service_name, "cde": command, "trace_flag": trace_flag, "params": params}
+            headers = {'content-type': 'application/json'}
+            r = requests.post(url, data=JsonPlus().dumps(data), headers=headers)
+            # if r.status_code
+            rj = r.json()
+            for a_result in rj['result']:
+                self.stdout.write('   ' + a_result)
+
+        except Exception as inst:
+            t.LogException(inst)

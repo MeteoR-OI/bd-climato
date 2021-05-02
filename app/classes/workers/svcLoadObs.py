@@ -1,9 +1,9 @@
 from app.classes.workers.workerRoot import WorkerRoot
-from app.classes.calcul.calcAggreg import CalcAggreg
+from app.classes.calcul.calcObservation import CalcObs
 import json
 
 
-class SvcAggreg(WorkerRoot):
+class SvcLoadObs(WorkerRoot):
     """
         SvcAggreg
 
@@ -12,15 +12,15 @@ class SvcAggreg(WorkerRoot):
 
     def __init__(self, is_tmp: bool = None):
         # call parent __init__
-        super(SvcAggreg, self).__init__(str(SvcAggreg), CalcAggreg().ComputAggregFromSvc, 120, ['aggreg', 'agreg', 'agregation', 'aggregation'])
+        super(SvcLoadObs, self).__init__(str(SvcLoadObs), CalcObs().loadJsonFromSvc, 120, ['loadobs'])
 
     @staticmethod
     def GetInstance(myClass: object = None):
-        return WorkerRoot.GetInstance(SvcAggreg)
+        return WorkerRoot.GetInstance(SvcLoadObs)
 
     @staticmethod
     def runMe(params: json = {}):
-        svc_agg_instance = SvcAggreg.GetInstance()
+        svc_agg_instance = SvcLoadObs.GetInstance()
         if svc_agg_instance.IsRunning() is False:
             svc_agg_instance.Start()
         svc_agg_instance.RunIt(params)

@@ -1,11 +1,11 @@
 from app.models import TypeInstrument
 import pytest
-import logging
+import app.tools.myTools as t
 
 
 @pytest.fixture(autouse=True)
 def enable_db_access_for_all_tests(db):
-    logging.info('fixture typeInstrumentMeteor::enable_db_access_for_all_tests called')
+    t.logInfo('fixture typeInstrumentMeteor::enable_db_access_for_all_tests called')
     pass
 
 

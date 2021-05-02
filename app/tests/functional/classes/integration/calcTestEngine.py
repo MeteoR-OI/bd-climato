@@ -7,7 +7,7 @@ from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.aggMeteor import AggMeteor
 from app.tools.jsonPlus import JsonPlus
 import os
-import logging
+import app.tools.myTools as t
 
 
 class CalcTestEngine():
@@ -93,10 +93,10 @@ class CalcTestEngine():
                             test_dat = calcAggDate(a_result["t"], test_dat, hour_deca, False)
                         my_row = AggMeteor(pid, a_result['t'], test_dat)
 
-                    if a_result['t'] == "O":
-                        print('obs: ' + str(my_row.data.id) + ", dat: " + str(my_row.data.stop_dat) + ", j: " + JsonPlus().dumps(my_row.data.j))
-                    else:
-                        print('agg_' + a_result['t'] + ': ' + str(my_row.data.id) + ", dat: " + str(my_row.data.start_dat) + ", j: " + JsonPlus().dumps(my_row.data.j))
+                    # if a_result['t'] == "O":
+                    #     t.logTrace('obs: ' + str(my_row.data.id) + ", dat: " + str(my_row.data.stop_dat) + ", j: " + JsonPlus().dumps(my_row.data.j))
+                    # else:
+                    #     t.logTrace('agg_' + a_result['t'] + ': ' + str(my_row.data.id) + ", dat: " + str(my_row.data.start_dat) + ", j: " + JsonPlus().dumps(my_row.data.j))
                     if a_result.__contains__('count'):
                         stop_dat_mask = ''
                         if a_result.__contains__('stop_dat_mask'):
@@ -116,11 +116,11 @@ class CalcTestEngine():
                         if a_result[k[0]] != my_row.data.j[k[0]]:
                             err_txt = "t: " + a_result['t'] + ', key:' + k[0]
                             err_txt = err_txt + ' -> ' + str(my_row.data.j[k[0]]) + ' should be ' + str(a_result[k[0]])
-                            logging.error("error: " + str(err_txt))
+                            t.logError("error: " + str(err_txt))
                             error_msg.append(err_txt)
 
             assert error_msg.__len__() == 0
 
         except Exception as inst:
-            print(inst.with_traceback(None))
+            t.logTrace(inst.with_traceback(None))
             assert "error in " == " json file"

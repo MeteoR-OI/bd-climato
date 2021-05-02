@@ -1,6 +1,3 @@
-# import sys
-# with open('/tmp/python-sys-path.txt', 'w') as outfile:
-#     print("** PATH **: " + str(sys.path))
 import datetime
 from app.tools.aggTools import getAggDuration, addJson, calcAggDate
 from app.tools.climConstant import ComputationParam

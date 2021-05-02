@@ -166,7 +166,7 @@ def display_missing_agg(one_agg: AggMeteor, disp_details: bool):
 
 
 def display_line(key, tmp_agg_val, agg_val):
-    print("{:<20}".format(str(key))[0:20] + " I " + "{:<30}".format(str(agg_val))[0:30] + " I " + "{:<30}".format(str(tmp_agg_val))[0:30])
+    display("{:<20}".format(str(key))[0:20] + " I " + "{:<30}".format(str(agg_val))[0:30] + " I " + "{:<30}".format(str(tmp_agg_val))[0:30])
 
 
 def display_hdr(tmp_agg_data, agg_data, my_agg: AggMeteor = None):

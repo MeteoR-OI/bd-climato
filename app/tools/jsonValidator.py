@@ -59,8 +59,6 @@ def checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
             measure_duration = datetime.timedelta(minutes=int(a_current['duration']))
             new_val['start_dat'] = j['data'][idx]['stop_dat'] - measure_duration
 
-        # print('idx: ' + str(idx) + ', ' + str(a_current['stop_dat']))
-
         for key in a_current.__iter__():
             if str(key).endswith('_max') or str(key).endswith('_min'):
                 if a_current.__contains__(key + '_time') is False:
@@ -108,9 +106,7 @@ def checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
 
         idx += 1
 
-    # print('check step2')
     idx = 0
-    # print(JsonPlus().dumps(val_to_add))
     while idx < val_to_add.__len__():
         my_val = val_to_add[idx]
         my_current = j['data'][idx]['current']

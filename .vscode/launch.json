@@ -32,9 +32,20 @@
             "args": [
                 // "${fileBasenameNoExtension}"
                 "loadJson",
-                "dev.obs.json"
-                // "--tmp",
-                // "--validation"
+                "small.json",
+                "--tmp",
+                "--validation"
+            ]
+        },
+        {
+            "name": "calc",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                // "${fileBasenameNoExtension}"
+                "calc",
+                "--tmp",
             ]
         },
         {

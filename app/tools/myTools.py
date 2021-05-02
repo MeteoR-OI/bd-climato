@@ -1,10 +1,15 @@
-from .jsonPlus import JsonPlus, json
+from app.tools.telemetry import Span
+from .jsonPlus import json
 import datetime
 import inspect
 
 
 def LogException(inst, my_span=None, params: json = {}, return_string: bool = False):
     return _logMe(str(inst), 'error', my_span, params, 1, return_string)
+
+
+def LogError(message: str, my_span=None, params: json = {}, return_string: bool = False):
+    return _logMe(message, 'error', my_span, params, 1, return_string)
 
 
 def logInfo(message: str, my_span=None, params: json = {}, return_string: bool = False):
@@ -35,7 +40,6 @@ def CopyJson(src: json, dest: json):
 
 
 def _copyJson(src: json, dest: json, k: str, v):
-    # print(str(k) + ":" + str(v))
     type_val = str(type(v))
     if "'dict'" in type_val:
         if dest.__contains__(k) is False:
@@ -55,7 +59,7 @@ def _copyJson(src: json, dest: json, k: str, v):
     dest[k] = v
 
 
-def _logMe(message: str, level: str = None, my_span=None, params: json = {}, stack_level: int = 0, return_string: bool = False):
+def _logMe(message: str, level: str = None, my_span: Span = None, params: json = {}, stack_level: int = 0, return_string: bool = False):
     """ centralized log output function """
     span_id = None
     if my_span is not None:
@@ -85,5 +89,3 @@ def _logMe(message: str, level: str = None, my_span=None, params: json = {}, sta
 
     if return_string:
         return log_j
-    else:
-        print(JsonPlus().dumps(log_j))

@@ -13,13 +13,13 @@ def test_singleton():
 @pytest.mark.unit
 def test_store_retrieve_a_reference():
     ref1 = RefManager.GetInstance()
-    ref1.AddRef("test", 123)
-    assert ref1.GetRef("test") == 123
+    ref1.AddRef("test1", 123)
+    assert ref1.GetRef("test1") == 123
 
 
 @pytest.mark.unit
 def test_store_delete_a_reference():
     ref1 = RefManager.GetInstance()
-    ref1.AddRef("test", 123)
-    ref1.DelRef("test")
-    assert ref1.GetRef("test") is None
+    ref1.AddRef("test2", 123)
+    ref1.DelRef("test2")
+    assert ref1.GetRef("test2") is None
