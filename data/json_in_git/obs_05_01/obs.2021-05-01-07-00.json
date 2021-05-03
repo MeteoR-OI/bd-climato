@@ -1,0 +1,93 @@
+[
+{
+  "meteor" : "MTG320",
+  "version":2,
+  "info" : {
+     "title":"JSON pour BDClimato",
+     "time":"01/05/2021 à 07h00",
+     "uptime":"4 jours, 19 heures, 0 minutes",
+     "last_update":"2021-05-01 07:00:00",
+     "last_update_before_stop":"2021-04-26 11:45:00" 
+     },
+  "data":
+     [
+      {
+       "start_dat":"2021-05-01T06:55:00",
+       "stop_dat":"2021-05-01T07:00:00",
+       "current": {
+       "out_temp":22.5,
+       "out_temp_min":22.5,       
+       "out_temp_min_time":"2021-05-01T06:59:37",
+       "out_temp_avg":22.5930831494,
+       "out_temp_max":22.6666666667,       
+       "out_temp_max_time":"2021-05-01T06:55:01",
+       "windchill":22.5,
+       "windchill_min":22.5,       
+       "windchill_min_time":"2021-05-01T06:59:37",
+       "windchill_avg":22.5930831494,
+       "heatindex":22.5,
+       "heatindex_max":22.6666666667,       
+       "heatindex_max_time":"2021-05-01T06:55:01",
+       "heatindex_avg":22.5930831494,
+       "dewpoint":20.7738431318,
+       "dewpoint_min":20.7016167413,       
+       "dewpoint_min_time":"2021-05-01T06:55:51",
+       "dewpoint_avg":20.7922068925,
+       "dewpoint_max":20.8834846085,       
+       "dewpoint_max_time":"2021-05-01T06:57:01",
+       "humidity":90.0,
+       "humidity_min":89.0,       
+       "humidity_min_time":"2021-05-01T06:55:01",
+       "humidity_avg":89.5960264901,
+       "humidity_max":90.0,       
+       "humidity_max_time":"2021-05-01T06:57:01",
+       "barometer":1015.13757837,
+       "barometer_min":1015.13757837,       
+       "barometer_min_time":"2021-05-01T06:59:01",
+       "barometer_avg":1015.21203406,
+       "barometer_max":1015.27303389,       
+       "barometer_max_time":"2021-05-01T06:57:01",
+       "pressure":979.089854156,
+       "pressure_avg":979.162044079,
+       "wind_avg":17.7028280001,
+       "wind_dir":135.0,
+       "windgust":37.0150040002,
+       "windgust_dir":135.0,
+       "wind_max":37.0150040002,
+       "wind_max_dir":138.0,        
+       "wind_max_time":"2021-05-01T06:57:53",    
+       "wind10_avg":18.9924379869,
+       "rain":0.0,
+       "rain_rate":0.0,
+       "rain_rate_max_time":"2021-05-01T06:55:01", 
+       "radiation_min":0.000548348448336,
+       "radiation_min_time":"2021-05-01T06:55:01",
+       "radiation":0.248863142401,
+       "radiation_max":0.00115675228321,
+       "radiation_max_time":"2021-05-01T06:59:59",
+       "in_temp":27.8333333333,
+       "in_temp_max":27.8888888889,
+       "in_temp_max_time":"2021-05-01T06:56:01",
+       "in_temp_avg":27.8554083885,
+       "in_temp_min":27.8333333333,
+       "in_temp_min_time":"2021-05-01T06:55:01",
+       "in_humidity":65.0,
+       "in_humidity_max":65.0,
+       "in_humidity_max_time":"2021-05-01T06:55:01",
+       "in_humidity_avg":65.0,
+       "in_humidity_min":65.0,
+       "in_humidity_min_time":"2021-05-01T06:55:01",
+       "rx":98.2291666667,
+       "voltage":4.59,
+       "duration":5.0
+       },
+       "aggregations":
+       [{
+       "level":"H",
+       "etp_sum":0.0272556232228,
+       "start_dat":"2021-05-01T06:00:00"
+       }]
+     }
+   ]
+}
+]
