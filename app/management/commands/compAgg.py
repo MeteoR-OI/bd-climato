@@ -75,11 +75,15 @@ def analyseAggreg(poste_id: int, from_dt: datetime, to_dt: datetime, disp_detail
             while (max(idx, idx_tmp) < max_idx):
                 if idx >= nb_agg:
                     agg_done = True
-                    idx -= 1
+                    display_missing_agg(all_tmp_agg[idx_tmp], disp_details)
+                    idx_tmp += 1
+                    continue
 
                 if idx_tmp >= nb_tmp_agg:
                     tmp_agg_done = True
-                    idx_tmp -= 1
+                    display_missing_tmp_agg(all_agg[idx], disp_details)
+                    idx += 1
+                    continue
 
                 my_agg = all_agg[idx]
                 my_tmp_agg = all_tmp_agg[idx_tmp]
@@ -96,12 +100,12 @@ def analyseAggreg(poste_id: int, from_dt: datetime, to_dt: datetime, disp_detail
                 if str(my_tmp_agg.start_dat) > str(to_dt):
                     tmp_agg_done = True
 
-                if tmp_agg_done is True or str(my_agg.start_dat) < str(my_tmp_agg.start_dat):
+                if str(my_agg.start_dat) < str(my_tmp_agg.start_dat):
                     display_missing_tmp_agg(my_agg, disp_details)
                     idx += 1
                     continue
 
-                if agg_done is True or str(my_agg.start_dat) > str(my_tmp_agg.start_dat):
+                if str(my_agg.start_dat) > str(my_tmp_agg.start_dat):
                     display_missing_agg(my_tmp_agg, disp_details)
                     idx_tmp += 1
                     continue
@@ -152,14 +156,14 @@ def display(msg: str):
 
 def display_missing_tmp_agg(one_agg: AggMeteor, disp_details: bool):
     # display('')
-    display_hdr('           ?????', one_agg.start_dat)
+    display_hdr('           None', one_agg.start_dat)
     # if disp_details is True:
     #     for k, v in one_agg.j.items():
     #         display_line('   ' + k, str(v), '')
 
 
 def display_missing_agg(one_agg: AggMeteor, disp_details: bool):
-    display_hdr(one_agg.start_dat, '           ?????')
+    display_hdr(one_agg.start_dat, '           None')
     # if disp_details is True:
     #     for k, v in one_agg.j.items():
     #         display_line('   ' + k, '', str(v))
