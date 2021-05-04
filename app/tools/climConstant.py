@@ -10,11 +10,10 @@ class ClimConstants(Constants):
 class MeasureProcessingBitMask(Constants):
     """ special measure processing"""
     Standard = 0
-    MeasureIsSum = 1
-    MeasureIsWind = 2
-    OnlyAggregateInHour = 4
-    NotAllowedInCurrent = 8
-    MeasureIsOmm = 16
+    MeasureIsWind = 1
+    OnlyAggregateInHour = 2
+    NotAllowedInCurrent = 4
+    MeasureIsOmm = 128
 
 
 class SvcRequestType(Constants):

@@ -18,17 +18,19 @@ class AggCompute():
         m_stop_date: datetime,
         my_measure: json,
         delta_values: json,
-        agg_deca: AggMeteor,
+        agg_decas: list,
         m_agg_j: json,
         dv_next: json,
         trace_flag: bool = False,
     ):
+        # add duration_sum in our aggregation only if needed
+        agg_decas[0].add_duration(delta_values["duration"])
 
         # load data in our aggregation
-        self.loadDVInAllAggregations(
+        self.loadDVInAggregation(
             my_measure,
             m_stop_date,
-            agg_deca,
+            agg_decas[0],
             m_agg_j,
             delta_values,
             dv_next,
@@ -36,10 +38,10 @@ class AggCompute():
         )
 
         # get our extreme values
-        self.loadMaxMinInAllAggregations(
+        self.loadMaxMinInAggregation(
             my_measure,
             m_stop_date,
-            agg_deca,
+            agg_decas,
             m_agg_j,
             delta_values,
             dv_next,
@@ -47,7 +49,7 @@ class AggCompute():
         )
         # save our delta_values if in trace mode
         if trace_flag is True:
-            j_dv_agg = agg_deca[0].data.j
+            j_dv_agg = agg_decas[0].data.j
             if j_dv_agg.__contains__('dv') is False:
                 j_dv_agg['dv'] = {}
             for akey in delta_values.items():
@@ -57,7 +59,7 @@ class AggCompute():
     # ----------------------------------------------------
     # private or methods common to multiple sub-instances
     # ----------------------------------------------------
-    def loadMaxMinInAllAggregations(
+    def loadDVInAggregation(
         self,
         my_measure: json,
         m_stop_date: datetime,
@@ -66,19 +68,34 @@ class AggCompute():
         delta_values: json,
         dv_next: json,
         trace_flag: bool = False,
+        avg_suffix: str = '_rate',
+    ):
+        pass
+
+    def loadMaxMinInAggregation(
+        self,
+        my_measure: json,
+        m_stop_date: datetime,
+        agg_decas: AggMeteor,
+        m_agg_j: json,
+        delta_values: json,
+        dv_next: json,
+        trace_flag: bool = False,
         b_use_rate: bool = False,
     ):
         """
-            loadMaxMinInAllAggregations
+            loadMaxMinInAggregation
 
             load in all aggregations max/min
             update dv_next for nest level
         """
         json_key = self.get_json_key(my_measure)
-        agg_j = agg_deca.data.j
-        agg_deca.dirty = True
-
+        idx_maxmin = 0
         for maxmin_suffix in ['_max', '_min']:
+            agg_j = agg_decas[idx_maxmin].data.j
+            agg_decas[idx_maxmin].dirty = True
+            idx_maxmin += 1
+
             maxmin_key = maxmin_suffix.split('_')[1]
             if b_use_rate:
                 maxmin_suffix = '_rate' + maxmin_suffix
@@ -151,7 +168,7 @@ class AggCompute():
                 """
                 if delta_values.__contains__(json_key + '_invalidate' + maxmin_suffix):
                     if agg_maxmin is None:
-                        raise Exception('loadMaxMinInAllAggregations', 'Invalidate and no data in aggregation...')
+                        raise Exception('loadMaxMinInAggregation', 'Invalidate and no data in aggregation...')
                     invalid_maxmin_value = delta_values[json_key + '_invalidate' + maxmin_suffix]
                     if maxmin_suffix == '_max':
                         if agg_maxmin == invalid_maxmin_value and current_maxmin < agg_maxmin:
@@ -231,15 +248,16 @@ class AggCompute():
             target_key += '_omm'
         return target_key
 
-    def loadDVInAllAggregations(
-        self,
-        my_measure: json,
-        m_stop_date: datetime,
-        agg_deca: AggMeteor,
-        m_agg_j: json,
-        delta_values: json,
-        dv_next: json,
-        trace_flag: bool = False,
-        avg_suffix: str = '_rate',
-    ):
-        pass
+    def get_json_value(self, j: json, key: str, suffix_list: list, key_preffix_first: bool):
+        key_list = []
+        if key_preffix_first is not None and key_preffix_first is False:
+            key_list.append(key)
+        for a_suffix in suffix_list:
+            key_list.append(a_suffix)
+        if key_preffix_first is not None and key_preffix_first is True:
+            key_list.append(key)
+
+        for a_key in key_list:
+            if j.get(a_key) is not None:
+                return j[a_key]
+        return None

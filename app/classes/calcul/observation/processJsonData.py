@@ -106,7 +106,7 @@ class ProcessJsonData():
                     # on prend la valeur reportee, et le milieu de l'heure de la periode de la donnee elementaire
                     if b_use_rate:
                         # pour les "rate" on prend l'avg (qui est un rate)
-                        delta_values[target_key + maxmin_suffix] = delta_values[target_key + '_sum']
+                        delta_values[target_key + maxmin_suffix] = delta_values[target_key + '_s']
                     else:
                         # sinon on prend la valeur de la mesure
                         delta_values[target_key + maxmin_suffix] = delta_values[target_key + '_i']

@@ -4,7 +4,7 @@ import json
 import datetime
 
 
-class RateCompute(AggCompute):
+class AggRateCompute(AggCompute):
     """
         RateCompute
 
@@ -15,7 +15,7 @@ class RateCompute(AggCompute):
 
     """
 
-    def loadDVInAllAggregations(
+    def loadDVInAggregation(
         self,
         my_measure: json,
         m_stop_date: datetime,
@@ -26,7 +26,7 @@ class RateCompute(AggCompute):
         trace_flag: bool = False,
         avg_suffix: str = '_rate',
     ):
-        super(RateCompute, self).loadDVInAllAggregations(
+        super(RateCompute, self).loadDVInAggregation(
             my_measure,
             m_stop_date,
             agg_deca,
@@ -37,7 +37,7 @@ class RateCompute(AggCompute):
             '_rate'
         )
 
-    def loadMaxMinInAllAggregations(
+    def loadMaxMinInAggregation(
         self,
         my_measure: json,
         m_stop_date: datetime,
@@ -48,7 +48,7 @@ class RateCompute(AggCompute):
         trace_flag: bool = False,
         b_use_rate: bool = False,
     ):
-        super(RateCompute, self).loadMaxMinInAllAggregations(
+        super(RateCompute, self).loadMaxMinInAggregation(
             my_measure,
             m_stop_date,
             agg_deca,

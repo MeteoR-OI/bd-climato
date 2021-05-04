@@ -12,10 +12,9 @@ from app.classes.repository.typeInstrumentMeteor import TypeInstrumentMeteor
 # agg: Type aggregation: avg, avgomm, rate
 #   avg: classic average
 #   avgomm: classic average, but use the last measure of the hour as the value for the full hour
+#   sum : only sum up the value
 #   rate: same as avg, only differ in max/min calculation
-# avg -> compute "field"_sum, "field"_duration, et si besoin "field"_avg
-#        field_sum is value * duration
-#        if MeasureIsSum is set, then field_sum is the value of the measure
+#   no : no aggregation, only process max/min
 # calcAvg: Optionnel, defaut=True, can we compute avg if not given in aggregation json
 #    calcAvg=False -> use only data coming from json file
 #    calcAvg=True  -> use in first data coming from json file, if not present use the current value of the measure
@@ -26,14 +25,14 @@ from app.classes.repository.typeInstrumentMeteor import TypeInstrumentMeteor
 #       Overload with "field"_max/min in json/current
 #       Overload with json/aggregations."field"_max/min
 #       take this value, and compare with current max/min in agregation. Replace if it is better
-# hour_deca -> Hours substracted/added to the time of the measure when computing the hour aggregation datetime
+# hour_deca -> Hours substracted/added to the time of the measure when computing the hour aggregation datetime (default is 0)
+# deca_min -> Hours substracted/added to the time for the processing of min values (default is hour_deca)
+# deca_max -> Hours substracted/added to the time for the processing of max values (default is hour_deca)
 # special: special processing:
 #   Standard(0) : no specific processing
-#   MeasureIsSum(1) : Measure is a sum (no need to multiplu by duration)
-#                     in the json the value can be specified in [src_key] or [src_key + '_sum']
-#   MeasureIsWind(2) : Measure is wind (need to save the xxx_dir)
-#   OnlyAggregateInHour(4)
-#   MeasureIsOmm(16) : This flag is set by the app when agg == 'ommAvg', no need to use it
+#   MeasureIsWind(1) : Measure is wind (need to save the xxx_dir)
+#   OnlyAggregateInHour(2)
+#   MeasureIsOmm(128) : This flag is set by the app when agg == 'ommAvg', no need to use it
 
 
 class RootTypeInstrument:

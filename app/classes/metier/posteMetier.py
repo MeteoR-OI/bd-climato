@@ -64,6 +64,7 @@ class PosteMetier(PosteMeteor):
         my_start_date_utc = start_date_utc
         if is_measure_date is True:
             my_start_date_utc = calcAggDate('H', start_date_utc, 0, True)
+        # m_duration = self.data.du
         needed_dates = [my_start_date_utc]
         calculated_deca = {"d0": True}
         ti_all = AllTypeInstruments()
@@ -81,6 +82,9 @@ class PosteMetier(PosteMeteor):
         ret = []
         for a_needed_date in needed_dates:
             tmp_dt = a_needed_date
+            b_need_to_sum_duration = False
+            if str(a_needed_date) == str(my_start_date_utc):
+                b_need_to_sum_duration = True
             for agg_niveau in getAggLevels(is_tmp):
                 # is_measure_date only used in agg_hour
                 tmp_dt = calcAggDate(agg_niveau, tmp_dt, 0, False)
@@ -90,7 +94,7 @@ class PosteMetier(PosteMeteor):
                         already_loaded = True
                         break
                 if already_loaded is False:
-                    ret.append(AggMeteor(self.data.id, agg_niveau, tmp_dt, False))
+                    ret.append(AggMeteor(self.data.id, agg_niveau, tmp_dt, False, b_need_to_sum_duration))
         return ret
 
     def observation(self, my_stop_date_utc: datetime, is_tmp: bool = None) -> ObsMeteor:

@@ -63,7 +63,7 @@ class AggHourAdmin(admin.ModelAdmin):
     fields = (
         ('poste_id'),
         ('start_dat'),
-        ('duration_sum'),
+        ('duration_s'),
         ('j')
     )
 
@@ -80,7 +80,7 @@ class AggDayAdmin(admin.ModelAdmin):
     fields = (
         ('poste_id'),
         ('start_dat'),
-        ('duration_sum'),
+        ('duration_s'),
         ('j')
     )
 
@@ -97,7 +97,7 @@ class AggMonthAdmin(admin.ModelAdmin):
     fields = (
         ('poste_id'),
         ('start_dat'),
-        ('duration_sum'),
+        ('duration_s'),
         ('j')
     )
 
@@ -114,7 +114,7 @@ class AggYearAdmin(admin.ModelAdmin):
     fields = (
         ('poste_id'),
         ('start_dat'),
-        ('duration_sum'),
+        ('duration_s'),
         ('j')
     )
 
@@ -130,7 +130,7 @@ class AggAllAdmin(admin.ModelAdmin):
     fields = (
         ('poste_id'),
         ('start_dat'),
-        ('duration_sum'),
+        ('duration_s'),
         ('j')
     )
 

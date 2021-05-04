@@ -5,7 +5,7 @@ from app.tools.aggTools import isFlagged, loadFromExclu, calcAggDate, delKey
 import json
 
 
-class ProcessJsonDataAvg(ProcessJsonData):
+class ProcessJsonDataSum(ProcessJsonData):
     """
         ProcessJsonDataAvg
 

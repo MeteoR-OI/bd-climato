@@ -1,0 +1,27 @@
+from app.classes.repository.aggMeteor import AggMeteor
+from app.classes.calcul.aggregations.aggCompute import AggCompute
+import json
+import datetime
+
+
+class AggNoCompute(AggCompute):
+    """
+        AvgCompute
+
+        Computation specific to a measure type
+
+        must load dv[M_value], and dv[first_time] when in omm mode
+
+    """
+    def loadDVInAggregation(
+        self,
+        my_measure: json,
+        m_stop_dat: datetime,
+        agg_deca: AggMeteor,
+        m_agg_j: json,
+        delta_values: json,
+        dv_next: json,
+        trace_flag: bool = False,
+        avg_suffix: str = '_avg',
+    ):
+        return
