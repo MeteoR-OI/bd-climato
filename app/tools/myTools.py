@@ -61,9 +61,9 @@ def _copyJson(src: json, dest: json, k: str, v):
 
 def _logMe(message: str, level: str = None, my_span: Span = None, params: json = {}, stack_level: int = 0, return_string: bool = False):
     """ centralized log output function """
-    span_id = None
+    trace_id = None
     if my_span is not None:
-        span_id = my_span.get_span_context().span_id
+        trace_id = my_span.get_span_context().trace_id
 
     stack_line = inspect.stack()[1 + stack_level]
     location = stack_line.function + '::' + str(stack_line.lineno)
@@ -80,9 +80,9 @@ def _logMe(message: str, level: str = None, my_span: Span = None, params: json =
     # add level
     if level is not None:
         log_j['level'] = level
-    # add span_id
-    if span_id is not None:
-        log_j['span_id'] = span_id
+    # add trace_id
+    if trace_id is not None:
+        log_j['trace_id'] = trace_id
     # add our json Keys/Values
     for k, v in params.items():
         log_j[k] = v

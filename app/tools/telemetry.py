@@ -11,7 +11,7 @@ from django.conf import settings
 
 
 class ContextMok:
-    span_id = None
+    trace_id = None
 
 
 class SpanMok:
