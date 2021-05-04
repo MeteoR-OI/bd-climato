@@ -115,6 +115,7 @@ class Poste(models.Model):
         ('A', 'Global'),
     )
     # mandatory fields
+    id = models.AutoField(primary_key=True)
     meteor = models.CharField(null=False, max_length=10, verbose_name="Code MeteoR.OI")
     fuseau = models.SmallIntegerField(null=False, verbose_name="nombre heure entre TU et heure fuseau, default UTC+4")
 
@@ -145,6 +146,7 @@ class Poste(models.Model):
 
 
 class TypeInstrument(models.Model):
+    id = models.AutoField(primary_key=True)
     name = models.CharField(null=False, max_length=10, verbose_name="Type de Donnees")
     model_value = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name="JsonB")
 
@@ -156,6 +158,7 @@ class TypeInstrument(models.Model):
 
 
 class Exclusion(models.Model):
+    id = models.AutoField(primary_key=True)
     poste_id = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
     type_instrument = models.ForeignKey(null=False, to="TypeInstrument", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
@@ -172,6 +175,7 @@ class Exclusion(models.Model):
 
 
 class Observation(models.Model):
+    id = models.BigAutoField(primary_key=True)
     poste_id = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
     agg_start_dat = DateCharField(null=False, max_length=20, default="1900-01-01T00:00:00", verbose_name="date agregation horaire utilisée")
     stop_dat = DateCharField(null=False, max_length=20, verbose_name="stop date, date de la mesure")
@@ -192,6 +196,7 @@ class Observation(models.Model):
 
 
 class TmpObservation(models.Model):
+    id = models.BigAutoField(primary_key=True)
     poste_id = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
     agg_start_dat = DateCharField(null=False, max_length=20, default="1900-01-01T00:00:00", verbose_name="date agregation horaire utilisée")
     stop_dat = DateCharField(null=False, max_length=20, verbose_name="stop date, date de la mesure")
@@ -212,6 +217,7 @@ class TmpObservation(models.Model):
 
 
 class AggTodo(models.Model):
+    id = models.AutoField(primary_key=True)
     obs_id = models.ForeignKey(null=False, to="Observation", on_delete=models.CASCADE)
     priority = models.IntegerField(null=True, default=9, verbose_name='priority, 0: one current-data, 9: multiple current-data')
     status = models.IntegerField(null=False, default=0, verbose_name='status, 0: wait, 9: error, 99: processed')
@@ -226,6 +232,7 @@ class AggTodo(models.Model):
 
 
 class TmpAggTodo(models.Model):
+    id = models.AutoField(primary_key=True)
     obs_id = models.ForeignKey(null=False, to="TmpObservation", on_delete=models.CASCADE)
     priority = models.IntegerField(null=True, default=9, verbose_name='priority, 0: one current-data, 9: multiple current-data')
     status = models.IntegerField(null=False, default=0, verbose_name='status, 0: wait, 9: error, 99: processed')
@@ -240,6 +247,7 @@ class TmpAggTodo(models.Model):
 
 
 class ExtremeTodo(models.Model):
+    id = models.BigAutoField(primary_key=True)
     poste_id = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
     level = models.CharField(null=False, max_length=2, verbose_name="Aggregation level")
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date de l agregation'")
@@ -255,6 +263,7 @@ class ExtremeTodo(models.Model):
 
 
 class TmpExtremeTodo(models.Model):
+    id = models.BigAutoField(primary_key=True)
     poste_id = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
     level = models.CharField(null=False, max_length=2, verbose_name="Aggregation level")
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date de l agregation'")
@@ -270,6 +279,7 @@ class TmpExtremeTodo(models.Model):
 
 
 class AggHour(models.Model):
+    id = models.AutoField(primary_key=True)
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
@@ -289,6 +299,7 @@ class AggHour(models.Model):
 
 
 class TmpAggHour(models.Model):
+    id = models.AutoField(primary_key=True)
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
@@ -308,6 +319,7 @@ class TmpAggHour(models.Model):
 
 
 class AggDay(models.Model):
+    id = models.AutoField(primary_key=True)
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
@@ -327,6 +339,7 @@ class AggDay(models.Model):
 
 
 class TmpAggDay(models.Model):
+    id = models.AutoField(primary_key=True)
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
@@ -346,6 +359,7 @@ class TmpAggDay(models.Model):
 
 
 class AggMonth(models.Model):
+    id = models.AutoField(primary_key=True)
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
@@ -365,6 +379,7 @@ class AggMonth(models.Model):
 
 
 class TmpAggMonth(models.Model):
+    id = models.AutoField(primary_key=True)
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
@@ -384,6 +399,7 @@ class TmpAggMonth(models.Model):
 
 
 class AggYear(models.Model):
+    id = models.AutoField(primary_key=True)
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
@@ -403,6 +419,7 @@ class AggYear(models.Model):
 
 
 class TmpAggYear(models.Model):
+    id = models.AutoField(primary_key=True)
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
@@ -422,6 +439,7 @@ class TmpAggYear(models.Model):
 
 
 class AggAll(models.Model):
+    id = models.AutoField(primary_key=True)
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
@@ -441,6 +459,7 @@ class AggAll(models.Model):
 
 
 class TmpAggAll(models.Model):
+    id = models.AutoField(primary_key=True)
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
