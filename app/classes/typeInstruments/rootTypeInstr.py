@@ -5,6 +5,7 @@ from app.classes.repository.typeInstrumentMeteor import TypeInstrumentMeteor
 # ---------------------
 # type_i : type_instrument_id
 # src_key: key string in measures json (coming from the station)
+# syno: list of accepted synonyms
 # target_key: json key name only if different. Used in obs and all aggregations
 # measureType: default = both
 #   avg -> only use the average value ([field]_avg)

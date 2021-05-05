@@ -142,7 +142,7 @@ class AvgOmmCompute(AggCompute):
         dv_next[json_key + '_duration'] = tmp_duration
         dv_next[json_key] = delta_values[json_key]
 
-    def loadMaxMinInObsInAggregation(
+    def loadMaxMinInAggregation(
         self,
         my_measure: json,
         m_stop_date: datetime,
@@ -155,4 +155,4 @@ class AvgOmmCompute(AggCompute):
     ):
         if m_stop_date.minute > 0 or m_stop_date.second > 1:
             return
-        super().loadMaxMinInObsInAggregation(my_measure, m_stop_date, agg_deca, m_agg_j, delta_values, dv_next, trace_flag, False)
+        super().loadMaxMinInAggregation(my_measure, m_stop_date, agg_deca, m_agg_j, delta_values, dv_next, trace_flag, False)

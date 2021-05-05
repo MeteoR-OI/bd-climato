@@ -124,15 +124,25 @@ class ProcessJsonData():
         else:
             data_src = exclusion
 
-        if data_src.__contains__(src_key) and (measure_type & 2) == 2:
-            my_value_instant = self.get_json_value(data_src, src_key, [], key_preffix_first)
-        if data_src.__contains__(src_key + key_suffix) and (measure_type & 1) == 1:
-            my_value_avg = self.get_json_value(data_src, src_key + key_suffix, [], key_preffix_first)
-        if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-            if data_src.__contains__(src_key + '_dir'):
-                my_value_dir = data_src[src_key + '_dir']
-            elif data_src.__contains(src_key + key_suffix + '_dir'):
-                my_value_dir = data_src[src_key + '_dir']
+        all_src_keys = [my_measure['src_key']]
+        if my_measure.get('syno') is not None:
+            for a_syno in my_measure['syno']:
+                all_src_keys.append(a_syno)
+        value_found = False
+        for a_srckey in all_src_keys:
+            if value_found:
+                continue
+            if data_src.__contains__(a_srckey) and (measure_type & 2) == 2:
+                my_value_instant = self.get_json_value(data_src, a_srckey, [], key_preffix_first)
+                value_found = True
+            if data_src.__contains__(a_srckey + key_suffix) and (measure_type & 1) == 1:
+                my_value_avg = self.get_json_value(data_src, a_srckey + key_suffix, [], key_preffix_first)
+                value_found = True
+            if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
+                if data_src.__contains__(a_srckey + '_dir'):
+                    my_value_dir = data_src[a_srckey + '_dir']
+                elif data_src.__contains__(a_srckey + key_suffix + '_dir'):
+                    my_value_dir = data_src[a_srckey + '_dir']
 
         # init value instantaneout and avg
         # measure_type         I      1      I      2      I      3
@@ -252,8 +262,6 @@ class ProcessJsonData():
         target_key = src_key
         if my_measure.__contains__('target_key'):
             target_key = my_measure['target_key']
-        elif isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm):
-            target_key += '_omm'
         return (src_key, target_key)
 
     def get_json_value(self, j: json, key: str, suffix_list: list, key_preffix_first: bool):

@@ -1,8 +1,8 @@
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.tools.climConstant import MeasureProcessingBitMask
 from app.classes.calcul.observation.processJsonDataAvg import ProcessJsonDataAvg
-from app.tools.aggTools import delKey
 import json
+import datetime
 
 
 class ProcessJsonDataAvgOmm(ProcessJsonDataAvg):
@@ -14,19 +14,29 @@ class ProcessJsonDataAvgOmm(ProcessJsonDataAvg):
         must load dv[M_value], and dv[first_time] when in omm mode
 
     """
-
-    def loadDataInObs(
+    def loadValuesFromJson(
         self,
         my_measure: json,
         json_file_data: json,
         measure_idx: int,
-        obs_meteor: ObsMeteor,
         src_key: str,
         target_key: str,
         exclusion: json,
-        delta_values: json,
+        my_values: json,
+        stop_dat: datetime,
         trace_flag: bool,
-        isOmm: bool = False,
+    ):
+        if stop_dat.minute == 00 and stop_dat.second == 0:
+            self._loadValuesFromJson(my_measure, json_file_data, measure_idx, src_key, target_key + '_omm', exclusion, my_values, '_avg', stop_dat, trace_flag)
+
+    def loadDataInObs(
+        self,
+        my_measure: json,
+        obs_meteor: ObsMeteor,
+        target_key: str,
+        delta_values: json,
+        my_values: json,
+        trace_flag: bool,
     ):
         # force the omm flag, which save the M_last_dat in the delta_values
         my_measure['special'] = my_measure['special'] | MeasureProcessingBitMask.MeasureIsOmm
@@ -36,16 +46,9 @@ class ProcessJsonDataAvgOmm(ProcessJsonDataAvg):
 
         super(ProcessJsonDataAvgOmm, self).loadDataInObs(
             my_measure,
-            json_file_data,
-            measure_idx,
             obs_meteor,
-            src_key,
-            target_key,
-            exclusion,
+            target_key + '_omm',
             delta_values,
+            my_values,
             trace_flag,
-            True,
         )
-        # we will invalidate only if our omm value is changed
-        delKey(delta_values, target_key + '_maxmin_invalid_val_max')
-        delKey(delta_values, target_key + '_maxmin_invalid_val_min')

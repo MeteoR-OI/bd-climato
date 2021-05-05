@@ -49,6 +49,8 @@ class ProcessJsonDataAvg(ProcessJsonData):
         my_value_instant = my_values.get(target_key + '_i')
         my_value_dir = my_values.get(target_key + '_di')
         tmp_duration = my_values.get(target_key + '_du')
+        if my_value_avg is None:
+            return
         tmp_s = my_value_avg * tmp_duration
 
         if my_value_avg is None:

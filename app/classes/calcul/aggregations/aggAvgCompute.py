@@ -68,8 +68,6 @@ class AggAvgCompute(AggCompute):
         if tmp_ss is not None:
             has_data = True
             tmp_s = float(tmp_ss)
-            if delta_values.__contains__(json_key + '_duration') is True:
-                tmp_s = tmp_value * tmp_duration
 
         tmp_sagg = self.get_json_value(m_agg_j, json_key, [key_suffix, '_s'], None)
         if tmp_sagg is not None:

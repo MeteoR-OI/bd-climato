@@ -106,8 +106,9 @@ class CalcAggreg(AllCalculus):
 
                                     # load the needed aggregation for this measure
                                     agg_decas = self.load_aggregations(my_measure, anAgg, aggregations, m_stop_dat)
-                                    for an_agg in agg_decas and delta_values.get("duration") is not None:
-                                        an_agg.add_duration(delta_values["duration"])
+                                    if delta_values.get("duration") is not None:    
+                                        for an_agg in agg_decas:
+                                            an_agg.add_duration(delta_values["duration"])
 
                                     m_agg_j = self.get_agg_magg(anAgg, a_todo.data.obs_id.j_agg)
 
