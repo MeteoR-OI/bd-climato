@@ -1,8 +1,9 @@
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.tools.climConstant import MeasureProcessingBitMask
 from app.tools.aggTools import isFlagged
-from app.tools.aggTools import shouldNullify
+from app.tools.aggTools import shouldNullify, loadFromExclu, calcAggDate
 import json
+import datetime
 
 
 class ProcessJsonData():
@@ -11,7 +12,7 @@ class ProcessJsonData():
 
         Computation specific to a measure type
 
-        calculus v2
+        calculus v3
 
     """
 
@@ -33,34 +34,175 @@ class ProcessJsonData():
 
         # get exclusion, and return if value is nullified
         exclusion = poste_metier.exclusion(my_measure['type_i'])
-        if shouldNullify(exclusion, src_key) is True:
-            return
-#si mesure.options NotAllowedInCurrent -> erreur
-        # load obs record, and get the delta_values
-        self.loadData(my_measure, json_file_data, measure_idx, obs_meteor, src_key, target_key, exclusion, delta_values, trace_flag)
+        # to check later...
+        # if shouldNullify(exclusion, src_key) is True:
+        #     return
 
-        # load Max/Min and update delta_values
-        self.loadMaxMin(my_measure, json_file_data, measure_idx, obs_meteor, src_key, target_key, exclusion, delta_values, trace_flag)
+        if json_file_data['data'][measure_idx].__contains__('current') is False:
+            return
+
+        # if (isFlagged(my_measure['special'], MeasureProcessingBitMask.NotAllowedInCurrent) is False):
+        #     return
+
+        # load Json data in dv
+        my_values = {}
+        self.loadValuesFromJson(my_measure, json_file_data, measure_idx, src_key, target_key, exclusion, my_values, obs_meteor.data.stop_dat, trace_flag)
+
+        # update duration & agg_start_dat in obs if needed
+        if obs_meteor.data.duration == 0:
+            tmp_duration = delta_values.get(target_key + '_du')
+            obs_meteor.data.duration = tmp_duration
+            # compute our agg_h.start_dat for faster retrieval of observation for a given agg_h.start_dat
+            obs_meteor.data.agg_start_dat = calcAggDate('H', obs_meteor.data.stop_dat, tmp_duration, True)
+
+            # double check that the duration are compatible
+            if obs_meteor.data.duration != tmp_duration:
+                raise Exception('loadObsDatarow', 'incompatible durations -> in table obs: ' + str(obs_meteor.data.duration) + ', in json: ' + str(tmp_duration))
+
+        # load data from dv to obs
+        self.loadDataInObs(my_measure, obs_meteor, target_key, delta_values, my_values, trace_flag)
+
+        # load Max/Min in obs, and in dv
+        self.loadMaxMinInObs(my_measure, obs_meteor, target_key, delta_values, my_values, trace_flag)
         return
 
     # ----------------------------------------------------------
     # private or methods common to multiple inherited instances
     # ----------------------------------------------------------
-    def loadMaxMin(
+    def loadValuesFromJson(
         self,
         my_measure: json,
         json_file_data: json,
         measure_idx: int,
-        obs_meteor: ObsMeteor,
         src_key: str,
         target_key: str,
         exclusion: json,
+        my_values: json,
+        trace_flag: bool,
+    ):
+        if my_measure.__contains__('xyz') is False:
+            # just to satisfy our parser... Will always fail
+            raise Exception('loadDataInDV', 'should be in virtual func')
+
+    def _loadValuesFromJson(
+        self,
+        my_measure: json,
+        json_file_data: json,
+        measure_idx: int,
+        src_key: str,
+        target_key: str,
+        exclusion: json,
+        my_values: json,
+        key_suffix: str,
+        stop_dat: datetime,
+        trace_flag: bool,
+    ):
+        """
+            Load ou values in delta_value for value passing to loadDataInObs, and loadMaxMinInObsInObservation
+        """
+        # b_exclu = True -> load data from exclusion, False -> normal processing
+        b_exclu = loadFromExclu(exclusion, src_key)
+
+        my_value_instant = my_value_avg = None
+        my_value_dir = None
+
+        measure_type = 3
+        key_preffix_first = True
+        if my_measure.__contains__('measureType'):
+            if my_measure['measureType'] == 'avg':
+                measure_type = 1
+                key_preffix_first = True
+            elif my_measure['measureType'] == 'inst':
+                measure_type = 2
+                key_preffix_first = False
+            elif my_measure['measureType'] != 'both':
+                raise Exception('processJsonDataAvg::loadDataInObs', 'invalid measureType: ' + my_measure['measureType'] + ' for ' + src_key)
+
+        if b_exclu is False:
+            # load our data from the measure (json)
+            data_src = json_file_data['data'][measure_idx]['current']
+        else:
+            data_src = exclusion
+
+        if data_src.__contains__(src_key) and (measure_type & 2) == 2:
+            my_value_instant = self.get_json_value(data_src, src_key, [], key_preffix_first)
+        if data_src.__contains__(src_key + key_suffix) and (measure_type & 1) == 1:
+            my_value_avg = self.get_json_value(data_src, src_key + key_suffix, [], key_preffix_first)
+        if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
+            if data_src.__contains__(src_key + '_dir'):
+                my_value_dir = data_src[src_key + '_dir']
+            elif data_src.__contains(src_key + key_suffix + '_dir'):
+                my_value_dir = data_src[src_key + '_dir']
+
+        # init value instantaneout and avg
+        # measure_type         I      1      I      2      I      3
+        # measure_avg (ma)     I ma, then mi I     None    I ma, then mi
+        # measure_instant (mi) I     None    I mi, then ma I mi, then ma
+
+        if measure_type == 1:
+            if my_value_avg is None:
+                my_value_avg = my_value_instant
+            if measure_type == 1:
+                my_value_instant = None
+        if measure_type == 2:
+            if my_value_instant is None:
+                my_value_instant = my_value_avg
+            if measure_type == 2:
+                my_value_avg = None
+        if measure_type == 3:
+            if my_value_instant is None:
+                my_value_instant = my_value_avg
+            if my_value_avg is None:
+                my_value_avg = my_value_instant
+
+        my_values[target_key + '_a'] = my_value_avg
+        my_values[target_key + '_i'] = my_value_instant
+        if my_value_dir is not None:
+            my_values[target_key + '_di'] = my_value_dir
+        tmp_duration = int(json_file_data['data'][measure_idx]['current']['duration'])
+        my_values[target_key + '_du'] = tmp_duration
+
+        # load max/min from json
+        for maxmin_key in ['max', 'min']:
+            if my_measure.__contains__(maxmin_key) is True and my_measure[maxmin_key] is True:
+                maxmin_suffix = '_' + maxmin_key
+                if data_src.get(src_key + maxmin_suffix) is not None:
+                    my_values[target_key + maxmin_suffix] = data_src[src_key + maxmin_suffix]
+                    my_values[target_key + maxmin_suffix + '_time'] = data_src[src_key + maxmin_suffix + '_time']
+                else:
+                    my_values[target_key + maxmin_suffix] = my_value_instant if my_value_instant is not None else my_value_avg
+                    my_values[target_key + maxmin_suffix + '_time'] = stop_dat
+                if maxmin_key == 'max' and (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
+                    if data_src.get(src_key + maxmin_suffix + '_dir') is not None:
+                        my_values[target_key + maxmin_suffix + '_dir'] = data_src[src_key + maxmin_suffix + '_dir']
+                    # if we can use my_value_dir for the max if not one was given
+                    # elif my_value_dir is not None:
+                    #     my_values[target_key + maxmin_suffix + '_dir'] = my_value_dir
+
+    def loadDataInObs(
+        self,
+        my_measure: json,
+        obs_meteor: ObsMeteor,
+        target_key: str,
         delta_values: json,
+        trace_flag: bool,
+    ):
+        if my_measure.__contains__('xyz') is False:
+            # just to satisfy our parser... Will always fail
+            raise Exception('loadDataInDV', 'should be in virtual func')
+
+    def loadMaxMinInObs(
+        self,
+        my_measure: json,
+        obs_meteor: ObsMeteor,
+        target_key: str,
+        delta_values: json,
+        my_values: json,
         tracing_flag: bool = False,
         b_use_rate: bool = False,
     ):
         """
-            loadMaxMinInObservation
+            loadMaxMinInObsInObservation
 
             load in obs max/min value if present
             update delta_values
@@ -68,49 +210,36 @@ class ProcessJsonData():
             calculus v2
         """
         obs_j = obs_meteor.data.j
-        if delta_values.__contains__(target_key) is False:
-            # no value processed
-            return
 
-        m_stop_dat = json_file_data['data'][measure_idx]['stop_dat']
-        data_src = {}
-        if json_file_data['data'][measure_idx].__contains__('current'):
-            data_src = json_file_data['data'][measure_idx]['current']
-
-        for maxmin_sufx in ['_max', '_min']:
+        b_is_max = True
+        for maxmin_key in ['max', 'min']:
             # is max or min needed for this measure
-            maxmin_key = maxmin_sufx.split('_')[1]
-            maxmin_suffix = maxmin_sufx
-            if b_use_rate:
-                maxmin_suffix = '_rate' + maxmin_sufx
+            maxmin_suffix = '_' + maxmin_key
             if my_measure.__contains__(maxmin_key) is True and my_measure[maxmin_key] is True:
-                maxmin_time = m_stop_dat
-
-                # is there a M_max/M_min in the data_src ?
-                if data_src.__contains__(src_key + maxmin_suffix):
-                    # found, then load in in obs and delta_values
-                    my_maxmin_value = my_measure['dataType'](data_src[src_key + maxmin_suffix])
+                if my_values.get(target_key + maxmin_suffix) is not None:
+                    my_maxmin_value = my_values[target_key + maxmin_suffix]
+                    my_maxmin_date = my_values[target_key + maxmin_suffix + '_time']
+                    my_old_maxmin_value = obs_j.get(target_key + maxmin_suffix)
                     obs_j[target_key + maxmin_suffix] = my_maxmin_value
-                    if data_src.__contains__(src_key + maxmin_suffix + '_time'):
-                        maxmin_time = data_src[src_key + maxmin_suffix + '_time']
-                    obs_j[target_key + maxmin_suffix + '_time'] = maxmin_time
+                    obs_j[target_key + maxmin_suffix + '_time'] = my_maxmin_date
                     delta_values[target_key + maxmin_suffix] = my_maxmin_value
-                    delta_values[target_key + maxmin_suffix + '_time'] = maxmin_time
-                    if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)) and maxmin_suffix == '_max':
-                        """ save Wind_max_dir """
-                        if data_src.__contains__(src_key + maxmin_suffix + '_dir') is True:
-                            my_wind_dir = int(data_src[src_key + maxmin_suffix + '_dir'])
-                            obs_j[target_key + maxmin_suffix + '_dir'] = my_wind_dir
-                            delta_values[target_key + maxmin_suffix + '_dir'] = my_wind_dir
-                elif delta_values.__contains__(target_key + '_i'):
-                    # on prend la valeur reportee, et le milieu de l'heure de la periode de la donnee elementaire
-                    if b_use_rate:
-                        # pour les "rate" on prend l'avg (qui est un rate)
-                        delta_values[target_key + maxmin_suffix] = delta_values[target_key + '_s']
-                    else:
-                        # sinon on prend la valeur de la mesure
-                        delta_values[target_key + maxmin_suffix] = delta_values[target_key + '_i']
-                    delta_values[target_key + maxmin_suffix + '_time'] = maxmin_time
+                    delta_values[target_key + maxmin_suffix + '_time'] = my_maxmin_date
+                    if my_values.get(target_key + maxmin_suffix + '_dir') is not None:
+                        my_wind_dir = my_values.get[target_key + maxmin_suffix + '_dir']
+                        obs_j[target_key + maxmin_suffix + '_dir'] = my_wind_dir
+                        delta_values[target_key + maxmin_suffix + '_dir'] = my_wind_dir
+                    # detect if maxmin must be recomputed
+                    if my_values.get(target_key + '_check_maxmin') is not None:
+                        if my_old_maxmin_value is None:
+                            if b_is_max:
+                                my_old_maxmin_value = my_maxmin_value - 1
+                            else:
+                                my_old_maxmin_value = my_maxmin_value + 1
+                        if b_is_max and my_maxmin_value < my_old_maxmin_value:
+                            delta_values[target_key + '_old_max'] = my_old_maxmin_value
+                        if b_is_max is False and my_maxmin_value < my_old_maxmin_value:
+                            delta_values[target_key + '_old_min'] = my_old_maxmin_value
+            b_is_max = not(b_is_max)
 
     def get_src_key(self, my_measure: json):
         """
@@ -126,3 +255,17 @@ class ProcessJsonData():
         elif isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm):
             target_key += '_omm'
         return (src_key, target_key)
+
+    def get_json_value(self, j: json, key: str, suffix_list: list, key_preffix_first: bool):
+        key_list = []
+        if key_preffix_first is not None and key_preffix_first is False:
+            key_list.append(key)
+        for a_suffix in suffix_list:
+            key_list.append(a_suffix)
+        if key_preffix_first is not None and key_preffix_first is True:
+            key_list.append(key)
+
+        for a_key in key_list:
+            if j.get(a_key) is not None:
+                return j[a_key]
+        return None

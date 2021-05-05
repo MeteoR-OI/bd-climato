@@ -15,7 +15,7 @@ class ProcessJsonDataSum(ProcessJsonData):
 
     """
 
-    def loadData(
+    def loadDataInObs(
         self,
         my_measure: json,
         json_file_data: json,
@@ -54,7 +54,7 @@ class ProcessJsonDataSum(ProcessJsonData):
             elif my_measure['measureType'] == 'inst':
                 measure_type = 2
             elif my_measure['measureType'] != 'both':
-                raise Exception('processJsonDataAvg::loadData', 'invalid measureType: ' + my_measure['measureType'] + ' for ' + src_key)
+                raise Exception('processJsonDataAvg::loadDataInObs', 'invalid measureType: ' + my_measure['measureType'] + ' for ' + src_key)
 
         if b_exclu is False:
             # load our data from the measure (json)
@@ -145,21 +145,3 @@ class ProcessJsonDataSum(ProcessJsonData):
         if isOmm is True:
             # save for max/min processing and omm procesing
             delta_values[target_key + '_time'] = obs_stop_dat
-
-    def getDeltaFromObservation(self, my_measure: json, obs_meteor: ObsMeteor, json_key: str, delta_values: json) -> json:
-        """
-            getDeltaFromObs
-
-            susbtract M_sum and M_duration
-        """
-        # todo: load max/min
-        obs_j = obs_meteor.data.j
-
-        # use the value in obs_meteor
-        if obs_j.__contains__(json_key + '_s'):
-            delta_values[json_key + '_s'] = obs_j[json_key + '_s'] * -1
-            delKey(obs_j, json_key + '_s')
-
-        if obs_j.__contains__(json_key + '_duration'):
-            delta_values[json_key + '_duration'] = obs_j[json_key + '_s'] * -1
-            delKey(obs_j, json_key + '_duration')

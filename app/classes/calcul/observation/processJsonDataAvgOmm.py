@@ -15,7 +15,7 @@ class ProcessJsonDataAvgOmm(ProcessJsonDataAvg):
 
     """
 
-    def loadData(
+    def loadDataInObs(
         self,
         my_measure: json,
         json_file_data: json,
@@ -34,7 +34,7 @@ class ProcessJsonDataAvgOmm(ProcessJsonDataAvg):
         if obs_meteor.data.stop_dat.minute > 0 or obs_meteor.data.stop_dat.second > 1:
             return
 
-        super(ProcessJsonDataAvgOmm, self).loadData(
+        super(ProcessJsonDataAvgOmm, self).loadDataInObs(
             my_measure,
             json_file_data,
             measure_idx,

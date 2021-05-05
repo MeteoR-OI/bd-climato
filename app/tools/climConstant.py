@@ -14,6 +14,7 @@ class MeasureProcessingBitMask(Constants):
     OnlyAggregateInHour = 2
     NotAllowedInCurrent = 4
     MeasureIsOmm = 128
+    MeasureIsSum = 64
 
 
 class SvcRequestType(Constants):

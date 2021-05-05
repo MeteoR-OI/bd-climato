@@ -22,6 +22,7 @@ class CalcAggreg(AllCalculus):
         self.tracer = Telemetry.Start("calculus", __name__)
 
     def ComputAggregFromSvc(self, data: json):
+        """ entry point from worker """
         params = data['p']
         # trace_flag = data['tf']
         is_tmp = False
@@ -70,7 +71,7 @@ class CalcAggreg(AllCalculus):
             my_span.set_attribute("is_tmp", is_tmp)
             # my_span.set_attribute("meteor", a_todo.data.obs_id.poste_id.meteor)
             # retrieve data we will need
-            tmp_span = self.tracer.start_span('loadData')
+            tmp_span = self.tracer.start_span('loadDataInObs')
             m_stop_dat = a_todo.data.obs_id.stop_dat
             a_start_dat = a_todo.data.obs_id.agg_start_dat
             poste_metier = PosteMetier(a_todo.data.obs_id.poste_id_id, a_start_dat)
@@ -82,6 +83,8 @@ class CalcAggreg(AllCalculus):
                 idx_delta_value = -1
                 for delta_values in a_todo.data.j_dv:
                     idx_delta_value += 1
+                    if delta_values.__len__() == 2:
+                        continue
                     # mark all aggregation as clean. only dirty aggregation will be saved
                     for an_agg in aggregations:
                         an_agg.dirty = False
@@ -103,12 +106,14 @@ class CalcAggreg(AllCalculus):
 
                                     # load the needed aggregation for this measure
                                     agg_decas = self.load_aggregations(my_measure, anAgg, aggregations, m_stop_dat)
+                                    for an_agg in agg_decas and delta_values.get("duration") is not None:
+                                        an_agg.add_duration(delta_values["duration"])
 
                                     m_agg_j = self.get_agg_magg(anAgg, a_todo.data.obs_id.j_agg)
 
                                     # find the calculus object for my_mesure
                                     for a_calculus in self.all_calculus:
-                                        if a_calculus['agg'] == my_measure['agg']:
+                                        if a_calculus['agg'] == my_measure['agg'] and a_calculus['agg'] == 'avg':
                                             if a_calculus['calc_obs'] is not None:
                                                 # load our json in obs row
                                                 span_lvl.set_attribute('start_dat', str(agg_decas[0].data.start_dat))
@@ -164,12 +169,18 @@ class CalcAggreg(AllCalculus):
         for deca_hour in deca_hours:
             a_start_dat_level = calcAggDate(anAgg, m_stop_dat, deca_hour, True)
 
+            print('looking for date ' + str(a_start_dat_level))
             # load the needed aggregation for this measure
+            b_found = False
             for my_agg in aggregations:
+                print('   check Agg level: ' + anAgg + ', agg: ' + str(my_agg.data.start_dat))
                 if my_agg.agg_niveau == anAgg and my_agg.data.start_dat == a_start_dat_level:
-                    agg_decas.push(my_agg)
+                    print('  => got it')
+                    agg_decas.append(my_agg)
+                    b_found = True
                     break
-                raise Exception('aggCompute::loadAggregations', 'aggregation not loaded ' + anAgg + ", " + str(a_start_dat_level) + ', deca: ' + str(deca_hour))
+            if b_found is False:
+                raise Exception('aggCompute::loadAggregations', 'aggregation not loaded deca: ' + str(deca_hour) + ', date: ' + str(a_start_dat_level))
 
         return agg_decas
 

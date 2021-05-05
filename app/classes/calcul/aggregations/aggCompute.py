@@ -23,9 +23,6 @@ class AggCompute():
         dv_next: json,
         trace_flag: bool = False,
     ):
-        # add duration_sum in our aggregation only if needed
-        agg_decas[0].add_duration(delta_values["duration"])
-
         # load data in our aggregation
         self.loadDVInAggregation(
             my_measure,
@@ -38,7 +35,7 @@ class AggCompute():
         )
 
         # get our extreme values
-        self.loadMaxMinInAggregation(
+        self.loadMaxMinInObsInAggregation(
             my_measure,
             m_stop_date,
             agg_decas,
@@ -72,7 +69,7 @@ class AggCompute():
     ):
         pass
 
-    def loadMaxMinInAggregation(
+    def loadMaxMinInObsInAggregation(
         self,
         my_measure: json,
         m_stop_date: datetime,
@@ -84,7 +81,7 @@ class AggCompute():
         b_use_rate: bool = False,
     ):
         """
-            loadMaxMinInAggregation
+            loadMaxMinInObsInAggregation
 
             load in all aggregations max/min
             update dv_next for nest level
@@ -168,18 +165,18 @@ class AggCompute():
                 """
                 if delta_values.__contains__(json_key + '_invalidate' + maxmin_suffix):
                     if agg_maxmin is None:
-                        raise Exception('loadMaxMinInAggregation', 'Invalidate and no data in aggregation...')
+                        raise Exception('loadMaxMinInObsInAggregation', 'Invalidate and no data in aggregation...')
                     invalid_maxmin_value = delta_values[json_key + '_invalidate' + maxmin_suffix]
                     if maxmin_suffix == '_max':
                         if agg_maxmin == invalid_maxmin_value and current_maxmin < agg_maxmin:
                             agg_maxmin = None
                             dv_next[json_key + '_invalidate' + maxmin_suffix] = invalid_maxmin_value
-                            self.add_new_maxmin_fix(json_key, maxmin_key, agg_deca, delta_values)
+                            self.add_new_maxmin_fix(json_key, maxmin_key, agg_decas[0], delta_values)
                     else:
                         if agg_maxmin == invalid_maxmin_value and current_maxmin > agg_maxmin:
                             agg_maxmin = None
                             dv_next[json_key + '_invalidate' + maxmin_suffix] = invalid_maxmin_value
-                            self.add_new_maxmin_fix(json_key, maxmin_key, agg_deca, delta_values)
+                            self.add_new_maxmin_fix(json_key, maxmin_key, agg_decas[0], delta_values)
 
                 if agg_maxmin is None:
                     # force the update i agg_deca for our current_maxmin

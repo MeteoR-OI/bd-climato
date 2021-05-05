@@ -37,7 +37,7 @@ class AggRateCompute(AggCompute):
             '_rate'
         )
 
-    def loadMaxMinInAggregation(
+    def loadMaxMinInObsInAggregation(
         self,
         my_measure: json,
         m_stop_date: datetime,
@@ -48,7 +48,7 @@ class AggRateCompute(AggCompute):
         trace_flag: bool = False,
         b_use_rate: bool = False,
     ):
-        super(RateCompute, self).loadMaxMinInAggregation(
+        super(RateCompute, self).loadMaxMinInObsInAggregation(
             my_measure,
             m_stop_date,
             agg_deca,

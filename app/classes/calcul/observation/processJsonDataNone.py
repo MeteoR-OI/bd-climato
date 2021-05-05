@@ -15,7 +15,7 @@ class ProcessJsonDataNo(ProcessJsonData):
 
     """
 
-    def loadData(
+    def loadDataInObs(
         self,
         my_measure: json,
         json_file_data: json,
@@ -29,12 +29,4 @@ class ProcessJsonDataNo(ProcessJsonData):
         isOmm: bool = False,
         avg_suffix: str = '_avg',
     ):
-        return
-
-    def getDeltaFromObservation(self, my_measure: json, obs_meteor: ObsMeteor, json_key: str, delta_values: json) -> json:
-        """
-            getDeltaFromObs
-
-            susbtract M_sum and M_duration
-        """
         return

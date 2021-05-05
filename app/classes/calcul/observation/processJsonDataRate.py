@@ -14,7 +14,7 @@ class ProcessJsonDataRate(ProcessJsonDataAvg):
 
     """
 
-    def loadData(
+    def loadDataInObs(
         self,
         my_measure: json,
         json_file_data: json,
@@ -31,7 +31,7 @@ class ProcessJsonDataRate(ProcessJsonDataAvg):
         """ generate deltaValues from ObsMeteor.data """
         # force avg to be computed
         my_measure['avg'] = True
-        super(ProcessJsonDataRate, self).loadData(
+        super(ProcessJsonDataRate, self).loadDataInObs(
             my_measure,
             json_file_data,
             measure_idx,
@@ -45,7 +45,7 @@ class ProcessJsonDataRate(ProcessJsonDataAvg):
             '_rate'
         )
 
-    def loadMaxMin(
+    def loadMaxMinInObs(
         self,
         my_measure: json,
         measures: json,
@@ -58,7 +58,7 @@ class ProcessJsonDataRate(ProcessJsonDataAvg):
         tracing_flag: bool = False,
         b_use_rate: bool = False,
     ):
-        super(ProcessJsonDataRate, self).loadMaxMin(
+        super(ProcessJsonDataRate, self).loadMaxMinInObs(
             my_measure,
             measures,
             measure_idx,
