@@ -46,7 +46,11 @@ class CalcAggreg(AllCalculus):
                     # no more data to update, return to sleep
                     return
 
-            self.__processTodo(a_todo, is_tmp)
+            try:
+                self.__processTodo(a_todo, is_tmp)
+            except Exception as exc:
+                a_todo.ReportError(exc)
+                a_todo.save()
 
     @transaction.atomic
     def __processTodo(self, a_todo, is_tmp: bool = False):
@@ -137,7 +141,9 @@ class CalcAggreg(AllCalculus):
                         "time_exec": (datetime.datetime.now() - time_start).seconds,
                         "queue_length": a_todo.count()
                     })
-                a_todo.delete()
+                a_todo.data.status = 999
+                a_todo.save()
+                # a_todo.delete()
             finally:
                 poste_metier.unlock()
 

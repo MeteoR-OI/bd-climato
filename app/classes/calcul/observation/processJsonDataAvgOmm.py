@@ -52,3 +52,14 @@ class ProcessJsonDataAvgOmm(ProcessJsonDataAvg):
             my_values,
             trace_flag,
         )
+
+    def loadMaxMinInObs(
+        self,
+        my_measure: json,
+        obs_meteor: ObsMeteor,
+        target_key: str,
+        delta_values: json,
+        my_values: json,
+        tracing_flag: bool = False,
+    ):
+        super().loadMaxMinInObs(my_measure, obs_meteor, target_key + '_omm', delta_values, my_values, tracing_flag)

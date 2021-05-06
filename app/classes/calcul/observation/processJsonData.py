@@ -59,6 +59,9 @@ class ProcessJsonData():
             if obs_meteor.data.duration != tmp_duration:
                 raise Exception('loadObsDatarow', 'incompatible durations -> in table obs: ' + str(obs_meteor.data.duration) + ', in json: ' + str(tmp_duration))
 
+        if delta_values['duration'] is None:
+            delta_values['duration'] = obs_meteor.data.duration
+
         # load data from dv to obs
         self.loadDataInObs(my_measure, obs_meteor, target_key, delta_values, my_values, trace_flag)
 

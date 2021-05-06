@@ -61,7 +61,11 @@ class AggAvgCompute(AggCompute):
         # last win
         # ------------------------------------------------------------------
 
-        tmp_duration = float(delta_values["duration"])
+#a virer
+        if delta_values.get('duration') is None:
+            tmp_duration = 5
+        else:
+            tmp_duration = float(delta_values["duration"])
 
         # get our M_s from our delta_values
         tmp_ss = self.get_json_value(delta_values, json_key + '_s', [], True)
