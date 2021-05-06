@@ -26,7 +26,7 @@ class AggRateCompute(AggCompute):
         trace_flag: bool = False,
         avg_suffix: str = '_rate',
     ):
-        super(RateCompute, self).loadDVInAggregation(
+        super(AggRateCompute, self).loadDVInAggregation(
             my_measure,
             m_stop_date,
             agg_deca,
@@ -41,17 +41,17 @@ class AggRateCompute(AggCompute):
         self,
         my_measure: json,
         m_stop_date: datetime,
-        agg_deca: AggMeteor,
+        agg_decas: list,
         m_agg_j: json,
         delta_values: json,
         dv_next: json,
         trace_flag: bool = False,
         b_use_rate: bool = False,
     ):
-        super(RateCompute, self).loadMaxMinInObsInAggregation(
+        super(AggRateCompute, self).loadMaxMinInObsInAggregation(
             my_measure,
             m_stop_date,
-            agg_deca,
+            agg_decas,
             m_agg_j,
             delta_values,
             dv_next,

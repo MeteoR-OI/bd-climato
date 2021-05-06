@@ -87,11 +87,15 @@ class CalcAggreg(AllCalculus):
                 idx_delta_value = -1
                 for delta_values in a_todo.data.j_dv:
                     idx_delta_value += 1
+
                     if delta_values.__len__() == 2:
                         continue
-                    # mark all aggregation as clean. only dirty aggregation will be saved
+
                     for an_agg in aggregations:
+                        # mark all aggregation as clean. only dirty aggregation will be saved
                         an_agg.dirty = False
+                        # add duration in all new aggregations
+                        an_agg.add_duration(delta_values["duration"])
 
                     for anAgg in getAggLevels(is_tmp):
                         with self.tracer.start_span('level ' + anAgg) as span_lvl:
@@ -110,9 +114,6 @@ class CalcAggreg(AllCalculus):
 
                                     # load the needed aggregation for this measure
                                     agg_decas = self.load_aggregations(my_measure, anAgg, aggregations, m_stop_dat)
-                                    if delta_values.get("duration") is not None:    
-                                        for an_agg in agg_decas:
-                                            an_agg.add_duration(delta_values["duration"])
 
                                     m_agg_j = self.get_agg_magg(anAgg, a_todo.data.obs_id.j_agg)
 

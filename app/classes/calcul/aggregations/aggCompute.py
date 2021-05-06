@@ -18,7 +18,7 @@ class AggCompute():
         m_stop_date: datetime,
         my_measure: json,
         delta_values: json,
-        agg_decas: list,
+        agg_decas: list,    # [0] for data, [1] for max, [2] for min
         m_agg_j: json,
         dv_next: json,
         trace_flag: bool = False,
