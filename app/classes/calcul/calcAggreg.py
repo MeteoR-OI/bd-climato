@@ -155,7 +155,7 @@ class CalcAggreg(AllCalculus):
                 poste_metier.unlock()
 
     def load_aggregations_in_array(self, my_measure, anAgg: str, aggregations, m_stop_dat: datetime):
-        """ load array of aggregation for calculus:
+        """ load array of aggregations for calculus:
             [0] -> main_deca for data
             [1] -> min_deca
             [2] -> max_deca
