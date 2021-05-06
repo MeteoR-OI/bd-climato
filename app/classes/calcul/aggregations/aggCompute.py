@@ -12,51 +12,7 @@ class AggCompute():
 
         Computation specific to a measure type
     """
-
-    def loadAggregations(
-        self,
-        m_stop_date: datetime,
-        my_measure: json,
-        delta_values: json,
-        agg_decas: list,    # [0] for data, [1] for max, [2] for min
-        m_agg_j: json,
-        dv_next: json,
-        trace_flag: bool = False,
-    ):
-        # load data in our aggregation
-        self.loadDVInAggregation(
-            my_measure,
-            m_stop_date,
-            agg_decas[0],
-            m_agg_j,
-            delta_values,
-            dv_next,
-            trace_flag,
-        )
-
-        # get our extreme values
-        self.loadMaxMinInObsInAggregation(
-            my_measure,
-            m_stop_date,
-            agg_decas,
-            m_agg_j,
-            delta_values,
-            dv_next,
-            trace_flag,
-        )
-        # save our delta_values if in trace mode
-        if trace_flag is True:
-            j_dv_agg = agg_decas[0].data.j
-            if j_dv_agg.__contains__('dv') is False:
-                j_dv_agg['dv'] = {}
-            for akey in delta_values.items():
-                j_dv_agg['dv'][akey[0]] = delta_values[akey[0]]
-        return
-
-    # ----------------------------------------------------
-    # private or methods common to multiple sub-instances
-    # ----------------------------------------------------
-    def loadDVInAggregation(
+    def loadDVDataInAggregation(
         self,
         my_measure: json,
         m_stop_date: datetime,
@@ -67,9 +23,9 @@ class AggCompute():
         trace_flag: bool = False,
         avg_suffix: str = '_rate',
     ):
-        pass
+        return
 
-    def loadMaxMinInObsInAggregation(
+    def loadDVMaxMinInAggregation(
         self,
         my_measure: json,
         m_stop_date: datetime,
@@ -81,13 +37,13 @@ class AggCompute():
         b_use_rate: bool = False,
     ):
         """
-            loadMaxMinInObsInAggregation
+            loadDVMaxMinInAggregation
 
             load in all aggregations max/min
             update dv_next for nest level
         """
         json_key = self.get_json_key(my_measure)
-        idx_maxmin = 0
+        idx_maxmin = 1
         for maxmin_suffix in ['_max', '_min']:
             agg_j = agg_decas[idx_maxmin].data.j
             agg_decas[idx_maxmin].dirty = True
@@ -165,7 +121,7 @@ class AggCompute():
                 """
                 if delta_values.__contains__(json_key + '_invalidate' + maxmin_suffix):
                     if agg_maxmin is None:
-                        raise Exception('loadMaxMinInObsInAggregation', 'Invalidate and no data in aggregation...')
+                        raise Exception('loadDVMaxMinInAggregation', 'Invalidate and no data in aggregation...')
                     invalid_maxmin_value = delta_values[json_key + '_invalidate' + maxmin_suffix]
                     if maxmin_suffix == '_max':
                         if agg_maxmin == invalid_maxmin_value and current_maxmin < agg_maxmin:
@@ -209,13 +165,12 @@ class AggCompute():
             calculus v1
             calculus v2
         """
-        src_key = my_measure['src_key']
-        target_key = src_key
+        target_key = my_measure['src_key']
         if my_measure.__contains__('target_key'):
             target_key = my_measure['target_key']
         elif isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm):
             target_key += '_omm'
-        return (src_key, target_key)
+        return target_key
 
     def add_new_maxmin_fix(self, json_key: str, maxmin_key: str, agg_deca: AggMeteor, delta_values: json):
         # calculus v1

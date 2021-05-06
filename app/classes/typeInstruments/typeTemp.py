@@ -22,6 +22,20 @@ class TypeTemp(RootTypeInstrument):
         },
         {
             'type_i': 1,
+            'src_key': 'out_temp',
+            'dataType': float,
+            'agg': 'avgomm',
+            'measureType': 'inst',
+            'avg': True,
+            'min': True,
+            'deca_min': -5,
+            'max': True,
+            'deca_max': 7,
+            'hour_deca': 0,
+            'special': 0,
+        },
+        {
+            'type_i': 1,
             'src_key': 'out_temp2',
             'syno': ['out_temp2_sum'],
             'dataType': float,
@@ -31,19 +45,6 @@ class TypeTemp(RootTypeInstrument):
             'max': True,
             'hour_deca': 0,
             'special': 0,
-        },
-        {
-            'type_i': 1,
-            'src_key': 'out_temp',
-            'dataType': float,
-            'agg': 'avgomm',
-            'avg': True,
-            'min': True,
-            'deca_min': -5,
-            'max': True,
-            'deca_max': 7,
-            'hour_deca': 0,
-            'special': 16,
         },
         {
             'type_i': 1,
@@ -90,4 +91,4 @@ class TypeTemp(RootTypeInstrument):
             'special': 0,
         }
         ]
-        super()
+        super().__init__()

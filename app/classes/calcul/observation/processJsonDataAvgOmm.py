@@ -1,5 +1,4 @@
 from app.classes.repository.obsMeteor import ObsMeteor
-from app.tools.climConstant import MeasureProcessingBitMask
 from app.classes.calcul.observation.processJsonDataAvg import ProcessJsonDataAvg
 import json
 import datetime
@@ -26,8 +25,8 @@ class ProcessJsonDataAvgOmm(ProcessJsonDataAvg):
         stop_dat: datetime,
         trace_flag: bool,
     ):
-        if stop_dat.minute == 00 and stop_dat.second == 0:
-            self._loadValuesFromJson(my_measure, json_file_data, measure_idx, src_key, target_key + '_omm', exclusion, my_values, '_avg', stop_dat, trace_flag)
+        if stop_dat.minute == 00 and stop_dat.second <= 2:
+            self._loadValuesFromJson(my_measure, json_file_data, measure_idx, src_key, target_key, exclusion, my_values, '_avg', stop_dat, trace_flag)
 
     def loadDataInObs(
         self,
@@ -38,20 +37,16 @@ class ProcessJsonDataAvgOmm(ProcessJsonDataAvg):
         my_values: json,
         trace_flag: bool,
     ):
-        # force the omm flag, which save the M_last_dat in the delta_values
-        my_measure['special'] = my_measure['special'] | MeasureProcessingBitMask.MeasureIsOmm
         """ generate deltaValues from ObsMeteor.data """
-        if obs_meteor.data.stop_dat.minute > 0 or obs_meteor.data.stop_dat.second > 1:
-            return
-
-        super(ProcessJsonDataAvgOmm, self).loadDataInObs(
-            my_measure,
-            obs_meteor,
-            target_key + '_omm',
-            delta_values,
-            my_values,
-            trace_flag,
-        )
+        if obs_meteor.data.stop_dat.minute == 00 and obs_meteor.data.stop_dat.second <= 2:
+            super(ProcessJsonDataAvgOmm, self).loadDataInObs(
+                my_measure,
+                obs_meteor,
+                target_key,
+                delta_values,
+                my_values,
+                trace_flag,
+            )
 
     def loadMaxMinInObs(
         self,
@@ -60,6 +55,7 @@ class ProcessJsonDataAvgOmm(ProcessJsonDataAvg):
         target_key: str,
         delta_values: json,
         my_values: json,
-        tracing_flag: bool = False,
+        trace_flag: bool = False,
     ):
-        super().loadMaxMinInObs(my_measure, obs_meteor, target_key + '_omm', delta_values, my_values, tracing_flag)
+        if obs_meteor.data.stop_dat.minute == 00 and obs_meteor.data.stop_dat.second <= 2:
+            super().loadMaxMinInObs(my_measure, obs_meteor, target_key, delta_values, my_values, trace_flag)

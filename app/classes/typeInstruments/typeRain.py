@@ -13,4 +13,4 @@ class TypeRain(RootTypeInstrument):
             {'type_i': 4, 'src_key': 'rain', 'dataType': float, 'agg': 'avgomm', 'avg': False, 'min': False, 'max': True, 'hour_deca': 0, 'special': 17},
             {'type_i': 4, 'src_key': 'rain_rate', 'dataType': float, 'agg': 'rate', 'avg': False, 'min': False, 'max': True, 'hour_deca': 0, 'special': 0},
         ]
-        super()
+        super().__init__()

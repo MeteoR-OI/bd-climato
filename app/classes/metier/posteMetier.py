@@ -103,5 +103,5 @@ class PosteMetier(PosteMeteor):
 
     def __str__(self):
         """print myself"""
-        super()
+        super().__str__()
         return "....PosteXMeteor, #exclu: " + str(self.exclus.__len__())

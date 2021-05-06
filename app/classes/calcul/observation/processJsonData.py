@@ -65,6 +65,9 @@ class ProcessJsonData():
         # load data from dv to obs
         self.loadDataInObs(my_measure, obs_meteor, target_key, delta_values, my_values, trace_flag)
 
+        # check maxmin that need to be regenated later
+        self.checkMaxMinToRegenerate(my_measure, obs_meteor, target_key, delta_values, my_values, trace_flag)
+
         # load Max/Min in obs, and in dv
         self.loadMaxMinInObs(my_measure, obs_meteor, target_key, delta_values, my_values, trace_flag)
         return
@@ -168,8 +171,10 @@ class ProcessJsonData():
             if my_value_avg is None:
                 my_value_avg = my_value_instant
 
-        my_values[target_key + '_a'] = my_value_avg
-        my_values[target_key + '_i'] = my_value_instant
+        if my_value_avg is not None:
+            my_values[target_key + '_a'] = my_value_avg
+        if my_value_instant is not None:
+            my_values[target_key + '_i'] = my_value_instant
         if my_value_dir is not None:
             my_values[target_key + '_di'] = my_value_dir
         tmp_duration = int(json_file_data['data'][measure_idx]['current']['duration'])
@@ -179,15 +184,15 @@ class ProcessJsonData():
         for maxmin_key in ['max', 'min']:
             if my_measure.__contains__(maxmin_key) is True and my_measure[maxmin_key] is True:
                 maxmin_suffix = '_' + maxmin_key
-                if data_src.get(src_key + maxmin_suffix) is not None:
-                    my_values[target_key + maxmin_suffix] = data_src[src_key + maxmin_suffix]
-                    my_values[target_key + maxmin_suffix + '_time'] = data_src[src_key + maxmin_suffix + '_time']
+                if data_src.get(target_key + maxmin_suffix) is not None:
+                    my_values[target_key + maxmin_suffix] = data_src[target_key + maxmin_suffix]
+                    my_values[target_key + maxmin_suffix + '_time'] = data_src[target_key + maxmin_suffix + '_time']
                 else:
                     my_values[target_key + maxmin_suffix] = my_value_instant if my_value_instant is not None else my_value_avg
                     my_values[target_key + maxmin_suffix + '_time'] = stop_dat
                 if maxmin_key == 'max' and (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                    if data_src.get(src_key + maxmin_suffix + '_dir') is not None:
-                        my_values[target_key + maxmin_suffix + '_dir'] = data_src[src_key + maxmin_suffix + '_dir']
+                    if data_src.get(target_key + maxmin_suffix + '_dir') is not None:
+                        my_values[target_key + maxmin_suffix + '_dir'] = data_src[target_key + maxmin_suffix + '_dir']
                     # if we can use my_value_dir for the max if not one was given
                     # elif my_value_dir is not None:
                     #     my_values[target_key + maxmin_suffix + '_dir'] = my_value_dir
@@ -204,7 +209,7 @@ class ProcessJsonData():
             # just to satisfy our parser... Will always fail
             raise Exception('loadDataInDV', 'should be in virtual func')
 
-    def loadMaxMinInObs(
+    def checkMaxMinToRegenerate(
         self,
         my_measure: json,
         obs_meteor: ObsMeteor,
@@ -212,7 +217,38 @@ class ProcessJsonData():
         delta_values: json,
         my_values: json,
         tracing_flag: bool = False,
-        b_use_rate: bool = False,
+    ):
+        obs_j = obs_meteor.data.j
+
+        b_is_max = True
+        for maxmin_key in ['max', 'min']:
+            # is max or min needed for this measure
+            maxmin_suffix = '_' + maxmin_key
+            if my_measure.__contains__(maxmin_key) is True and my_measure[maxmin_key] is True:
+                if my_values.get(target_key + maxmin_suffix) is not None:
+                    if my_values.get(target_key + '_check_maxmin') is not None:
+                        my_maxmin_value = my_values[target_key + maxmin_suffix]
+                        my_old_maxmin_value = obs_j.get(target_key + maxmin_suffix)
+
+                        if my_old_maxmin_value is None:
+                            if b_is_max:
+                                my_old_maxmin_value = my_maxmin_value - 1
+                            else:
+                                my_old_maxmin_value = my_maxmin_value + 1
+                        if b_is_max and my_maxmin_value < my_old_maxmin_value:
+                            delta_values[target_key + '_old_max'] = my_old_maxmin_value
+                        if b_is_max is False and my_maxmin_value < my_old_maxmin_value:
+                            delta_values[target_key + '_old_min'] = my_old_maxmin_value
+            b_is_max = not(b_is_max)
+
+    def loadMaxMinInObs(
+        self,
+        my_measure: json,
+        obs_meteor: ObsMeteor,
+        target_key: str,
+        delta_values: json,
+        my_values: json,
+        trace_flag: bool = False,
     ):
         """
             loadMaxMinInObsInObservation
@@ -232,7 +268,6 @@ class ProcessJsonData():
                 if my_values.get(target_key + maxmin_suffix) is not None:
                     my_maxmin_value = my_values[target_key + maxmin_suffix]
                     my_maxmin_date = my_values[target_key + maxmin_suffix + '_time']
-                    my_old_maxmin_value = obs_j.get(target_key + maxmin_suffix)
                     obs_j[target_key + maxmin_suffix] = my_maxmin_value
                     obs_j[target_key + maxmin_suffix + '_time'] = my_maxmin_date
                     delta_values[target_key + maxmin_suffix] = my_maxmin_value
@@ -241,17 +276,7 @@ class ProcessJsonData():
                         my_wind_dir = my_values.get[target_key + maxmin_suffix + '_dir']
                         obs_j[target_key + maxmin_suffix + '_dir'] = my_wind_dir
                         delta_values[target_key + maxmin_suffix + '_dir'] = my_wind_dir
-                    # detect if maxmin must be recomputed
-                    if my_values.get(target_key + '_check_maxmin') is not None:
-                        if my_old_maxmin_value is None:
-                            if b_is_max:
-                                my_old_maxmin_value = my_maxmin_value - 1
-                            else:
-                                my_old_maxmin_value = my_maxmin_value + 1
-                        if b_is_max and my_maxmin_value < my_old_maxmin_value:
-                            delta_values[target_key + '_old_max'] = my_old_maxmin_value
-                        if b_is_max is False and my_maxmin_value < my_old_maxmin_value:
-                            delta_values[target_key + '_old_min'] = my_old_maxmin_value
+
             b_is_max = not(b_is_max)
 
     def get_src_key(self, my_measure: json):
@@ -265,6 +290,8 @@ class ProcessJsonData():
         target_key = src_key
         if my_measure.__contains__('target_key'):
             target_key = my_measure['target_key']
+        elif isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm):
+            target_key += '_omm'
         return (src_key, target_key)
 
     def get_json_value(self, j: json, key: str, suffix_list: list, key_preffix_first: bool):

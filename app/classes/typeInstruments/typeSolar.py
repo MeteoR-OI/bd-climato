@@ -13,4 +13,4 @@ class TypeSolar(RootTypeInstrument):
             {'type_i': 6, 'src_key': 'radiation', 'dataType': float, 'agg': 'avg', 'avg': True,  'min': False, 'max': True,  'hour_deca': 0, 'special': 1},
             {'type_i': 6, 'src_key': 'etp',       'dataType': float, 'agg': 'avg', 'avg': False, 'min': False, 'max': False, 'hour_deca': 0, 'special': 1 + 8}
         ]
-        super()
+        super().__init__()

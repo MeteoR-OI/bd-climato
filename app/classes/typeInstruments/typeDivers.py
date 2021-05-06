@@ -12,4 +12,5 @@ class TypeDivers(RootTypeInstrument):
             {'type_i': 9, 'src_key': 'rx',      'dataType': float, 'agg': 'avg', 'avg': True, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
             {'type_i': 9, 'src_key': 'voltage', 'dataType': float, 'agg': 'avg', 'avg': True, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
         ]
-        super()
+        super().__init__()
+

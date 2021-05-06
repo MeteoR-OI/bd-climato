@@ -64,7 +64,7 @@ def checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
                 if a_current.__contains__(key + '_time') is False:
                     new_val[key + '_time'] = j['data'][idx]['stop_dat']
                     val_to_add.append(new_val)
-            if str(key).endswith('_s') and a_current.__contains(key[:-4] + '_duration') is False:
+            if str(key).endswith('_s') and a_current.__contains__(key[:-4] + '_duration') is False:
                 new_val[key[:-4] + '_duration'] = measure_duration
                 val_to_add.append(new_val)
 

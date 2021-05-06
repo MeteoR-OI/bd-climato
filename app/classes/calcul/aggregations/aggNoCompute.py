@@ -13,7 +13,7 @@ class AggNoCompute(AggCompute):
         must load dv[M_value], and dv[first_time] when in omm mode
 
     """
-    def loadDVInAggregation(
+    def loadDVDataInAggregation(
         self,
         my_measure: json,
         m_stop_dat: datetime,

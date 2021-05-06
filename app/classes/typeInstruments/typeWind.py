@@ -15,4 +15,4 @@ class TypeWind(RootTypeInstrument):
             {'type_i': 5, 'src_key': 'win10', 'measureType': 'avg', 'dataType': float, 'agg': 'avg', 'avg': True, 'calcAvg': False, 'min': False, 'max': False, 'hour_deca': 0, 'special': 2},
             {'type_i': 5, 'src_key': 'win10', 'measureType': 'avg', 'dataType': float, 'agg': 'avgomm', 'avg': True, 'calcAvg': False, 'min': False, 'max': True, 'hour_deca': 0, 'special': 2},
         ]
-        super()
+        super().__init__()

@@ -12,4 +12,4 @@ class TypeInterieur(RootTypeInstrument):
             {'type_i': 7, 'src_key': 'in_temp', 'dataType': float, 'agg': 'avg', 'avg': True, 'min': False, 'max': False, 'hour_deca': 0, 'special': 0},
             {'type_i': 7, 'src_key': 'in_humidity', 'dataType': float, 'agg': 'avg', 'avg': True, 'min': False, 'max': False, 'hour_deca': 0, 'special': 0},
         ]
-        super()
+        super().__init__()

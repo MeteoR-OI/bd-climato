@@ -15,7 +15,7 @@ class AggRateCompute(AggCompute):
 
     """
 
-    def loadDVInAggregation(
+    def loadDVDataInAggregation(
         self,
         my_measure: json,
         m_stop_date: datetime,
@@ -26,7 +26,7 @@ class AggRateCompute(AggCompute):
         trace_flag: bool = False,
         avg_suffix: str = '_rate',
     ):
-        super(AggRateCompute, self).loadDVInAggregation(
+        super(AggRateCompute, self).loadDVDataInAggregation(
             my_measure,
             m_stop_date,
             agg_deca,
@@ -37,7 +37,7 @@ class AggRateCompute(AggCompute):
             '_rate'
         )
 
-    def loadMaxMinInObsInAggregation(
+    def loadDVMaxMinInAggregation(
         self,
         my_measure: json,
         m_stop_date: datetime,
@@ -48,7 +48,7 @@ class AggRateCompute(AggCompute):
         trace_flag: bool = False,
         b_use_rate: bool = False,
     ):
-        super(AggRateCompute, self).loadMaxMinInObsInAggregation(
+        super(AggRateCompute, self).loadDVMaxMinInAggregation(
             my_measure,
             m_stop_date,
             agg_decas,

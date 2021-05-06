@@ -69,7 +69,7 @@ class ProcessJsonDataSum(ProcessJsonData):
                 tmp_duration_old = obs_meteor.data.duration
             if tmp_duration != tmp_duration_old:
                 raise('loadDataInObs', 'duration mitchmath for ' + target_key + ': in obs' + str(tmp_duration_old) + ', in json: ' + str(tmp_duration))
-            delta_values[target_key + '_s_old'] = tmp_s_old
+            delta_values[target_key + '_sum_old'] = tmp_s_old
             delta_values[target_key + '_duration_old'] = tmp_duration_old
 
             my_values[target_key + '_check_maxmin'] = my_value_instant if my_value_instant is not None else my_value_avg

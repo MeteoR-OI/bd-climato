@@ -13,4 +13,4 @@ class TypePression(RootTypeInstrument):
             {'type_i': 3, 'src_key': 'barometer', 'dataType': float, 'agg': 'avgomm', 'avg': True, 'min': True, 'max': True, 'hour_deca': 7, 'special': 48},
             {'type_i': 3, 'src_key': 'pressure', 'dataType': float, 'agg': 'no', 'avg': True, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
         ]
-        super()
+        super().__init__()

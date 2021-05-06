@@ -1,4 +1,5 @@
 from app.classes.repository.typeInstrumentMeteor import TypeInstrumentMeteor
+from app.tools.climConstant import MeasureProcessingBitMask
 
 # ---------------------
 # Measure Definitions -
@@ -33,13 +34,17 @@ from app.classes.repository.typeInstrumentMeteor import TypeInstrumentMeteor
 #   Standard(0) : no specific processing
 #   MeasureIsWind(1) : Measure is wind (need to save the xxx_dir)
 #   OnlyAggregateInHour(2)
-#   MeasureIsOmm(128) : This flag is set by the app when agg == 'ommAvg', no need to use it
 
 
 class RootTypeInstrument:
-    def __init(self):
+    def __init__(self):
         tmpI = TypeInstrumentMeteor(self.my_type_instr_id)
         self.type_instrument = tmpI.data
+        # set some flags for omm values
+        for a_measure in self.measures:
+            if str(a_measure['agg']).endswith('omm'):
+                a_measure['special'] |= MeasureProcessingBitMask.MeasureIsOmm
+                a_measure['measure_type'] = 'inst'
 
     # def mapping(self):
     #     """return current mapping"""
