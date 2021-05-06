@@ -46,20 +46,21 @@ class SvcAutoLoad(WorkerRoot):
 
             for aFile in files:
                 if aFile.endswith('.json'):
-                    with my_tracer.start_as_current_span as my_span:
-                        try:
-                            my_span.set_attribute('filename', aFile)
-                            my_span.set_attribute('base.dir', base_dir)
-                            ret_json = self.loadJson(base_dir + '/' + aFile, False, False, False)
-                            my_span.set_event('file.moved', {'dest': base_dir + '/done/' + aFile})
-                            if trace_flag is True:
-                                t.logTrace('task ' + self.name + " file processed", None, ret_json)
-                            os.rename(base_dir + '/' + aFile, base_dir + '/done/' + aFile)
-                        except Exception as exc:
-                            t.LogException(exc, my_span)
-                            my_span.record_exception(exc)
-                            my_span.set_event('file.moved', {'dest': base_dir + '/failed/' + aFile})
-                            os.rename(base_dir + '/' + aFile, base_dir + '/failed/' + aFile)
+                    # with my_tracer.start_as_current_span as my_span:
+                    try:
+                        # my_span.set_attribute('filename', aFile)
+                        # my_span.set_attribute('base.dir', base_dir)
+                        ret_json = self.loadJson(base_dir + '/' + aFile, False, False, False)
+                        # my_span.set_event('file.moved', {'dest': base_dir + '/done/' + aFile})
+                        if trace_flag is True:
+                            t.logTrace('task ' + self.name + " file processed", None, ret_json)
+                        os.rename(base_dir + '/' + aFile, base_dir + '/done/' + aFile)
+                    except Exception as exc:
+                        t.LogException(exc)
+                        # t.LogException(exc, my_span)
+                        # my_span.record_exception(exc)
+                        # my_span.set_event('file.moved', {'dest': base_dir + '/failed/' + aFile})
+                        os.rename(base_dir + '/' + aFile, base_dir + '/failed/' + aFile)
 
         except Exception as inst:
             t.LogException(inst, my_span)
