@@ -1,5 +1,5 @@
 from app.tools.telemetry import Span
-from .jsonPlus import json
+from .jsonPlus import JsonPlus, json
 import datetime
 import inspect
 
@@ -89,3 +89,4 @@ def _logMe(message: str, level: str = None, my_span: Span = None, params: json =
 
     if return_string:
         return log_j
+    print(JsonPlus().dumps(log_j))
