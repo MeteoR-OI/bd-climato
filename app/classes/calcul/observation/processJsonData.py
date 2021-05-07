@@ -179,6 +179,8 @@ class ProcessJsonData():
         if my_value_dir is not None:
             my_values[target_key + '_di'] = my_value_dir
         tmp_duration = int(json_file_data['data'][measure_idx]['current']['duration'])
+        if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm):
+            tmp_duration = 60
         my_values[target_key + '_du'] = tmp_duration
 
         # load max/min from json
@@ -189,11 +191,12 @@ class ProcessJsonData():
                     my_values[target_key + maxmin_suffix] = data_src[target_key + maxmin_suffix]
                     my_values[target_key + maxmin_suffix + '_time'] = data_src[target_key + maxmin_suffix + '_time']
                 else:
-                    my_values[target_key + maxmin_suffix] = my_value_instant if my_value_instant is not None else my_value_avg
-                    my_values[target_key + maxmin_suffix + '_time'] = stop_dat
-                if maxmin_key == 'max' and (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                    if data_src.get(target_key + maxmin_suffix + '_dir') is not None:
-                        my_values[target_key + maxmin_suffix + '_dir'] = data_src[target_key + maxmin_suffix + '_dir']
+                    if my_value_avg is not None or my_value_instant is not None:
+                        my_values[target_key + maxmin_suffix] = my_value_instant if my_value_instant is not None else my_value_avg
+                        my_values[target_key + maxmin_suffix + '_time'] = stop_dat
+                    if maxmin_key == 'max' and (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
+                        if data_src.get(target_key + maxmin_suffix + '_dir') is not None:
+                            my_values[target_key + maxmin_suffix + '_dir'] = data_src[target_key + maxmin_suffix + '_dir']
                     # if we can use my_value_dir for the max if not one was given
                     # elif my_value_dir is not None:
                     #     my_values[target_key + maxmin_suffix + '_dir'] = my_value_dir

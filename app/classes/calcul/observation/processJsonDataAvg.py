@@ -1,5 +1,7 @@
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.calcul.observation.processJsonData import ProcessJsonData
+from app.tools.aggTools import isFlagged
+from app.tools.climConstant import MeasureProcessingBitMask
 import json
 import datetime
 
@@ -49,6 +51,8 @@ class ProcessJsonDataAvg(ProcessJsonData):
         my_value_instant = my_values.get(target_key + '_i')
         my_value_dir = my_values.get(target_key + '_di')
         tmp_duration = my_values.get(target_key + '_du')
+        if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm):
+            tmp_duration = 60
         if my_value_avg is None:
             if my_value_instant is None:
                 return
@@ -68,8 +72,8 @@ class ProcessJsonDataAvg(ProcessJsonData):
                 # no change on avg computation
                 return
             tmp_duration_old = obs_j.get(target_key + '_duration')
-            if tmp_duration is None:
-                tmp_duration_old = obs_meteor.data.duration
+            if tmp_duration_old is None:
+                tmp_duration_old = tmp_duration
             if tmp_duration != tmp_duration_old:
                 raise('loadDataInObs', 'duration mitchmath for ' + target_key + ': in obs' + str(tmp_duration_old) + ', in json: ' + str(tmp_duration))
             delta_values[target_key + '_s_old'] = tmp_s_old

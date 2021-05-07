@@ -57,6 +57,11 @@ class RootTypeInstrument:
                 if a_measure.get(default_param[0]) is None:
                     a_measure[default_param[0]] = default_param[1]
 
+            # add combo target_key first
+            if 'sumomm' in str(a_measure['agg']):
+                if a_measure.get('target_key') is None:
+                    a_measure['target_key'] = a_measure['src_key'] + '_sum_omm'
+
             # mark the measure when it is an omm measure
             if 'omm' in str(a_measure['agg']):
                 a_measure['special'] |= MeasureProcessingBitMask.MeasureIsOmm

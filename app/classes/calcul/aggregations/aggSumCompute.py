@@ -44,27 +44,31 @@ class AggSumCompute(AggCompute):
         has_data = False
 
         # load old measure values in case of an update of Observation, and only in agg_hour
-        tmp_sumum_old = tmp_duration_old = 0
+        tmp_sum_old = tmp_duration_old = 0
         if delta_values.__contains__(target_key + '_sum_old'):
-            tmp_sumum_old = delta_values[target_key + '_sum_old']
+            tmp_sum_old = delta_values[target_key + '_sum_old']
             tmp_duration_old = delta_values[target_key + '_duration_old']
             has_data = True
 
         # ------------------------------------------------------------------
         # get our new data
-        # 1 from dv[target_key + '_s']
-        # 2 from m_agg_j[target_key_s]
-        # 3 from m_agg_j[target_key_avg]
+        # 1 from dv[target_key + '_sum']
+        # 2 from m_agg_j[target_key + '_sum']
         # last win
         # ------------------------------------------------------------------
 
         tmp_duration = float(delta_values["duration"])
 
         # get our M_s from our delta_values
-        tmp_tmp = self.get_json_value(delta_values, target_key + '_s', [], True)
+        tmp_tmp = self.get_json_value(delta_values, target_key + '_sum', [], True)
         if tmp_tmp is not None:
             has_data = True
             tmp_sum = float(tmp_tmp)
+        if delta_values.get(target_key + '_duration') is not None:
+            if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm):
+                tmp_duration = 60
+            else:
+                tmp_duration = delta_values[target_key + '_duration']
 
         synos = [target_key]
         if my_measure.get('syno') is not None:
@@ -75,7 +79,7 @@ class AggSumCompute(AggCompute):
         for a_key in synos:
             if b_value_found:
                 continue
-            tmp_tmp = self.get_json_value(m_agg_j, a_key, ['_sum'], None)
+            tmp_tmp = self.get_json_value(m_agg_j, a_key, [], None)
             if tmp_tmp is not None:
                 has_data = True
                 tmp_sum = float(tmp_tmp)
@@ -83,6 +87,8 @@ class AggSumCompute(AggCompute):
                     tmp_duration = float(m_agg_j[a_key + '_duration'])
                 else:
                     tmp_duration = float(m_agg_j['duration'])
+                if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm):
+                    tmp_duration = 60
                 b_value_found = True
 
         # return if the aggregation should not be sent to upper levels
@@ -91,20 +97,26 @@ class AggSumCompute(AggCompute):
 
         agg_deca.dirty = True
 
-        addJson(agg_j, target_key + '_sum', tmp_sum - tmp_sumum_old)
+        addJson(agg_j, target_key + '_sum', tmp_sum - tmp_sum_old)
         addJson(agg_j, target_key + '_duration', tmp_duration - tmp_duration_old)
 
+        tmp_sum_new = agg_j[target_key + '_sum']
         tmp_duration_new = agg_j[target_key + '_duration']
+
         if tmp_duration_new == 0:
             # no duration, delete all keys
             delKey(agg_j, target_key + '_sum')
             delKey(agg_j, target_key + '_duration')
             delta_values[target_key + '_delete_me'] = True
+        else:
+            # Add omm values in agg_hour
+            if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm):
+                agg_j[target_key] = tmp_sum_new
 
         if isFlagged(my_measure['special'], MeasureProcessingBitMask.OnlyAggregateInHour) is True:
             return
 
         # propagate to next level if no limitation on aggregation level
-        dv_next[target_key + '_sum'] = tmp_sum - tmp_sumum_old
+        dv_next[target_key + '_sum'] = tmp_sum - tmp_sum_old
         dv_next[target_key + '_duration'] = tmp_duration - tmp_duration_old
-        dv_next["duration"] = tmp_duration
+        dv_next["duration"] = delta_values['duration']
