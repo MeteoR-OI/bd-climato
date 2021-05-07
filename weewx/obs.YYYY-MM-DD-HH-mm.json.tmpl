@@ -1,0 +1,304 @@
+#encoding UTF-8
+#def get_battery_status($x)
+#if $x == 0
+OK#slurp
+#else
+LOW#slurp
+#end if
+#end def
+## fonction cle et moyenne
+#def CleAvg($cle,$x,$y,$d)
+#if $x is not None and $y is not None
+#set $val = $x/$y
+#if $d == 0 
+#set $nval = round($val)
+#else
+#set $nval = round($val,$d)
+## pour Nico
+#set $nval = $val
+#end if
+"$cle":$nval,#slurp
+#end if
+#end def
+## fin fonction cle et moyenne
+## fonction formatage date
+#def datef($x)
+#if $x is None
+#set $res = "n/a" ## valeur nulle n/a
+"$res"#slurp
+#else 
+#set $d = datetime.fromtimestamp($x)
+#set $d = format($d,"%Y-%m-%dT%H:%M:%S")
+"$d"#slurp
+#end if
+#end def
+## fin fonction formatage date
+## fonction formatage date avec cle
+#def CleDat($cle, $dat)
+#if $dat is not None
+#set $ndat = datetime.fromtimestamp($dat)
+#set $ndat = format($ndat,"%Y-%m-%dT%H:%M:%S")
+"$cle":"$ndat",#slurp
+#end if
+#end def
+## fin fonction formatage date avec cle
+## fonction formatage valeur avec cle
+#def CleVal($cle, $val, $d)
+#if $val is not None
+#if $d == 0 
+#set $nval = round($val)
+#else
+#set $nval = round($val,$d)
+## pour Nico
+#set $nval = $val
+#end if
+"$cle":$nval,#slurp
+#end if
+#end def
+## fin fonction formatage valeur avec cle
+## fonction calcul valeur avec cle
+#def CleCal($cle, $val, $mult, $d)
+#if $val is not None and $mult is not None
+#if $d == 0 
+#set $nval = round($val*$mult)
+#else
+#set $nval = round($val*$mult,$d)
+## pour Nico
+#set $nval = $val*$mult
+#end if
+"$cle":$nval,#slurp
+#end if
+#end def
+## fin fonction calcul valeur avec cle
+## fonction calcul valeur omm avec cle
+#def CleCalomm($cle, $day, $hdeb, $d)
+#for $hour in $day($days_ago=$day).$hours
+#if datetime.fromtimestamp($hour.dateTime.raw)>=$hdeb
+#set sum=+$hour.$val
+#end for
+
+#if $val is not None and $mult is not None
+#if $d == 0 
+#set $nval = round($val*$mult)
+#else
+#set $nval = round($val*$mult,$d)
+## pour Nico
+#set $nval = $val*$mult
+#end if
+"$cle":$nval,#slurp
+#end if
+#end def
+## fin fonction calcul valeur avec cle
+#from datetime import datetime, timedelta
+#import user.extensions
+[
+{
+  "meteor" : "$BootstrapLabels.station_id",
+  "version":2,
+  "info" : {
+     "title":"JSON pour BDClimato",
+     "time":"$current.dateTime",
+     "uptime":"$station.uptime",
+#set $last_timestamp=datetime.fromtimestamp($db_lookup.last_timestamp)
+     "last_update":"$last_timestamp",
+#set $last_update_stop = datetime.fromtimestamp(user.extensions.last_update_stop)
+     "last_update_before_stop":"$last_update_stop" ## final maj depuis arret weewx
+     },
+  "data":
+     [
+#set $datetime_cur = datetime.fromtimestamp($current.dateTime.raw)
+#set $start = 1 ## indique debut de la boucle sur les currents
+#set $uptime = round($station.uptime.raw) ## temps passe depuis demarrage weewx
+#set $interval = $current.interval.raw * 60 ## interval obs en secondes
+#if $uptime < $interval + ($interval/10) ## on teste si weewx vient de demarrer
+#set $tds = $last_timestamp - $last_update_stop
+###set $h_delta = int(($tds.days*24) + round($tds.seconds/3600)) + 1 ##nb heures a recuperer + 1
+#set $h_delta = int($tds.days*86400) + round($tds.seconds) ##nb secondes a recuperer + 1
+#else
+#set $h_delta = 0 ## sinon fonctionnement normal
+#end if ## fin test redemarrage
+#set $boucle_obs = $span($time_delta=$h_delta) ## definit la periode a traiter
+###set $all_obs = $boucle_obs.rxCheckPercent.count.raw ## compte le nb obs presentes
+###set $all_obs = round($all_obs)
+###set $nb_obs = 0 ## numero obs en cours dans la boucle
+#for $obs in $boucle_obs.records ## debut boucle obs
+#set $amin = round($obs.interval.raw) ##intervalle de la mesure
+#set $datetime_obs = datetime.fromtimestamp($obs.dateTime.raw) ## obs en cours de traitement
+#set $datetime_obs += timedelta(minutes=$amin) / 2 ## arrondi a interval pres
+#set $d = $datetime_obs
+#set $datetime_obs -= timedelta(minutes=$d.minute % $amin, seconds=$d.second, microseconds=$d.microsecond)
+#set $datetime_obs_start = format($datetime_obs - timedelta(minutes=$amin),"%Y-%m-%dT%H:%M:%S")
+#set $datetime_obs_stop = format($datetime_obs,"%Y-%m-%dT%H:%M:%S")
+#set $duration = round($obs.interval.raw)
+#if $start == 1 ## si premiere obs, obs precedente initialisee
+#set $datetime_obs_prev = datetime.fromtimestamp($obs.dateTime.raw) - timedelta(minutes=$amin,seconds=-1)
+#set $new_hour  = $datetime_obs.hour <> $datetime_obs_prev.hour
+#set $final_obs = $datetime_obs == $datetime_cur
+#set $restartw  = $h_delta > 0
+#set $start = 0
+#set $aggregation_hour = 0
+#else
+#set $new_hour  = $datetime_obs.hour <> $datetime_obs_prev.hour
+#set $final_obs = $datetime_obs == $datetime_cur
+#set $restartw  = $h_delta > 0
+#if $aggregation_hour == 0
+      }}, ## apres 1er current on ferme proprement current precedent
+#else
+
+      }, ## idem mais agregation hour suit
+#end if
+#end if ## fin test premiere obs
+#set $aggregation_hour = 0
+      {
+       "start_dat":"$datetime_obs_start",
+       "stop_dat":"$datetime_obs_stop",
+       "current": {
+       $CleVal("out_temp",$obs.outTemp.raw,1)
+       #if $final_obs
+       $CleVal("out_temp_min",$currentagg.outTemp.min.raw,1)       
+       $CleDat("out_temp_min_time",$currentagg.outTemp.mintime.raw)
+       $CleAvg("out_temp_avg",$currentagg.outTemp.sum.raw,$currentagg.outTemp.count.raw,2)
+       $CleVal("out_temp_max",$currentagg.outTemp.max.raw,1)       
+       $CleDat("out_temp_max_time",$currentagg.outTemp.maxtime.raw)
+       #end if
+       $CleVal("windchill",$obs.windchill.raw,1)
+       #if $final_obs
+       $CleVal("windchill_min",$currentagg.windchill.min.raw,1)       
+       $CleDat("windchill_min_time",$currentagg.windchill.mintime.raw)
+       $CleAvg("windchill_avg",$currentagg.windchill.sum.raw,$currentagg.windchill.count.raw,2)
+       #end if
+       $CleVal("heatindex",$obs.heatindex.raw,1)
+       #if $final_obs
+       $CleVal("heatindex_max",$currentagg.heatindex.max.raw,1)       
+       $CleDat("heatindex_max_time",$currentagg.heatindex.maxtime.raw)
+       $CleAvg("heatindex_avg",$currentagg.heatindex.sum.raw,$currentagg.heatindex.count.raw,2)
+       #end if
+       $CleVal("dewpoint",$obs.dewpoint.raw,1)
+       #if $final_obs
+       $CleVal("dewpoint_min",$currentagg.dewpoint.min.raw,1)       
+       $CleDat("dewpoint_min_time",$currentagg.dewpoint.mintime.raw)
+       $CleAvg("dewpoint_avg",$currentagg.dewpoint.sum.raw,$currentagg.dewpoint.count.raw,2)
+       $CleVal("dewpoint_max",$currentagg.dewpoint.max.raw,1)       
+       $CleDat("dewpoint_max_time",$currentagg.dewpoint.maxtime.raw)
+       #end if
+       #if $obs.soilTemp1.has_data and $day.soilTemp1.has_data
+       $CleVal("soiltemp",$obs.soilTemp1.raw,1)
+       #if $final_obs
+       $CleVal("soiltemp_min",$obs.soilTemp1.min.raw,1)
+       $CleDat("soiltemp_min_time",$obs.soilTemp1.mintime.raw) 
+       #end if     
+       #end if     
+       $CleVal("humidity",$obs.outHumidity.raw,1)
+       #if $final_obs
+       $CleVal("humidity_min",$currentagg.outHumidity.min.raw,1)       
+       $CleDat("humidity_min_time",$currentagg.outHumidity.mintime.raw)
+       $CleAvg("humidity_avg",$currentagg.outHumidity.sum.raw,$currentagg.outHumidity.count.raw,2)
+       $CleVal("humidity_max",$currentagg.outHumidity.max.raw,1)       
+       $CleDat("humidity_max_time",$currentagg.outHumidity.maxtime.raw)
+       #end if
+       $CleVal("barometer",$obs.barometer.raw,1)
+       #if $final_obs
+       $CleVal("barometer_min",$currentagg.barometer.min.raw,1)       
+       $CleDat("barometer_min_time",$currentagg.barometer.mintime.raw)
+       $CleAvg("barometer_avg",$currentagg.barometer.sum.raw,$currentagg.barometer.count.raw,2)
+       $CleVal("barometer_max",$currentagg.barometer.max.raw,1)       
+       $CleDat("barometer_max_time",$currentagg.barometer.maxtime.raw)
+       #end if
+       $CleVal("pressure",$obs.pressure.raw,1)
+       #if $final_obs
+       $CleAvg("pressure_avg",$currentagg.pressure.sum.raw,$currentagg.pressure.count.raw,2)
+       #end if
+       $CleVal("wind_avg",$obs.windSpeed.raw,1)
+       $CleVal("wind_dir",$obs.windDir.raw,1)
+       $CleVal("windgust",$obs.windGust.raw,1)
+       $CleVal("windgust_dir",$obs.windGustDir.raw,1)
+       #if $final_obs
+       $CleVal("wind_max",$currentagg.windGust.max.raw,1)
+       $CleVal("wind_max_dir",$currentagg.windGustDir.max.raw,1)        
+       $CleDat("wind_max_time",$currentagg.windGust.maxtime.raw)    
+       #end if
+       $CleVal("wind10_avg",$current.windSpeed10.raw,1)
+       $CleVal("rain",$obs.rain.raw,1)
+       $CleVal("rain_rate",$obs.rainRate.raw,1)
+       #if $final_obs
+       $CleDat("rain_rate_max_time",$currentagg.rainRate.maxtime.raw/10) ## bug bizarre !!!!
+       #end if
+       #if $day.UV.has_data
+       $CleVal("uv_indice",$obs.UV.raw,1)
+       #if $final_obs
+       $CleVal("uv_indice_max",$currentagg.UV.max.raw,1)
+       $CleDat("uv_indice_max_time",$currentagg.UV.maxtime.raw)
+       $CleAvg("uv_indice_avg",$currentagg.UV.sum.raw,$currentagg.UV.count.raw,2)
+       #end if
+       #end if
+       if $obs.radiation.has_data  
+       #if $final_obs  
+       $CleCal("radiation_min",$currentagg.radiation.min.raw,0.001,1)
+       $CleDat("radiation_min_time",$currentagg.radiation.mintime.raw)
+       #if $currentagg.radiation.sum.raw is not None and $currentagg.radiation.count.raw is not None 
+       $CleCal("radiation",($currentagg.radiation.sum.raw/$currentagg.radiation.count.raw),$amin*0.006,2)
+       #end if
+       $CleCal("radiation_max",$currentagg.radiation.max.raw,0.001,1)
+       $CleDat("radiation_max_time",$currentagg.radiation.maxtime.raw)
+       #else
+       #if $obs.radiation.raw is not None 
+       $CleCal("radiation",$obs.radiation.raw,$amin*0.006,1)
+       #end if
+       #end if
+       #end if
+       $CleVal("in_temp",$obs.inTemp.raw,1)
+       #if $final_obs
+       $CleVal("in_temp_max",$currentagg.inTemp.max.raw,1)
+       $CleDat("in_temp_max_time",$currentagg.inTemp.maxtime.raw)
+       $CleAvg("in_temp_avg",$currentagg.inTemp.sum.raw,$currentagg.inTemp.count.raw,2)
+       $CleVal("in_temp_min",$currentagg.inTemp.min.raw,1)
+       $CleDat("in_temp_min_time",$currentagg.inTemp.mintime.raw)
+       #end if
+       $CleVal("in_humidity",$obs.inHumidity.raw,1)
+       #if $final_obs
+       $CleVal("in_humidity_max",$currentagg.inHumidity.max.raw,1)
+       $CleDat("in_humidity_max_time",$currentagg.inHumidity.maxtime.raw)
+       $CleAvg("in_humidity_avg",$currentagg.inHumidity.sum.raw,$currentagg.inHumidity.count.raw,2)
+       $CleVal("in_humidity_min",$currentagg.inHumidity.min.raw,1)
+       $CleDat("in_humidity_min_time",$currentagg.inHumidity.mintime.raw)
+       #end if
+       $CleVal("rx",$obs.rxCheckPercent.raw,1)
+       $CleVal("voltage",$obs.consBatteryVoltage.raw,1)
+       "duration":$duration
+#if $new_hour or $final_obs ## test change heure ou final obs
+#if $new_hour ## heure intermediaire
+#if $final_obs
+#set $delta_h = 0
+#else
+## calcule les deltas pour agregation
+#set $delta_s = ($datetime_cur - $datetime_obs).seconds
+#set $delta_d = ($datetime_cur - $datetime_obs).days
+#set $delta_h = (($delta_d * 86400) + $delta_s) // 3600 + 1
+#end if
+       },
+#set $aggregation_hour = 1
+       "aggregations":
+       [{
+       "level":"H",
+       ## traitement special pour affichage de l'etp qui n'est disponible que sur current a heure ronde
+#if $new_hour ##and $day.ET.has_data and $day.ET.sum.raw >0.0
+       $CleVal("etp_sum",$hour.ET.sum.raw,1)
+#end if
+       "start_dat":$datef($hour($hours_ago=$delta_h).dateTime.raw)
+#end if ## fin heure intermediaire
+#if $aggregation_hour == 1
+        ##si agregation hour on referme apres $hour
+       }]#slurp
+#end if
+#end if ## fin test change heure ou final obs
+#set $datetime_obs_prev = $datetime_obs ## garde en memoire obs traitee
+#end for ## fin boucle obs       
+#if $aggregation_hour == 0 and $final_obs 
+        ## si aucune agregation faut refermer current
+       }#slurp
+#end if
+
+     }
+   ]
+}
+]
