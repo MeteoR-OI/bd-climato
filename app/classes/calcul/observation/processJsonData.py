@@ -187,9 +187,9 @@ class ProcessJsonData():
         for maxmin_key in ['max', 'min']:
             if my_measure.__contains__(maxmin_key) is True and my_measure[maxmin_key] is True:
                 maxmin_suffix = '_' + maxmin_key
-                if data_src.get(target_key + maxmin_suffix) is not None:
-                    my_values[target_key + maxmin_suffix] = data_src[target_key + maxmin_suffix]
-                    my_values[target_key + maxmin_suffix + '_time'] = data_src[target_key + maxmin_suffix + '_time']
+                if data_src.get(src_key + maxmin_suffix) is not None:
+                    my_values[target_key + maxmin_suffix] = data_src[src_key + maxmin_suffix]
+                    my_values[target_key + maxmin_suffix + '_time'] = data_src[src_key + maxmin_suffix + '_time']
                 else:
                     if my_value_avg is not None or my_value_instant is not None:
                         my_values[target_key + maxmin_suffix] = my_value_instant if my_value_instant is not None else my_value_avg

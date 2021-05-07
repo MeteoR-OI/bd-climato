@@ -85,6 +85,10 @@ class CalcAggreg(AllCalculus):
             span_load_data.end()
             try:
                 idx_delta_value = -1
+                for an_agg in aggregations:
+                    # mark all aggregation as clean. only dirty aggregation will be saved
+                    an_agg.dirty = False
+
                 for delta_values in a_todo.data.j_dv:
                     idx_delta_value += 1
 
@@ -92,8 +96,6 @@ class CalcAggreg(AllCalculus):
                         continue
 
                     for an_agg in aggregations:
-                        # mark all aggregation as clean. only dirty aggregation will be saved
-                        an_agg.dirty = False
                         # add duration in all new aggregations
                         an_agg.add_duration(delta_values["duration"])
 
@@ -139,9 +141,9 @@ class CalcAggreg(AllCalculus):
                         if an_agg.dirty is True:
                             an_agg.save()
 
-                    a_todo.data.status = 999
-                    a_todo.save()
-                    # a_todo.delete()
+                    # a_todo.data.status = 999
+                    # a_todo.save()
+                    a_todo.delete()
 
                     # we're done
                     t.logInfo(

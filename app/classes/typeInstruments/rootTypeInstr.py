@@ -10,6 +10,7 @@ from app.tools.climConstant import MeasureProcessingBitMask
 
 # syno: list of accepted synonyms
 #     M_sum is automatically added for sum type of aggregation
+#     M_rate ...
 
 # target_key: json key name only if different. Used in obs and all aggregations
 #      M_omm is used for omm measure, when no target is defined
