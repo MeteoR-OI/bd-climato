@@ -25,7 +25,7 @@ class AggCompute():
     ):
         return
 
-    def loadDVMaxMinInAggregation(
+    def _loadDVMaxMinInAggregation(
         self,
         my_measure: json,
         m_stop_date: datetime,
@@ -34,7 +34,6 @@ class AggCompute():
         delta_values: json,
         dv_next: json,
         trace_flag: bool = False,
-        b_use_rate: bool = False,
     ):
         """
             loadDVMaxMinInAggregation
@@ -50,8 +49,6 @@ class AggCompute():
             idx_maxmin += 1
 
             maxmin_key = maxmin_suffix.split('_')[1]
-            if b_use_rate:
-                maxmin_suffix = '_rate' + maxmin_suffix
 
             if my_measure.__contains__(maxmin_key) and my_measure[maxmin_key] is True:
                 current_maxmin = None
