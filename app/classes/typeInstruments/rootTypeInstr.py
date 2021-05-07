@@ -88,7 +88,6 @@ class RootTypeInstrument:
                     a_measure['syno'].append(sum_key)
                 if a_measure.get('target_key') is None:
                     a_measure['target_key'] = sum_key
-                a_measure['agg'] = str(a_measure['agg']).replace('sum', 'avg')
 
             for default_param in [('deca_max', a_measure['hour_deca']), ('deca_max', a_measure['hour_deca']), ('target_key', a_measure['src_key'])]:
                 if a_measure.get(default_param[0]) is None:
