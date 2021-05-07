@@ -39,34 +39,34 @@ class AggSumCompute(AggCompute):
                 dv_next: delta_values for next level
                 flag: True=insert, False=delete
         """
-        json_key = self.get_json_key(my_measure)
+        target_key = my_measure['target_key']
         agg_j = agg_deca.data.j
         has_data = False
 
         # load old measure values in case of an update of Observation, and only in agg_hour
         tmp_sumum_old = tmp_duration_old = 0
-        if delta_values.__contains__(json_key + '_sum_old'):
-            tmp_sumum_old = delta_values[json_key + '_sum_old']
-            tmp_duration_old = delta_values[json_key + '_duration_old']
+        if delta_values.__contains__(target_key + '_sum_old'):
+            tmp_sumum_old = delta_values[target_key + '_sum_old']
+            tmp_duration_old = delta_values[target_key + '_duration_old']
             has_data = True
 
         # ------------------------------------------------------------------
         # get our new data
-        # 1 from dv[json_key + '_s']
-        # 2 from m_agg_j[json_key_s]
-        # 3 from m_agg_j[json_key_avg]
+        # 1 from dv[target_key + '_s']
+        # 2 from m_agg_j[target_key_s]
+        # 3 from m_agg_j[target_key_avg]
         # last win
         # ------------------------------------------------------------------
 
         tmp_duration = float(delta_values["duration"])
 
         # get our M_s from our delta_values
-        tmp_tmp = self.get_json_value(delta_values, json_key + '_s', [], True)
+        tmp_tmp = self.get_json_value(delta_values, target_key + '_s', [], True)
         if tmp_tmp is not None:
             has_data = True
             tmp_sum = float(tmp_tmp)
 
-        synos = [json_key]
+        synos = [target_key]
         if my_measure.get('syno') is not None:
             for a_syno in my_measure['syno']:
                 synos.append(a_syno)
@@ -91,20 +91,20 @@ class AggSumCompute(AggCompute):
 
         agg_deca.dirty = True
 
-        addJson(agg_j, json_key + '_sum', tmp_sum - tmp_sumum_old)
-        addJson(agg_j, json_key + '_duration', tmp_duration - tmp_duration_old)
+        addJson(agg_j, target_key + '_sum', tmp_sum - tmp_sumum_old)
+        addJson(agg_j, target_key + '_duration', tmp_duration - tmp_duration_old)
 
-        tmp_duration_new = agg_j[json_key + '_duration']
+        tmp_duration_new = agg_j[target_key + '_duration']
         if tmp_duration_new == 0:
             # no duration, delete all keys
-            delKey(agg_j, json_key + '_sum')
-            delKey(agg_j, json_key + '_duration')
-            delta_values[json_key + '_delete_me'] = True
+            delKey(agg_j, target_key + '_sum')
+            delKey(agg_j, target_key + '_duration')
+            delta_values[target_key + '_delete_me'] = True
 
         if isFlagged(my_measure['special'], MeasureProcessingBitMask.OnlyAggregateInHour) is True:
             return
 
         # propagate to next level if no limitation on aggregation level
-        dv_next[json_key + '_sum'] = tmp_sum - tmp_sumum_old
-        dv_next[json_key + '_duration'] = tmp_duration - tmp_duration_old
+        dv_next[target_key + '_sum'] = tmp_sum - tmp_sumum_old
+        dv_next[target_key + '_duration'] = tmp_duration - tmp_duration_old
         dv_next["duration"] = tmp_duration

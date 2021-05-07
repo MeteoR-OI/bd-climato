@@ -39,7 +39,7 @@ class AggAvgCompute(AggCompute):
                 dv_next: delta_values for next level
                 flag: True=insert, False=delete
         """
-        target_key = self.get_src_key(my_measure)
+        target_key = my_measure['target_key']
         agg_j = agg_deca.data.j
         has_data = False
 
@@ -119,7 +119,7 @@ class AggAvgCompute(AggCompute):
         else:
             agg_j[target_key + '_avg'] = tmp_s_new / tmp_duration_new
             # Add omm values in agg_hour
-            if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm) and agg_deca.getLevel()[0] == 'h':
+            if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm) and str(agg_deca.getLevel()[0]).lower() == 'h':
                 agg_j[target_key] = tmp_s_new / tmp_duration_new
 
         if isFlagged(my_measure['special'], MeasureProcessingBitMask.OnlyAggregateInHour) is True:

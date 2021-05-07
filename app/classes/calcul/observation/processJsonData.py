@@ -30,7 +30,8 @@ class ProcessJsonData():
         """
 
         # load field if defined in json
-        src_key, target_key = self.get_src_key(my_measure)
+        src_key = my_measure['src_key']
+        target_key = my_measure['target_key']
 
         # get exclusion, and return if value is nullified
         exclusion = poste_metier.exclusion(my_measure['type_i'])
@@ -278,21 +279,6 @@ class ProcessJsonData():
                         delta_values[target_key + maxmin_suffix + '_dir'] = my_wind_dir
 
             b_is_max = not(b_is_max)
-
-    def get_src_key(self, my_measure: json):
-        """
-            return the target key name
-
-            calculus v1
-            calculus v2
-        """
-        src_key = my_measure['src_key']
-        target_key = src_key
-        if my_measure.__contains__('target_key'):
-            target_key = my_measure['target_key']
-        elif isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm):
-            target_key += '_omm'
-        return (src_key, target_key)
 
     def get_json_value(self, j: json, key: str, suffix_list: list, key_preffix_first: bool):
         key_list = []
