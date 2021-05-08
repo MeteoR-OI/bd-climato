@@ -37,4 +37,4 @@ class AggNoCompute(AggCompute):
         trace_flag: bool = False,
         b_use_rate: bool = False,
     ):
-        super()._loadDVMaxMinInAggregation(my_measure, m_stop_date, agg_decas, m_agg_j, delta_values, dv_next, trace_flag)
+        super().loadDVMaxMinInAggregation(my_measure, m_stop_date, agg_decas, m_agg_j, delta_values, dv_next, trace_flag)

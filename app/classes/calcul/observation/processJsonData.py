@@ -60,9 +60,6 @@ class ProcessJsonData():
             if obs_meteor.data.duration != tmp_duration:
                 raise Exception('loadObsDatarow', 'incompatible durations -> in table obs: ' + str(obs_meteor.data.duration) + ', in json: ' + str(tmp_duration))
 
-        if delta_values['duration'] is None:
-            delta_values['duration'] = obs_meteor.data.duration
-
         # load data from dv to obs
         self.loadDataInObs(my_measure, obs_meteor, target_key, delta_values, my_values, trace_flag)
 
@@ -224,26 +221,10 @@ class ProcessJsonData():
     ):
         obs_j = obs_meteor.data.j
 
-        b_is_max = True
-        for maxmin_key in ['max', 'min']:
-            # is max or min needed for this measure
-            maxmin_suffix = '_' + maxmin_key
-            if my_measure.__contains__(maxmin_key) is True and my_measure[maxmin_key] is True:
-                if my_values.get(target_key + maxmin_suffix) is not None:
-                    if my_values.get(target_key + '_check_maxmin') is not None:
-                        my_maxmin_value = my_values[target_key + maxmin_suffix]
-                        my_old_maxmin_value = obs_j.get(target_key + maxmin_suffix)
-
-                        if my_old_maxmin_value is None:
-                            if b_is_max:
-                                my_old_maxmin_value = my_maxmin_value - 1
-                            else:
-                                my_old_maxmin_value = my_maxmin_value + 1
-                        if b_is_max and my_maxmin_value < my_old_maxmin_value:
-                            delta_values[target_key + '_old_max'] = my_old_maxmin_value
-                        if b_is_max is False and my_maxmin_value < my_old_maxmin_value:
-                            delta_values[target_key + '_old_min'] = my_old_maxmin_value
-            b_is_max = not(b_is_max)
+        for maxmin_suffix in ['_max', '_min']:
+            if obs_j.get(target_key + maxmin_suffix) is not None:
+                my_old_maxmin_value = obs_j[target_key + maxmin_suffix]
+                my_values[target_key + '_check' + maxmin_suffix] = my_old_maxmin_value
 
     def loadMaxMinInObs(
         self,
@@ -269,6 +250,10 @@ class ProcessJsonData():
             # is max or min needed for this measure
             maxmin_suffix = '_' + maxmin_key
             if my_measure.__contains__(maxmin_key) is True and my_measure[maxmin_key] is True:
+                # propagate the check request
+                if my_values.get(target_key + '_check' + maxmin_suffix) is not None:
+                    obs_j[target_key + '_check' + maxmin_suffix] = my_values[target_key + '_check' + maxmin_suffix]
+
                 if my_values.get(target_key + maxmin_suffix) is not None:
                     my_maxmin_value = my_values[target_key + maxmin_suffix]
                     my_maxmin_date = my_values[target_key + maxmin_suffix + '_time']

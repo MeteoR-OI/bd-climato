@@ -79,8 +79,6 @@ class ProcessJsonDataAvg(ProcessJsonData):
             delta_values[target_key + '_s_old'] = tmp_s_old
             delta_values[target_key + '_duration_old'] = tmp_duration_old
 
-            my_values[target_key + '_check_maxmin'] = my_value_instant if my_value_instant is not None else my_value_avg
-
         # save data in dv
         delta_values[target_key + '_s'] = tmp_s
         delta_values[target_key + '_duration'] = tmp_duration

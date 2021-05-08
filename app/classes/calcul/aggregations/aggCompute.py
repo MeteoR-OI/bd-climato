@@ -12,20 +12,8 @@ class AggCompute():
 
         Computation specific to a measure type
     """
-    def loadDVDataInAggregation(
-        self,
-        my_measure: json,
-        m_stop_date: datetime,
-        agg_deca: AggMeteor,
-        m_agg_j: json,
-        delta_values: json,
-        dv_next: json,
-        trace_flag: bool = False,
-        avg_suffix: str = '_rate',
-    ):
-        return
 
-    def _loadDVMaxMinInAggregation(
+    def loadDVMaxMinInAggregation(
         self,
         my_measure: json,
         m_stop_date: datetime,
@@ -51,8 +39,8 @@ class AggCompute():
             maxmin_key = maxmin_suffix.split('_')[1]
 
             if my_measure.__contains__(maxmin_key) and my_measure[maxmin_key] is True:
-                current_maxmin = None
-                current_maxmin_dir = None
+                new_calulated_maxmin = None
+                new_calulated_maxmin_dir = None
 
                 # check if measure was deleted
                 if delta_values.__contains__(target_key + '_delete_me') is True:
@@ -61,6 +49,7 @@ class AggCompute():
                         # need to invalidate this value for next level
                         invalid_value = agg_j[target_key + maxmin_suffix]
                         dv_next[target_key + maxmin_suffix + '_invalidate'] = invalid_value
+                        dv_next[target_key + '_check' + maxmin_suffix] = agg_j[target_key + maxmin_suffix]
                     delKey(agg_j, target_key + maxmin_suffix)
                     delKey(agg_j, target_key + maxmin_suffix + '_time')
                     continue
@@ -70,27 +59,27 @@ class AggCompute():
                 # - load current max/min from delta_values if given
                 # - load from "aggregations" clause in the json data file if given
                 if delta_values.__contains__(target_key):
-                    current_maxmin = my_measure['dataType'](delta_values[target_key])
-                    current_maxmin_time = m_stop_date
+                    new_calulated_maxmin = my_measure['dataType'](delta_values[target_key])
+                    new_calulated_maxmin_time = m_stop_date
                     if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
                         if delta_values.__contains__(target_key + maxmin_suffix + '_dir') is True:
-                            current_maxmin_dir = float(delta_values[target_key + maxmin_suffix + '_dir'])
+                            new_calulated_maxmin_dir = float(delta_values[target_key + maxmin_suffix + '_dir'])
 
                 if delta_values.__contains__(target_key + maxmin_suffix) is True:
-                    current_maxmin = my_measure['dataType'](delta_values[target_key + maxmin_suffix])
-                    current_maxmin_time = delta_values[target_key + maxmin_suffix + '_time']
+                    new_calulated_maxmin = my_measure['dataType'](delta_values[target_key + maxmin_suffix])
+                    new_calulated_maxmin_time = delta_values[target_key + maxmin_suffix + '_time']
                     if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
                         if m_agg_j.__contains__(target_key + maxmin_suffix + '_dir') is True:
-                            current_maxmin_dir = float(delta_values[target_key + maxmin_suffix + '_dir'])
+                            new_calulated_maxmin_dir = float(delta_values[target_key + maxmin_suffix + '_dir'])
 
                 if m_agg_j.__contains__(target_key + maxmin_suffix):
-                    current_maxmin = my_measure['dataType'](m_agg_j[target_key + maxmin_suffix])
-                    current_maxmin_time = m_agg_j[target_key + maxmin_suffix + '_time']
+                    new_calulated_maxmin = my_measure['dataType'](m_agg_j[target_key + maxmin_suffix])
+                    new_calulated_maxmin_time = m_agg_j[target_key + maxmin_suffix + '_time']
                     if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
                         if m_agg_j.__contains__(target_key + maxmin_suffix + '_dir') is True:
-                            current_maxmin_dir = float(m_agg_j[target_key + maxmin_suffix + '_dir'])
+                            new_calulated_maxmin_dir = float(m_agg_j[target_key + maxmin_suffix + '_dir'])
 
-                if current_maxmin is None:
+                if new_calulated_maxmin is None:
                     # should never occurs...
                     continue
 
@@ -102,69 +91,67 @@ class AggCompute():
                 """
                 invalidation decision tree for [field]_max
 
-                current_maxmin  +   agg_maxmin  +  invalid_maxmin_value +   action
+                new_calulated_maxmin  +   agg_maxmin  +  former_maxmin_value +  action
                 basic
-                    10          +               +           No          +       update
-                    10          +       5       +           No          +       update
-                    10          +       15      +           No          +       pass
+                    10                +               +           No          +  update
+                    10                +       5       +           No          +  update
+                    10                +       10      +           No          +  pass
+                    10                +       15      +           No          +  pass
 
-                invalidate value
-                    10          +       5       +           5           +       update -> auto
-
-                    10          +       10      +           10          +       pass -> auto
-
-                    10          +       15      +           11          +       pass -> auto
-                    10          +       15      +           15          +       recompute
+                check_maxmin flag
+                    10                +       5       +           5           +  update -> auto
+                    10                +       10      +           10          +  pass -> auto
+                    10                +       15      +           15          +  recompute
                 """
-                if delta_values.__contains__(target_key + '_invalidate' + maxmin_suffix):
+                if delta_values.__contains__(target_key + '_check' + maxmin_suffix):
                     if agg_maxmin is None:
                         raise Exception('loadDVMaxMinInAggregation', 'Invalidate and no data in aggregation...')
-                    invalid_maxmin_value = delta_values[target_key + '_invalidate' + maxmin_suffix]
+                    former_maxmin_value = delta_values[target_key + '_check' + maxmin_suffix]
                     if maxmin_suffix == '_max':
-                        if agg_maxmin == invalid_maxmin_value and current_maxmin < agg_maxmin:
+                        if agg_maxmin > former_maxmin_value:
                             agg_maxmin = None
-                            dv_next[target_key + '_invalidate' + maxmin_suffix] = invalid_maxmin_value
-                            self.add_new_maxmin_fix(target_key, maxmin_key, agg_decas[0], delta_values)
+                            dv_next[target_key + '_check' + maxmin_suffix] = former_maxmin_value
+                            self.add_new_maxmin_fix(target_key, maxmin_key, my_measure['deca' + maxmin_suffix], agg_decas[idx_maxmin], delta_values)
                     else:
-                        if agg_maxmin == invalid_maxmin_value and current_maxmin > agg_maxmin:
+                        if agg_maxmin < former_maxmin_value:
                             agg_maxmin = None
-                            dv_next[target_key + '_invalidate' + maxmin_suffix] = invalid_maxmin_value
-                            self.add_new_maxmin_fix(target_key, maxmin_key, agg_decas[0], delta_values)
+                            dv_next[target_key + '_check' + maxmin_suffix] = former_maxmin_value
+                            self.add_new_maxmin_fix(target_key, maxmin_key, my_measure['deca' + maxmin_suffix], agg_decas[idx_maxmin], delta_values)
 
                 if agg_maxmin is None:
-                    # force the update i agg_deca for our current_maxmin
+                    # force the update i agg_deca for our new_calulated_maxmin
                     if maxmin_suffix == '_min':
-                        agg_maxmin = current_maxmin + 1
+                        agg_maxmin = new_calulated_maxmin + 1
                     else:
-                        agg_maxmin = current_maxmin - 1
+                        agg_maxmin = new_calulated_maxmin - 1
 
                 b_change_maxmin = False
                 # compare the measure data and current maxmin
-                if maxmin_suffix == '_max' and agg_maxmin < current_maxmin:
+                if maxmin_suffix == '_max' and agg_maxmin < new_calulated_maxmin:
                     b_change_maxmin = True
-                if maxmin_suffix == '_min' and agg_maxmin > current_maxmin:
+                if maxmin_suffix == '_min' and agg_maxmin > new_calulated_maxmin:
                     b_change_maxmin = True
 
                 if b_change_maxmin:
-                    agg_j[target_key + maxmin_suffix] = current_maxmin
-                    dv_next[target_key + maxmin_suffix] = current_maxmin
-                    agg_j[target_key + maxmin_suffix + '_time'] = current_maxmin_time
-                    dv_next[target_key + maxmin_suffix + '_time'] = current_maxmin_time
+                    agg_j[target_key + maxmin_suffix] = new_calulated_maxmin
+                    dv_next[target_key + maxmin_suffix] = new_calulated_maxmin
+                    agg_j[target_key + maxmin_suffix + '_time'] = new_calulated_maxmin_time
+                    dv_next[target_key + maxmin_suffix + '_time'] = new_calulated_maxmin_time
                     if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                        if current_maxmin_dir is not None:
-                            agg_j[target_key + maxmin_suffix + '_dir'] = current_maxmin_dir
-                            dv_next[target_key + maxmin_suffix + '_dir'] = current_maxmin_dir
+                        if new_calulated_maxmin_dir is not None:
+                            agg_j[target_key + maxmin_suffix + '_dir'] = new_calulated_maxmin_dir
+                            dv_next[target_key + maxmin_suffix + '_dir'] = new_calulated_maxmin_dir
 
-    def add_new_maxmin_fix(self, target_key: str, maxmin_key: str, agg_deca: AggMeteor, delta_values: json):
+    def add_new_maxmin_fix(self, target_key: str, maxmin_key: str, deca: int, agg_deca: AggMeteor, delta_values: json):
         # calculus v1
         max_min_fix = {
-            "poste_id": agg_deca.data.poste_id_id,
-            "stop_dat": agg_deca.data.poste_id.stop_dat,
+            "deca": deca,
+            "key": target_key,
             "level": agg_deca.agg_niveau,
             "maxmin": maxmin_key,
-            "key": target_key,
-            "valeur": agg_deca.data.j[target_key + '_' + maxmin_key],
+            "poste_id": agg_deca.data.poste_id_id,
             "start_dat": agg_deca.data.start_dat,
+            "valeur": agg_deca.data.j[target_key + '_' + maxmin_key],
         }
         delta_values['maxminFix'].append(max_min_fix)
         # write an extreme_todo record

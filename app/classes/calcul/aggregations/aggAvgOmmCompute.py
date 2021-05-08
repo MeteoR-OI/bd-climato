@@ -57,4 +57,4 @@ class AvgOmmCompute(AggAvgCompute):
                         if agg_j.__contains__(src_key + maxmin_suffix + '_dir') is True:
                             delta_values[target_key + maxmin_suffix + '_dir'] = float(agg_j[target_key + maxmin_suffix + '_dir'])
 
-        super()._loadDVMaxMinInAggregation(my_measure, m_stop_date, agg_decas, m_agg_j, delta_values, dv_next, trace_flag)
+        super().loadDVMaxMinInAggregation(my_measure, m_stop_date, agg_decas, m_agg_j, delta_values, dv_next, trace_flag)
