@@ -92,9 +92,6 @@ class CalcAggreg(AllCalculus):
                 for delta_values in a_todo.data.j_dv:
                     idx_delta_value += 1
 
-                    if delta_values.__len__() == 2:
-                        continue
-
                     for an_agg in aggregations:
                         # add duration in all new aggregations
                         an_agg.add_duration(delta_values["duration"])
@@ -206,6 +203,5 @@ class CalcAggreg(AllCalculus):
         if j_agg != {}:
             for a_j_agg in j_agg:
                 if a_j_agg.__contains__('level') and a_j_agg['level'][0] == agg_level[0]:
-                    m_agg_j = a_j_agg
-                    break
+                    t.CopyJson(a_j_agg, m_agg_j)
         return m_agg_j

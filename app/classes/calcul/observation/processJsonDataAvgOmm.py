@@ -13,7 +13,7 @@ class ProcessJsonDataAvgOmm(ProcessJsonDataAvg):
         must load dv[M_value], and dv[first_time] when in omm mode
 
     """
-    def loadValuesFromJson(
+    def loadValuesFromCurrent(
         self,
         my_measure: json,
         json_file_data: json,
@@ -26,7 +26,7 @@ class ProcessJsonDataAvgOmm(ProcessJsonDataAvg):
         trace_flag: bool,
     ):
         if stop_dat.minute == 00 and stop_dat.second <= 2:
-            self._loadValuesFromJson(my_measure, json_file_data, measure_idx, src_key, target_key, exclusion, my_values, '_avg', stop_dat, trace_flag)
+            self._loadValuesFromCurrent(my_measure, json_file_data, measure_idx, src_key, target_key, exclusion, my_values, '_avg', stop_dat, trace_flag)
 
     def loadDataInObs(
         self,

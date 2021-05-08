@@ -16,7 +16,7 @@ class ProcessJsonData():
 
     """
 
-    def loadInObs(self, poste_metier, my_measure: json, json_file_data: json, measure_idx: int, obs_meteor: ObsMeteor, delta_values: json, trace_flag: bool = False):
+    def loadInObs(self, poste_metier, my_measure: json, json_file_data: json, measure_idx: int, m_agg_j: json, obs_meteor: ObsMeteor, delta_values: json, trace_flag: bool = False):
         """
             processObservation
 
@@ -39,18 +39,20 @@ class ProcessJsonData():
         # if shouldNullify(exclusion, src_key) is True:
         #     return
 
-        if json_file_data['data'][measure_idx].__contains__('current') is False:
+        my_values = {}
+
+        self.loadValuesFromCurrent(my_measure, json_file_data, measure_idx, src_key, target_key, exclusion, my_values, obs_meteor.data.stop_dat, trace_flag)
+
+        if my_values.__len__() == 0 and m_agg_j.__len__() == 0:
             return
 
-        # if (isFlagged(my_measure['special'], MeasureProcessingBitMask.NotAllowedInCurrent) is False):
-        #     return
+        if (isFlagged(my_measure['special'], MeasureProcessingBitMask.NotAllowedInCurrent) is True):
+            return
 
         # load Json data in dv
-        my_values = {}
-        self.loadValuesFromJson(my_measure, json_file_data, measure_idx, src_key, target_key, exclusion, my_values, obs_meteor.data.stop_dat, trace_flag)
 
         # update duration & agg_start_dat in obs if needed
-        if obs_meteor.data.duration == 0:
+        if obs_meteor.data.duration == 0 and my_values.__len__() > 1:
             tmp_duration = delta_values.get(target_key + '_du')
             obs_meteor.data.duration = tmp_duration
             # compute our agg_h.start_dat for faster retrieval of observation for a given agg_h.start_dat
@@ -73,7 +75,7 @@ class ProcessJsonData():
     # ----------------------------------------------------------
     # private or methods common to multiple inherited instances
     # ----------------------------------------------------------
-    def loadValuesFromJson(
+    def loadValuesFromCurrent(
         self,
         my_measure: json,
         json_file_data: json,
@@ -88,7 +90,7 @@ class ProcessJsonData():
             # just to satisfy our parser... Will always fail
             raise Exception('loadDataInDV', 'should be in virtual func')
 
-    def _loadValuesFromJson(
+    def _loadValuesFromCurrent(
         self,
         my_measure: json,
         json_file_data: json,
@@ -178,7 +180,8 @@ class ProcessJsonData():
         tmp_duration = int(json_file_data['data'][measure_idx]['current']['duration'])
         if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm):
             tmp_duration = 60
-        my_values[target_key + '_du'] = tmp_duration
+        if tmp_duration != 0:
+            my_values[target_key + '_du'] = tmp_duration
 
         # load max/min from json
         for maxmin_key in ['max', 'min']:
