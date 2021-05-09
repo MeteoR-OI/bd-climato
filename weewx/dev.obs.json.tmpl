@@ -179,50 +179,45 @@ LOW#slurp
        [{
        "level":"H",
 ## traitement special pour affichage de l'etp qui n'est disponible que sur current a heure ronde
-#if $new_hour ##and $day.ET.has_data and $day.ET.sum.raw >0.0lkliop
-##       $CleVal("etp_sum",$hour($hours_ago=0).ET.sum.raw,1)
-       $CleVal("etp_sum",$obs.ET.raw,1)
+#if $new_hour ##and $day.ET.has_data and $day.ET.sum.raw >0.0
+       $CleVal("etp_sum",$hour($hours_ago=0).ET.sum.raw,1)
 #end if
        "start_dat":$datef($hour($hours_ago=$delta_h).dateTime.raw)
-       "date_h":$datetime_obs,
-       "delta_h":$delta_h,
-       "start_dat":$datef($obs.dateTime.raw - 3600)
        }],
        "validation":
        [{
        "level":"H",
        #if $obs.outTemp.has_data
-       $CleVal("out_temp7_omm",$obs.outTemp.raw,1)
-       $CleCal("out_temp7_omm_s",$obs.outTemp.raw,60,1)
-       $CleVal("out_temp7_omm_avg",$obs.outTemp.raw,1)
-       $CleVal("out_temp7_omm_duration",60,1)
+       $CleVal("out_temp_omm",$obs.outTemp.raw,1)
+       $CleCal("out_temp_omm_s",$obs.outTemp.raw,60,1)
+       $CleVal("out_temp_omm_avg",$obs.outTemp.raw,1)
+       $CleVal("out_temp_omm_duration",60,1)
        #end if
        #if $obs.barometer.has_data
-       $CleVal("barometer7_omm",$obs.barometer.raw,1)
-       $CleCal("barometer7_omm_s",$obs.barometer.raw,60,1)
-       $CleVal("barometer7_omm_avg",$obs.barometer.raw,1)
-       $CleVal("barometer7_omm_duration",60,1)
+       $CleVal("barometer_omm",$obs.barometer.raw,1)
+       $CleCal("barometer_omm_s",$obs.barometer.raw,60,1)
+       $CleVal("barometer_omm_avg",$obs.barometer.raw,1)
+       $CleVal("barometer_omm_duration",60,1)
        #end if
        #if $obs.outHumidity.has_data
-       $CleVal("humidity7_omm",$obs.outHumidity.raw,1)
-       $CleCal("humidity7_omm_s",$obs.outHumidity.raw,60,1)
-       $CleVal("humidity7_omm_avg",$obs.outHumidity.raw,1)
-       $CleVal("humidity7_omm_duration",60,1)
+       $CleVal("humidity_omm",$obs.outHumidity.raw,1)
+       $CleCal("humidity_omm_s",$obs.outHumidity.raw,60,1)
+       $CleVal("humidity_omm_avg",$obs.outHumidity.raw,1)
+       $CleVal("humidity_omm_duration",60,1)
        #end if
        #if $obs.windSpeed.has_data       
-       $CleVal("wind7_omm",$obs.windSpeed.raw,1)
-       $CleCal("wind7_omm_s",$obs.windSpeed.raw,60,1)
-       $CleVal("wind7_omm_avg",$obs.windSpeed.raw,1)
-       $CleVal("wind7_omm_duration",60,1)
+       $CleVal("wind_omm",$obs.windSpeed.raw,1)
+       $CleCal("wind_omm_s",$obs.windSpeed.raw,60,1)
+       $CleVal("wind_omm_avg",$obs.windSpeed.raw,1)
+       $CleVal("wind_omm_duration",60,1)
        #end if
-##       #if $obs.rain.has_data
-##       $CleVal("rain7_omm",$hour($hours_ago=$delta_h).rain.sum.raw,1)
-##       $CleVal("rain7_omm_sum",$hour($hours_ago=$delta_h).rain.sum.raw,1)
-##       $CleVal("rain7_omm_avg",$hour($hours_ago=$delta_h).rain.avg.raw,1)
-##       $CleCal("rain7_omm_duration",$hour($hours_ago=$delta_h).rain.count.raw,$amin,1)
-##       #end if
-##       "start_dat":$datef($hour($hours_ago=$delta_h).dateTime.raw)
-       "start_dat":$datef($obs.dateTime.raw - 3600)
+       #if $obs.rain.has_data
+       $CleVal("rain_omm",$hour($hours_ago=$delta_h).rain.sum.raw,1)
+       $CleVal("rain_omm_sum",$hour($hours_ago=$delta_h).rain.sum.raw,1)
+       $CleVal("rain_omm_avg",$hour($hours_ago=$delta_h).rain.avg.raw,1)
+       $CleCal("rain_omm_duration",$hour($hours_ago=$delta_h).rain.count.raw,$amin,1)
+       #end if
+       "start_dat":$datef($hour($hours_ago=$delta_h).dateTime.raw)
 #end if ## fin heure intermediaire
 #if ($new_day or $final_obs) ## test (change jour ou final obs)
 #if $final_obs ## test final obs pour calcul deltas differencies
@@ -309,91 +304,91 @@ LOW#slurp
        ## calcul sum rr de 07h le jour a 07h le lendemain
        #set $sum = 0
        #set $count = 0
-       #for $hour in $day($days_ago=$delta_d).hours
-       #if datetime.fromtimestamp($hour.dateTime.raw).hour >= 7 and $hour.rain.sum.raw is not None
-       #set $sum += $hour.rain.sum.raw
+       #for $hr in $day($days_ago=$delta_d).hours
+       #if datetime.fromtimestamp($hr.dateTime.raw).hour >= 7 and $hr.rain.sum.raw is not None
+       #set $sum += $hr.rain.sum.raw
        #set $count += 1
-       #set $h=datetime.fromtimestamp($hour.dateTime.raw).hour
+       #set $h=datetime.fromtimestamp($hr.dateTime.raw).hour
        #end if
        #end for
        #if $delta_d > 0
-       #for $hour in $day($days_ago=$delta_d - 1).hours
-       #if datetime.fromtimestamp($hour.dateTime.raw).hour < 7 and $hour.rain.sum.raw is not None
-       #set $sum += $hour.rain.sum.raw
+       #for $hr in $day($days_ago=$delta_d - 1).hours
+       #if datetime.fromtimestamp($hr.dateTime.raw).hour < 7 and $hr.rain.sum.raw is not None
+       #set $sum += $hr.rain.sum.raw
        #set $count += 1
-       #set $h=datetime.fromtimestamp($hour.dateTime.raw).hour
+       #set $h=datetime.fromtimestamp($hr.dateTime.raw).hour
        #end if
        #end for
        #end if
        #if $count == 0
-       #set $rain_omm7_sum = None
+       #set $rain_omm_sum = None
        #else
-       #set $rain_omm7_sum = $sum
+       #set $rain_omm_sum = $sum
        #end if
        ## fin calcul rr omm
-       $CleVal("rain_omm7_sum",$rain_omm7_sum,1)
+       $CleVal("rain_omm_sum",$rain_omm_sum,1)
        ## calcul min temp de 19h la veille a 19h le jour
        #set $min = 1000
        #set $count = 0
-       #for $hour in $day($days_ago=$delta_d + 1).hours
-       #if datetime.fromtimestamp($hour.dateTime.raw).hour >= 19 and $hour.outTemp.min.raw is not None
-       #if $hour.outTemp.min.raw < $min
-       #set $min = $hour.outTemp.min.raw
-       #set $min_time = $hour.outTemp.mintime.raw
+       #for $hr in $day($days_ago=$delta_d + 1).hours
+       #if datetime.fromtimestamp($hr.dateTime.raw).hour >= 19 and $hr.outTemp.min.raw is not None
+       #if $hr.outTemp.min.raw < $min
+       #set $min = $hr.outTemp.min.raw
+       #set $min_time = $hr.outTemp.mintime.raw
        #set $count += 1
        #end if 
        #end if
        #end for
-       #for $hour in $day($days_ago=$delta_d).hours
-       #if datetime.fromtimestamp($hour.dateTime.raw).hour < 19 and $hour.outTemp.min.raw is not None
-       #if $hour.outTemp.min.raw < $min
-       #set $min = $hour.outTemp.min.raw
-       #set $min_time = $hour.outTemp.mintime.raw
+       #for $hr in $day($days_ago=$delta_d).hours
+       #if datetime.fromtimestamp($hr.dateTime.raw).hour < 19 and $hr.outTemp.min.raw is not None
+       #if $hr.outTemp.min.raw < $min
+       #set $min = $hr.outTemp.min.raw
+       #set $min_time = $hr.outTemp.mintime.raw
        #set $count += 1
        #end if 
        #end if
        #end for
        #if $count == 0
-       #set $out_temp_omm7_min = None
-       #set $out_temp_omm7_mintime = None
+       #set $out_temp_omm_min = None
+       #set $out_temp_omm_mintime = None
        #else
-       #set $out_temp_omm7_min = $min
-       #set $out_temp_omm7_mintime = $min_time
+       #set $out_temp_omm_min = $min
+       #set $out_temp_omm_mintime = $min_time
        #end if
        ## fin calcul min temp omm
-       $CleVal("out_temp_omm7_min",$out_temp_omm7_min,1)
-       $CleDat("out_temp_omm7_mintime",$out_temp_omm7_mintime)
+       $CleVal("out_temp_omm_min",$out_temp_omm_min,1)
+       $CleDat("out_temp_omm_mintime",$out_temp_omm_mintime)
        ## calcul max temp de 7h le jour a 7h le lendemain
        #set $max = -1000
        #set $count = 0
-       #for $hour in $day($days_ago=$delta_d).hours
-       #if datetime.fromtimestamp($hour.dateTime.raw).hour >= 7 and $hour.outTemp.max.raw is not None
-       #if $hour.outTemp.max.raw > $max
-       #set $max = $hour.outTemp.max.raw
-       #set $max_time = $hour.outTemp.maxtime.raw
+       #for $hr in $day($days_ago=$delta_d).hours
+       #if datetime.fromtimestamp($hr.dateTime.raw).hour >= 7 and $hr.outTemp.max.raw is not None
+       #if $hr.outTemp.max.raw > $max
+       #set $max = $hr.outTemp.max.raw
+       #set $max_time = $hr.outTemp.maxtime.raw
        #set $count += 1
        #end if 
        #end if
        #end for
-       #for $hour in $day($days_ago=$delta_d).hours
-       #if datetime.fromtimestamp($hour.dateTime.raw).hour < 7 and $hour.outTemp.max.raw is not None
-       #if $hour.outTemp.max.raw > $max
-       #set $max = $hour.outTemp.max.raw
-       #set $max_time = $hour.outTemp.maxtime.raw
+       #for $hr in $day($days_ago=$delta_d).hours
+       #if datetime.fromtimestamp($hr.dateTime.raw).hour < 7 and $hr.outTemp.max.raw is not None
+       #if $hr.outTemp.max.raw > $max
+       #set $max = $hr.outTemp.max.raw
+       #set $max_time = $hr.outTemp.maxtime.raw
        #set $count += 1
        #end if 
        #end if
        #end for
        #if $count == 0
-       #set $out_temp_omm7_max = None
-       #set $out_temp_omm7_maxtime = None
+       #set $out_temp_omm_max = None
+       #set $out_temp_omm_maxtime = None
        #else
-       #set $out_temp_omm7_max = $max
-       #set $out_temp_omm7_maxtime = $max_time
+       #set $out_temp_omm_max = $max
+       #set $out_temp_omm_maxtime = $max_time
        #end if
        ## fin calcul max temp omm
-       $CleVal("out_temp_omm7_max",$out_temp_omm7_max,1)
-       $CleDat("out_temp_omm7_maxtime",$out_temp_omm7_maxtime)
+       $CleVal("out_temp_omm_max",$out_temp_omm_max,1)
+       $CleDat("out_temp_omm_maxtime",$out_temp_omm_maxtime)
        ## calcul moy omm de 00h le jour a 00h le lendemain
        #set $sum_temp = 0
        #set $count_temp = 0
@@ -405,50 +400,50 @@ LOW#slurp
        #set $count_wind = 0
        #set $sum_barometer = 0
        #set $count_barometer = 0
-       #for $hour in $day($days_ago=$delta_d).hours
-       #if $hour.outTemp.last.raw is not None
-       #set $sum_temp += $hour.outTemp.last.raw
+       #for $hr in $day($days_ago=$delta_d).hours
+       #if $hr.outTemp.last.raw is not None
+       #set $sum_temp += $hr.outTemp.last.raw
        #set $count_temp += 1       
        #end if
-       #if $hour.outHumidity.last.raw is not None
-       #set $sum_humidity += $hour.outHumidity.last.raw
+       #if $hr.outHumidity.last.raw is not None
+       #set $sum_humidity += $hr.outHumidity.last.raw
        #set $count_humidity += 1
        #end if
-       #if $hour.windSpeed.last.raw is not None
-       #set $sum_wind += $hour.windSpeed.last.raw
+       #if $hr.windSpeed.last.raw is not None
+       #set $sum_wind += $hr.windSpeed.last.raw
        #set $count_wind += 1
        #end if
-       #if $hour.barometer.last.raw is not None
-       #set $sum_barometer += $hour.barometer.last.raw
+       #if $hr.barometer.last.raw is not None
+       #set $sum_barometer += $hr.barometer.last.raw
        #set $count_barometer += 1
        #end if
-       #set $h=datetime.fromtimestamp($hour.dateTime.raw).hour
+       #set $h=datetime.fromtimestamp($hr.dateTime.raw).hour
        #end for
        #if $count_temp == 0
-       #set $out_temp_omm7_sum = None
+       #set $out_temp_omm_sum = None
        #else
-       #set $out_temp_omm7_avg = $sum_temp / $count_temp
+       #set $out_temp_omm_avg = $sum_temp / $count_temp
        #end if
        #if $count_humidity == 0
-       #set $out_humidity_omm7_avg = None
+       #set $out_humidity_omm_avg = None
        #else
-       #set $out_humidity_omm7_avg = $sum_humidity / $count_humidity
+       #set $out_humidity_omm_avg = $sum_humidity / $count_humidity
        #end if
        #if $count_wind == 0
-       #set $wind_omm7_sum = None
+       #set $wind_omm_sum = None
        #else
-       #set $wind_omm7_avg = $sum_wind / $count_wind
+       #set $wind_omm_avg = $sum_wind / $count_wind
        #end if
        #if $count_barometer == 0
-       #set $barometer_omm7_avg = None
+       #set $barometer_omm_avg = None
        #else
-       #set $barometer_omm7_avg = $sum_barometer / $count_barometer
+       #set $barometer_omm_avg = $sum_barometer / $count_barometer
        #end if
        ## fin calcul avg omm
-       $CleVal("out_temp_omm7_avg",$out_temp_omm7_avg,1)
-       $CleVal("out_humidity_omm7_avg",$out_humidity_omm7_avg,1)
-       $CleVal("wind_omm7_avg",$wind_omm7_avg,1)
-       $CleVal("barometer_omm7_avg",$barometer_omm7_avg,1)
+       $CleVal("out_temp_omm_avg",$out_temp_omm_avg,1)
+       $CleVal("out_humidity_omm_avg",$out_humidity_omm_avg,1)
+       $CleVal("wind_omm_avg",$wind_omm_avg,1)
+       $CleVal("barometer_omm_avg",$barometer_omm_avg,1)
        $CleVal("rain_rate_max",$day($days_ago=$delta_d).rainRate.max.raw,1)
        $CleDat("rain_rate_max_time",$day($days_ago=$delta_d).rainRate.maxtime.raw)
        $CleCal("rain_rate_duration",$day($days_ago=$delta_d).outTemp.count.raw,$amin,1)

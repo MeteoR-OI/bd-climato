@@ -20,3 +20,4 @@ coverage.xml
 .coverage
 
 data/json_not_in_git/
+data/json_auto_load/

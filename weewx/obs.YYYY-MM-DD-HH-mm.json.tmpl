@@ -70,25 +70,6 @@ LOW#slurp
 #end if
 #end def
 ## fin fonction calcul valeur avec cle
-## fonction calcul valeur omm avec cle
-#def CleCalomm($cle, $day, $hdeb, $d)
-#for $hour in $day($days_ago=$day).$hours
-#if datetime.fromtimestamp($hour.dateTime.raw)>=$hdeb
-#set sum=+$hour.$val
-#end for
-
-#if $val is not None and $mult is not None
-#if $d == 0 
-#set $nval = round($val*$mult)
-#else
-#set $nval = round($val*$mult,$d)
-## pour Nico
-#set $nval = $val*$mult
-#end if
-"$cle":$nval,#slurp
-#end if
-#end def
-## fin fonction calcul valeur avec cle
 #from datetime import datetime, timedelta
 #import user.extensions
 [
@@ -206,7 +187,11 @@ LOW#slurp
        #end if
        $CleVal("pressure",$obs.pressure.raw,1)
        #if $final_obs
+       $CleVal("pressure_min",$currentagg.pressure.min.raw,1)       
+       $CleDat("pressure_min_time",$currentagg.pressure.mintime.raw)
        $CleAvg("pressure_avg",$currentagg.pressure.sum.raw,$currentagg.pressure.count.raw,2)
+       $CleVal("pressure_max",$currentagg.pressure.max.raw,1)       
+       $CleDat("pressure_max_time",$currentagg.pressure.maxtime.raw)
        #end if
        $CleVal("wind_avg",$obs.windSpeed.raw,1)
        $CleVal("wind_dir",$obs.windDir.raw,1)
@@ -222,6 +207,7 @@ LOW#slurp
        $CleVal("rain_rate",$obs.rainRate.raw,1)
        #if $final_obs
        $CleDat("rain_rate_max_time",$currentagg.rainRate.maxtime.raw/10) ## bug bizarre !!!!
+       $CleAvg("rain_rate_avg",$currentagg.rainRate.sum.raw,$currentagg.rainRate.count.raw,2)
        #end if
        #if $day.UV.has_data
        $CleVal("uv_indice",$obs.UV.raw,1)
@@ -231,7 +217,7 @@ LOW#slurp
        $CleAvg("uv_indice_avg",$currentagg.UV.sum.raw,$currentagg.UV.count.raw,2)
        #end if
        #end if
-       if $obs.radiation.has_data  
+       #if $obs.radiation.has_data  
        #if $final_obs  
        $CleCal("radiation_min",$currentagg.radiation.min.raw,0.001,1)
        $CleDat("radiation_min_time",$currentagg.radiation.mintime.raw)
@@ -264,6 +250,11 @@ LOW#slurp
        #end if
        $CleVal("rx",$obs.rxCheckPercent.raw,1)
        $CleVal("voltage",$obs.consBatteryVoltage.raw,1)
+       #if $final_obs
+       $CleAvg("voltage_avg",$currentagg.consBatteryVoltage.sum.raw,$currentagg.consBatteryVoltage.count.raw,2)
+       $CleVal("voltage_min",$currentagg.consBatteryVoltage.min.raw,1)
+       $CleDat("voltage_min_time",$currentagg.consBatteryVoltage.mintime.raw)
+       #end if
        "duration":$duration
 #if $new_hour or $final_obs ## test change heure ou final obs
 #if $new_hour ## heure intermediaire
