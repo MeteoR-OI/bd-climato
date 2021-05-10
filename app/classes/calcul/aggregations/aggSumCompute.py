@@ -6,9 +6,9 @@ import json
 import datetime
 
 
-class AggAvgCompute(AggCompute):
+class AggSumCompute(AggCompute):
     """
-        AvgCompute
+        AggSumCompute
 
         Computation specific to a measure type
 
@@ -24,7 +24,7 @@ class AggAvgCompute(AggCompute):
         delta_values: json,
         dv_next: json,
         trace_flag: bool = False,
-        agg_suffix: str = '_s'
+        agg_suffix: str = '_sum'
     ):
         """
             loadDVDataInAggregation
@@ -46,17 +46,16 @@ class AggAvgCompute(AggCompute):
         has_data = False
 
         # load old measure values in case of an update of Observation, and only in agg_hour
-        tmp_s_old = tmp_duration_old = 0
-        if delta_values.__contains__(target_key + '_s_old'):
-            tmp_s_old = delta_values[target_key + '_s_old']
+        tmp_sum_old = tmp_duration_old = 0
+        if delta_values.__contains__(target_key + '_sum_old'):
+            tmp_sum_old = delta_values[target_key + '_sum_old']
             tmp_duration_old = delta_values[target_key + '_duration_old']
             has_data = True
 
         # ------------------------------------------------------------------
         # get our new data
-        # 1 from dv[target_key + '_s']
-        # 2 from m_agg_j[target_key_s]
-        # 3 from m_agg_j[target_key_avg]
+        # 1 from dv[target_key + '_sum']
+        # 2 from m_agg_j[target_key + '_sum']
         # last win
         # ------------------------------------------------------------------
 
@@ -69,7 +68,7 @@ class AggAvgCompute(AggCompute):
         tmp_tmp = self.get_json_value(delta_values, target_key, [agg_suffix], None)
         if tmp_tmp is not None:
             has_data = True
-            tmp_s = float(tmp_tmp)
+            tmp_sum = float(tmp_tmp)
         if delta_values.get(target_key + '_duration') is not None:
             if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm) and agg_level[0] == 'H':
                 tmp_duration = 60
@@ -88,25 +87,14 @@ class AggAvgCompute(AggCompute):
             tmp_tmp = self.get_json_value(m_agg_j, a_key, [agg_suffix], True)
             if tmp_tmp is not None:
                 has_data = True
-                tmp_s = float(tmp_tmp)
+                tmp_sum = float(tmp_tmp)
                 if m_agg_j.__contains__(a_key + '_duration') is True:
                     tmp_duration = float(m_agg_j[a_key + '_duration'])
                 else:
                     tmp_duration = getAggDuration(agg_level[0])
-                if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm) and agg_level[0] == 'H':
+                if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm):
                     tmp_duration = 60
                 b_value_found = True
-            else:
-                tmp_tmp = self.get_json_value(m_agg_j, a_key, ['_avg'], None)
-                if tmp_tmp is not None:
-                    has_data = True
-                    tmp_avg = float(tmp_tmp)
-                    if m_agg_j.__contains__(a_key + '_duration') is True:
-                        tmp_duration = float(m_agg_j[a_key + '_duration'])
-                    if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm) and agg_level[0] == 'H':
-                        tmp_duration = 60
-                    tmp_s = tmp_avg * tmp_duration
-                    b_value_found = True
 
         # return if the aggregation should not be sent to upper levels
         if has_data is False:
@@ -114,32 +102,30 @@ class AggAvgCompute(AggCompute):
 
         agg_deca.dirty = True
 
-        addJson(agg_j, target_key + agg_suffix, tmp_s - tmp_s_old)
+        addJson(agg_j, target_key + agg_suffix, tmp_sum - tmp_sum_old)
         addJson(agg_j, target_key + '_duration', tmp_duration - tmp_duration_old)
 
-        tmp_s_new = agg_j[target_key + agg_suffix]
+        tmp_sum_new = agg_j[target_key + agg_suffix]
         tmp_duration_new = agg_j[target_key + '_duration']
 
         if tmp_duration_new == 0:
             # no duration, delete all keys
             delKey(agg_j, target_key + agg_suffix)
             delKey(agg_j, target_key + '_duration')
-            delKey(agg_j, target_key + '_avg')
             delta_values[target_key + '_delete_me'] = True
         else:
-            agg_j[target_key + '_avg'] = tmp_s_new / tmp_duration_new
             # Add omm values in agg_hour
-            if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm) and str(agg_deca.getLevel()[0]).lower() == 'h':
-                agg_j[target_key] = tmp_s_new / tmp_duration_new
+            if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm):
+                agg_j[target_key] = tmp_sum_new
 
         if isFlagged(my_measure['special'], MeasureProcessingBitMask.OnlyAggregateInHour) is True:
             return
 
         # propagate to next level if no limitation on aggregation level
-        dv_next[target_key + agg_suffix] = tmp_s - tmp_s_old
+        dv_next[target_key + agg_suffix] = tmp_sum - tmp_sum_old
         dv_next[target_key + '_duration'] = tmp_duration - tmp_duration_old
         if delta_values.get('duration') is None:
-            dv_next['duration'] = getAggDuration(agg_level[0])
+            dv_next['duration'] = tmp_duration
         else:
             dv_next["duration"] = delta_values['duration']
 

@@ -1,4 +1,5 @@
 from app.classes.typeInstruments.rootTypeInstr import RootTypeInstrument
+from app.tools.climConstant import MeasureProcessingBitMask
 
 
 class TypeSolar(RootTypeInstrument):
@@ -9,8 +10,8 @@ class TypeSolar(RootTypeInstrument):
         self.my_type_instr_id = 6
 
         self.measures = [
-            {'type_i': 6, 'src_key': 'uv_indice', 'dataType': float, 'agg': 'avg', 'avg': False, 'min': False, 'max': True,  'hour_deca': 0, 'special': 0},
-            {'type_i': 6, 'src_key': 'radiation', 'dataType': float, 'agg': 'avg', 'avg': True,  'min': False, 'max': True,  'hour_deca': 0, 'special': 1},
-            {'type_i': 6, 'src_key': 'etp',       'dataType': float, 'agg': 'avg', 'avg': False, 'min': False, 'max': False, 'hour_deca': 0, 'special': 1 + 8}
+            {'type_i': 6, 'src_key': 'uv_indice', 'agg': 'no', 'min': False},
+            {'type_i': 6, 'src_key': 'radiation', 'target_key': 'radiation', 'agg': 'sum', 'min': False, 'max': False},
+            {'type_i': 6, 'src_key': 'etp',       'agg': 'sum', 'min': False, 'max': False, 'special': MeasureProcessingBitMask.NotAllowedInCurrent}
         ]
-        super()
+        super().__init__()

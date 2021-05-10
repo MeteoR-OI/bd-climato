@@ -6,7 +6,7 @@ import json
 import datetime
 
 
-class ProcessJsonDataAvg(ProcessJsonData):
+class ProcessJsonDataSum(ProcessJsonData):
     """
         ProcessJsonDataAvg
 
@@ -53,34 +53,34 @@ class ProcessJsonDataAvg(ProcessJsonData):
         tmp_duration = my_values.get(target_key + '_du')
         if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm):
             tmp_duration = 60
+        if my_value_avg is None and my_value_instant is None:
+            return
+        tmp_sum = my_value_avg if my_value_avg is not None else my_value_instant
+
         if my_value_avg is None:
             if my_value_instant is None:
+                # no data suitable for us
                 return
             else:
                 my_value_avg = my_value_instant
-        tmp_s = my_value_avg * tmp_duration
-
-        if my_value_avg is None:
-            # no data suitable for us
-            return
 
         # get current values from our aggregations
-        tmp_s_old = tmp_duration_old = 0
-        if obs_j.get(target_key + '_s') is not None:
-            tmp_s_old = obs_j[target_key + '_s']
-            if tmp_s == tmp_s_old:
+        tmp_sum_old = tmp_duration_old = 0
+        if obs_j.get(target_key) is not None:
+            tmp_sum_old = obs_j[target_key]
+            if tmp_sum == tmp_sum_old:
                 # no change on avg computation
                 return
             tmp_duration_old = obs_j.get(target_key + '_duration')
-            if tmp_duration_old is None:
-                tmp_duration_old = tmp_duration
+            if tmp_duration is None:
+                tmp_duration_old = obs_meteor.data.duration
             if tmp_duration != tmp_duration_old:
                 raise('loadDataInObs', 'duration mitchmath for ' + target_key + ': in obs' + str(tmp_duration_old) + ', in json: ' + str(tmp_duration))
-            delta_values[target_key + '_s_old'] = tmp_s_old
+            delta_values[target_key + '_sum_old'] = tmp_sum_old
             delta_values[target_key + '_duration_old'] = tmp_duration_old
 
         # save data in dv
-        delta_values[target_key + '_s'] = tmp_s
+        delta_values[target_key + '_sum'] = tmp_sum
         delta_values[target_key + '_duration'] = tmp_duration
 
         # save data in obs

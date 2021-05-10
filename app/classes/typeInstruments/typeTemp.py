@@ -9,11 +9,11 @@ class TypeTemp(RootTypeInstrument):
         self.my_type_instr_id = 1
 
         self.measures = [
-            {'type_i': 1, 'src_key': 'out_temp', 'dataType': float, 'agg': 'avg', 'avg': True, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
-            {'type_i': 1, 'src_key': 'out_temp', 'dataType': float, 'agg': 'avgomm', 'avg': True, 'min': False, 'deca_min': -5, 'max': False, 'deca_max': 7, 'hour_deca': 0, 'special': 16},
-            {'type_i': 1, 'src_key': 'windchill', 'dataType': float, 'agg': 'avg', 'avg': False, 'min': True, 'max': False, 'hour_deca': 0, 'special': 0},
-            {'type_i': 1, 'src_key': 'heatindex', 'dataType': float, 'agg': 'avg', 'avg': False, 'min': False, 'max': True, 'hour_deca': 0, 'special': 0},
-            {'type_i': 1, 'src_key': 'dewpoint', 'dataType': float, 'agg': 'avg', 'avg': False, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
-            {'type_i': 1, 'src_key': 'soiltemp', 'dataType': float, 'agg': 'avg', 'avg': False, 'min': True, 'max': False, 'hour_deca': 0, 'special': 0}
+            {'type_i': 1, 'src_key': 'out_temp', 'agg': 'avg'},
+            {'type_i': 1, 'src_key': 'out_temp', 'agg': 'avgomm', 'measureType': 'inst', 'deca_min': 7, 'deca_max': -5},
+            {'type_i': 1, 'src_key': 'windchill', 'agg': 'no', 'max': False},
+            {'type_i': 1, 'src_key': 'heatindex', 'agg': 'no', 'min': False},
+            {'type_i': 1, 'src_key': 'dewpoint', 'agg': 'no'},
+            {'type_i': 1, 'src_key': 'soiltemp', 'agg': 'no', 'max': False}
         ]
-        super()
+        super().__init__()

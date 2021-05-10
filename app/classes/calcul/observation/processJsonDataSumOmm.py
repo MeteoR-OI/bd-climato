@@ -1,10 +1,10 @@
 from app.classes.repository.obsMeteor import ObsMeteor
-from app.classes.calcul.observation.processJsonDataAvg import ProcessJsonDataAvg
+from app.classes.calcul.observation.processJsonDataSum import ProcessJsonDataSum
 import json
 import datetime
 
 
-class ProcessJsonDataAvgOmm(ProcessJsonDataAvg):
+class ProcessJsonDataSumOmm(ProcessJsonDataSum):
     """
         ProcessJsonDataAvgOmm
 

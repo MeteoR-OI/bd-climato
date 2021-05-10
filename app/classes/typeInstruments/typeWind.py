@@ -1,4 +1,5 @@
 from app.classes.typeInstruments.rootTypeInstr import RootTypeInstrument
+from app.tools.climConstant import MeasureProcessingBitMask
 
 
 class TypeWind(RootTypeInstrument):
@@ -9,10 +10,10 @@ class TypeWind(RootTypeInstrument):
         self.my_type_instr_id = 5
 
         self.measures = [
-            {'type_i': 5, 'src_key': 'wind_inst', 'measureType': 'inst', 'dataType': float, 'agg': 'avg', 'avg': True, 'calcAvg': False, 'min': False, 'max': False, 'hour_deca': 0, 'special': 2},
-            {'type_i': 5, 'src_key': 'wind', 'measureType': 'avg', 'dataType': float, 'agg': 'avg', 'avg': True, 'calcAvg': True, 'min': False, 'max': True, 'hour_deca': 0, 'special': 2},
-            {'type_i': 5, 'src_key': 'gust', 'measureType': 'avg', 'dataType': float, 'agg': 'avg', 'avg': False, 'calcAvg': False, 'min': False, 'max': True, 'hour_deca': 0, 'special': 2},
-            {'type_i': 5, 'src_key': 'win10', 'measureType': 'avg', 'dataType': float, 'agg': 'avg', 'avg': True, 'calcAvg': False, 'min': False, 'max': False, 'hour_deca': 0, 'special': 2},
-            {'type_i': 5, 'src_key': 'win10', 'measureType': 'avg', 'dataType': float, 'agg': 'avgomm', 'avg': True, 'calcAvg': False, 'min': False, 'max': True, 'hour_deca': 0, 'special': 2},
+            {'type_i': 5, 'src_key': 'wind_inst', 'measureType': 'inst', 'agg': 'avg', 'calcAvg': False, 'min': False, 'max': False, 'special': MeasureProcessingBitMask.MeasureIsWind},
+            {'type_i': 5, 'src_key': 'wind',      'measureType': 'avg',  'agg': 'avg', 'min': False, 'special': MeasureProcessingBitMask.MeasureIsWind},
+            {'type_i': 5, 'src_key': 'gust',      'measureType': 'avg',  'agg': 'no', 'calcAvg': False, 'min': False, 'special': MeasureProcessingBitMask.MeasureIsWind},
+            {'type_i': 5, 'src_key': 'win10',     'measureType': 'avg',  'agg': 'avg', 'calcAvg': False, 'min': False, 'max': False, 'special': MeasureProcessingBitMask.MeasureIsWind},
+            {'type_i': 5, 'src_key': 'win10',     'measureType': 'avg',  'agg': 'avgomm', 'calcAvg': False, 'min': False, 'special': MeasureProcessingBitMask.MeasureIsWind},
         ]
-        super()
+        super().__init__()

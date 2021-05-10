@@ -1,12 +1,12 @@
 from app.classes.repository.aggMeteor import AggMeteor
-from app.classes.calcul.aggregations.aggAvgCompute import AggAvgCompute
+from app.classes.calcul.aggregations.aggSumCompute import AggSumCompute
 from app.tools.aggTools import isFlagged
 from app.tools.climConstant import MeasureProcessingBitMask
 import json
 import datetime
 
 
-class AvgOmmCompute(AggAvgCompute):
+class AggSumOmmCompute(AggSumCompute):
     """
         AvgOmmCompute
 
@@ -29,7 +29,7 @@ class AvgOmmCompute(AggAvgCompute):
         if agg_deca.agg_niveau[0] == 'H':
             if m_stop_dat.minute > 0 or m_stop_dat.second > 1:
                 return
-        super().loadDVDataInAggregation(my_measure, m_stop_dat, agg_deca, m_agg_j, delta_values, dv_next, trace_flag, '_s')
+        super().loadDVDataInAggregation(my_measure, m_stop_dat, agg_deca, m_agg_j, delta_values, dv_next, trace_flag)
 
     def loadDVMaxMinInAggregation(
         self,

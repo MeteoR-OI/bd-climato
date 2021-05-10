@@ -4,37 +4,27 @@ import json
 import datetime
 
 
-class AggRateCompute(AggCompute):
+class AggNoCompute(AggCompute):
     """
-        RateCompute
+        AvgCompute
 
         Computation specific to a measure type
 
-        M_avg becomes M_rate
-        max/min are computed on M_rates, not on values
+        must load dv[M_value], and dv[first_time] when in omm mode
 
     """
-
     def loadDVDataInAggregation(
         self,
         my_measure: json,
-        m_stop_date: datetime,
+        m_stop_dat: datetime,
         agg_deca: AggMeteor,
         m_agg_j: json,
         delta_values: json,
         dv_next: json,
         trace_flag: bool = False,
+        avg_suffix: str = '_avg',
     ):
-        super(AggRateCompute, self).loadDVDataInAggregation(
-            my_measure,
-            m_stop_date,
-            agg_deca,
-            m_agg_j,
-            delta_values,
-            dv_next,
-            trace_flag,
-            '_rate'
-        )
+        return
 
     def loadDVMaxMinInAggregation(
         self,
@@ -48,4 +38,3 @@ class AggRateCompute(AggCompute):
         b_use_rate: bool = False,
     ):
         super().loadDVMaxMinInAggregation(my_measure, m_stop_date, agg_decas, m_agg_j, delta_values, dv_next, trace_flag)
-

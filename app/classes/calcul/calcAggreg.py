@@ -22,6 +22,7 @@ class CalcAggreg(AllCalculus):
         self.tracer = Telemetry.Start("calculus", __name__)
 
     def ComputAggregFromSvc(self, data: json):
+        """ entry point from worker """
         params = data['p']
         # trace_flag = data['tf']
         is_tmp = False
@@ -45,7 +46,11 @@ class CalcAggreg(AllCalculus):
                     # no more data to update, return to sleep
                     return
 
-            self.__processTodo(a_todo, is_tmp)
+            try:
+                self.__processTodo(a_todo, is_tmp)
+            except Exception as exc:
+                a_todo.ReportError(exc)
+                a_todo.save()
 
     @transaction.atomic
     def __processTodo(self, a_todo, is_tmp: bool = False):
@@ -70,22 +75,31 @@ class CalcAggreg(AllCalculus):
             my_span.set_attribute("is_tmp", is_tmp)
             # my_span.set_attribute("meteor", a_todo.data.obs_id.poste_id.meteor)
             # retrieve data we will need
-            tmp_span = self.tracer.start_span('loadData')
+            span_load_data = self.tracer.start_span('loadDataInObs')
             m_stop_dat = a_todo.data.obs_id.stop_dat
             a_start_dat = a_todo.data.obs_id.agg_start_dat
             poste_metier = PosteMetier(a_todo.data.obs_id.poste_id_id, a_start_dat)
             poste_metier.lock()
             aggregations = poste_metier.aggregations(m_stop_dat, True, is_tmp)
-            tmp_span.set_attribute('agg_count', aggregations.__len__())
-            tmp_span.end()
+            span_load_data.set_attribute('agg_count', aggregations.__len__())
+            span_load_data.end()
             try:
-                for delta_values in a_todo.data.j_dv:
+                idx_delta_value = -1
+                for an_agg in aggregations:
                     # mark all aggregation as clean. only dirty aggregation will be saved
+                    an_agg.dirty = False
+
+                for delta_values in a_todo.data.j_dv:
+                    idx_delta_value += 1
+
                     for an_agg in aggregations:
-                        an_agg.dirty = False
+                        # add duration in all new aggregations
+                        an_agg.add_duration(delta_values["duration"])
 
                     for anAgg in getAggLevels(is_tmp):
                         with self.tracer.start_span('level ' + anAgg) as span_lvl:
+                            if idx_delta_value > 0:
+                                span_lvl.set_attribute('delta_value_idx', idx_delta_value)
                             # adjust start date, depending on the aggregation level
 
                             # dv_next is the delta_values for next level
@@ -97,52 +111,88 @@ class CalcAggreg(AllCalculus):
                                 # for all measures
                                 for my_measure in an_intrument['object'].get_all_measures():
 
-                                    # get our deca_hour
-                                    deca_hour = 0
-                                    if my_measure.__contains__('hour_deca') is True:
-                                        deca_hour = my_measure['hour_deca']
-                                    a_start_dat_level = calcAggDate(anAgg, m_stop_dat, deca_hour, True)
-
                                     # load the needed aggregation for this measure
-                                    agg_deca = None
-                                    for my_agg in aggregations:
-                                        if my_agg.agg_niveau == anAgg and my_agg.data.start_dat == a_start_dat_level:
-                                            agg_deca = my_agg
-                                            break
-                                    if agg_deca is None:
-                                        raise Exception('aggCompute::loadAggregations', 'aggregation not loaded ' + anAgg + ", " + str(a_start_dat_level))
+                                    agg_decas = self.load_aggregations_in_array(my_measure, anAgg, aggregations, m_stop_dat)
 
                                     m_agg_j = self.get_agg_magg(anAgg, a_todo.data.obs_id.j_agg)
 
                                     # find the calculus object for my_mesure
                                     for a_calculus in self.all_calculus:
                                         if a_calculus['agg'] == my_measure['agg']:
-                                            if a_calculus['calc_obs'] is not None:
+                                            if a_calculus['calc_agg'] is not None:
+                                                span_lvl.set_attribute('start_dat', str(agg_decas[0].data.start_dat))
 
-                                                # load our json in obs row
-                                                span_lvl.set_attribute('start_dat', str(agg_deca.data.start_dat))
-                                                a_calculus['calc_agg'].loadAggregations(m_stop_dat, my_measure, delta_values, agg_deca, m_agg_j, dv_next, trace_flag)
+                                                # load data in our aggregation
+                                                a_calculus['calc_agg'].loadDVDataInAggregation(my_measure, m_stop_dat, agg_decas[0], m_agg_j, delta_values, dv_next, trace_flag)
+
+                                                # get our extreme values
+                                                a_calculus['calc_agg'].loadDVMaxMinInAggregation(my_measure, m_stop_dat, agg_decas, m_agg_j, delta_values, dv_next, trace_flag)
                                             break
 
                             # loop to the next AggLevel
                             delta_values = dv_next
 
-                    # save our aggregations for this delta_values
+                # save our aggregations for this delta_values
+                with self.tracer.start_span('saveData'):
                     for an_agg in aggregations:
                         if an_agg.dirty is True:
                             an_agg.save()
 
-                # we're done
-                t.logInfo(
-                    "a_todo " + str(a_todo.data.id) + ' processed ' + str(datetime.datetime.now() - time_start) + ', still on queue: ' + str(a_todo.count()),
-                    my_span,
-                    {
-                        "time_exec": (datetime.datetime.now() - time_start).seconds,
-                        "queue_length": a_todo.count()
-                    })
-                a_todo.delete()
+                    # a_todo.data.status = 999
+                    # a_todo.save()
+                    a_todo.delete()
+
+                    # we're done
+                    t.logInfo(
+                        "a_todo " + str(a_todo.data.id) + ' processed ' + str(datetime.datetime.now() - time_start) + ', still on queue: ' + str(a_todo.count()),
+                        my_span,
+                        {
+                            "time_exec": (datetime.datetime.now() - time_start).seconds,
+                            "queue_length": a_todo.count()
+                        })
             finally:
                 poste_metier.unlock()
+
+    def load_aggregations_in_array(self, my_measure, anAgg: str, aggregations, m_stop_dat: datetime):
+        """ load array of aggregations for calculus:
+            [0] -> main_deca for data
+            [1] -> min_deca
+            [2] -> max_deca
+        """
+        agg_decas = []
+        deca_hours = []
+
+        if my_measure.get('hour_deca') is None:
+            deca_hours.append(0)
+            main_deca = 0
+        else:
+            main_deca = my_measure['hour_deca']
+            deca_hours.append(main_deca)
+
+        if my_measure.get('deca_max') is None:
+            deca_hours.append(main_deca)
+        else:
+            deca_hours.append(my_measure['deca_max'])
+
+        if my_measure.get('deca_min') is None:
+            deca_hours.append(main_deca)
+        else:
+            deca_hours.append(my_measure['deca_min'])
+
+        for deca_hour in deca_hours:
+            a_start_dat_level = calcAggDate(anAgg, m_stop_dat, deca_hour, True)
+
+            # load the needed aggregation for this measure
+            b_found = False
+            for my_agg in aggregations:
+                if my_agg.agg_niveau == anAgg and my_agg.data.start_dat == a_start_dat_level:
+                    agg_decas.append(my_agg)
+                    b_found = True
+                    break
+            if b_found is False:
+                raise Exception('aggCompute::loadAggregations', 'aggregation not loaded deca: ' + str(deca_hour) + ', date: ' + str(a_start_dat_level))
+
+        return agg_decas
 
     def get_agg_magg(self, agg_level: str, j_agg: json):
         """
@@ -153,6 +203,5 @@ class CalcAggreg(AllCalculus):
         if j_agg != {}:
             for a_j_agg in j_agg:
                 if a_j_agg.__contains__('level') and a_j_agg['level'][0] == agg_level[0]:
-                    m_agg_j = a_j_agg
-                    break
+                    t.CopyJson(a_j_agg, m_agg_j)
         return m_agg_j

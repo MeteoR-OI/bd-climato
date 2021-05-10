@@ -3,9 +3,15 @@ from app.models import TmpObservation, TmpAggHour, TmpAggDay, TmpAggMonth, TmpAg
 from app.classes.calcul.observation.processJsonDataAvg import ProcessJsonDataAvg
 from app.classes.calcul.observation.processJsonDataAvgOmm import ProcessJsonDataAvgOmm
 from app.classes.calcul.observation.processJsonDataRate import ProcessJsonDataRate
+from app.classes.calcul.observation.processJsonDataSum import ProcessJsonDataSum
+from app.classes.calcul.observation.processJsonDataSumOmm import ProcessJsonDataSumOmm
+from app.classes.calcul.observation.processJsonDataNone import ProcessJsonDataNo
 from app.classes.calcul.aggregations.aggAvgCompute import AggAvgCompute
 from app.classes.calcul.aggregations.aggAvgOmmCompute import AvgOmmCompute
-from app.classes.calcul.aggregations.aggRateCompute import RateCompute
+from app.classes.calcul.aggregations.aggRateCompute import AggRateCompute
+from app.classes.calcul.aggregations.aggSumCompute import AggSumCompute
+from app.classes.calcul.aggregations.aggSumOmmCompute import AggSumOmmCompute
+from app.classes.calcul.aggregations.aggNoCompute import AggNoCompute
 from app.tools.refManager import RefManager
 
 
@@ -13,9 +19,10 @@ class AllCalculus():
     all_calculus = [
         {"agg": "avg", "calc_obs": ProcessJsonDataAvg(), "calc_agg": AggAvgCompute()},
         {"agg": "avgomm", "calc_obs": ProcessJsonDataAvgOmm(), "calc_agg": AvgOmmCompute()},
-        # {"agg": "no", "calc_obs": None, "calc_agg": None},
-        # {"agg": "sum", "calc_obs": None, "calc_agg": None},    # sumCompute(), "calc_agg": None}
-        {"agg": "rate", "calc_obs": ProcessJsonDataRate(), "calc_agg": RateCompute()}    # ProcessJsonDataRate()}
+        {"agg": "no", "calc_obs": ProcessJsonDataNo(), "calc_agg": AggNoCompute()},
+        {"agg": "sum", "calc_obs": ProcessJsonDataSum(), "calc_agg": AggSumCompute()},    # sumCompute(), "calc_agg": None}
+        {"agg": "sumomm", "calc_obs": ProcessJsonDataSumOmm(), "calc_agg": AggSumOmmCompute()},    # sumCompute(), "calc_agg": None}
+        {"agg": "rate", "calc_obs": ProcessJsonDataRate(), "calc_agg": AggRateCompute()}    # ProcessJsonDataRate()}
     ]
 
     def __init__(self):

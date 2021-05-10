@@ -75,13 +75,13 @@ def analyseAggreg(poste_id: int, from_dt: datetime, to_dt: datetime, disp_detail
             while (max(idx, idx_tmp) < max_idx):
                 if idx >= nb_agg:
                     agg_done = True
-                    display_missing_agg(all_tmp_agg[idx_tmp], disp_details)
+                    display_missing_agg(all_tmp_agg[idx_tmp], level, disp_details)
                     idx_tmp += 1
                     continue
 
                 if idx_tmp >= nb_tmp_agg:
                     tmp_agg_done = True
-                    display_missing_tmp_agg(all_agg[idx], disp_details)
+                    display_missing_tmp_agg(all_agg[idx], level, disp_details)
                     idx += 1
                     continue
 
@@ -101,12 +101,12 @@ def analyseAggreg(poste_id: int, from_dt: datetime, to_dt: datetime, disp_detail
                     tmp_agg_done = True
 
                 if str(my_agg.start_dat) < str(my_tmp_agg.start_dat):
-                    display_missing_tmp_agg(my_agg, disp_details)
+                    display_missing_tmp_agg(my_agg, level, disp_details)
                     idx += 1
                     continue
 
                 if str(my_agg.start_dat) > str(my_tmp_agg.start_dat):
-                    display_missing_agg(my_tmp_agg, disp_details)
+                    display_missing_agg(my_tmp_agg, level, disp_details)
                     idx_tmp += 1
                     continue
 
@@ -123,11 +123,11 @@ def analyseAggreg(poste_id: int, from_dt: datetime, to_dt: datetime, disp_detail
                         continue
                     cols = []
                     cols.append(k)
-                    cols.append(str(v))
                     if my_agg.j.get(k) is None:
                         cols.append('')
                     else:
                         cols.append(str(my_agg.j.get(k)))
+                    cols.append(str(v))
                     data_output.append(cols)
 
                 # ad values in agg, not in tmp_agg
@@ -135,14 +135,28 @@ def analyseAggreg(poste_id: int, from_dt: datetime, to_dt: datetime, disp_detail
                     if k not in k_processed:
                         cols = []
                         cols.append(k)
-                        cols.append('')
                         cols.append(str(v))
+                        cols.append('')
                         data_output.append(cols)
                 if data_output.__len__() > 0:
-                    display_hdr(my_tmp_agg.start_dat, my_agg.start_dat)
+                    display_hdr(my_agg.start_dat, my_tmp_agg.start_dat, level)
                     # data_sorted = data_output.sort(key=lambda x: x[0])
-                    for line in data_output:
-                        display_line('   ' + line[0], line[1], line[2])
+                    data_sorted = sorted(data_output, key=lambda x: x[0])
+                    for line in data_sorted:
+                        if str(line[0]).endswith('_s'):
+                            continue
+                        if str(line[0]).endswith('_duration'):
+                            continue
+                        tmp_f1 = is_float_try(line[1])
+                        if tmp_f1 is None:
+                            tmp_f1 = line[1]
+                        tmp_f2 = is_float_try(line[2])
+                        if tmp_f2 is None:
+                            tmp_f2 = line[2]
+                        if str(tmp_f1) == str(tmp_f2):
+                            display_line('   ' + line[0], '          OK', '          OK')
+                        else:
+                            display_line('   ' + line[0], line[1], line[2])
                 # else:
                 #     display_line('start_dat', my_agg.start_dat, ' ** OK **')
 
@@ -150,34 +164,41 @@ def analyseAggreg(poste_id: int, from_dt: datetime, to_dt: datetime, disp_detail
                 idx_tmp += 1
 
 
+def is_float_try(str):
+    try:
+        f = float(str)
+        return float(int(f * 10) / 10)
+    except ValueError:
+        return None
+
+
 def display(msg: str):
     print(msg)
 
 
-def display_missing_tmp_agg(one_agg: AggMeteor, disp_details: bool):
+def display_missing_tmp_agg(one_agg: AggMeteor, level: str, disp_details: bool):
     # display('')
-    display_hdr('           None', one_agg.start_dat)
+    display_hdr(one_agg.start_dat, '           None', level)
     # if disp_details is True:
     #     for k, v in one_agg.j.items():
     #         display_line('   ' + k, str(v), '')
 
 
-def display_missing_agg(one_agg: AggMeteor, disp_details: bool):
-    display_hdr(one_agg.start_dat, '           None')
+def display_missing_agg(tmp_agg: AggMeteor, level: str, disp_details: bool):
+    display_hdr('           None', tmp_agg.start_dat, level)
     # if disp_details is True:
     #     for k, v in one_agg.j.items():
     #         display_line('   ' + k, '', str(v))
 
 
-def display_line(key, tmp_agg_val, agg_val):
-    display("{:<20}".format(str(key))[0:20] + " I " + "{:<30}".format(str(agg_val))[0:30] + " I " + "{:<30}".format(str(tmp_agg_val))[0:30])
+def display_line(key, agg_val, tmp_agg_val):
+    display("{:<30}".format(str(key))[0:30] + " I " + "{:<30}".format(str(agg_val))[0:30] + " I " + "{:<30}".format(str(tmp_agg_val))[0:30])
 
 
-def display_hdr(tmp_agg_data, agg_data, my_agg: AggMeteor = None):
+def display_hdr(agg_data, tmp_agg_data, level: str = 'xxxx'):
     # level = my_agg.getLevel()
-    level = 'xxx'
     tirets = '---------------------------------------------------------------------------------'
     display_line(tirets, tirets, tirets)
-    display_line('      key', '      tmp_agg_' + level, '      agg_' + level)
+    display_line('      key', '      agg_' + level, '      tmp_agg_' + level)
     display_line(tirets, tirets, tirets)
-    display_line('start_dat', str(tmp_agg_data), str(agg_data))
+    display_line('start_dat', str(agg_data), str(tmp_agg_data))

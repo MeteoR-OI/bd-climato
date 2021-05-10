@@ -24,13 +24,14 @@ class AggMeteor():
 
     """
 
-    def __init__(self, poste_id: int, agg_niveau: str, start_dt_agg_utc: datetime, is_measure_date: bool = False):
+    def __init__(self, poste_id: int, agg_niveau: str, start_dt_agg_utc: datetime, is_measure_date: bool = False, b_need_to_sum_duration: bool = False):
         """
             Init a new AggMeteor object
 
             poste: Poste object
             agg_niveau: 'H','D', 'M', 'Y', 'A'
             start_dt_agg_utc: start_date for the aggregation level, will be rounded
+            id_main_date: flag main aggregations (to update duration_sum)
         """
         self.agg_niveau = agg_niveau
         my_start_date = calcAggDate(agg_niveau, start_dt_agg_utc, 0, is_measure_date)
@@ -40,6 +41,7 @@ class AggMeteor():
             self.data = agg_object.objects.filter(poste_id_id=poste_id).filter(start_dat=my_start_date).first()
         else:
             self.data = agg_object(poste_id_id=poste_id, start_dat=my_start_date, duration_sum=0, j={})
+        self.b_need_to_sum_duration = b_need_to_sum_duration
 
     def save(self):
         """ save Poste and Exclusions """
@@ -51,6 +53,12 @@ class AggMeteor():
                     break
             if dirty_found is False or self.dirty is True:
                 self.data.save()
+
+    def add_duration(self, duration: int):
+        if self.b_need_to_sum_duration is True:
+            self.data.duration_sum += duration
+            self.b_need_to_sum_duration = False
+            self.dirty = True
 
     def getAggObject(self, niveau_agg: str):
         """get the aggregation depending on the level"""
@@ -122,6 +130,9 @@ class AggMeteor():
             return 'xxxxx'
         else:
             return lvl_mapping[my_level]
+
+    def getLevelCode(self):
+        return self.agg_niveau
 
     def __str__(self):
         """print myself"""

@@ -106,14 +106,14 @@
                 {"t": "O", "dat": "2021-02-11T14:00:00", "temp_omm": 20},
                 {"t": "O", "dat": "2021-02-11T15:00:00", "temp_omm": 10},
                 {"t": "O", "dat": "2021-02-12T14:00:00", "temp_omm": 30},
-                {"t": "HT", "dat": "2021-02-11T13:00:00", "temp7_omm_max": 20, "temp7_omm_max_time": "2021-02-11T14:00:00", "temp-5_omm_min": 20, "temp-5_omm_min_time": "2021-02-11T14:00:00", "temp_omm_avg": 20},
-                {"t": "HT", "dat": "2021-02-11T14:00:00", "temp7_omm_max": 10, "temp7_omm_max_time": "2021-02-11T15:00:00", "temp-5_omm_min": 10, "temp-5_omm_min_time": "2021-02-11T15:00:00", "temp_omm_avg": 10},
-                {"t": "HT", "dat": "2021-02-12T13:00:00", "temp7_omm_max": 30, "temp7_omm_max_time": "2021-02-12T14:00:00", "temp-5_omm_min": 30, "temp-5_omm_min_time": "2021-02-12T14:00:00", "temp_omm_avg": 30},
-                {"t": "DT", "dat": "2021-02-11T00:00:00", "temp7_omm_max": 20, "temp7_omm_max_time": "2021-02-11T14:00:00", "temp-5_omm_min": 10, "temp-5_omm_min_time": "2021-02-11T15:00:00", "temp_omm_avg": 15},
-                {"t": "DT", "dat": "2021-02-12T00:00:00", "temp7_omm_max": 30, "temp7_omm_max_time": "2021-02-12T14:00:00", "temp-5_omm_min": 30, "temp-5_omm_min_time": "2021-02-12T14:00:00", "temp_omm_avg": 30},
-                {"t": "MT", "dat": "2021-02-01T00:00:00", "temp7_omm_max": 30, "temp7_omm_max_time": "2021-02-12T14:00:00", "temp-5_omm_min": 10, "temp-5_omm_min_time": "2021-02-11T15:00:00", "temp_omm_avg": 20},
-                {"t": "YT", "dat": "2021-01-01T00:00:00", "temp7_omm_max": 30, "temp7_omm_max_time": "2021-02-12T14:00:00", "temp-5_omm_min": 10, "temp-5_omm_min_time": "2021-02-11T15:00:00", "temp_omm_avg": 20},
-                {"t": "AT", "temp7_omm_max": 30, "temp7_omm_max_time": "2021-02-12T14:00:00", "temp-5_omm_min": 10, "temp-5_omm_min_time": "2021-02-11T15:00:00", "temp_omm_avg": 20}
+                {"t": "HT", "dat": "2021-02-11T13:00:00", "temp_omm_max": 20, "temp_omm_max_time": "2021-02-11T14:00:00", "temp_omm_min": 20, "temp_omm_min_time": "2021-02-11T14:00:00", "temp_omm_avg": 20},
+                {"t": "HT", "dat": "2021-02-11T14:00:00", "temp_omm_max": 10, "temp_omm_max_time": "2021-02-11T15:00:00", "temp_omm_min": 10, "temp_omm_min_time": "2021-02-11T15:00:00", "temp_omm_avg": 10},
+                {"t": "HT", "dat": "2021-02-12T13:00:00", "temp_omm_max": 30, "temp_omm_max_time": "2021-02-12T14:00:00", "temp_omm_min": 30, "temp_omm_min_time": "2021-02-12T14:00:00", "temp_omm_avg": 30},
+                {"t": "DT", "dat": "2021-02-11T00:00:00", "temp_omm_max": 20, "temp_omm_max_time": "2021-02-11T14:00:00", "temp_omm_min": 10, "temp_omm_min_time": "2021-02-11T15:00:00", "temp_omm_avg": 15},
+                {"t": "DT", "dat": "2021-02-12T00:00:00", "temp_omm_max": 30, "temp_omm_max_time": "2021-02-12T14:00:00", "temp_omm_min": 30, "temp_omm_min_time": "2021-02-12T14:00:00", "temp_omm_avg": 30},
+                {"t": "MT", "dat": "2021-02-01T00:00:00", "temp_omm_max": 30, "temp_omm_max_time": "2021-02-12T14:00:00", "temp_omm_min": 10, "temp_omm_min_time": "2021-02-11T15:00:00", "temp_omm_avg": 20},
+                {"t": "YT", "dat": "2021-01-01T00:00:00", "temp_omm_max": 30, "temp_omm_max_time": "2021-02-12T14:00:00", "temp_omm_min": 10, "temp_omm_min_time": "2021-02-11T15:00:00", "temp_omm_avg": 20},
+                {"t": "AT", "temp_omm_max": 30, "temp_omm_max_time": "2021-02-12T14:00:00", "temp_omm_min": 10, "temp_omm_min_time": "2021-02-11T15:00:00", "temp_omm_avg": 20}
                 ]
         },{ "name": "8_max_min_omm_agg_regen",
             "data":
@@ -144,7 +144,7 @@
                 "results": [
                     {"t": "O", "idx":1, "out_temp": 20},
                     {"t": "HT", "dat": "2021-02-11T13:00:00", "temp_omm_sum": 1200},
-                    {"t": "DT", "dat": "2021-02-11T00:00:00", "temp-5_omm_min": 20, "temp7_omm_max": 20}
+                    {"t": "DT", "dat": "2021-02-11T00:00:00", "temp_omm_min": 20, "temp_omm_max": 20}
                 ]
             },{ "name": "11_max_min_forced_replace",
                 "data":
@@ -166,7 +166,7 @@
                     "results": [
                         {"t": "O", "idx":1, "out_temp": 10},
                         {"t": "HT", "dat": "2021-02-11T13:00:00", "temp_omm_sum": 600},
-                        {"t": "DT", "dat": "2021-02-11T00:00:00", "temp-5_omm_min": 10, "temp7_omm_max": 10}
+                        {"t": "DT", "dat": "2021-02-11T00:00:00", "temp_omm_min": 10, "temp_omm_max": 10}
                     ]
                 },{ "name": "14_wind_inst_do_not_use_avg",
                 "data":

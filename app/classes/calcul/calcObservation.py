@@ -102,7 +102,14 @@ class CalcObs(AllCalculus):
         while measure_idx < json_file_data['data'].__len__():
             # we use the stop_dat of our measure json as the start date for our processing
             m_stop_date_agg_start_date = json_file_data['data'][measure_idx]['stop_dat']
-            m_duration = json_file_data['data'][measure_idx]['current']['duration']
+
+            if json_file_data['data'][measure_idx].get('current') is not None and use_validation is False:
+                m_duration = json_file_data['data'][measure_idx]['current']['duration']
+            else:
+                # we don't care as we don't have current data
+                m_duration = 0
+                # in validation mode, we don't use the 'current'
+                json_file_data['data'][measure_idx]['current'] = {"duration": 0}
             poste_metier = PosteMetier(json_file_data['poste_id'], m_stop_date_agg_start_date)
             if measure_idx == 0:
                 my_span.set_attribute("poste_id", str(poste_metier.data.id))
@@ -114,25 +121,23 @@ class CalcObs(AllCalculus):
                 if obs_meteor.data.id is not None and json_file_data['data'][measure_idx].__contains__('update_me') is False:
                     t.logInfo('skipping data[' + str(measure_idx) + '], stop_dat: ' + str(m_stop_date_agg_start_date) + ' already loaded', my_span)
                     continue
+                # load aggregations data in obs_meteor.data.j_agg
+                m_agg_j = []
                 if use_validation is True:
-                    tmp_agg = []
                     if json_file_data['data'][measure_idx].__contains__('aggregations'):
-                        t.CopyJson(json_file_data['data'][measure_idx]['aggregations'], tmp_agg)
+                        t.CopyJson(json_file_data['data'][measure_idx]['aggregations'], m_agg_j)
                     if json_file_data['data'][measure_idx].__contains__('validation'):
-                        t.CopyJson(json_file_data['data'][measure_idx]['validation'], tmp_agg)
-                    obs_meteor.data.j_agg = tmp_agg
-                    if tmp_agg.__len__() == 0:
-                        t.logInfo('skipping data[' + str(measure_idx) + '], stop_dat: ' + str(m_stop_date_agg_start_date), my_span)
+                        t.CopyJson(json_file_data['data'][measure_idx]['validation'], m_agg_j)
+                    if m_agg_j.__len__() == 0:
+                        t.logInfo('skipping data[' + str(measure_idx) + '], no data in JSON !!! stop_dat: ' + str(m_stop_date_agg_start_date), my_span)
                         continue
-                    json_file_data['data'][measure_idx]['current'] = {
-                        "duration": m_duration
-                    }
                 else:
                     if json_file_data['data'][measure_idx].__contains__('aggregations'):
-                        obs_meteor.data.j_agg = json_file_data['data'][measure_idx]['aggregations']
+                        m_agg_j = json_file_data['data'][measure_idx]['aggregations']
+                obs_meteor.data.j_agg = m_agg_j
 
                 # load duration and stop_dat if not already loaded
-                if obs_meteor.data.duration == 0:
+                if obs_meteor.data.duration == 0 and json_file_data['data'][measure_idx].get('current') is not None:
                     obs_meteor.data.duration = json_file_data['data'][measure_idx]['current']['duration']
 
                 delta_values = {"maxminFix": [], "duration": m_duration}
@@ -146,7 +151,7 @@ class CalcObs(AllCalculus):
                             if a_calculus['agg'] == my_measure['agg']:
                                 if a_calculus['calc_obs'] is not None:
                                     # load our json in obs row
-                                    a_calculus['calc_obs'].loadInObs(poste_metier, my_measure, json_file_data, measure_idx, obs_meteor, delta_values, trace_flag)
+                                    a_calculus['calc_obs'].loadInObs(poste_metier, my_measure, json_file_data, measure_idx, m_agg_j, obs_meteor, delta_values, trace_flag)
                                 break
 
                 # save our new data

@@ -9,8 +9,8 @@ class TypePression(RootTypeInstrument):
         self.my_type_instr_id = 3
 
         self.measures = [
-            {'type_i': 3, 'src_key': 'barometer', 'dataType': float, 'agg': 'avg', 'avg': True, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
-            {'type_i': 3, 'src_key': 'barometer', 'dataType': float, 'agg': 'avgomm', 'avg': True, 'min': True, 'max': True, 'hour_deca': 7, 'special': 48},
-            {'type_i': 3, 'src_key': 'pressure', 'dataType': float, 'agg': 'no', 'avg': True, 'min': True, 'max': True, 'hour_deca': 0, 'special': 0},
+            {'type_i': 3, 'src_key': 'barometer', 'agg': 'avg'},
+            {'type_i': 3, 'src_key': 'barometer', 'agg': 'avgomm', 'hour_deca': 7},
+            {'type_i': 3, 'src_key': 'pressure', 'agg': 'no'},
         ]
-        super()
+        super().__init__()
