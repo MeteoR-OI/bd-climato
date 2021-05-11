@@ -195,8 +195,8 @@ LOW#slurp
        #end if
        $CleVal("wind_avg",$obs.windSpeed.raw,1)
        $CleVal("wind_dir",$obs.windDir.raw,1)
-       $CleVal("windgust",$obs.windGust.raw,1)
-       $CleVal("windgust_dir",$obs.windGustDir.raw,1)
+       $CleVal("gust",$obs.windGust.raw,1)
+       $CleVal("gust_dir",$obs.windGustDir.raw,1)
        #if $final_obs
        $CleVal("wind_max",$currentagg.windGust.max.raw,1)
        $CleVal("wind_max_dir",$currentagg.windGustDir.max.raw,1)        
