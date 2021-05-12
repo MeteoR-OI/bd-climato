@@ -184,6 +184,9 @@ class WorkerRoot:
                             t.logInfo('task ' + self.display + ' kill event received, exiting')
                             return
                         used_fequency -= check_exit
+                        if used_fequency <= 0:
+                            used_fequency = self.frequency
+                            a_worker['fct'](call_params)
                         continue
                 except Exception as exc:
                     t.LogException(exc)
