@@ -38,6 +38,17 @@
             ]
         },
         {
+            "name": "svc",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                // "${fileBasenameNoExtension}"
+                "svc",
+                "calc"
+            ]
+        },
+        {
             "name": "calc",
             "type": "python",
             "request": "launch",
@@ -47,8 +58,7 @@
                 "calc",
                 "--tmp",
             ]
-        },
-        {
+        },        {
             "name": "compAgg",
             "type": "python",
             "request": "launch",

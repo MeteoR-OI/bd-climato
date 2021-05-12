@@ -20,19 +20,27 @@ class CalcObs(AllCalculus):
         self.tracer = Telemetry.Start("calculus", __name__)
 
     def loadJsonFromSvc(self, data: json):
-        if data.get('p') is None or data['p'] == {}:
-            return
-        params = data["p"]
-        trace_flag = data["tf"]
-        is_tmp = delete_flag = use_validation = False
-        if params.get('is_tmp') is not None:
-            is_tmp = params['is_tmp']
-        if params.get('delete') is not None:
-            delete_flag = params['delete']
-        if params.get('validation') is not None:
-            use_validation = params['validation']
-        my_json = params['json']
-        self.loadJson(my_json, trace_flag, delete_flag, is_tmp, use_validation)
+        try:
+            if data.get('p') is None or data['p'] == {}:
+                return
+            params = data["p"]
+            trace_flag = data["tf"]
+            is_tmp = delete_flag = use_validation = False
+            my_json = {}
+            if params.__len__() > 0 and params.get('is_tmp') is not None:
+                is_tmp = params['is_tmp']
+            if params.get('delete') is not None:
+                delete_flag = params['delete']
+            if params.get('validation') is not None:
+                use_validation = params['validation']
+            if params.get('json') is not None:
+                my_json = params['json']
+                self.loadJson(my_json, trace_flag, delete_flag, is_tmp, use_validation)
+            else:
+                t.LogError('no data in Json parameter', None, data)
+
+        except Exception as exc:
+            t.LogException(exc)
 
     def loadJson(self, json_file_data_array: json, trace_flag: bool = False, delete_flag: bool = False, is_tmp: bool = None, use_validation: bool = False) -> json:
         """
