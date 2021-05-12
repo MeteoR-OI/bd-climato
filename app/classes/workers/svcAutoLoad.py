@@ -63,8 +63,8 @@ class SvcAutoLoad(WorkerRoot):
                         os.rename(base_dir + '/' + aFile, base_dir + '/failed/' + aFile)
 
         except Exception as inst:
-            t.LogException(inst, my_span)
-            my_span.record_insteption(inst)
+            t.LogException(inst)
+            # my_span.record_insteption(inst)
 
     def loadJson(self, file_name: str, delete_flag: bool, trace_flag: bool, is_tmp: bool = None):
         calc_obs = CalcObs()

@@ -147,7 +147,7 @@ class CalcAggreg(AllCalculus):
                         "a_todo " + str(a_todo.data.id) + ' processed ' + str(datetime.datetime.now() - time_start) + ', still on queue: ' + str(a_todo.count()),
                         my_span,
                         {
-                            "time_exec": (datetime.datetime.now() - time_start).seconds,
+                            "time_exec": str(datetime.datetime.now() - time_start),
                             "queue_length": a_todo.count()
                         })
             finally:
