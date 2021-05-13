@@ -173,8 +173,6 @@ class WorkerRoot:
                         "p": [],
                         "tf": trace_flag}
                     try:
-                        a = 0
-                        b = 10 / a
                         call_params["p"] = self.queueRun.get(True, check_exit)
                         if trace_flag is True:
                             t.logTrace('task ' + self.display + " Queue released", None)
