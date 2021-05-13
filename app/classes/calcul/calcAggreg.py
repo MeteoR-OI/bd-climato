@@ -23,16 +23,32 @@ class CalcAggreg(AllCalculus):
 
     def ComputAggregFromSvc(self, data: json):
         """ entry point from worker """
-        params = data['p']
-        # trace_flag = data['tf']
-        is_tmp = False
-        if params.get('is_tmp') is not None:
-            is_tmp = params['is_tmp']
-        self.ComputeAggreg(is_tmp)
 
-    def ComputeAggreg(self, is_tmp: bool = False):
+        if data is None or data.get('param') is None or data['param'] == {}:
+            t.LogError("wrong data")
+        params = data["param"]
+        trace_flag = False
+        if params.get('trace_flag') is not None:
+            trace_flag = params['trace_flag']
+        try:
+            # load our parameters
+            is_tmp = False
+            ret = []
+            if params.get('is_tmp') is not None:
+                is_tmp = params['is_tmp']
+            ret = self._computeAggreg(is_tmp, trace_flag)
+            return ret
+
+        except Exception as inst:
+            with self.tracer.start_as_current_span("calculus", trace_flag) as my_span:
+                my_span.record_exception(inst)
+
+    def ComputeAggregCall(self, is_tmp: bool = False, trace_flag: bool = False):
+        self._computeAggreg(is_tmp, trace_flag)
+
+    def _computeAggreg(self, is_tmp: bool, trace_flag: bool):
         """
-            ComputeAggreg
+            _computeAggreg
 
             called  by the daemon service
 
@@ -61,21 +77,21 @@ class CalcAggreg(AllCalculus):
         """
         time_start = datetime.datetime.now()
         all_instr = AllTypeInstruments()
-        if RefManager.GetInstance().GetRef("trace_flag") is None:
+        if RefManager.GetInstance().GetRef("svcAggreg_trace_flag") is None:
             trace_flag = False
         else:
-            trace_flag = RefManager.GetInstance().GetRef("trace_flag")
+            trace_flag = RefManager.GetInstance().GetRef("svcAggreg_trace_flag")
 
         span_name = 'Agg'
         if is_tmp is True:
             span_name += '_tmp'
-        with self.tracer.start_as_current_span(span_name) as my_span:
+        with self.tracer.start_as_current_span(span_name, trace_flag) as my_span:
             my_span.set_attribute("obs_id", a_todo.data.obs_id_id)
             my_span.set_attribute("poste_id", a_todo.data.obs_id.poste_id_id)
             my_span.set_attribute("is_tmp", is_tmp)
             # my_span.set_attribute("meteor", a_todo.data.obs_id.poste_id.meteor)
             # retrieve data we will need
-            span_load_data = self.tracer.start_span('loadDataInObs')
+            span_load_data = self.tracer.start_span('loadDataInObs', trace_flag)
             m_stop_dat = a_todo.data.obs_id.stop_dat
             a_start_dat = a_todo.data.obs_id.agg_start_dat
             poste_metier = PosteMetier(a_todo.data.obs_id.poste_id_id, a_start_dat)
@@ -97,7 +113,8 @@ class CalcAggreg(AllCalculus):
                         an_agg.add_duration(delta_values["duration"])
 
                     for anAgg in getAggLevels(is_tmp):
-                        with self.tracer.start_span('level ' + anAgg) as span_lvl:
+                        with self.tracer.start_span('level ' + anAgg, trace_flag) as span_lvl:
+                            b_insert_start_dat = True
                             if idx_delta_value > 0:
                                 span_lvl.set_attribute('delta_value_idx', idx_delta_value)
                             # adjust start date, depending on the aggregation level
@@ -116,12 +133,14 @@ class CalcAggreg(AllCalculus):
 
                                     m_agg_j = self.get_agg_magg(anAgg, a_todo.data.obs_id.j_agg)
 
+                                    if b_insert_start_dat:
+                                        b_insert_start_dat = False
+                                        span_lvl.set_attribute('start_dat', str(agg_decas[0].data.start_dat))
+
                                     # find the calculus object for my_mesure
                                     for a_calculus in self.all_calculus:
                                         if a_calculus['agg'] == my_measure['agg']:
                                             if a_calculus['calc_agg'] is not None:
-                                                span_lvl.set_attribute('start_dat', str(agg_decas[0].data.start_dat))
-
                                                 # load data in our aggregation
                                                 a_calculus['calc_agg'].loadDVDataInAggregation(my_measure, m_stop_dat, agg_decas[0], m_agg_j, delta_values, dv_next, trace_flag)
 
@@ -133,7 +152,7 @@ class CalcAggreg(AllCalculus):
                             delta_values = dv_next
 
                 # save our aggregations for this delta_values
-                with self.tracer.start_span('saveData'):
+                with self.tracer.start_span('saveData', trace_flag):
                     for an_agg in aggregations:
                         if an_agg.dirty is True:
                             an_agg.save()
@@ -144,12 +163,15 @@ class CalcAggreg(AllCalculus):
 
                     # we're done
                     t.logInfo(
-                        "a_todo " + str(a_todo.data.id) + ' processed ' + str(datetime.datetime.now() - time_start) + ', still on queue: ' + str(a_todo.count()),
+                        "Observation processed",
                         my_span,
                         {
+                            "obs_id": a_todo.data.obs_id_id,
+                            "poste_id": a_todo.data.obs_id.poste_id_id,
+                            "queue_length": a_todo.count(),
                             "time_exec": str(datetime.datetime.now() - time_start),
-                            "queue_length": a_todo.count()
-                        })
+                        }
+                    )
             finally:
                 poste_metier.unlock()
 

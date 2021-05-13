@@ -14,6 +14,8 @@ class Command(BaseCommand):
         parser.add_argument('--status', action='store_true', help='get the status of the service')
         parser.add_argument('--trace', action='store_true', help='display trace')
         parser.add_argument('--notrace', action='store_true', help='stop the tracing of the service')
+        parser.add_argument('--tmp', action='store_true', help='use tmp tables')
+        parser.add_argument('--validation', action='store_true', help='use json data only from the validation key')
 
     def handle(self, *args, **options):
         command = SvcRequestType.Nope
@@ -38,16 +40,25 @@ class Command(BaseCommand):
         if options['run']:
             command |= SvcRequestType.Run
 
-        trace_flag = None
         if options['trace']:
-            trace_flag = True
+            command |= SvcRequestType.TraceOn
 
         if options['notrace']:
-            trace_flag = False
+            command |= SvcRequestType.TraceOff
+
+        if options['tmp']:
+            is_tmp = True
+        else:
+            is_tmp = False
+
+        if options['validation']:
+            use_validation = True
+        else:
+            use_validation = False
 
         try:
             url = "http://localhost:8000/app/svc"
-            data = {"svc": svc_name, "cde": command, "trace_flag": trace_flag}
+            data = {"svc": svc_name, "cde": command, "params": {"is_tmp": is_tmp, "validation": use_validation}}
             headers = {'content-type': 'application/json'}
 
             r = requests.post(url, data=JsonPlus().dumps(data), headers=headers)
@@ -56,28 +67,18 @@ class Command(BaseCommand):
                 if rj['status'] == 'ok':
                     if rj.__contains__('result'):
                         for a_result in rj['result']:
-                            self.stdout.write(a_result)
+                            print(a_result)
                     else:
-                        self.stdout.write('ok')
+                        print('ok')
                 else:
                     if rj.__contains__('errMsg'):
-                        self.stderr('Error(s):')
+                        print('Error(s):')
                         for an_err_msg in rj['errMsg']:
-                            self.stderr.write(an_err_msg)
+                            print(an_err_msg)
                     else:
-                        self.stderr.write('Error encountered')
+                        print('Error encountered')
             else:
-                self.stderr.write('Error: protocol error')
+                print('Error: protocol error')
 
         except Exception as inst:
-            self.stderr.write('Error (bug): ' + str(inst))
-
-    def display_help(self):
-        self.stdout.write('python manage svc --list   -> List all available services')
-        self.stdout.write('python manage svc [serviceName] [command]')
-        self.stdout.write('   where [command] can be:')
-        self.stdout.write('   --start     start the service')
-        self.stdout.write('   --stop      stop the service')
-        self.stdout.write('   --status    get the status of the service')
-        self.stdout.write('   --trace     ask to trace the service')
-        self.stdout.write('   --notrace   stop the trace of the service')
+            print('Error (bug): ' + str(inst))

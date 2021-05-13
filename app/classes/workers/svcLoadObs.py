@@ -12,7 +12,7 @@ class SvcLoadObs(WorkerRoot):
 
     def __init__(self, is_tmp: bool = None):
         # call parent __init__
-        super(SvcLoadObs, self).__init__(str(SvcLoadObs), CalcObs().loadJsonFromSvc, 120, ['loadobs'])
+        super(SvcLoadObs, self).__init__(str(SvcLoadObs), CalcObs().LoadJsonFromSvc, 120, ['loadobs'])
 
     @staticmethod
     def GetInstance(myClass: object = None):

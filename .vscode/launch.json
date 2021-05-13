@@ -45,7 +45,9 @@
             "args": [
                 // "${fileBasenameNoExtension}"
                 "svc",
-                "calc"
+                "auto",
+                "--run",
+                "--trace"
             ]
         },
         {

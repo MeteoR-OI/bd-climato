@@ -60,7 +60,7 @@ class CalcTestEngine():
                 self.calc.delete_obs_agg(True)
 
                 if ((option & 1) == 1):
-                    self.calc_obs.loadJson([my_json], True, is_tmp=True)
+                    self.calc_obs.LoadJsonFromCall([my_json], False, is_tmp=True, use_validation=False, filename='test_json')
 
                 if ((option & 2) == 2):
                     self.calc_agg.ComputeAggreg(True)

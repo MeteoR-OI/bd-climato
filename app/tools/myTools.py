@@ -5,8 +5,8 @@ import datetime
 import inspect
 
 
-def LogException(inst, my_span=None, params: json = {}, return_string: bool = False):
-    return _logMe(str(inst), 'error', my_span, params, 1, return_string)
+def LogException(inst, my_span=None, params: json = {}, return_string: bool = False, level: int = 1):
+    return _logMe(str(inst), 'error', my_span, params, level, return_string)
 
 
 def LogError(message: str, my_span=None, params: json = {}, return_string: bool = False):

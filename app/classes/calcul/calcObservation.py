@@ -8,8 +8,10 @@ from app.tools.jsonValidator import checkJson
 import app.tools.myTools as t
 from app.tools.telemetry import Telemetry
 from django.db import transaction
+from django.conf import settings
 import datetime
 import json
+import os
 
 
 class CalcObs(AllCalculus):
@@ -17,75 +19,111 @@ class CalcObs(AllCalculus):
         Control all the processing of a json data, with our Observation table
     """
     def __init__(self):
-        self.tracer = Telemetry.Start("calculus", __name__)
+        self.tracer = Telemetry.Start("calculus")
 
-    def loadJsonFromSvc(self, data: json):
+    def LoadJsonFromSvc(self, data: json):
+        """
+            common params:
+                    "delete": delete_flag,
+                    "is_tmp": is_tmp,
+                    "validation": use_validation
+            when called from command line:
+
+            data["param]:
+                    "json": my_json     # mandatory !
+
+            when called from autoLoad
+                    "base_dir": my_json,
+        """
+        if data is None or data.get('param') is None or data['param'] == {}:
+            t.LogError("wrong data")
+        params = data["param"]
+        trace_flag = False
+        if params.get('trace_flag') is not None:
+            trace_flag = params['trace_flag']
+        my_span = self.tracer.start_as_current_span("calculus", trace_flag)
+
         try:
-            if data.get('p') is None or data['p'] == {}:
-                return
-            params = data["p"]
-            trace_flag = data["tf"]
+            # load our parameters
             is_tmp = delete_flag = use_validation = False
-            my_json = {}
-            if params.__len__() > 0 and params.get('is_tmp') is not None:
+            ret = []
+            if params.get('is_tmp') is not None:
                 is_tmp = params['is_tmp']
             if params.get('delete') is not None:
                 delete_flag = params['delete']
             if params.get('validation') is not None:
                 use_validation = params['validation']
-            if params.get('json') is not None:
-                my_json = params['json']
-                self.loadJson(my_json, trace_flag, delete_flag, is_tmp, use_validation)
-            else:
-                t.LogError('no data in Json parameter', None, data)
 
-        except Exception as exc:
-            t.LogException(exc)
+            # delete is not part of the transaction
+            if delete_flag:
+                self.delete_obs_agg(is_tmp)
 
-    def loadJson(self, json_file_data_array: json, trace_flag: bool = False, delete_flag: bool = False, is_tmp: bool = None, use_validation: bool = False) -> json:
+            # load the content of files on the server
+            # getJsonData create a new span
+            for j_data in self._getJsonData(params):
+                func_ret = self._loadJsonArrayInObs(j_data["j"], trace_flag, is_tmp, use_validation, j_data["f"])
+                ret.append(func_ret[0])
+
+            # activate the computation of aggregations
+            SvcAggreg.runMe({"is_tmp": is_tmp, "trace_flag": trace_flag})
+            return ret
+
+        except Exception as inst:
+            my_span.record_exception(inst)
+
+    def LoadJsonFromCall(
+        self,
+        json_data_array: json,
+        trace_flag: bool = False,
+        delete_flag: bool = False,
+        is_tmp: bool = None,
+        use_validation: bool = False,
+        filename: str = "???",
+    ):
+        with self.tracer.start_as_current_span("calculus", trace_flag):
+            # delete is not part of the transaction
+            if delete_flag:
+                self.delete_obs_agg(is_tmp)
+            self._loadJsonArrayInObs(json_data_array, trace_flag, is_tmp, use_validation, filename)
+
+    # ----------------
+    # private methods
+    # ----------------
+    @transaction.atomic
+    def _loadJsonArrayInObs(
+        self,
+        json_data_array: json,
+        trace_flag: bool = False,
+        is_tmp: bool = None,
+        use_validation: bool = False,
+        filename: str = "???",
+    ) -> json:
         """
             processJson
 
             calulus v2, load json in the obs & agg_toto tables
         """
-        if delete_flag:
-            # delete is not part of the transaction
-            self.delete_obs_agg(is_tmp)
-
-        ret = []
-        span_name = 'Obs'
-        if is_tmp is True:
-            span_name += '_tmp'
-        with self.tracer.start_as_current_span(span_name) as my_span:
-            try:
-                ret.append(self._loadJson_array_ttx(json_file_data_array, trace_flag, is_tmp, use_validation))
-                my_span.set_attribute("items_processed", ret[0][ret.__len__() - 1].get('item_processed'))
-            except Exception as exc:
-                t.LogException(exc, my_span)
-                ret.append({"Exception": str(exc), "args": str(exc.args)})
-
-        SvcAggreg.runMe({"is_tmp": is_tmp, "trace_flag": trace_flag})
-        return ret[0]
-
-    @transaction.atomic
-    def _loadJson_array_ttx(self, json_file_data_array: json, trace_flag: bool = False, is_tmp: bool = None, use_validation: bool = False) -> json:
         debut_full_process = datetime.datetime.now()
         ret_data = []
         item_processed = 0
 
         # validate our json
-        check_result = checkJson(json_file_data_array)
+        check_result = checkJson(json_data_array)
         if check_result is not None:
-            raise Exception('calculus::processJson', check_result)
+            raise Exception('Invalid Json: ' + str(check_result))
 
+        my_span = self.tracer.get_current_or_new_span("calculus", trace_flag)
         idx = 0
-        while idx < json_file_data_array.__len__():
-            json_file_data = json_file_data_array[idx]
-            item_processed += json_file_data['data'].__len__()
-            ret = self._loadJson(json_file_data, trace_flag, is_tmp, use_validation)
-            if trace_flag is True:
-                ret_data.append({"item": idx, "ret": ret})
-            idx += 1
+        while idx < json_data_array.__len__():
+            with self.tracer.start_span("Obs", trace_flag) as my_span:
+                if json_data_array.__len__() > 1:
+                    my_span.set_attribute("idx", idx)
+                json_file_data = json_data_array[idx]
+                item_processed += json_file_data['data'].__len__()
+                ret = self._loadJsonItemInObs(json_file_data, trace_flag, is_tmp, use_validation)
+                my_span.set_attribute("items_processed", json_file_data['data'].__len__())
+                ret_data.append(ret)
+                idx += 1
 
         ret_data.append({
             'total_exec': str(datetime.datetime.now() - debut_full_process),
@@ -94,7 +132,7 @@ class CalcObs(AllCalculus):
         })
         return ret_data
 
-    def _loadJson(self, json_file_data: json, trace_flag: bool = False, is_tmp: bool = False, use_validation: bool = False) -> json:
+    def _loadJsonItemInObs(self, json_file_data: json, trace_flag: bool = False, is_tmp: bool = False, use_validation: bool = False) -> json:
         """
             processJson
 
@@ -105,7 +143,7 @@ class CalcObs(AllCalculus):
 
         measure_idx = 0
         debut_process = datetime.datetime.now()
-        my_span = self.tracer.get_current_span()
+        my_span = self.tracer.get_current_or_new_span("calculus", trace_flag)
 
         while measure_idx < json_file_data['data'].__len__():
             # we use the stop_dat of our measure json as the start date for our processing
@@ -192,3 +230,64 @@ class CalcObs(AllCalculus):
                 poste_metier.unlock()
 
         return ret
+
+    def _getJsonData(self, params: json):
+        """
+            yield filename, file_content
+        """
+        my_span = self.tracer.get_current_or_new_span("calculus", params["trace_flag"])
+
+        try:
+            # content loaded on client side
+            if params.get("json") is not None:
+                # load our json data
+                my_json = params["json"]
+                filename = "???"
+                if params.get('filename') is not None:
+                    filename = params['filename']
+                load_span = self.tracer.start_span('load', params["trace_flag"])
+                load_span.set_attribute("filename", filename)
+                yield {"f": filename, "j": my_json}
+                load_span.end()
+                t.logInfo("file loaded in Obs", {"filename": filename})
+                return
+
+            # content to load from the server
+            if params.get('base_dir') is None:
+                if hasattr(settings, 'AUTOLOAD_DIR') is True:
+                    params['base_dir'] = settings.AUTOLOAD_DIR
+                else:
+                    params['base_dir'] = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/../../data/json_auto_load'
+            base_dir = params['base_dir']
+            if params.get('filename') is not None:
+                files = [params['filename']]
+            else:
+                files = os.listdir(base_dir)
+
+            for aFile in files:
+                if aFile.endswith('.json'):
+                    load_span = self.tracer.start_span('load', params["trace_flag"])
+                    try:
+                        # load our json file
+                        texte = ""
+                        with open(base_dir + '/' + aFile, "r") as f:
+                            lignes = f.readlines()
+                            for aligne in lignes:
+                                texte += str(aligne)
+                        my_json = JsonPlus().loads(texte)
+
+                        load_span.set_attribute("filename", aFile)
+                        yield {"f": aFile, "j": my_json}
+                        load_span.add_event('file.moved', {'dest': base_dir + '/done/' + aFile})
+                        t.logInfo('file processed, and moved', load_span, {'filename': aFile, 'dest': base_dir + '/done/' + aFile})
+                        os.rename(base_dir + '/' + aFile, base_dir + '/done/' + aFile)
+                    except Exception as exc:
+                        load_span.record_exception(exc)
+                        load_span.add_event('file.moved', {'dest': base_dir + '/failed/' + aFile})
+                        t.LogError('file NOT processed, and moved', load_span, {'filename': aFile, 'dest': base_dir + '/failed/' + aFile})
+                        os.rename(base_dir + '/' + aFile, base_dir + '/failed/' + aFile)
+                    finally:
+                        load_span.end()
+
+        except Exception as exc:
+            my_span.record_exception(exc)

@@ -23,6 +23,8 @@ class SvcRequestType(Constants):
     Status = 4
     List = 8
     Run = 16
+    TraceOn = 32
+    TraceOff = 64
 
 
 class ComputationParam(Constants):

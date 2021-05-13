@@ -24,7 +24,7 @@ class WorkerRoot:
             self.display = self.display.split('.')[0]
         except Exception:
             self.display = name
-        self.tracer = Telemetry.Start('task ' + self.display, 'task ' + self.display)
+        self.tracer = Telemetry.Start('svc ' + self.display, __name__)
         self.synonym = synonym
         WorkerRoot.all_syn.append({"s": synonym, "svc": name, "name": self.display, "instance": self})
         WorkerRoot.trace_flag.append({"s": name, "trace_flag": False})
@@ -70,6 +70,7 @@ class WorkerRoot:
         for a_trc in all_trc:
             if a_trc['s'] == self.name:
                 a_trc['trace_flag'] = trace_flag
+                RefManager.GetInstance().SetRefIfNotExist(self.display + "_trace_flag", trace_flag)
                 t.logInfo(
                     'task ' + self.name + ' setTraceFlag',
                     None,
@@ -91,7 +92,7 @@ class WorkerRoot:
                     thread = threading.Thread(target=self.__runSvc, args=(a_worker,), daemon=True)
                     thread.setName(self.name)
                     if self.GetTraceFlag() is True:
-                        t.logInfo('task ' + self.display + ' kthread started', None, {"status": "started"})
+                        t.logInfo('svc thread started', None, {"svc": self.display, "status": "started"})
                     thread.start()
                     a_worker['run'] = True
                     # force the thread to start
@@ -107,7 +108,7 @@ class WorkerRoot:
                     if a_worker['run'] is False:
                         raise Exception('workers::Stop', self.display + ' already stopped')
                     self.eventKill.set()
-                    t.logInfo('task ' + self.display + ' kill event sent. Task should be stopped', None, {"status": "stopped"})
+                    t.logInfo('Stop command received', None, {"svc": self.display, "status": "stopped"})
                     a_worker['run'] = False
                     # time.sleep(self.ref_mgr.GetRef("worker_kill_frequency"))
         finally:
@@ -124,7 +125,7 @@ class WorkerRoot:
             for a_worker in WorkerRoot.wkrs:
                 if a_worker['name'] == self.name:
                     if a_worker['run'] != thread_found:
-                        t.logError(
+                        t.LogError(
                             'task ' + self.display + ": wrong status",
                             None,
                             {"status.worker": str(a_worker['run']), "status.thread": str(thread_found)},
@@ -163,33 +164,53 @@ class WorkerRoot:
                 t.logTrace('task ' + self.display + " running", None, {"check_time_out": check_exit})
 
             while True:
+                b_run_svc = False
                 try:
                     trace_flag = self.GetTraceFlag()
                     if trace_flag is True:
                         t.logTrace('task ' + self.display + " waiting now", None, {"freq": self.frequency, "freq.used": used_fequency})
-                    trace_flag = self.GetTraceFlag()
                     call_params = {
-                        "t": self.tracer,
-                        "p": [],
-                        "tf": trace_flag}
+                        "param": {}
+                    }
                     try:
-                        call_params["p"] = self.queueRun.get(True, check_exit)
-                        if trace_flag is True:
-                            t.logTrace('task ' + self.display + " Queue released", None)
-                        used_fequency -= check_exit
-                        used_fequency = self.frequency
-                        a_worker['fct'](call_params)
+                        # get will fire an 'Empty exception when time-out, which is normal
+                        call_params["param"] = self.queueRun.get(True, check_exit)
+                        b_run_svc = True
+
                     except queue.Empty:
                         if self.eventKill.isSet() is True:
-                            t.logInfo('task ' + self.display + ' kill event received, exiting')
+                            t.logInfo('svc kill event received, exiting', {"svc": self.display})
                             return
+
                         used_fequency -= check_exit
                         if used_fequency <= 0:
+                            b_run_svc = True
+
+                    finally:
+                        if b_run_svc is True:
+                            trace_flag = self.GetTraceFlag()
+                            if trace_flag is True:
+                                t.logTrace('task ' + self.display + " Run " + self.display, None)
+                            # old bug...
+                            if call_params['param'] is None or call_params == []:
+                                call_params['param'] = {}
+                            call_params["param"]["trace_flag"] = trace_flag
+
+                            # reset our wait counters
+                            used_fequency -= check_exit
                             used_fequency = self.frequency
-                            a_worker['fct'](call_params)
-                        continue
+
+                            # create a span, and call the service handler
+                            try:
+                                a_worker['fct'](call_params)
+                            except Exception as exc:
+                                with self.tracer.start_as_current_span(self.display, trace_flag) as my_span:
+                                    my_span.record_exception(exc)
+
                 except Exception as exc:
-                    t.LogException(exc)
+                    with self.tracer.start_as_current_span(self.display, trace_flag) as my_span:
+                        my_span.record_exception(exc)
+
         finally:
             WorkerRoot.wrks_lock.acquire()
             a_worker['run'] = False
