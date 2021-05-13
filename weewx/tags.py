@@ -10,6 +10,9 @@ from weeutil.weeutil import to_int
 import weewx.units
 from weewx.units import ValueTuple
 
+# QUETELARD
+from datetime import datetime
+
 #===============================================================================
 #                    Class TimeBinder
 #===============================================================================
@@ -166,7 +169,7 @@ class TimespanBinder(object):
         self.formatter   = formatter
         self.converter   = converter
         self.option_dict = option_dict
-
+        
     # Iterate over all records in the time period:
     def records(self):
         manager = self.db_lookup(self.data_binding)
@@ -300,7 +303,7 @@ class CurrentAggBinder(object):
         if self.accumulator and self.obs_type in self.accumulator and self.accumulator.timespan.stop == self.current_time:
             vt = weewx.units.as_value_tuple_for_agg(self.accumulator, self.obs_type, aggregate_type)
             # QUETELARD
-            print('currentagg:', self.obs_type, aggregate_type, ':', vt)
+            #print('currentagg:', self.obs_type, aggregate_type, ':', vt)
         else:
             vt = weewx.units.as_value_tuple_for_agg(None, self.obs_type, aggregate_type)
         # ... and then finally, return a ValueHelper
@@ -395,7 +398,8 @@ class ObservationBinder(object):
             raise AttributeError
 
         # QUETELARD
-        #print(self.obs_type, aggregate_type, vars(self._do_query(aggregate_type)))
+        #print(self.obs_type, aggregate_type)
+        
         return self._do_query(aggregate_type)
     
     @property

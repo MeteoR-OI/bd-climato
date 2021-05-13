@@ -106,7 +106,6 @@ class StdReportEngine(threading.Thread):
         self.start_ts = start_ts # QUETELARD
         self.gen_ts = gen_ts
         self.first_run = first_run
-        print("reportengine",self.start_ts)
 
     def run(self):
         """This is where the actual work gets done.
@@ -304,7 +303,6 @@ class ReportGenerator(object):
         self.record = record
         self.accumulator = accumulator
         self.db_binder = weewx.manager.DBBinder(self.config_dict)
-        print("generator",self.start_ts)
 
     def start(self):
         self.run()

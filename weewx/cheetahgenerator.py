@@ -264,8 +264,9 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
             return ngen
 
         if gen_ts:
+            # QUETELARD
             record = default_archive.getRecord(gen_ts,
-                                               max_delta=to_int(report_dict.get('max_delta')))
+                                            max_delta=to_int(report_dict.get('max_delta')))
             if record:
                 stop_ts = record['dateTime']
             else:
@@ -338,13 +339,13 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
                     fd.write(str(compiled_template))
                 os.rename(tmpname, _fullname)
                 ## QUETELARD
-                if _filename[0:3] == 'obs':
-                    _fullname_compil = os.path.join(dest_dir, 'compil.json')
-                    fc = open(_fullname_compil, 'a')
-                    f  = open(_fullname, 'r')
-                    shutil.copyfileobj(f, fc)
-                    fc.close()
-                    f.close()
+                #if _filename[0:3] == 'obs':
+                #    _fullname_compil = os.path.join(dest_dir, 'compil.json')
+                #    fc = open(_fullname_compil, 'a')
+                #    f  = open(_fullname, 'r')
+                #    shutil.copyfileobj(f, fc)
+                #    fc.close()
+                #    f.close()
 
             except Exception as e:
                 # We would like to get better feedback when there are cheetah
@@ -597,7 +598,7 @@ class Stats(SearchList):
             rain_year_start=self.generator.stn_info.rain_year_start,
             trend=trend_dict,
             skin_dict=self.generator.skin_dict)
-
+        
         return [stats]
 
 class UnitInfo(SearchList):

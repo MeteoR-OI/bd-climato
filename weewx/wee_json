@@ -50,13 +50,10 @@ def main():
     print "Using configuration file %s" % config_path
 
     start_d, stop_d = _parse_dates(options)
-    start_d = round(start_d)
-    stop_d  = round(stop_d)
-    
     if stop_d is None:
-        print "Generating json file from to current time"
+        print "Generating json file from %s to current time" % timestamp_to_string(start_d)
     else:
-        print "Generating from requested time"#, timestamp_to_string(stop_d)
+        print "Generating from %s to %s" % (timestamp_to_string(start_d), timestamp_to_string(stop_d))
         
     # Look for the debug flag. If set, ask for extra logging
     weewx.debug = int(config_dict.get('debug', 0))
@@ -94,7 +91,6 @@ def _parse_dates(options):
             _first_d = datetime.datetime.strptime(options.from_date, "%Y-%m-%d %H:%M")
             tuple = _first_d.timetuple()
             _first_d = time.mktime(tuple)
-            print(_first_d)
         except ValueError:
             raise ValueError("Invalid --from option specified.")
 
@@ -103,7 +99,6 @@ def _parse_dates(options):
             _last_d = datetime.datetime.strptime(options.to_date, "%Y-%m-%d %H:%M")
             tuple = _last_d.timetuple()
             _last_d = time.mktime(tuple)
-            print(_last_d)
         except ValueError:
             raise ValueError("Invalid --to option specified.")
 
