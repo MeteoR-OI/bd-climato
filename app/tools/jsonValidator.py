@@ -97,10 +97,10 @@ def checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
                 lvl = a_aggreg['level']
                 if lvl != 'H' and lvl != 'D' and lvl != 'M' and lvl != 'Y' and lvl != 'A':
                     return lvl + ' is invalid level in data[' + str(idx) + '].aggregations[' + str(idx2) + ']'
-                # if a_aggreg.__contains__('start_dat'):
-                #     tmp_dat = calcAggDate(lvl, tmp_stop_dat, 0, True)
-                #     if str(tmp_dat) != str(a_aggreg['start_dat']):
-                #         return 'aggregations start_dat: ' + str(a_aggreg['start_dat']) + ' is not the same as the computed date using the obs.stop_dat: ' + str(tmp_dat)
+                if a_aggreg.__contains__('start_dat'):
+                    tmp_dat = calcAggDate(lvl, tmp_stop_dat, 0, True)
+                    # if str(tmp_dat) != str(a_aggreg['start_dat']):
+                    #     return 'aggregations start_dat: ' + str(a_aggreg['start_dat']) + ' is not the same as the computed date using the obs.stop_dat: ' + str(tmp_dat)
                 for key in a_aggreg.__iter__():
                     if str(key).endswith('_max') or str(key).endswith('_min'):
                         if all_aggreg.__contains__(key + '_time') is False:
@@ -120,8 +120,8 @@ def checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
                     return lvl + ' is invalid level in data[' + str(idx) + '].validation[' + str(idx2) + ']'
                 if a_aggreg.__contains__('start_dat'):
                     tmp_dat = calcAggDate(lvl, tmp_stop_dat, 0, True)
-                    if str(tmp_dat) != str(a_aggreg['start_dat']):
-                        return 'validation start_dat: ' + str(a_aggreg['start_dat']) + ' is not the same as the computed date using the obs.stop_dat: ' + str(tmp_dat)
+                    # if str(tmp_dat) != str(a_aggreg['start_dat']):
+                    #     return 'validation start_dat: ' + str(a_aggreg['start_dat']) + ' is not the same as the computed date using the obs.stop_dat: ' + str(tmp_dat)
                 for key in all_validations[idx2].__iter__():
                     if str(key).endswith('_max') or str(key).endswith('_min'):
                         if all_validations[idx2].__contains__(key + '_time') is False:
