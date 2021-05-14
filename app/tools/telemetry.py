@@ -1,7 +1,4 @@
-# from django.db import transaction
-# from app.tools.jsonPlus import JsonPlus
 import json
-
 from opentelemetry import trace
 from opentelemetry.exporter.jaeger.proto import grpc
 from opentelemetry.sdk.trace import TracerProvider, Tracer
@@ -22,8 +19,8 @@ class SpanMok:
     ctx = ContextMok()
 
     def __init__(self, name: str = "???", trace_flag: bool = None):
-        if hasattr(settings, 'TELEMETRY') is True and settings.TELEMETRY is True:
-            raise Exception('SpanMok', 'Calling Mok while telemetry is active')
+        if hasattr(settings, "TELEMETRY") is True and settings.TELEMETRY is True:
+            raise Exception("SpanMok", "Calling Mok while telemetry is active")
         self.name = name
         self.trace = trace_flag
         self.atts = []
@@ -38,16 +35,16 @@ class SpanMok:
         print("Span: " + self.name)
         print_out = ""
         for an_att in self.atts:
-            print_out += (str(an_att['k']) + ': ' + str(an_att['v']) + ', ')
+            print_out += str(an_att["k"]) + ": " + str(an_att["v"]) + ", "
         self.atts = []
         if print_out.__len__() > 2:
-            print('     attributes: ' + print_out[0:-2])
+            print("     attributes: " + print_out[0:-2])
             print_out = ""
         for an_att in self.events:
-            print_out += (str(an_att['en']) + ': ' + str(an_att['e']) + ', ')
+            print_out += str(an_att["en"]) + ": " + str(an_att["e"]) + ", "
         self.atts = []
         if print_out.__len__() > 2:
-            print('     events: ' + print_out[0:-2])
+            print("     events: " + print_out[0:-2])
             print_out = ""
         return
 
@@ -64,14 +61,14 @@ class SpanMok:
         return
 
     def set_attribute(self, k: str, v):
-        if hasattr(settings, 'TELEMETRY') is False or settings.TELEMETRY is False:
+        if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
             if k == "file_processed":
                 v = str(v).split("/")[-1::1][0]
             self.atts.append({"k": k, "v": v})
         return
 
     def add_event(self, event_name: str, j_val: json):
-        if hasattr(settings, 'TELEMETRY') is False or settings.TELEMETRY is False:
+        if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
             self.events.append({"en": event_name, "e": j_val})
         return
 
@@ -82,11 +79,11 @@ class SpanMok:
 class TracerTriage:
     def __init__(self, tracer: Tracer = None):
         self.current_span = None
-        if hasattr(settings, 'TELEMETRY') is False or settings.TELEMETRY is False:
+        if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
             self.real_tracer = self
         else:
             if tracer is None:
-                raise Exception('TracerTriage', 'no tracer given')
+                raise Exception("TracerTriage", "no tracer given")
             self.real_tracer = tracer
 
     def __enter__(self):
@@ -100,7 +97,7 @@ class TracerTriage:
         return
 
     def get_current_or_new_span(self, name: str = "???", trace_flag: bool = None):
-        if hasattr(settings, 'TELEMETRY') is False or settings.TELEMETRY is False:
+        if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
             if self.current_span is None:
                 return SpanMok(name)
             return self.current_span
@@ -112,21 +109,21 @@ class TracerTriage:
             return tmp_span
 
     def start_as_current_span(self, span_name: str, trace_flag: bool = None) -> Span:
-        if hasattr(settings, 'TELEMETRY') is False or settings.TELEMETRY is False:
+        if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
             self.current_span = SpanMok(span_name, trace_flag)
             self.trace = trace_flag
             if trace_flag is None:
-                print('   ** trace_flag is None')
+                print("   ** trace_flag is None")
             return self.current_span
         else:
             return self.real_tracer.start_as_current_span(span_name)
 
     def start_span(self, span_name: str, trace_flag: bool = None) -> Span:
-        if hasattr(settings, 'TELEMETRY') is False or settings.TELEMETRY is False:
+        if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
             self.current_span = SpanMok(span_name, trace_flag)
             self.trace = trace_flag
             if trace_flag is None:
-                print('   ** trace_flag is None')
+                print("   ** trace_flag is None")
             return self.current_span
         else:
             return self.real_tracer.start_span(span_name)
@@ -138,7 +135,7 @@ class Telemetry:
     @staticmethod
     def Start(service_name: str, caller_name: str = __name__):
         if Telemetry.tracer is None:
-            if hasattr(settings, 'TELEMETRY') is False or settings.TELEMETRY is False:
+            if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
                 return TracerTriage()
 
             trace.set_tracer_provider(
@@ -157,7 +154,7 @@ class Telemetry:
 
             jaeger_exporter = grpc.JaegerExporter(
                 collector_endpoint=TelemetryConf.get("collector"),
-                insecure=TelemetryConf.get('insecure')
+                insecure=TelemetryConf.get("insecure"),
             )
 
             # create a BatchSpanProcessor and add the exporter to it
