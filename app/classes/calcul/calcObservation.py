@@ -249,7 +249,7 @@ class CalcObs(AllCalculus):
                 load_span.set_attribute("filename", filename)
                 yield {"f": filename, "j": my_json}
                 load_span.end()
-                t.logInfo("file loaded in Obs", {"filename": filename})
+                t.logInfo("file loaded in Obs", None, {"filename": filename})
                 return
 
             # content to load from the server
