@@ -83,8 +83,8 @@ def _logMe(message: str, level: str = None, my_span: Span = None, params: json =
     if stack_info.__len__() > 0:
         log_j['stack'] = stack_info
     # add trace_id
-    if trace_id != 'no_trace_id':
-        log_j['trace_id'] = trace_id
+    if trace_id != 'no_trace_id' and trace_id is not None and trace_id != 0:
+        log_j['trace_id'] = format(trace_id, 'x')
     # add our json Keys/Values
     for k, v in params.items():
         log_j[k] = v

@@ -16,6 +16,9 @@
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/manage.py",
+            "autoReload": {
+                "enable": true
+            },
             "args": [
                 "runserver"
             ],

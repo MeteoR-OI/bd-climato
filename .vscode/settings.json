@@ -1,5 +1,5 @@
 {
-    "python.languageServer": "Pylance",
+    "python.languageServer":"Default",
     "python.terminal.activateEnvironment":true,
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
@@ -43,5 +43,6 @@
         ]
     },
     "coverage-gutters.showLineCoverage": false,
-    "coverage-gutters.showRulerCoverage": false
+    "coverage-gutters.showRulerCoverage": false,
+    "python.formatting.provider": "black"
 }

@@ -108,6 +108,7 @@ class TracerTriage:
             tmp_span = get_current_span()
             if tmp_span == INVALID_SPAN:
                 tmp_span = self.start_as_current_span(name, trace_flag)
+                tmp_span = get_current_span()
             return tmp_span
 
     def start_as_current_span(self, span_name: str, trace_flag: bool = None) -> Span:
@@ -142,7 +143,7 @@ class Telemetry:
 
             trace.set_tracer_provider(
                 TracerProvider(
-                    resource=Resource.create({SERVICE_NAME: "django6"})
+                    resource=Resource.create({SERVICE_NAME: "Climato"})
                     # resource=Resource.create({SERVICE_NAME: service_name})
                 )
             )
