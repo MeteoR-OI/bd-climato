@@ -60,7 +60,7 @@ class SpanMok:
         return
 
     def record_exception(self, exc: Exception):
-        t.LogException(exc, self, 2)
+        t.LogException(exc, self, {})
         return
 
     def set_attribute(self, k: str, v):
