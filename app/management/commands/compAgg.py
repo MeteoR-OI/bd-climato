@@ -135,8 +135,8 @@ class Command(BaseCommand):
                         if my_tmp_agg is not None:
                             for k, v in my_tmp_agg.j.items():
                                 k_processed.append(k)
-                                # if str(v) == str(my_agg.j.get(k)):
-                                #     continue
+                                if str(v) == str(my_agg.j.get(k)):
+                                    continue
                                 cols = []
                                 cols.append(k)
                                 if my_agg.j.get(k) is None:
@@ -172,7 +172,8 @@ class Command(BaseCommand):
                                 if tmp_f2 is None:
                                     tmp_f2 = line[2]
                                 if str(tmp_f1) == str(tmp_f2):
-                                    self.display_line('   ' + line[0], '          OK', '          OK')
+                                    self.display_line('   ' + line[0], '  ', '  ', line[1])
+                                    # self.display_line('   ' + line[0], '          OK', '          OK', line[1])
                                 else:
                                     self.display_line('   ' + line[0], line[1], line[2])
                         # else:
@@ -223,9 +224,9 @@ class Command(BaseCommand):
         #     for k, v in one_agg.j.items():
         #         display_line('   ' + k, '', str(v))
 
-    def display_line(self, key, agg_val, tmp_agg_val):
+    def display_line(self, key, agg_val, tmp_agg_val, tmp_common: str = ''):
         try:
-            self.display("{:<30}".format(str(key))[0:30] + " I " + "{:<30}".format(str(agg_val))[0:30] + " I " + "{:<30}".format(str(tmp_agg_val))[0:30])
+            self.display("{:<30}".format(str(key))[0:30] + " I " + "{:<30}".format(str(agg_val))[0:30] + " I " + "{:<30}".format(str(tmp_common))[0:30] + " I " + "{:<30}".format(str(tmp_agg_val))[0:30])
 
         except Exception as e:
             if e.__dict__.__len__() == 0 or 'done' not in e.__dict__:
@@ -245,10 +246,13 @@ class Command(BaseCommand):
         try:
             # level = my_agg.getLevel()
             tirets = '---------------------------------------------------------------------------------'
-            self.display_line(tirets, tirets, tirets)
-            self.display_line('      key', '      agg_' + level, '      tmp_agg_' + level)
-            self.display_line(tirets, tirets, tirets)
-            self.display_line('start_dat', str(agg_data), str(tmp_agg_data))
+            self.display_line(tirets, tirets, tirets, tirets)
+            self.display_line('        key', '         agg_' + level + ' only', '       tmp_agg_' + level + ' only', '       both')
+            self.display_line(tirets, tirets, tirets, tirets)
+            if str(agg_data) == str(tmp_agg_data):
+                self.display_line('start_dat', ' ', ' ', str(tmp_agg_data))
+            else:    
+                self.display_line('start_dat', str(agg_data), str(tmp_agg_data))
         except Exception as e:
             if e.__dict__.__len__() == 0 or 'done' not in e.__dict__:
                 exception_type, exception_object, exception_traceback = sys.exc_info()
