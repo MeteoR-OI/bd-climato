@@ -3,7 +3,55 @@ from app.tools.jsonPlus import JsonPlus
 import datetime
 
 jp = JsonPlus()
-z = jp.json_test()
+z = """
+        {
+            "meteor" : "BBF015",
+            "info" : {
+                "blabla": "blabla"
+            },
+            "data":
+            [
+                {
+                    "current":
+                        {
+                            "dat" : "2021-02-11T13:09:30",
+                            "duration" : 5,
+                            "out_temp" : 29.5,
+                            "out_temp_max": 30.1,
+                            "out_temp_max_time": "2021-02-11T13:09:32"
+                        },
+                    "aggregations": [
+                        {
+                            "level" : "H",
+                            "out_temp_avg" : 32.75
+                        },
+                        {
+                            "level" : "D",
+                            "rain_rate_avg" : 1.23
+                        }
+                    ]
+                },
+                {
+                    "current" :
+                        {
+                            "dat" : "2021-02-11T13:09:40",
+                            "duration" : 5,
+                            "out_temp" : 30
+                        },
+                    "aggregations" : [
+                        {
+                            "level" : "H",
+                            "out_temp_avg" : 33
+                        },
+                        {
+                            "level" : "D",
+                            "rain_rate_avg" : 1.23
+                        }
+                    ]
+                }
+            ]
+        }
+    """
 
 
 @pytest.mark.unit

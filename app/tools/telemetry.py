@@ -1,90 +1,211 @@
-import json
+from app.tools.climConstant import TelemetryConf
+from django.conf import settings
 from opentelemetry import trace
 from opentelemetry.exporter.jaeger.proto import grpc
+from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider, Tracer
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.sdk.resources import SERVICE_NAME, Resource
-from app.tools.climConstant import TelemetryConf
-from opentelemetry.trace.span import INVALID_SPAN, Span
 from opentelemetry.trace.propagation import get_current_span
+from opentelemetry.trace.span import INVALID_SPAN, Span
 import app.tools.myTools as t
-from django.conf import settings
+import json
+import sys
 
 
 class ContextMok:
+    """
+    ContextMok
+        Mok class to simulate context class when no telemetry is used
+    """
     trace_id = None
 
 
 class SpanMok:
+    """
+    SpanMok
+        Mok class to simulate Span class when no telemetry is used
+    """
     ctx = ContextMok()
 
     def __init__(self, name: str = "???", trace_flag: bool = None):
-        if hasattr(settings, "TELEMETRY") is True and settings.TELEMETRY is True:
-            raise Exception("SpanMok", "Calling Mok while telemetry is active")
-        self.name = name
-        self.trace = trace_flag
-        self.atts = []
-        self.events = []
+        """
+            __init__
+
+            Parameters:
+                name: span name
+                trace_flag
+        """
+        try:
+            if hasattr(settings, "TELEMETRY") is True and settings.TELEMETRY is True:
+                raise Exception("SpanMok", "Calling Mok while telemetry is active")
+            self.name = name
+            self.trace = trace_flag
+            self.atts = []
+            self.events = []
+        except Exception as e:
+            if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
+                exception_type, exception_object, exception_traceback = sys.exc_info()
+                exception_info = e.__repr__()
+                filename = exception_traceback.tb_frame.f_code.co_filename
+                line_number = exception_traceback.tb_lineno
+                e.info = {
+                    "i": str(exception_info),
+                    "f": filename,
+                    "l": line_number,
+                }
+                e.done = True
+            raise e
 
     def __enter__(self):
+        """
+        __enter__
+
+        start of a with statement support
+        """
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.trace is False:
+        """
+        __exit__
+
+        end of a with statement. print out data if no telemetry is used
+        """
+        try:
+            if self.trace is False:
+                return
+            print("Span: " + self.name)
+            print_out = ""
+            for an_att in self.atts:
+                print_out += str(an_att["k"]) + ": " + str(an_att["v"]) + ", "
+            self.atts = []
+            if print_out.__len__() > 2:
+                print("     attributes: " + print_out[0:-2])
+                print_out = ""
+            for an_att in self.events:
+                print_out += str(an_att["en"]) + ": " + str(an_att["e"]) + ", "
+            self.atts = []
+            if print_out.__len__() > 2:
+                print("     events: " + print_out[0:-2])
+                print_out = ""
             return
-        print("Span: " + self.name)
-        print_out = ""
-        for an_att in self.atts:
-            print_out += str(an_att["k"]) + ": " + str(an_att["v"]) + ", "
-        self.atts = []
-        if print_out.__len__() > 2:
-            print("     attributes: " + print_out[0:-2])
-            print_out = ""
-        for an_att in self.events:
-            print_out += str(an_att["en"]) + ": " + str(an_att["e"]) + ", "
-        self.atts = []
-        if print_out.__len__() > 2:
-            print("     events: " + print_out[0:-2])
-            print_out = ""
-        return
+        except Exception as e:
+            if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
+                exception_type, exception_object, exception_traceback = sys.exc_info()
+                exception_info = e.__repr__()
+                filename = exception_traceback.tb_frame.f_code.co_filename
+                line_number = exception_traceback.tb_lineno
+                e.info = {
+                    "i": str(exception_info),
+                    "f": filename,
+                    "l": line_number,
+                }
+                e.done = True
+            raise e
 
     def __end__(self):
+        """
+        __end__
+
+        Not sure if this method is called...
+        """
         self.__exit__(1, 2, 3)
         return
 
     def end(self):
+        """
+        end
+            Dump of a span
+        """
         self.__exit__(1, 2, 3)
         return
 
     def record_exception(self, exc: Exception):
+        """
+        record_exception
+            add an exception in the Span
+        """
         t.LogException(exc, self)
         return
 
     def set_attribute(self, k: str, v):
-        if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
-            if k == "file_processed":
-                v = str(v).split("/")[-1::1][0]
-            self.atts.append({"k": k, "v": v})
-        return
+        """
+        set_attribute
+            Add an attribute in the span
+        """
+        try:
+            if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
+                if k == "file_processed":
+                    v = str(v).split("/")[-1::1][0]
+                self.atts.append({"k": k, "v": v})
+            return
+        except Exception as e:
+            if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
+                exception_type, exception_object, exception_traceback = sys.exc_info()
+                exception_info = e.__repr__()
+                filename = exception_traceback.tb_frame.f_code.co_filename
+                line_number = exception_traceback.tb_lineno
+                e.info = {
+                    "i": str(exception_info),
+                    "f": filename,
+                    "l": line_number,
+                }
+                e.done = True
+            raise e
 
     def add_event(self, event_name: str, j_val: json):
-        if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
-            self.events.append({"en": event_name, "e": j_val})
-        return
+        """
+        add_event
+            Add event in the span
+        """
+        try:
+            if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
+                self.events.append({"en": event_name, "e": j_val})
+            return
+        except Exception as e:
+            if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
+                exception_type, exception_object, exception_traceback = sys.exc_info()
+                exception_info = e.__repr__()
+                filename = exception_traceback.tb_frame.f_code.co_filename
+                line_number = exception_traceback.tb_lineno
+                e.info = {
+                    "i": str(exception_info),
+                    "f": filename,
+                    "l": line_number,
+                }
+                e.done = True
+            raise e
 
     def get_span_context(self):
         return self.ctx
 
 
 class TracerTriage:
+    """
+    TracerTriage
+        Call the real tracer, or our Mok implementation
+    """
     def __init__(self, tracer: Tracer = None):
-        self.current_span = None
-        if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
-            self.real_tracer = self
-        else:
-            if tracer is None:
-                raise Exception("TracerTriage", "no tracer given")
-            self.real_tracer = tracer
+        try:
+            self.current_span = None
+            if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
+                self.real_tracer = self
+            else:
+                if tracer is None:
+                    raise Exception("TracerTriage", "no tracer given")
+                self.real_tracer = tracer
+        except Exception as e:
+            if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
+                exception_type, exception_object, exception_traceback = sys.exc_info()
+                exception_info = e.__repr__()
+                filename = exception_traceback.tb_frame.f_code.co_filename
+                line_number = exception_traceback.tb_lineno
+                e.info = {
+                    "i": str(exception_info),
+                    "f": filename,
+                    "l": line_number,
+                }
+                e.done = True
+            raise e
 
     def __enter__(self):
         return self
@@ -97,71 +218,162 @@ class TracerTriage:
         return
 
     def get_current_or_new_span(self, name: str = "???", trace_flag: bool = None):
-        if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
-            if self.current_span is None:
-                return SpanMok(name)
-            return self.current_span
-        else:
-            tmp_span = get_current_span()
-            if tmp_span == INVALID_SPAN:
-                tmp_span = self.start_as_current_span(name, trace_flag)
+        """
+        get_current_or_new_span
+            Get current span if one is active, or start a new one
+
+        Parameter:
+            name: span name (only used if a new span is started)
+            trace_flag(only used if a new span is started)
+        """
+        try:
+            if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
+                if self.current_span is None:
+                    return SpanMok(name)
+                return self.current_span
+            else:
                 tmp_span = get_current_span()
-            return tmp_span
+                if tmp_span == INVALID_SPAN:
+                    tmp_span = self.start_as_current_span(name, trace_flag)
+                    tmp_span = get_current_span()
+                return tmp_span
+        except Exception as e:
+            if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
+                exception_type, exception_object, exception_traceback = sys.exc_info()
+                exception_info = e.__repr__()
+                filename = exception_traceback.tb_frame.f_code.co_filename
+                line_number = exception_traceback.tb_lineno
+                e.info = {
+                    "i": str(exception_info),
+                    "f": filename,
+                    "l": line_number,
+                }
+                e.done = True
+            raise e
 
     def start_as_current_span(self, span_name: str, trace_flag: bool = None) -> Span:
-        if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
-            self.current_span = SpanMok(span_name, trace_flag)
-            self.trace = trace_flag
-            if trace_flag is None:
-                print("   ** trace_flag is None")
-            return self.current_span
-        else:
-            return self.real_tracer.start_as_current_span(span_name)
+        """
+        start_as_current_span
+            start a new Span
+
+        Parameter:
+            name: span name
+            trace_flag
+        """
+        try:
+            if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
+                self.current_span = SpanMok(span_name, trace_flag)
+                self.trace = trace_flag
+                if trace_flag is None:
+                    print("   ** trace_flag is None")
+                return self.current_span
+            else:
+                return self.real_tracer.start_as_current_span(span_name)
+        except Exception as e:
+            if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
+                exception_type, exception_object, exception_traceback = sys.exc_info()
+                exception_info = e.__repr__()
+                filename = exception_traceback.tb_frame.f_code.co_filename
+                line_number = exception_traceback.tb_lineno
+                e.info = {
+                    "i": str(exception_info),
+                    "f": filename,
+                    "l": line_number,
+                }
+                e.done = True
+            raise e
 
     def start_span(self, span_name: str, trace_flag: bool = None) -> Span:
-        if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
-            self.current_span = SpanMok(span_name, trace_flag)
-            self.trace = trace_flag
-            if trace_flag is None:
-                print("   ** trace_flag is None")
-            return self.current_span
-        else:
-            return self.real_tracer.start_span(span_name)
+        """
+        start_span
+            start a sub span of the current span
+
+        Parameter:
+            name: span name
+            trace_flag
+        """
+        try:
+            if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
+                self.current_span = SpanMok(span_name, trace_flag)
+                self.trace = trace_flag
+                if trace_flag is None:
+                    print("   ** trace_flag is None")
+                return self.current_span
+            else:
+                return self.real_tracer.start_span(span_name)
+        except Exception as e:
+            if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
+                exception_type, exception_object, exception_traceback = sys.exc_info()
+                exception_info = e.__repr__()
+                filename = exception_traceback.tb_frame.f_code.co_filename
+                line_number = exception_traceback.tb_lineno
+                e.info = {
+                    "i": str(exception_info),
+                    "f": filename,
+                    "l": line_number,
+                }
+                e.done = True
+            raise e
 
 
 class Telemetry:
+    """
+        static class to activate telemetry in a module
+    """
     tracer: Tracer = None
 
     @staticmethod
     def Start(service_name: str, caller_name: str = __name__):
-        if Telemetry.tracer is None:
-            if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
-                return TracerTriage()
+        """
+        Start
+            Activate telemetry
 
-            trace.set_tracer_provider(
-                TracerProvider(
-                    resource=Resource.create({SERVICE_NAME: "Climato"})
-                    # resource=Resource.create({SERVICE_NAME: service_name})
+        Parameters:
+            service_name
+            called_name (use __name__ in caller)
+        """
+        try:
+            if Telemetry.tracer is None:
+                if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
+                    return TracerTriage()
+
+                trace.set_tracer_provider(
+                    TracerProvider(
+                        resource=Resource.create({SERVICE_NAME: "Climato"})
+                        # resource=Resource.create({SERVICE_NAME: service_name})
+                    )
                 )
-            )
-            tracer = trace.get_tracer(__name__)
+                tracer = trace.get_tracer(__name__)
 
-            # Create a JaegerExporter to send spans with gRPC
-            # If there is no encryption or authentication set `insecure` to True
-            # If server has authentication with SSL/TLS you can set the
-            # parameter credentials=ChannelCredentials(...) or the environment variable
-            # `EXPORTER_JAEGER_CERTIFICATE` with file containing creds.
+                # Create a JaegerExporter to send spans with gRPC
+                # If there is no encryption or authentication set `insecure` to True
+                # If server has authentication with SSL/TLS you can set the
+                # parameter credentials=ChannelCredentials(...) or the environment variable
+                # `EXPORTER_JAEGER_CERTIFICATE` with file containing creds.
 
-            jaeger_exporter = grpc.JaegerExporter(
-                collector_endpoint=TelemetryConf.get("collector"),
-                insecure=TelemetryConf.get("insecure"),
-            )
+                jaeger_exporter = grpc.JaegerExporter(
+                    collector_endpoint=TelemetryConf.get("collector"),
+                    insecure=TelemetryConf.get("insecure"),
+                )
 
-            # create a BatchSpanProcessor and add the exporter to it
-            span_processor = BatchSpanProcessor(jaeger_exporter)
+                # create a BatchSpanProcessor and add the exporter to it
+                span_processor = BatchSpanProcessor(jaeger_exporter)
 
-            # add to the tracer factory
-            trace.get_tracer_provider().add_span_processor(span_processor)
-            Telemetry.tracer = tracer
+                # add to the tracer factory
+                trace.get_tracer_provider().add_span_processor(span_processor)
+                Telemetry.tracer = tracer
 
-        return TracerTriage(Telemetry.tracer)
+            return TracerTriage(Telemetry.tracer)
+        except Exception as e:
+            if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
+                exception_type, exception_object, exception_traceback = sys.exc_info()
+                exception_info = e.__repr__()
+                filename = exception_traceback.tb_frame.f_code.co_filename
+                line_number = exception_traceback.tb_lineno
+                e.info = {
+                    "i": str(exception_info),
+                    "f": filename,
+                    "l": line_number,
+                }
+                e.done = True
+            raise e
