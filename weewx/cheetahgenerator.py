@@ -85,7 +85,7 @@ default_search_list = [
     "weewx.cheetahgenerator.Station",
     "weewx.cheetahgenerator.Current",
     "weewx.cheetahgenerator.CurrentAgg", # QUETELARD
-    "weewx.cheetahgenerator.JsonStart", # QUETELARD
+    "weewx.cheetahgenerator.Json", # QUETELARD
     "weewx.cheetahgenerator.Stats",
     "weewx.cheetahgenerator.UnitInfo",
     "weewx.cheetahgenerator.Extras"]
@@ -570,12 +570,19 @@ class CurrentAgg(SearchList):
                                                 accumulator=self.generator.accumulator)
         return [accumulator_binder]
 
-class JsonStart(SearchList):
-    """Class that implements the $startjson tag"""
-     
+class Json(SearchList):
+    """Class that implements the $json tags"""
+    
     def __init__(self, generator):
         SearchList.__init__(self, generator)
-        self.jsonstart = generator.start_ts
+        self.json = JsonObj(generator)
+
+class JsonObj(object):
+
+    def __init__(self, generator):
+        self.start = generator.start_ts
+        self.validation = generator.js_valid
+        self.currents = generator.js_curr
 
 class Stats(SearchList):
     """Class that implements the time-based statistical tags, such

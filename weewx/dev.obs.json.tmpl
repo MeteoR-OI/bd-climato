@@ -88,7 +88,7 @@ LOW#slurp
   "data":
      [
 #set $datetime_cur = datetime.fromtimestamp($current.dateTime.raw)
-#set $time_period = $current.dateTime.raw - $jsonstart
+#set $time_period = $current.dateTime.raw - $json.start
 ##$time_period,
 #set $start = 1 ## indique debut de la boucle sur les currents
 #set $uptime = round($station.uptime.raw) ## temps passe depuis demarrage weewx
