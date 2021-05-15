@@ -46,7 +46,7 @@ class CalcAggreg(AllCalculus):
     def ComputeAggregCall(self, is_tmp: bool = False, trace_flag: bool = False):
         self._computeAggreg(is_tmp, trace_flag)
 
-    def _computeAggreg(self, is_tmp: bool, trace_flag: bool):
+    def _computeAggreg(self, is_tmp_called: bool, trace_flag: bool):
         """
         _computeAggreg
 
@@ -55,9 +55,11 @@ class CalcAggreg(AllCalculus):
         send the delta values to all aggregations related to our measure
         """
         while True:
+            is_tmp = is_tmp_called
             a_todo = AggTodoMeteor.popOne(is_tmp)
             if a_todo is None:
-                a_todo = AggTodoMeteor.popOne(not is_tmp)
+                is_tmp = not is_tmp
+                a_todo = AggTodoMeteor.popOne(is_tmp)
                 if a_todo is None:
                     # no more data to update, return to sleep
                     return
