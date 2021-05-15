@@ -2,6 +2,8 @@ from django.core.management.base import BaseCommand
 from app.tools.dateTools import str_to_date
 from app.classes.repository.aggMeteor import AggMeteor
 from app.classes.repository.posteMeteor import PosteMeteor
+import app.tools.myTools as t
+import sys
 import datetime
 
 
@@ -56,112 +58,127 @@ class Command(BaseCommand):
 
 
 def analyseAggreg(poste_id: int, from_dt: datetime, to_dt: datetime, disp_details: bool, disp_level: str):
-    p = PosteMeteor(poste_id)
-    agg_done = tmp_agg_done = False
-    for level in ['H', 'D', 'M', 'Y', 'A']:
-        if disp_level == '*' or disp_level == level:
-            display('Poste ' + p.data.meteor + ' level: ' + disp_level)
+    try:
+        p = PosteMeteor(poste_id)
+        agg_done = tmp_agg_done = False
+        for level in ['H', 'D', 'M', 'Y', 'A']:
+            if disp_level == '*' or disp_level == level:
+                display('Poste ' + p.data.meteor + ' level: ' + disp_level)
 
-            tmp_agg_obj = AggMeteor.GetAggObj(level + 'T')
-            agg_obj = AggMeteor.GetAggObj(level)
+                tmp_agg_obj = AggMeteor.GetAggObj(level + 'T')
+                agg_obj = AggMeteor.GetAggObj(level)
 
-            all_agg = agg_obj.objects.filter(poste_id_id=poste_id).order_by("start_dat").all()
-            all_tmp_agg = tmp_agg_obj.objects.filter(poste_id_id=poste_id).order_by("start_dat").all()
+                all_agg = agg_obj.objects.filter(poste_id_id=poste_id).order_by("start_dat").all()
+                all_tmp_agg = tmp_agg_obj.objects.filter(poste_id_id=poste_id).order_by("start_dat").all()
 
-            idx = idx_tmp = 0
-            nb_agg = all_agg.count()
-            nb_tmp_agg = all_tmp_agg.count()
-            max_idx = max(nb_agg, nb_tmp_agg)
-            while (max(idx, idx_tmp) < max_idx):
-                if idx >= nb_agg:
-                    agg_done = True
-                    display_missing_agg(all_tmp_agg[idx_tmp], level, disp_details)
-                    idx_tmp += 1
-                    continue
-
-                if idx_tmp >= nb_tmp_agg:
-                    tmp_agg_done = True
-                    display_missing_tmp_agg(all_agg[idx], level, disp_details)
-                    idx += 1
-                    continue
-
-                my_agg = all_agg[idx]
-                my_tmp_agg = all_tmp_agg[idx_tmp]
-
-                if str(my_agg.start_dat) < str(from_dt):
-                    idx += 1
-                    continue
-                if str(my_agg.start_dat) > str(to_dt):
-                    agg_done = True
-
-                if str(my_tmp_agg.start_dat) < str(from_dt):
-                    idx_tmp += 1
-                    continue
-                if str(my_tmp_agg.start_dat) > str(to_dt):
-                    tmp_agg_done = True
-
-                if str(my_agg.start_dat) < str(my_tmp_agg.start_dat):
-                    display_missing_tmp_agg(my_agg, level, disp_details)
-                    idx += 1
-                    continue
-
-                if str(my_agg.start_dat) > str(my_tmp_agg.start_dat):
-                    display_missing_agg(my_tmp_agg, level, disp_details)
-                    idx_tmp += 1
-                    continue
-
-                if agg_done is True and tmp_agg_done is True:
-                    break
-
-                k_processed = []
-                data_output = []
-
-                # process values in agg
-                for k, v in my_tmp_agg.j.items():
-                    k_processed.append(k)
-                    if str(v) == str(my_agg.j.get(k)):
+                idx = idx_tmp = 0
+                nb_agg = all_agg.count()
+                nb_tmp_agg = all_tmp_agg.count()
+                max_idx = max(nb_agg, nb_tmp_agg)
+                while (max(idx, idx_tmp) < max_idx):
+                    if idx >= nb_agg:
+                        agg_done = True
+                        display_missing_agg(all_tmp_agg[idx_tmp], level, disp_details)
+                        idx_tmp += 1
                         continue
-                    cols = []
-                    cols.append(k)
-                    if my_agg.j.get(k) is None:
-                        cols.append('')
-                    else:
-                        cols.append(str(my_agg.j.get(k)))
-                    cols.append(str(v))
-                    data_output.append(cols)
 
-                # ad values in agg, not in tmp_agg
-                for k, v in my_agg.j.items():
-                    if k not in k_processed:
+                    if idx_tmp >= nb_tmp_agg:
+                        tmp_agg_done = True
+                        display_missing_tmp_agg(all_agg[idx], level, disp_details)
+                        idx += 1
+                        continue
+
+                    my_agg = all_agg[idx]
+                    my_tmp_agg = all_tmp_agg[idx_tmp]
+
+                    if str(my_agg.start_dat) < str(from_dt):
+                        idx += 1
+                        continue
+                    if str(my_agg.start_dat) > str(to_dt):
+                        agg_done = True
+
+                    if str(my_tmp_agg.start_dat) < str(from_dt):
+                        idx_tmp += 1
+                        continue
+                    if str(my_tmp_agg.start_dat) > str(to_dt):
+                        tmp_agg_done = True
+
+                    if str(my_agg.start_dat) < str(my_tmp_agg.start_dat):
+                        display_missing_tmp_agg(my_agg, level, disp_details)
+                        idx += 1
+                        continue
+
+                    if str(my_agg.start_dat) > str(my_tmp_agg.start_dat):
+                        display_missing_agg(my_tmp_agg, level, disp_details)
+                        idx_tmp += 1
+                        continue
+
+                    if agg_done is True and tmp_agg_done is True:
+                        break
+
+                    k_processed = []
+                    data_output = []
+
+                    # process values in agg
+                    for k, v in my_tmp_agg.j.items():
+                        k_processed.append(k)
+                        if str(v) == str(my_agg.j.get(k)):
+                            continue
                         cols = []
                         cols.append(k)
-                        cols.append(str(v))
-                        cols.append('')
-                        data_output.append(cols)
-                if data_output.__len__() > 0:
-                    display_hdr(my_agg.start_dat, my_tmp_agg.start_dat, level)
-                    # data_sorted = data_output.sort(key=lambda x: x[0])
-                    data_sorted = sorted(data_output, key=lambda x: x[0])
-                    for line in data_sorted:
-                        if str(line[0]).endswith('_s'):
-                            continue
-                        if str(line[0]).endswith('_duration'):
-                            continue
-                        tmp_f1 = is_float_try(line[1])
-                        if tmp_f1 is None:
-                            tmp_f1 = line[1]
-                        tmp_f2 = is_float_try(line[2])
-                        if tmp_f2 is None:
-                            tmp_f2 = line[2]
-                        if str(tmp_f1) == str(tmp_f2):
-                            display_line('   ' + line[0], '          OK', '          OK')
+                        if my_agg.j.get(k) is None:
+                            cols.append('')
                         else:
-                            display_line('   ' + line[0], line[1], line[2])
-                # else:
-                #     display_line('start_dat', my_agg.start_dat, ' ** OK **')
+                            cols.append(str(my_agg.j.get(k)))
+                        cols.append(str(v))
+                        data_output.append(cols)
 
-                idx += 1
-                idx_tmp += 1
+                    # ad values in agg, not in tmp_agg
+                    for k, v in my_agg.j.items():
+                        if k not in k_processed:
+                            cols = []
+                            cols.append(k)
+                            cols.append(str(v))
+                            cols.append('')
+                            data_output.append(cols)
+                    if data_output.__len__() > 0:
+                        display_hdr(my_agg.start_dat, my_tmp_agg.start_dat, level)
+                        # data_sorted = data_output.sort(key=lambda x: x[0])
+                        data_sorted = sorted(data_output, key=lambda x: x[0])
+                        for line in data_sorted:
+                            if str(line[0]).endswith('_s'):
+                                continue
+                            if str(line[0]).endswith('_duration'):
+                                continue
+                            tmp_f1 = is_float_try(line[1])
+                            if tmp_f1 is None:
+                                tmp_f1 = line[1]
+                            tmp_f2 = is_float_try(line[2])
+                            if tmp_f2 is None:
+                                tmp_f2 = line[2]
+                            if str(tmp_f1) == str(tmp_f2):
+                                display_line('   ' + line[0], '          OK', '          OK')
+                            else:
+                                display_line('   ' + line[0], line[1], line[2])
+                    # else:
+                    #     display_line('start_dat', my_agg.start_dat, ' ** OK **')
+
+                    idx += 1
+                    idx_tmp += 1
+
+    except Exception as e:
+        if e.__dict__.__len__() == 0 or 'done' not in e.__dict__:
+            exception_type, exception_object, exception_traceback = sys.exc_info()
+            exception_info = e.__repr__()
+            filename = exception_traceback.tb_frame.f_code.co_filename
+            line_number = exception_traceback.tb_lineno
+            e.info = {
+                "i": str(exception_info),
+                "f": filename,
+                "l": line_number,
+            }
+            e.done = True
+        t.Lo
 
 
 def is_float_try(str):
@@ -192,13 +209,42 @@ def display_missing_agg(tmp_agg: AggMeteor, level: str, disp_details: bool):
 
 
 def display_line(key, agg_val, tmp_agg_val):
-    display("{:<30}".format(str(key))[0:30] + " I " + "{:<30}".format(str(agg_val))[0:30] + " I " + "{:<30}".format(str(tmp_agg_val))[0:30])
+    try:
+        display("{:<30}".format(str(key))[0:30] + " I " + "{:<30}".format(str(agg_val))[0:30] + " I " + "{:<30}".format(str(tmp_agg_val))[0:30])
+
+    except Exception as e:
+        if e.__dict__.__len__() == 0 or 'done' not in e.__dict__:
+            exception_type, exception_object, exception_traceback = sys.exc_info()
+            exception_info = e.__repr__()
+            filename = exception_traceback.tb_frame.f_code.co_filename
+            line_number = exception_traceback.tb_lineno
+            e.info = {
+                "i": str(exception_info),
+                "f": filename,
+                "l": line_number,
+            }
+            e.done = True
+        raise e
 
 
 def display_hdr(agg_data, tmp_agg_data, level: str = 'xxxx'):
-    # level = my_agg.getLevel()
-    tirets = '---------------------------------------------------------------------------------'
-    display_line(tirets, tirets, tirets)
-    display_line('      key', '      agg_' + level, '      tmp_agg_' + level)
-    display_line(tirets, tirets, tirets)
-    display_line('start_dat', str(agg_data), str(tmp_agg_data))
+    try:
+        # level = my_agg.getLevel()
+        tirets = '---------------------------------------------------------------------------------'
+        display_line(tirets, tirets, tirets)
+        display_line('      key', '      agg_' + level, '      tmp_agg_' + level)
+        display_line(tirets, tirets, tirets)
+        display_line('start_dat', str(agg_data), str(tmp_agg_data))
+    except Exception as e:
+        if e.__dict__.__len__() == 0 or 'done' not in e.__dict__:
+            exception_type, exception_object, exception_traceback = sys.exc_info()
+            exception_info = e.__repr__()
+            filename = exception_traceback.tb_frame.f_code.co_filename
+            line_number = exception_traceback.tb_lineno
+            e.info = {
+                "i": str(exception_info),
+                "f": filename,
+                "l": line_number,
+            }
+            e.done = True
+        raise e

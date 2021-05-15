@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
-from app.classes.calcul.calcAggreg import CalcAggreg
 from app.tools.climConstant import SvcRequestType
 from app.tools.jsonPlus import JsonPlus
 import app.tools.myTools as t
@@ -23,9 +22,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if options['filename']:
-            self.stdout.write('loadJson started: ' + str(options['filename']))
+            t.logInfo('loadJson started: ' + str(options['filename']))
         else:
-            self.stdout.write('loadJson started: all files !!!')
+            t.lofInfo('loadJson started: all files !!!')
 
         if options['delete']:
             delete_flag = True
@@ -91,8 +90,19 @@ class Command(BaseCommand):
                 }
                 self.callService('loadobs', SvcRequestType.Run, False, params)
 
-        except Exception as inst:
-            t.LogException(inst)
+        except Exception as e:
+            if e.__dict__.__len__() == 0 or 'done' not in e.__dict__:
+                exception_type, exception_object, exception_traceback = sys.exc_info()
+                exception_info = e.__repr__()
+                filename = exception_traceback.tb_frame.f_code.co_filename
+                line_number = exception_traceback.tb_lineno
+                e.info = {
+                    "i": str(exception_info),
+                    "f": filename,
+                    "l": line_number,
+                }
+                e.done = True
+            t.LogException(e)
 
     def callService(self, service_name: str, command: int, trace_flag: bool, params: json):
         try:
@@ -105,14 +115,16 @@ class Command(BaseCommand):
             for a_result in rj['result']:
                 self.stdout.write('   ' + a_result)
 
-        except Exception as inst:
-            exception_type, exception_object, exception_traceback = sys.exc_info()
-            exception_info = inst.__repr__()
-            filename = exception_traceback.tb_frame.f_code.co_filename
-            line_number = exception_traceback.tb_lineno
-
-            if exception_info.startswith('ConnectionError'):
-                exception_info = 'Server not available'
-
-            print(exception_info + ', ' + filename + "::" + str(line_number))
-            t.LogException(inst)
+        except Exception as e:
+            if e.__dict__.__len__() == 0 or 'done' not in e.__dict__:
+                exception_type, exception_object, exception_traceback = sys.exc_info()
+                exception_info = e.__repr__()
+                filename = exception_traceback.tb_frame.f_code.co_filename
+                line_number = exception_traceback.tb_lineno
+                e.info = {
+                    "i": str(exception_info),
+                    "f": filename,
+                    "l": line_number,
+                }
+                e.done = True
+            raise e

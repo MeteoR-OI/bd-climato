@@ -1,5 +1,7 @@
 from django.core.management.base import BaseCommand
 from app.tools.climConstant import SvcRequestType
+import app.tools.myTools as t
+import sys
 import requests
 from app.tools.jsonPlus import JsonPlus
 
@@ -80,5 +82,16 @@ class Command(BaseCommand):
             else:
                 print('Error: protocol error')
 
-        except Exception as inst:
-            print('Error (bug): ' + str(inst))
+        except Exception as e:
+            if e.__dict__.__len__() == 0 or 'done' not in e.__dict__:
+                exception_type, exception_object, exception_traceback = sys.exc_info()
+                exception_info = e.__repr__()
+                filename = exception_traceback.tb_frame.f_code.co_filename
+                line_number = exception_traceback.tb_lineno
+                e.info = {
+                    "i": str(exception_info),
+                    "f": filename,
+                    "l": line_number,
+                }
+                e.done = True
+            t.LogException(e)

@@ -6,9 +6,28 @@ import inspect
 
 
 def LogException(
-    inst, my_span=None, params: json = {}, return_string: bool = False, stack_level: int = 0
+    e, my_span=None, params: json = {}, return_string: bool = False, stack_level: int = 0
 ):
-    return _logMe(str(inst), "error", my_span, params, stack_level + 1, return_string)
+    """
+        Log Exception
+
+        Parameters:
+            Exception
+            span, or None
+            parameters in a json variable
+            return_string: True -> return the error message, else output the message
+            stack_level: number of level to remove from the stack analysis
+    """
+    stack_level += 1
+    if e.__dict__.__len__() > 0 and 'info' in e.__dict__:
+        filenames = e.info["f"].split("/")
+        if filenames.__len__() == 0:
+            filenames = ["??"]
+        filename = filenames[filenames.__len__() - 1]
+        return _logMeOutput(filename, e.info["l"], e.info["i"], 'error', my_span, params, return_string)
+    else:
+        e_str = str(e)
+    return _logMe(e_str, "error", my_span, params, stack_level, return_string)
 
 
 def LogError(
@@ -82,24 +101,40 @@ def _logMe(
 ):
     """centralized log output function"""
     stack_level += 1
-    trace_id = None
-    if my_span is not None:
-        trace_id = my_span.get_span_context().trace_id
 
     if level.lower() not in ["info", "???", "error", "trace"]:
         level = "??? " + level
 
-    location, stack_info = getStackInfo(level, stack_level)
-
-    # build our json
-    log_j = {"ts": str(datetime.datetime.now()), "loc": location, "msg": message}
-    # add level
-    log_j["level"] = level
+    filename, line_no, stack_info = getStackInfo(level, stack_level)
     if stack_info.__len__() > 0:
-        log_j["stack"] = stack_info
+        params['stack'] = stack_info
+    return _logMeOutput(filename, line_no, message, level, my_span, params, return_string)
+
+
+def _logMeOutput(
+    filename: str,
+    line_no: int,
+    message: str,
+    level: str = None,
+    my_span: Span = None,
+    params: json = {},
+    return_string: bool = False,
+):
+    # build our json
+    log_j = {
+        "ts": str(datetime.datetime.now()),
+        "filename": filename,
+        "line": line_no,
+        "level": level,
+        "msg": cleanUpMessage(message),
+    }
+
     # add trace_id
-    if trace_id != "no_trace_id" and trace_id is not None and trace_id != 0:
-        log_j["trace_id"] = format(trace_id, "x")
+    if my_span is not None:
+        log_j["trace_id"] = my_span.get_span_context().trace_id
+    else:
+        log_j["trace_id"] = "no trace"
+
     # add our json Keys/Values
     for k, v in params.items():
         log_j[k] = v
@@ -116,15 +151,11 @@ def _logMe(
             )
         print(
             str(log_j["ts"])
-            + " "
-            + log_j["loc"]
-            + " - "
-            + log_j["level"]
-            + " -> "
-            + log_j["msg"]
-            + " ["
-            + str(log_j.get("trace_id"))
-            + "] "
+            + " " + str(log_j["level"]).upper()
+            + " " + str(log_j["filename"])
+            + " " + str(log_j["line"])
+            + " -> " + log_j["msg"]
+            + " [" + str(log_j["trace_id"]) + "] "
             + JsonPlus().dumps(params)
         )
         if log_j.get("stack") is not None:
@@ -140,6 +171,8 @@ def _logMe(
 def getStackInfo(level: str, stack_level: int = 1):
     stack_formatted = []
     loc_caller = "??"
+    loc_filename = "??"
+    loc_line_no = 0
     idx_up = stack_level + 1
     idx = 0
     full_stack = inspect.stack()
@@ -148,21 +181,28 @@ def getStackInfo(level: str, stack_level: int = 1):
             filenames = a_stack_line.filename.split("/")
             if filenames.__len__() == 0:
                 filenames = ["??"]
-            location = (
-                filenames[filenames.__len__() - 1]
-                + "::"
-                + a_stack_line.function
-                + "::"
-                + str(a_stack_line.lineno)
-            )
+            filename = filenames[filenames.__len__() - 1]
+            caller = a_stack_line.function
+            line_no = a_stack_line.lineno
+
             if idx == idx_up:
-                loc_caller = location
+                loc_filename = filename + '::' + caller
+                loc_line_no = line_no
             if level in ["error"]:
                 stack_formatted.append(
-                    location + " -> " + str(a_stack_line.code_context)
+                    filename + '--' + loc_caller + '::' + str(loc_line_no) + " -> " + str(a_stack_line.code_context)
                 )
             else:
                 break
         idx += 1
 
-    return loc_caller, stack_formatted
+    return loc_filename, loc_line_no, stack_formatted
+
+
+def cleanUpMessage(msg: str) -> str:
+    """
+        Clean up exception error message
+    """
+    if msg.startswith('ConnectionError(MaxRetryError("HTTPConnectionPool('):
+        return msg.split("):")[0].replace('(MaxRetryError', '')
+    return msg
