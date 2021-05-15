@@ -207,7 +207,8 @@ class CalcObs(AllCalculus):
                 # load aggregations data in obs_meteor.data.j_agg
                 m_agg_j = []
                 if use_validation is True:
-                    m_agg_j = json_file_data["data"][measure_idx]["aggregations"]
+                    if json_file_data["data"][measure_idx].get('aggregations') is not None:
+                        m_agg_j = json_file_data["data"][measure_idx]["aggregations"]
                     if m_agg_j.__len__() == 0:
                         t.logInfo(
                             "skipping data["

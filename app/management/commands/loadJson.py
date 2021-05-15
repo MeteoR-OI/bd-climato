@@ -8,6 +8,7 @@ import os
 import glob
 import requests
 import json
+import sys
 
 
 class Command(BaseCommand):
@@ -67,7 +68,7 @@ class Command(BaseCommand):
         # compute aggregations if needed
         if no_aggreg is False:
             if is_tmp is True:
-                CalcAggreg().ComputeAggreg(is_tmp)
+                call_command('svc', 'aggreg', '--run', '--tmp')
             else:
                 call_command('svc', 'aggreg', '--run')
 
@@ -105,4 +106,13 @@ class Command(BaseCommand):
                 self.stdout.write('   ' + a_result)
 
         except Exception as inst:
+            exception_type, exception_object, exception_traceback = sys.exc_info()
+            exception_info = inst.__repr__()
+            filename = exception_traceback.tb_frame.f_code.co_filename
+            line_number = exception_traceback.tb_lineno
+
+            if exception_info.startswith('ConnectionError'):
+                exception_info = 'Server not available'
+
+            print(exception_info + ', ' + filename + "::" + str(line_number))
             t.LogException(inst)

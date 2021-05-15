@@ -6,9 +6,9 @@ import inspect
 
 
 def LogException(
-    inst, my_span=None, params: json = {}, return_string: bool = False, level: int = 1
+    inst, my_span=None, params: json = {}, return_string: bool = False, stack_level: int = 0
 ):
-    return _logMe(str(inst), "error", my_span, params, level, return_string)
+    return _logMe(str(inst), "error", my_span, params, stack_level + 1, return_string)
 
 
 def LogError(
@@ -92,7 +92,7 @@ def _logMe(
     location, stack_info = getStackInfo(level, stack_level)
 
     # build our json
-    log_j = {"ts": datetime.datetime.now(), "loc": location, "msg": message}
+    log_j = {"ts": str(datetime.datetime.now()), "loc": location, "msg": message}
     # add level
     log_j["level"] = level
     if stack_info.__len__() > 0:
