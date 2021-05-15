@@ -18,6 +18,7 @@
         "app/tests",
     ],
     "pythonTestExplorer.testFramework": "pytest",
+    "python.formatting.provider": "autopep8",
     "testExplorer.gutterDecoration": true,
     "testExplorer.showOnRun": true,
     "testExplorer.sort": "byLabelWithSuitesFirst",
@@ -43,6 +44,5 @@
         ]
     },
     "coverage-gutters.showLineCoverage": false,
-    "coverage-gutters.showRulerCoverage": false,
-    "python.formatting.provider": "black"
+    "coverage-gutters.showRulerCoverage": false
 }

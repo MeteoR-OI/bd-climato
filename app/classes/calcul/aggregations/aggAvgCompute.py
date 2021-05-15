@@ -15,6 +15,7 @@ class AggAvgCompute(AggCompute):
         must load dv[M_s], and dv[M_duration]
 
     """
+
     def loadDVDataInAggregation(
         self,
         my_measure: json,
