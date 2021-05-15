@@ -28,6 +28,21 @@
             "django": true
         },
         {
+            "name": "Docker: Django",
+            "type": "docker",
+            "request": "launch",
+            "preLaunchTask": "docker-run: debug",
+            "python": {
+                "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/app"
+                }
+                ],
+                "projectType": "django"
+            }
+        },
+        {
             "name": "loadJson",
             "type": "python",
             "request": "launch",

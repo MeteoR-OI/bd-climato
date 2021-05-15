@@ -340,16 +340,9 @@ class Telemetry:
                 trace.set_tracer_provider(
                     TracerProvider(
                         resource=Resource.create({SERVICE_NAME: "Climato"})
-                        # resource=Resource.create({SERVICE_NAME: service_name})
                     )
                 )
                 tracer = trace.get_tracer(__name__)
-
-                # Create a JaegerExporter to send spans with gRPC
-                # If there is no encryption or authentication set `insecure` to True
-                # If server has authentication with SSL/TLS you can set the
-                # parameter credentials=ChannelCredentials(...) or the environment variable
-                # `EXPORTER_JAEGER_CERTIFICATE` with file containing creds.
 
                 jaeger_exporter = grpc.JaegerExporter(
                     collector_endpoint=TelemetryConf.get("collector"),
