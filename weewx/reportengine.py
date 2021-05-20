@@ -84,7 +84,7 @@ class StdReportEngine(threading.Thread):
     def __init__(self, config_dict, stn_info, 
             record=None, accumulator=None, 
             start_ts=None, gen_ts=None, first_run=True,
-            js_valid=None, js_curr=None):
+            js_valid=None, js_level=None):
         """Initializer for the report engine.
 
         config_dict: The configuration dictionary.
@@ -102,8 +102,6 @@ class StdReportEngine(threading.Thread):
         """
         threading.Thread.__init__(self, name="ReportThread")
 
-        print("StdReportGe:", js_valid, js_curr)
-        print("StdReportGe:", start_ts, gen_ts)
         self.config_dict = config_dict
         self.stn_info = stn_info
         self.record = record
@@ -112,7 +110,7 @@ class StdReportEngine(threading.Thread):
         self.gen_ts = gen_ts
         self.first_run = first_run
         self.js_valid = js_valid
-        self.js_curr = js_curr
+        self.js_level = js_level
 
     def run(self):
         """This is where the actual work gets done.
@@ -200,7 +198,7 @@ class StdReportEngine(threading.Thread):
                             self.first_run,
                             self.stn_info,
                             self.js_valid,
-                            self.js_curr,
+                            self.js_level,
                             self.record,
                             self.accumulator) # QUETELARD
                     except Exception as e:
@@ -303,10 +301,8 @@ class ReportGenerator(object):
 
     # QUETELARD
     def __init__(self, config_dict, skin_dict, start_ts, gen_ts, first_run, stn_info, 
-                        js_valid, js_curr,        
+                        js_valid, js_level,        
                         record=None, accumulator=None):
-        print("ReportGenerator:", js_valid, js_curr)
-        print("ReportGenerator:", start_ts, gen_ts)
         self.config_dict = config_dict
         self.skin_dict = skin_dict
         self.start_ts = start_ts
@@ -314,7 +310,7 @@ class ReportGenerator(object):
         self.first_run = first_run
         self.stn_info = stn_info
         self.js_valid = js_valid
-        self.js_curr = js_curr
+        self.js_level = js_level
         self.record = record
         self.accumulator = accumulator
         self.db_binder = weewx.manager.DBBinder(self.config_dict)

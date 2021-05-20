@@ -71,6 +71,7 @@ LOW#slurp
 #end def
 ## fin fonction calcul valeur avec cle
 #from datetime import datetime, timedelta
+#from time import mktime
 #import user.extensions
 [
 {
@@ -83,7 +84,9 @@ LOW#slurp
 #set $last_timestamp=datetime.fromtimestamp($db_lookup.last_timestamp)
      "last_update":"$last_timestamp",
 #set $last_update_stop = datetime.fromtimestamp(user.extensions.last_update_stop)
-     "last_update_before_stop":"$last_update_stop" ## final maj depuis arret weewx
+     "last_update_before_stop":"$last_update_stop", ## final maj depuis arret weewx
+     #set $json_level = $json.level
+     "json_level":"$json_level"  
      },
   "data":
      [
@@ -93,23 +96,26 @@ LOW#slurp
 #set $start = 1 ## indique debut de la boucle sur les currents
 #set $uptime = round($station.uptime.raw) ## temps passe depuis demarrage weewx
 #set $interval = $current.interval.raw * 60 ## interval obs en secondes
-#set $boucle_obs = $span($time_delta=$time_period) ## definit la periode a traiter
-#for $obs in $boucle_obs.records ## debut boucle obs
+#set $boucle_obs = $span($time_delta=$time_period).records ## definit la periode a traiter
+#for $obs in $boucle_obs ## debut boucle obs
+##if $json_level == 'C' or $json_level == 'H'
 #set $amin = round($obs.interval.raw) ##intervalle de la mesure
 #set $datetime_obs = datetime.fromtimestamp($obs.dateTime.raw) ## obs en cours de traitement
-#set $datetime_obs += timedelta(minutes=$amin) / 2 ## arrondi a interval pres
+#set $datetime_obs += timedelta(minutes=$amin) / 2 ## arrondie a interval pres
 #set $d = $datetime_obs
 #set $datetime_obs -= timedelta(minutes=$d.minute % $amin, seconds=$d.second, microseconds=$d.microsecond)
 #set $datetime_obs_start = format($datetime_obs - timedelta(minutes=$amin),"%Y-%m-%dT%H:%M:%S")
 #set $datetime_obs_stop = format($datetime_obs,"%Y-%m-%dT%H:%M:%S")
 #set $duration = round($obs.interval.raw)
+##end if ## fin level 'C' or 'H'
 #if $start == 1 ## si premiere obs, obs precedente initialisee
 #set $datetime_obs_prev = datetime.fromtimestamp($obs.dateTime.raw) - timedelta(minutes=$amin,seconds=-1)
 #set $new_hour  = $datetime_obs.hour <> $datetime_obs_prev.hour
 #set $new_day   = $datetime_obs.day <> $datetime_obs_prev.day
 #set $new_month = $datetime_obs.month <> $datetime_obs_prev.month
 #set $new_year  = $datetime_obs.year <> $datetime_obs_prev.year
-#set $final_obs = $datetime_obs == $datetime_cur
+#set $diff_time = time.mktime($datetime_obs.timetuple()) - time.mktime($datetime_cur.timetuple())
+#set $final_obs = abs($diff_time) < 100
 #set $start = 0
 #set $aggregation_hour  = 0
 #set $aggregation_day   = 0
@@ -120,9 +126,12 @@ LOW#slurp
 #set $new_day   = $datetime_obs.day <> $datetime_obs_prev.day
 #set $new_month = $datetime_obs.month <> $datetime_obs_prev.month
 #set $new_year  = $datetime_obs.year <> $datetime_obs_prev.year
-#set $final_obs = $datetime_obs == $datetime_cur
+#set $diff_time = time.mktime($datetime_obs.timetuple()) - time.mktime($datetime_cur.timetuple())
+#set $final_obs = abs($diff_time) < 100
 #if ($aggregation_hour == 0 and $aggregation_day == 0)
+#if $json_level == 'C'
       }}, ## apres 1er current on ferme proprement current precedent
+#end if
 #else
 
       }, 
@@ -132,9 +141,18 @@ LOW#slurp
 #set $aggregation_day   = 0
 #set $aggregation_month = 0
 #set $aggregation_year  = 0
+#if $json_level == 'C' or $new_hour or $final_obs
+#if not $json_level == 'D'
       {
        "start_dat":"$datetime_obs_start",
        "stop_dat":"$datetime_obs_stop",
+#elif $new_day or $final_obs
+      {
+       "start_dat":"$datetime_obs_start",
+       "stop_dat":"$datetime_obs_stop",
+#end if
+#end if
+#if $json_level == 'C'
        "current": {
        $CleVal("out_temp",$obs.outTemp.raw,1)
        $CleVal("windchill",$obs.windchill.raw,1)
@@ -148,8 +166,8 @@ LOW#slurp
        $CleVal("pressure",$obs.pressure.raw,1)
        $CleVal("wind_avg",$obs.windSpeed.raw,1)
        $CleVal("wind_dir",$obs.windDir.raw,1)
-       $CleVal("gust",$obs.windGust.raw,1)
-       $CleVal("gust_dir",$obs.windGustDir.raw,1)
+       $CleVal("wind_max",$obs.windGust.raw,1)
+       $CleVal("wind_max_dir",$obs.windGustDir.raw,1)
        $CleVal("rain",$obs.rain.raw,1)
        $CleVal("rain_rate",$obs.rainRate.raw,1)
        #if $day.UV.has_data
@@ -163,6 +181,7 @@ LOW#slurp
        $CleVal("rx",$obs.rxCheckPercent.raw,1)
        $CleVal("voltage",$obs.consBatteryVoltage.raw,1)
        "duration":$duration
+#end if
 #if $new_hour or $final_obs ## test change heure ou final obs
 #if $new_hour ## heure intermediaire
 #if $final_obs
@@ -171,22 +190,24 @@ LOW#slurp
 ## calcule les deltas pour agregation
 #set $delta_s = ($datetime_cur - $datetime_obs).seconds
 #set $delta_d = ($datetime_cur - $datetime_obs).days
-#set $delta_h = (($delta_d * 86400) + $delta_s) // 3600 + 1
+#set $delta_h = (($delta_d * 86400) + $delta_s) // 3600 ##+ 1
 #end if
+#if $json_level == 'C'
        },
+#end if
+#if $json_level == 'C' or $json_level == 'H'
 #set $aggregation_hour = 1
        "aggregations":
        [{
        "level":"H",
-## traitement special pour affichage de l'etp qui n'est disponible que sur current a heure ronde
-#if $new_hour ##and $day.ET.has_data and $day.ET.sum.raw >0.0
-       $CleVal("etp_sum",$hour($hours_ago=0).ET.sum.raw,1)
-#end if
        "start_dat":$datef($hour($hours_ago=$delta_h).dateTime.raw)
        }],
        "validation":
        [{
        "level":"H",
+       #if $new_hour and $day.ET.has_data and $day.ET.sum.raw >0.0
+       $CleVal("etp_sum",$hour($hours_ago=$delta_h).ET.sum.raw,1)
+       #end if
        #if $obs.outTemp.has_data
        $CleVal("out_temp_omm",$obs.outTemp.raw,1)
        $CleCal("out_temp_omm_s",$obs.outTemp.raw,60,1)
@@ -218,6 +239,7 @@ LOW#slurp
        $CleCal("rain_omm_duration",$hour($hours_ago=$delta_h).rain.count.raw,$amin,1)
        #end if
        "start_dat":$datef($hour($hours_ago=$delta_h).dateTime.raw)
+#end if
 #end if ## fin heure intermediaire
 #if ($new_day or $final_obs) ## test (change jour ou final obs)
 #if $final_obs ## test final obs pour calcul deltas differencies
@@ -228,7 +250,7 @@ LOW#slurp
 #else ## calcule les deltas pour agregations
 #set $delta_s = ($datetime_cur - $datetime_obs).seconds
 #set $delta_d = ($datetime_cur - $datetime_obs).days
-#set $delta_h = (($delta_d * 86400) + $delta_s) // 3600 + 1
+#set $delta_h = (($delta_d * 86400) + $delta_s) // 3600 ##+ 1
 #set $date_ref = $datetime_cur.replace(hour=0,minute=0,second=0)
 #set $delta_d = ($date_ref - $datetime_obs).days + 1
 #set $delta_y = $datetime_cur.year - $datetime_obs.year
@@ -241,8 +263,10 @@ LOW#slurp
 #set $delta_y += 1
 #end if ## fin test fin annee
 #end if ## fin test final obs pour calcul deltas
-#if not $new_hour ## dans ce cas on demarre une agregation
+#if not $new_hour or $json_level == 'D' ## dans ce cas on demarre une agregation
+#if not $json_level == 'D'
        },
+#end if
        "aggregations":
        [{
        "level":"D",

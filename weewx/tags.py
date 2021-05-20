@@ -513,6 +513,7 @@ class CurrentObj(object):
                 vt = weewx.units.as_value_tuple(record, obs_type)
             # ... and then finally, return a ValueHelper
 
+        # QUETELARD
         return weewx.units.ValueHelper(vt, 'current',
                                        self.formatter,
                                        self.converter)

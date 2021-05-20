@@ -105,7 +105,7 @@ LOW#slurp
 #for $obs in $boucle_obs.records ## debut boucle obs
 #set $amin = round($obs.interval.raw) ##intervalle de la mesure
 #set $datetime_obs = datetime.fromtimestamp($obs.dateTime.raw) ## obs en cours de traitement
-#set $datetime_obs += timedelta(minutes=$amin) / 2 ## arrondi a interval pres
+#set $datetime_obs += timedelta(minutes=$amin) / 2 ## arrondie a interval pres
 #set $d = $datetime_obs
 #set $datetime_obs -= timedelta(minutes=$d.minute % $amin, seconds=$d.second, microseconds=$d.microsecond)
 #set $datetime_obs_start = format($datetime_obs - timedelta(minutes=$amin),"%Y-%m-%dT%H:%M:%S")

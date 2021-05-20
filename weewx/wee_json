@@ -44,8 +44,8 @@ def main():
                       help="End with this date.")
     parser.add_option("--validation", action="store_true", dest="validation",
                       help="validation key in json file.")
-    parser.add_option("--currents", action="store_true", dest="currents",
-                      help="current key in json file.")
+    parser.add_option("--level", dest="jlevel", type=str, metavar="C or H or D",
+                      help="aggregation level.")
     
     # Now we are ready to parse the command line:
     (options, args) = parser.parse_args()
@@ -71,11 +71,13 @@ def main():
     stn_info = weewx.station.StationInfo(**config_dict['Station'])
 
     j_valid = options.validation
-    j_curr  = options.currents
+    j_level  = options.jlevel
+    if j_level is None:
+        j_level = 'C'
     
     t = weewx.reportengine.StdReportEngine(config_dict, stn_info, 
                 start_ts=start_d, gen_ts=stop_d,
-                js_valid=j_valid, js_curr=j_curr) 
+                js_valid=j_valid, js_level=j_level) 
 
     # Although the report engine inherits from Thread, we can just run it in the main thread:
     t.run()

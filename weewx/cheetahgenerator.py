@@ -582,7 +582,7 @@ class JsonObj(object):
     def __init__(self, generator):
         self.start = generator.start_ts
         self.validation = generator.js_valid
-        self.currents = generator.js_curr
+        self.level = generator.js_level
 
 class Stats(SearchList):
     """Class that implements the time-based statistical tags, such
