@@ -81,7 +81,7 @@
        "out_temp_omm_max":27.2777777778,
        "out_temp_omm_maxtime":"2021-05-16T11:25:00",
        "out_temp_omm_avg":23.2777777778,
-       "out_humidity_omm_avg":74.8333333333,
+       "humidity_omm_avg":74.8333333333,
        "wind_omm_avg":8.71730166672,
        "barometer_omm_avg":1017.94122556,
        "rain_rate_max":7.61999999223,
