@@ -456,9 +456,9 @@ LOW#slurp
        #set $out_temp_omm_avg = $sum_temp / $count_temp
        #end if
        #if $count_humidity == 0
-       #set $out_humidity_omm_avg = None
+       #set $humidity_omm_avg = None
        #else
-       #set $out_humidity_omm_avg = $sum_humidity / $count_humidity
+       #set $humidity_omm_avg = $sum_humidity / $count_humidity
        #end if
        #if $count_wind == 0
        #set $wind_omm_sum = None
@@ -472,7 +472,7 @@ LOW#slurp
        #end if
        ## fin calcul avg omm
        $CleVal("out_temp_omm_avg",$out_temp_omm_avg,1)
-       $CleVal("out_humidity_omm_avg",$out_humidity_omm_avg,1)
+       $CleVal("humidity_omm_avg",$humidity_omm_avg,1)
        $CleVal("wind_omm_avg",$wind_omm_avg,1)
        $CleVal("barometer_omm_avg",$barometer_omm_avg,1)
        $CleVal("rain_rate_max",$day($days_ago=$delta_d).rainRate.max.raw,1)
