@@ -46,7 +46,7 @@
   - faire tourner la telemetry dans les containers, et django/postgres en local
     commande: docker-compose -f dc-telemetry-only.yaml up
     (dans ce cas django utilise le port 5434 pour se connecter a postgres)
-    (dans ce cas django utilise le setting: settings_telemetry_only.py  ** ne pas modifier ** )
+    (dans ce cas il faut que django utilise le setting: settings_telemetry_only.py  ** ne pas modifier **. faire un export !!! )
 
   -> la 1ere fois docker-compose telecharge les images en local, et cree des containers (instance d'une image).
   -> les fois suivantes demarre juste les containers
@@ -73,4 +73,3 @@
   Visualiser le log
 
   Et apres il faut apprendre LogQL...
-  
