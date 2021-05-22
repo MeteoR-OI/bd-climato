@@ -133,9 +133,6 @@ class Command(BaseCommand):
                             tmp_agg_done = True
                         else:
                             my_tmp_agg = all_tmp_agg[idx_tmp]
-                            # self.display_missing_tmp_agg(all_agg[idx], level, disp_details)
-                            # idx += 1
-                            # continue
 
                         if str(my_agg is not None and my_agg.start_dat) < str(from_dt):
                             idx += 1
@@ -144,14 +141,10 @@ class Command(BaseCommand):
                             my_agg = None
                             agg_done = True
 
-                        if str(my_tmp_agg is not None and my_tmp_agg.start_dat) < str(
-                            from_dt
-                        ):
+                        if str(my_tmp_agg is not None and my_tmp_agg.start_dat) < str(from_dt):
                             idx_tmp += 1
                             continue
-                        if str(my_tmp_agg is not None and my_tmp_agg.start_dat) > str(
-                            to_dt
-                        ):
+                        if str(my_tmp_agg is not None and my_tmp_agg.start_dat) > str(to_dt):
                             tmp_agg_done = True
                             my_tmp_agg = None
 
@@ -162,13 +155,9 @@ class Command(BaseCommand):
                             t.LogError("both aggregations can' be None!!!")
                             break
 
-                        if my_tmp_agg is None or str(my_agg.start_dat) < str(
-                            my_tmp_agg.start_dat
-                        ):
+                        if my_tmp_agg is None or str(my_agg.start_dat) < str(my_tmp_agg.start_dat):
                             my_tmp_agg = None
-                        elif my_agg is None or str(my_agg.start_dat) > str(
-                            my_tmp_agg.start_dat
-                        ):
+                        elif my_agg is None or str(my_agg.start_dat) > str(my_tmp_agg.start_dat):
                             my_agg = None
 
                         k_processed = []
@@ -177,17 +166,19 @@ class Command(BaseCommand):
                         # process values in agg
                         if my_tmp_agg is not None:
                             for k, v in my_tmp_agg.j.items():
-                                k_processed.append(k)
-                                if str(v) == str(my_agg.j.get(k)):
-                                    continue
-                                cols = []
-                                cols.append(k)
-                                if my_agg.j.get(k) is None:
-                                    cols.append("")
-                                else:
-                                    cols.append(str(my_agg.j.get(k)))
-                                cols.append(str(v))
-                                data_output.append(cols)
+                                if k not in k_processed:
+                                    k_processed.append(k)
+                                    cols = []
+                                    cols.append(k)
+                                    if my_agg is None or agg_done or my_agg.j.get(k) is None:
+                                        cols.append("")
+                                    else:
+                                        if k == 'rx_avg':
+                                            my_value = 1
+                                        my_value = self.fix_s(my_agg, my_tmp_agg, k)
+                                        cols.append(str(my_value))
+                                    cols.append(str(v))
+                                    data_output.append(cols)
 
                         if my_agg is not None:
                             # ad values in agg, not in tmp_agg
@@ -249,12 +240,45 @@ class Command(BaseCommand):
                 e.done = True
             raise e
 
+    def fix_s(self, my_agg, my_tmp_agg, k: str):
+        """
+        """
+        try:
+            my_value = my_agg.j.get(k)
+            if str(k).endswith('_s'):
+                k_root = str(k).replace('_s', '')
+                my_agg_avg = my_agg.j.get(k_root + '_avg')
+                my_agg_duration = my_agg.j.get(k_root + '_duration')
+                my_tmp_agg_avg = my_tmp_agg.j.get(k_root + '_avg')
+                my_tmp_agg_duration = my_tmp_agg.j.get(k_root + '_duration')
+                if my_agg_avg is None or my_agg_duration is None:
+                    return my_value
+                if int(my_agg_avg * 10) == int(my_tmp_agg_avg * 10) and my_agg_duration == my_tmp_agg_duration:
+                    my_value = my_tmp_agg.j[k]
+            return my_value
+
+        except Exception as e:
+            if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
+                exception_type, exception_object, exception_traceback = sys.exc_info()
+                exception_info = e.__repr__()
+                filename = exception_traceback.tb_frame.f_code.co_filename
+                module = exception_traceback.tb_frame.f_code.co_name
+                line_number = exception_traceback.tb_lineno
+                e.info = {
+                    "i": str(exception_info),
+                    "f": filename,
+                    "n": module,
+                    "l": line_number,
+                }
+                e.done = True
+            raise e
+
     def is_float_try(self, str):
         try:
             if str == "":
                 return None
             f = float(str)
-            return float(int(f * 10) / 10)
+            return int(f * 10) / 10
         except ValueError:
             return None
 
