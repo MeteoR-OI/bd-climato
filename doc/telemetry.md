@@ -13,42 +13,64 @@
 
 # 2.    Architecture
 
-- Jaeger : gere les span remontes par django dans bd cassandra
-  https://medium.com/jaegertracing/a-guide-to-deploying-jaeger-on-kubernetes-in-production-69afb9a7c8e5
-  Base de cassandra : demarer un shell a partir du container, lancer sqlsh (syntaxe a la SQL)
-  Pour le moment Jaeger ne sait qu'afficher les span. Il y a en dev la generation de statistiques
-  a partir des span... cela nous permettrait d'enlever prometheus des composants a avoir sur le serveur
+- Jaeger : gere les span remontés par django
+  http:localhost:16686
+  Jaeger ne fait que de stocker les span sur le disque.
+  UI tres basic, c'est surtout un backend. Le UI est la surtout pour afficher un span, quand on le connait
+  La recherche de span se fait a partir du log (et plus tard a partir de sample de performance), via le champ traceID
+  (voir la definition dans grafana/datasource/loki)
 
-- Loki : integre des logs dans Grafana. ?? ou c'est stocké ??
-  restructure les items a partir de log texte/json, et les integre dans Grafana. Si la ligne de log contient
-  le span_id, il est possible de lier toutes ces informations ensemble
+- Loki : integre des logs dans Grafana. Stocke les data dans le filesystem
+  restructure les donnees a partir de log texte/json, et integre ces donnees dans Grafana.
+  Si la ligne de log contient le traceID, il est possible de lier le log avec jaeger
 
-- Prometheus: Gere les metrics (Voir si on en a besoin, ou si on peut gerer les metrics autrement)
-  on va voir si on garde ou pas...
+- Prometheus: Gere les metrics
+  Pour le moment les metrics de l'application django passent par le log
+  Integre les metrics de docker (pas sur mac), jaeger, loki et grafana)
+  Langage d'interrogation PromQL
+  UI tres basic, c'est surtout un backend
 
-- Grafana : Gere l'affichage et la liaison entre metrics/log/span
-  Grafana utilise une base SQL pour stocker les def des panel (a voir si possible de connecter sur pg...)
+- Grafana : Gere l'affichage de toutes les composantes
+  Grafana utilise une base MySQL pour stocker les def des panel (a voir si possible de connecter sur pg...)
+  Langage d'interrogation PromQL(prometheus), ou LogQL (loki)
 
 # 3.  Installation en local sur mac
   Installer Docker
   Installer le plus in Docker (de Microsoft) dans VS Code
-  docker compose -f yml/docker-compose.yml up
-  -> la 1ere fois telecharge les images en local, et cree des containers (instance d'une image).
+
+  Il y a 2 situations:
+  - faire tourner toutes les composantes (telemetry, django, et postgres) dans des containers:
+    commande: docker-compose -f dc-telemetry-full.yaml up
+    (dans ce cas postgres tourne sur le port 5435)
+    (dans ce cas django utilise le setting: settings_telemetry_full.py  ** ne pas modifier ** )
+  - faire tourner la telemetry dans les containers, et django/postgres en local
+    commande: docker-compose -f dc-telemetry-only.yaml up
+    (dans ce cas django utilise le port 5434 pour se connecter a postgres)
+    (dans ce cas django utilise le setting: settings_telemetry_only.py  ** ne pas modifier ** )
+
+  -> la 1ere fois docker-compose telecharge les images en local, et cree des containers (instance d'une image).
   -> les fois suivantes demarre juste les containers
   A partir de VS code, on peut voir les logs, attache un shell au container,..
 
-  Pour activer l'integration de la telemetry dans Climato:
-    dans settings.py:
-        TELEMETRY = True
-    Sans cette variable, la valeur est False
+  Pour arreter: la meme commande avec down a la fin, ou CTRL-C sur la fenetre de la commande
+
+  remise a zero de la telemetry:
+     sh ./scripts/clean_localStorage.sh
+     dans vs code, dans l'icone Docker, click sur l'icone 'Prune' (a gauche de la roue crantee) dans containers, networks et volumes
+     en relancant les containers, la telemetry repartira de zero
+
+  Note: lors de la 1ere utilisation, ou apres une reinitisation, le service promtail n'active pas le scan du log, car le fichier n'existe pas.
+    Il est necessaire de langer l'appli django (si pas dans un container), et apres de redemarer le container grrafana/promtail
+    Au bout de qq instants les logs de django seront remontes dans Loki
 
 # 4.    Visualisation de la Telemetry
 - Tout se passera dans grafana, mais il faut creer les panel....
   localhost:3000
-  Il faut installer les sources:
-    . jaeger -> http://jaeger-query:16686
-    . prometheus -> http://prometheus:9090
-    . loki -> http://loki:3100
-  Je verrai comment generer les conf, et les panels par defaut....
-- Il est possible d'aller directement dans jaeger, mais l'interface est assez pauvre
-  localhost:16686 (admin/admin, puis changement de mot de passe a la 1ere connection)
+
+  Il y a de dashboard de base que j'ai trouve, mais pas adapté...
+
+  Dans explore, choisir Loki, puis selectionner le log avec job: django-log
+  Visualiser le log
+
+  Et apres il faut apprendre LogQL...
+  
