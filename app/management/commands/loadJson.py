@@ -104,14 +104,17 @@ class Command(BaseCommand):
                 exception_info = e.__repr__()
                 filename = exception_traceback.tb_frame.f_code.co_filename
                 line_number = exception_traceback.tb_lineno
+                funcname = exception_traceback.tb_frame.f_code.co_name
                 e.info = {
                     "i": str(exception_info),
+                    "n": funcname,
                     "f": filename,
                     "l": line_number,
                 }
                 e.done = True
-            err = t.LogCritical(e, None, {}, True)
-            print(JsonPlus().dumps(err))
+            errMsg = t.LogCritical(e, None, {}, True)
+            print(errMsg)
+            exit(0)
 
     def callService(self, service_name: str, command: int, trace_flag: bool, params: json):
         try:
@@ -129,9 +132,11 @@ class Command(BaseCommand):
                 exception_type, exception_object, exception_traceback = sys.exc_info()
                 exception_info = e.__repr__()
                 filename = exception_traceback.tb_frame.f_code.co_filename
+                funcname = exception_traceback.tb_frame.f_code.co_name
                 line_number = exception_traceback.tb_lineno
                 e.info = {
                     "i": str(exception_info),
+                    "n": funcname,
                     "f": filename,
                     "l": line_number,
                 }

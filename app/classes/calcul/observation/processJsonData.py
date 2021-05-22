@@ -191,16 +191,13 @@ class ProcessJsonData():
                 if data_src is not None and data_src.get(src_key + maxmin_suffix) is not None:
                     my_values[target_key + maxmin_suffix] = data_src[src_key + maxmin_suffix]
                     my_values[target_key + maxmin_suffix + '_time'] = data_src[src_key + maxmin_suffix + '_time']
+                    if maxmin_key == 'max' and (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
+                        if data_src is not None and data_src.get(src_key + maxmin_suffix + '_dir') is not None:
+                            my_values[target_key + maxmin_suffix + '_dir'] = data_src[src_key + maxmin_suffix + '_dir']
                 else:
                     if my_value_avg is not None or my_value_instant is not None:
                         my_values[target_key + maxmin_suffix] = my_value_instant if my_value_instant is not None else my_value_avg
                         my_values[target_key + maxmin_suffix + '_time'] = stop_dat
-                    if maxmin_key == 'max' and (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                        if data_src is not None and data_src.get(target_key + maxmin_suffix + '_dir') is not None:
-                            my_values[target_key + maxmin_suffix + '_dir'] = data_src[target_key + maxmin_suffix + '_dir']
-                    # if we can use my_value_dir for the max if not one was given
-                    # elif my_value_dir is not None:
-                    #     my_values[target_key + maxmin_suffix + '_dir'] = my_value_dir
 
     def loadDataInObs(
         self,
@@ -266,7 +263,7 @@ class ProcessJsonData():
                     delta_values[target_key + maxmin_suffix] = my_maxmin_value
                     delta_values[target_key + maxmin_suffix + '_time'] = my_maxmin_date
                     if my_values.get(target_key + maxmin_suffix + '_dir') is not None:
-                        my_wind_dir = my_values.get[target_key + maxmin_suffix + '_dir']
+                        my_wind_dir = my_values[target_key + maxmin_suffix + '_dir']
                         obs_j[target_key + maxmin_suffix + '_dir'] = my_wind_dir
                         delta_values[target_key + maxmin_suffix + '_dir'] = my_wind_dir
 

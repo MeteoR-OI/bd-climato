@@ -52,7 +52,7 @@
             "program": "${workspaceFolder}/manage.py",
             "args": [
                 "loadJson",
-                "obs.2021-05-12.json",
+                "obs.2021-05-19.json",
                 "--tmp",
                 "--validation"
             ]

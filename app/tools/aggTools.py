@@ -23,9 +23,11 @@ def getAggLevels(is_tmp: bool = None):
             exception_type, exception_object, exception_traceback = sys.exc_info()
             exception_info = e.__repr__()
             filename = exception_traceback.tb_frame.f_code.co_filename
+            funcname = exception_traceback.tb_frame.f_code.co_name
             line_number = exception_traceback.tb_lineno
             e.info = {
                 "i": str(exception_info),
+                "n": funcname,
                 "f": filename,
                 "l": line_number,
             }
@@ -58,9 +60,11 @@ def convertRelativeHour(mesure_dt: datetime, hour_deca: int):
             exception_type, exception_object, exception_traceback = sys.exc_info()
             exception_info = e.__repr__()
             filename = exception_traceback.tb_frame.f_code.co_filename
+            funcname = exception_traceback.tb_frame.f_code.co_name
             line_number = exception_traceback.tb_lineno
             e.info = {
                 "i": str(exception_info),
+                "n": funcname,
                 "f": filename,
                 "l": line_number,
             }
@@ -92,9 +96,11 @@ def getRightAggregation(
             exception_type, exception_object, exception_traceback = sys.exc_info()
             exception_info = e.__repr__()
             filename = exception_traceback.tb_frame.f_code.co_filename
+            funcname = exception_traceback.tb_frame.f_code.co_name
             line_number = exception_traceback.tb_lineno
             e.info = {
                 "i": str(exception_info),
+                "n": funcname,
                 "f": filename,
                 "l": line_number,
             }
@@ -122,9 +128,11 @@ def getAggDuration(niveau_agg: str) -> int:
             exception_type, exception_object, exception_traceback = sys.exc_info()
             exception_info = e.__repr__()
             filename = exception_traceback.tb_frame.f_code.co_filename
+            funcname = exception_traceback.tb_frame.f_code.co_name
             line_number = exception_traceback.tb_lineno
             e.info = {
                 "i": str(exception_info),
+                "n": funcname,
                 "f": filename,
                 "l": line_number,
             }
@@ -166,9 +174,11 @@ def calcAggDateNextLevel(
             exception_type, exception_object, exception_traceback = sys.exc_info()
             exception_info = e.__repr__()
             filename = exception_traceback.tb_frame.f_code.co_filename
+            funcname = exception_traceback.tb_frame.f_code.co_name
             line_number = exception_traceback.tb_lineno
             e.info = {
                 "i": str(exception_info),
+                "n": funcname,
                 "f": filename,
                 "l": line_number,
             }
@@ -186,9 +196,11 @@ def fixUtcDate(my_date: datetime) -> datetime:
             exception_type, exception_object, exception_traceback = sys.exc_info()
             exception_info = e.__repr__()
             filename = exception_traceback.tb_frame.f_code.co_filename
+            funcname = exception_traceback.tb_frame.f_code.co_name
             line_number = exception_traceback.tb_lineno
             e.info = {
                 "i": str(exception_info),
+                "n": funcname,
                 "f": filename,
                 "l": line_number,
             }
@@ -311,9 +323,11 @@ def calcAggDate(
             exception_type, exception_object, exception_traceback = sys.exc_info()
             exception_info = e.__repr__()
             filename = exception_traceback.tb_frame.f_code.co_filename
+            funcname = exception_traceback.tb_frame.f_code.co_name
             line_number = exception_traceback.tb_lineno
             e.info = {
                 "i": str(exception_info),
+                "n": funcname,
                 "f": filename,
                 "l": line_number,
             }
@@ -337,9 +351,11 @@ def isFlagged(bit_field: int, bit_to_check: int) -> bool:
             exception_type, exception_object, exception_traceback = sys.exc_info()
             exception_info = e.__repr__()
             filename = exception_traceback.tb_frame.f_code.co_filename
+            funcname = exception_traceback.tb_frame.f_code.co_name
             line_number = exception_traceback.tb_lineno
             e.info = {
                 "i": str(exception_info),
+                "n": funcname,
                 "f": filename,
                 "l": line_number,
             }
@@ -367,9 +383,11 @@ def addJson(j: json, key: str, valeur: int):
             exception_type, exception_object, exception_traceback = sys.exc_info()
             exception_info = e.__repr__()
             filename = exception_traceback.tb_frame.f_code.co_filename
+            funcname = exception_traceback.tb_frame.f_code.co_name
             line_number = exception_traceback.tb_lineno
             e.info = {
                 "i": str(exception_info),
+                "n": funcname,
                 "f": filename,
                 "l": line_number,
             }
@@ -398,9 +416,11 @@ def shouldNullify(exclusion: json, src_key: str) -> bool:
             exception_type, exception_object, exception_traceback = sys.exc_info()
             exception_info = e.__repr__()
             filename = exception_traceback.tb_frame.f_code.co_filename
+            funcname = exception_traceback.tb_frame.f_code.co_name
             line_number = exception_traceback.tb_lineno
             e.info = {
                 "i": str(exception_info),
+                "n": funcname,
                 "f": filename,
                 "l": line_number,
             }
@@ -427,9 +447,11 @@ def loadFromExclu(exclusion, src_key: str) -> bool:
             exception_type, exception_object, exception_traceback = sys.exc_info()
             exception_info = e.__repr__()
             filename = exception_traceback.tb_frame.f_code.co_filename
+            funcname = exception_traceback.tb_frame.f_code.co_name
             line_number = exception_traceback.tb_lineno
             e.info = {
                 "i": str(exception_info),
+                "n": funcname,
                 "f": filename,
                 "l": line_number,
             }
@@ -454,9 +476,11 @@ def delKey(j: json, key: str):
             exception_type, exception_object, exception_traceback = sys.exc_info()
             exception_info = e.__repr__()
             filename = exception_traceback.tb_frame.f_code.co_filename
+            funcname = exception_traceback.tb_frame.f_code.co_name
             line_number = exception_traceback.tb_lineno
             e.info = {
                 "i": str(exception_info),
+                "n": funcname,
                 "f": filename,
                 "l": line_number,
             }

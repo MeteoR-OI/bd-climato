@@ -127,9 +127,9 @@ class AggCompute():
 
                 b_change_maxmin = False
                 # compare the measure data and current maxmin
-                if maxmin_suffix == '_max' and agg_maxmin < new_calulated_maxmin:
+                if maxmin_suffix == '_max' and agg_maxmin <= new_calulated_maxmin:
                     b_change_maxmin = True
-                if maxmin_suffix == '_min' and agg_maxmin > new_calulated_maxmin:
+                if maxmin_suffix == '_min' and agg_maxmin >= new_calulated_maxmin:
                     b_change_maxmin = True
 
                 if b_change_maxmin:

@@ -24,9 +24,11 @@ class JsonPlus():
                 exception_type, exception_object, exception_traceback = sys.exc_info()
                 exception_info = e.__repr__()
                 filename = exception_traceback.tb_frame.f_code.co_filename
+                funcname = exception_traceback.tb_frame.f_code.co_name
                 line_number = exception_traceback.tb_lineno
                 e.info = {
                     "i": str(exception_info),
+                    "n": funcname,
                     "f": filename,
                     "l": line_number,
                 }
@@ -49,9 +51,11 @@ class JsonPlus():
                 exception_type, exception_object, exception_traceback = sys.exc_info()
                 exception_info = e.__repr__()
                 filename = exception_traceback.tb_frame.f_code.co_filename
+                funcname = exception_traceback.tb_frame.f_code.co_name
                 line_number = exception_traceback.tb_lineno
                 e.info = {
                     "i": str(exception_info),
+                    "n": funcname,
                     "f": filename,
                     "l": line_number,
                 }
@@ -71,9 +75,11 @@ class JsonPlus():
                 exception_type, exception_object, exception_traceback = sys.exc_info()
                 exception_info = e.__repr__()
                 filename = exception_traceback.tb_frame.f_code.co_filename
+                funcname = exception_traceback.tb_frame.f_code.co_name
                 line_number = exception_traceback.tb_lineno
                 e.info = {
                     "i": str(exception_info),
+                    "n": funcname,
                     "f": filename,
                     "l": line_number,
                 }
@@ -110,9 +116,11 @@ class JsonPlus():
                 exception_type, exception_object, exception_traceback = sys.exc_info()
                 exception_info = e.__repr__()
                 filename = exception_traceback.tb_frame.f_code.co_filename
+                funcname = exception_traceback.tb_frame.f_code.co_name
                 line_number = exception_traceback.tb_lineno
                 e.info = {
                     "i": str(exception_info),
+                    "n": funcname,
                     "f": filename,
                     "l": line_number,
                 }
@@ -147,9 +155,11 @@ class JsonPlus():
                 exception_type, exception_object, exception_traceback = sys.exc_info()
                 exception_info = e.__repr__()
                 filename = exception_traceback.tb_frame.f_code.co_filename
+                funcname = exception_traceback.tb_frame.f_code.co_name
                 line_number = exception_traceback.tb_lineno
                 e.info = {
                     "i": str(exception_info),
+                    "n": funcname,
                     "f": filename,
                     "l": line_number,
                 }
@@ -173,9 +183,11 @@ class DateTimeEncoder(json.JSONEncoder):
                 exception_type, exception_object, exception_traceback = sys.exc_info()
                 exception_info = e.__repr__()
                 filename = exception_traceback.tb_frame.f_code.co_filename
+                funcname = exception_traceback.tb_frame.f_code.co_name
                 line_number = exception_traceback.tb_lineno
                 e.info = {
                     "i": str(exception_info),
+                    "n": funcname,
                     "f": filename,
                     "l": line_number,
                 }

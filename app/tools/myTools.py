@@ -6,9 +6,7 @@ import inspect
 import logging
 
 
-def LogCritical(
-    e, my_span=None, params: json = {}, return_string: bool = False, stack_level: int = 0
-):
+def LogCritical(e, my_span=None, params: json = {}, return_string: bool = False, stack_level: int = 0):
     """
         Log Exception
 
@@ -25,7 +23,7 @@ def LogCritical(
         if filenames.__len__() == 0:
             filenames = ["??"]
         filename = filenames[filenames.__len__() - 1]
-        return LogMe.GetInstance().LogMeOutput(filename, e.info["l"], e.info["i"], e.info["n"], 'error', my_span, params, return_string)
+        return LogMe.GetInstance().LogMeOutput(filename, e.info["l"], e.info["n"],  e.info["i"], 'error', my_span, params, return_string)
     else:
         e_str = str(e.__class__) + ':' + str(e)
     return LogMe.GetInstance().LogMe(e_str, "critical", my_span, params, stack_level, return_string)
@@ -188,10 +186,9 @@ class LogMe:
         else:
             log_j["traceID"] = "no_trace"
 
-        if return_string:
-            return log_j
-
         if hasattr(settings, "TELEMETRY") is True and settings.TELEMETRY is True:
+            if return_string:
+                return log_j
             msg = JsonPlus().dumps(log_j)
         else:
             msg = 'ts=' + str(log_j["ts"]) + " "
@@ -201,7 +198,10 @@ class LogMe:
             msg += ' msg=' + str(log_j["msg"]) + ' '
             if log_j["traceID"] != "no_trace":
                 msg += 'traceID=' + str(log_j["traceID"]) + ' '
-            msg += ' params=' + JsonPlus().dumps(params) + ' '
+            if log_j["params"] != {}:
+                msg += ' params=' + JsonPlus().dumps(params) + ' '
+            if return_string:
+                return msg
 
         if level == 'debug':
             self.log.debug(msg)
@@ -253,5 +253,5 @@ class LogMe:
             Clean up exception error message
         """
         if msg.startswith('ConnectionError(MaxRetryError("HTTPConnectionPool('):
-            return msg.split("):")[0].replace('(MaxRetryError', '')
+            return "Connection Error, server probably not on-line or not accessible"
         return msg

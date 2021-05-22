@@ -87,8 +87,9 @@ class Command(BaseCommand):
                     "l": line_number,
                 }
                 e.done = True
-                err = t.LogCritical(e, None, {}, True)
-                print(JsonPlus().dumps(err))
+            errMsg = t.LogCritical(e, None, {}, True)
+            print(errMsg)
+            exit(0)
 
     def analyseAggreg(
         self,

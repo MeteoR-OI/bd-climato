@@ -133,9 +133,7 @@ class CalcAggreg(AllCalculus):
                             for an_intrument in all_instr.get_all_instruments():
 
                                 # for all measures
-                                for my_measure in an_intrument[
-                                    "object"
-                                ].get_all_measures():
+                                for my_measure in an_intrument["object"].get_all_measures():
 
                                     # load the needed aggregation for this measure
                                     agg_decas = self.load_aggregations_in_array(
