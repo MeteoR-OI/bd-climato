@@ -94,9 +94,9 @@ class CalcTestEngine():
                         my_row = AggMeteor(pid, a_result['t'], test_dat)
 
                     # if a_result['t'] == "O":
-                    #     t.logTrace('obs: ' + str(my_row.data.id) + ", dat: " + str(my_row.data.stop_dat) + ", j: " + JsonPlus().dumps(my_row.data.j))
+                    #     t.LogDebug('obs: ' + str(my_row.data.id) + ", dat: " + str(my_row.data.stop_dat) + ", j: " + JsonPlus().dumps(my_row.data.j))
                     # else:
-                    #     t.logTrace('agg_' + a_result['t'] + ': ' + str(my_row.data.id) + ", dat: " + str(my_row.data.start_dat) + ", j: " + JsonPlus().dumps(my_row.data.j))
+                    #     t.LogDebug('agg_' + a_result['t'] + ': ' + str(my_row.data.id) + ", dat: " + str(my_row.data.start_dat) + ", j: " + JsonPlus().dumps(my_row.data.j))
                     if a_result.__contains__('count'):
                         stop_dat_mask = ''
                         if a_result.__contains__('stop_dat_mask'):
@@ -122,5 +122,5 @@ class CalcTestEngine():
             assert error_msg.__len__() == 0
 
         except Exception as inst:
-            t.logTrace(inst.with_traceback(None))
+            t.LogDebug(inst.with_traceback(None))
             assert "error in " == " json file"

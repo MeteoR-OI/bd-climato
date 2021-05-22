@@ -142,8 +142,11 @@ AUTOLOAD_DIR = "./data/json_auto_load"          # in symc with dc-telemetry.yaml
 LOCAL_REMOTE_DIR = "./data/json_not_in_git"     # server loading file thru view
 LOCAL_DIR = './data/json_not_in_git'            # client loaded file with loadson command
 
-TELEMETRY = False                                # activate telemetry
-PROD = False
+TELEMETRY = True                                # activate telemetry
+JAEGER_COLLECTOR = "localhost:14250"
+JAEGER_INSECURE = True
+
+PROD = True
 LOG_FILE_DIR = "./data/localStorage/log"    # log storage
 
 # see comments in mytools.py(LogMe class definition)
@@ -172,13 +175,13 @@ LOGGING = {
         'logInfoFile_hdl': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': LOG_FILE_DIR + '/django.log',
+            'filename': LOG_FILE_DIR + '/django_info.log',
             'formatter': 'file_fmt'
         },
         'logDebugFile_hdl': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': LOG_FILE_DIR + '/django.log',
+            'filename': LOG_FILE_DIR + '/django_debug.log',
             'formatter': 'file_fmt'
         },
         'console': {
@@ -192,7 +195,7 @@ LOGGING = {
             'style': '{'
         },
         'file_fmt': {
-            'format': '{asctime} {levelname} {module} {lineno} {message}',
+            'format': '{message}',
             'style': '{'
         }
     }

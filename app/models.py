@@ -23,7 +23,7 @@ class DateCharField(models.CharField):
         except Exception:
             pass
         finally:
-            # t.logTrace("DateCharField..get_prep_value called for " + str(self.attname) + " with " + str(value) + " => " + str(ret))
+            # t.LogDebug("DateCharField..get_prep_value called for " + str(self.attname) + " with " + str(value) + " => " + str(ret))
             return ret
 
     def from_db_value(self, value, expression, connection):
@@ -33,7 +33,7 @@ class DateCharField(models.CharField):
         except Exception:
             pass
         finally:
-            # t.logTrace("DateCharField..from_db_value called for " + str(self.attname) + " with " + str(value) + " => " + str(ret))
+            # t.LogDebug("DateCharField..from_db_value called for " + str(self.attname) + " with " + str(value) + " => " + str(ret))
             return ret
 
     def to_python(self, value):
@@ -43,7 +43,7 @@ class DateCharField(models.CharField):
         except Exception:
             pass
         finally:
-            # t.logTrace("DateCharField..to_python called for " + str(self.attname) + " with " + str(value) + " => " + str(ret))
+            # t.LogDebug("DateCharField..to_python called for " + str(self.attname) + " with " + str(value) + " => " + str(ret))
             return ret
 
 
@@ -67,7 +67,7 @@ class DateJSONField(models.JSONField):
     #     except Exception:
     #         pass
     #     finally:
-    #         # t.logTrace("DateJSONField..from_db_value called for " + str(self.attname) + " with " + str(value) + " => " + str(ret))
+    #         # t.LogDebug("DateJSONField..from_db_value called for " + str(self.attname) + " with " + str(value) + " => " + str(ret))
     #         return ret
 
     def from_db_value(self, value, expression, connection):
@@ -81,7 +81,7 @@ class DateJSONField(models.JSONField):
         except Exception:
             pass
         finally:
-            # t.logTrace("DateJSONField..from_db_value called for " + str(self.attname) + " with " + str(value) + " => " + str(ret))
+            # t.LogDebug("DateJSONField..from_db_value called for " + str(self.attname) + " with " + str(value) + " => " + str(ret))
             return ret
 
     def to_python(self, value):
@@ -95,7 +95,7 @@ class DateJSONField(models.JSONField):
         except Exception:
             pass
         finally:
-            # t.logTrace("DateJSONField..to_python called for " + str(self.attname) + " with " + str(value) + " => " + str(ret))
+            # t.LogDebug("DateJSONField..to_python called for " + str(self.attname) + " with " + str(value) + " => " + str(ret))
             return ret
 
 

@@ -12,7 +12,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Python: Django",
+            "name": "Django-local",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/manage.py",
@@ -28,19 +28,22 @@
             "django": true
         },
         {
-            "name": "Docker: Django",
-            "type": "docker",
+            "name": "Django-telemetry",
+            "type": "python",
             "request": "launch",
-            "preLaunchTask": "docker-run: debug",
-            "python": {
-                "pathMappings": [
-                {
-                    "localRoot": "${workspaceFolder}",
-                    "remoteRoot": "/app"
-                }
-                ],
-                "projectType": "django"
-            }
+            "program": "${workspaceFolder}/manage.py",
+            "autoReload": {
+                "enable": true
+            },
+            "args": [
+                "runserver",
+                "--settings",
+                "Clim_MeteoR.settings_telemetry_only"
+            ],
+            "env": {
+                "DJANGO_SETTINGS_MODULE": "Clim_MeteoR.settings_telemetry_only"
+            },
+            "django": true
         },
         {
             "name": "loadJson",
@@ -48,7 +51,6 @@
             "request": "launch",
             "program": "${workspaceFolder}/manage.py",
             "args": [
-                // "${fileBasenameNoExtension}"
                 "loadJson",
                 "obs.2021-05-12.json",
                 "--tmp",
@@ -61,7 +63,6 @@
             "request": "launch",
             "program": "${workspaceFolder}/manage.py",
             "args": [
-                // "${fileBasenameNoExtension}"
                 "svc",
                 "auto",
                 "--run",
@@ -84,7 +85,6 @@
             "request": "launch",
             "program": "${workspaceFolder}/manage.py",
             "args": [
-                // "${fileBasenameNoExtension}"
                 "compAgg",
                 "2",
                 "--day",

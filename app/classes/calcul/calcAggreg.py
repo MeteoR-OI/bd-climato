@@ -87,13 +87,14 @@ class CalcAggreg(AllCalculus):
         span_name = "Agg"
         if is_tmp is True:
             span_name += "_tmp"
-        with self.tracer.start_as_current_span(span_name, trace_flag) as my_span:
+        with self.tracer.start_span(span_name, trace_flag) as my_span:
+            start_time = datetime.datetime.now()
             my_span.set_attribute("obs_id", a_todo.data.obs_id_id)
             my_span.set_attribute("poste_id", a_todo.data.obs_id.poste_id_id)
             my_span.set_attribute("is_tmp", is_tmp)
             # my_span.set_attribute("meteor", a_todo.data.obs_id.poste_id.meteor)
             # retrieve data we will need
-            span_load_data = self.tracer.start_span("loadDataInObs", trace_flag)
+            span_load_data = self.tracer.start_span("load Aggreg", trace_flag)
             m_stop_dat = a_todo.data.obs_id.stop_dat
             a_start_dat = a_todo.data.obs_id.agg_start_dat
             poste_metier = PosteMetier(a_todo.data.obs_id.poste_id_id, a_start_dat)
@@ -209,6 +210,8 @@ class CalcAggreg(AllCalculus):
                     )
             finally:
                 poste_metier.unlock()
+                duration = datetime.datetime.now() - start_time
+                t.logInfo("aggregation updated", my_span, {"time_exec": (duration.microseconds/1000)})
 
     def load_aggregations_in_array(
         self, my_measure, anAgg: str, aggregations, m_stop_dat: datetime

@@ -4,6 +4,7 @@
 from django.http import HttpResponse
 from app.tools.jsonPlus import JsonPlus
 from app.classes.calcul.calcObservation import CalcObs
+from django.conf import settings
 import os
 
 
@@ -23,13 +24,16 @@ def view_my_calc(request, file_name, is_tmp: bool = False):
 
 
 def _viewLoadJson(file_name: str, delete_flag: bool, trace_flag: bool, is_tmp: bool = False, use_validation: bool = False):
+    local_dir = './data/json_not_in_git'
+    if hasattr(settings, "LOCAL_REMOTE_DIR") is True:
+        local_dir = settings.LOCAL_REMOTE_DIR
     data = {
         "params": {
             "delete": delete_flag,
             "is_tmp": is_tmp,
             "validation": use_validation,
             "trace_flag": trace_flag,
-            "base_dir": os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/../data/json_not_in_git/',
+            "base_dir": os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + '/.' + local_dir,
             "filename": file_name
         }
     }

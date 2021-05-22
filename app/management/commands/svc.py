@@ -94,4 +94,5 @@ class Command(BaseCommand):
                     "l": line_number,
                 }
                 e.done = True
-            t.LogException(e)
+            err = t.LogCritical(e, None, {}, True)
+            print(JsonPlus().dumps(err))

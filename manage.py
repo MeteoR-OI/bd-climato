@@ -4,6 +4,7 @@ import sys
 
 if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Clim_MeteoR.settings")
+    print('*** "DJANGO_SETTINGS_MODULE" = ' + str(os.environ.get("DJANGO_SETTINGS_MODULE")) + ' ***')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

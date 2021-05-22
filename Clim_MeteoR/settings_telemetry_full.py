@@ -98,8 +98,8 @@ DATABASES = {
         'NAME': 'climatest',
         'USER': os.getenv('PGUSER', 'postgres'),
         'PASSWORD': os.getenv('PGPASS', 'Funiculi'),
-        'HOST': 'localhost',                        # defined in dc-telemetry.yaml
-        'PORT': '5432',                             # defined in dc-telemetry.yaml
+        'HOST': 'climatodb',                        # defined in dc-telemetry.yaml
+        'PORT': '5435',                             # defined in dc-telemetry.yaml
     }
 }
 
@@ -138,13 +138,16 @@ MEDIA_ROOT = "/srv/beta_data/meteor_oi/bd_climato/bd-climato/media"
 DATA_FS_PATH = os.path.join(MEDIA_ROOT, 'data')
 
 # App settings
-AUTOLOAD_DIR = "./data/json_auto_load"          # in symc with dc-telemetry.yaml
-LOCAL_REMOTE_DIR = "./data/json_not_in_git"     # server loading file thru view
+AUTOLOAD_DIR = "/home/django/auto"              # in symc with dc-telemetry.yaml
+LOCAL_REMOTE_DIR = "/home/django/manual"        # server loading file thru view
 LOCAL_DIR = './data/json_not_in_git'            # client loaded file with loadson command
 
-TELEMETRY = False                                # activate telemetry
-PROD = False
-LOG_FILE_DIR = "./data/localStorage/log"    # log storage
+TELEMETRY = True                                # activate telemetry
+JAEGER_COLLECTOR = "jaeger:14250"
+JAEGER_INSECURE = True
+
+PROD = True
+LOG_FILE_DIR = "/home/django/log"    # log storage
 
 # see comments in mytools.py(LogMe class definition)
 LOGGING = {
@@ -172,13 +175,13 @@ LOGGING = {
         'logInfoFile_hdl': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': LOG_FILE_DIR + '/django.log',
+            'filename': LOG_FILE_DIR + '/django_info.log',
             'formatter': 'file_fmt'
         },
         'logDebugFile_hdl': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': LOG_FILE_DIR + '/django.log',
+            'filename': LOG_FILE_DIR + '/django_debug.log',
             'formatter': 'file_fmt'
         },
         'console': {
@@ -192,7 +195,7 @@ LOGGING = {
             'style': '{'
         },
         'file_fmt': {
-            'format': '{asctime} {levelname} {module} {lineno} {message}',
+            'format': '',
             'style': '{'
         }
     }

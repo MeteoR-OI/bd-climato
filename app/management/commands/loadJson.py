@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.core.management import call_command
 from app.tools.climConstant import SvcRequestType
 from app.tools.jsonPlus import JsonPlus
+from django.conf import settings
 import app.tools.myTools as t
 import os
 import glob
@@ -12,7 +13,11 @@ import sys
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument('filename', type=str, nargs='?', default='*', help='filename with extension (should be in data/json_not_in_git')
+        local_dir = './data/json_not_in_git'
+        if hasattr(settings, "LOCAL_DIR") is True:
+            local_dir = settings.LOCAL_DIR
+
+        parser.add_argument('filename', type=str, nargs='?', default='*', help='filename with extension (should be in ' + local_dir)
         parser.add_argument('--delete', action='store_true', help='delete all aggregations before loading json')
         parser.add_argument('--nodel', action='store_true', help='do not delete all aggregations before loading json')
         parser.add_argument('--validation', action='store_true', help='use validation data instead of aggregations')
@@ -55,7 +60,10 @@ class Command(BaseCommand):
 
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         b_file_found = False
-        for a_file in glob.glob(base_dir + '/../../data/json_not_in_git/*.json'):
+        local_dir = './data/json_not_in_git'
+        if hasattr(settings, "LOCAL_DIR") is True:
+            local_dir = settings.LOCAL_DIR
+        for a_file in glob.glob(base_dir + '/../.' + local_dir + '/*.json'):
             if options['filename'] == '*' or a_file.endswith(options['filename']):
                 b_file_found = True
                 self.callRemoteObsSvc(a_file, delete_flag, trace_flag, is_tmp, validation_flag)
@@ -102,7 +110,8 @@ class Command(BaseCommand):
                     "l": line_number,
                 }
                 e.done = True
-            t.LogException(e)
+            err = t.LogCritical(e, None, {}, True)
+            print(JsonPlus().dumps(err))
 
     def callService(self, service_name: str, command: int, trace_flag: bool, params: json):
         try:

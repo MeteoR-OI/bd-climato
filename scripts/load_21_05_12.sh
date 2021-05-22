@@ -1,5 +1,5 @@
 
-psql -d climatest < data/sqlScripts/delete_all.sql
+psql -p 5435 -d climatest < data/sqlScripts/delete_all.sql
 rm data/json_auto_load/*.json
 cp data/json_in_git/obs_05_12/*.json data/json_auto_load
 cp data/json_in_git/obs.2021-05-12.json  data/json_not_in_git

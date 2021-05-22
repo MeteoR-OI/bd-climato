@@ -161,36 +161,41 @@ class WorkerRoot:
             used_fequency = self.frequency
             check_exit = self.ref_mgr.GetRef("worker_kill_frequency")
             if trace_flag is True:
-                t.logTrace('task ' + self.display + " running", None, {"check_time_out": check_exit})
+                t.LogDebug('task ' + self.display + " running", None, {"check_time_out": check_exit})
 
             while True:
                 b_run_svc = False
                 try:
                     trace_flag = self.GetTraceFlag()
                     if trace_flag is True:
-                        t.logTrace('task ' + self.display + " waiting now", None, {"freq": self.frequency, "freq.used": used_fequency})
+                        t.LogDebug('task ' + self.display + " waiting now", None, {"freq": self.frequency, "freq.used": used_fequency})
                     call_params = {
                         "param": {}
                     }
                     try:
                         # get will fire an 'Empty exception when time-out, which is normal
                         call_params["param"] = self.queueRun.get(True, check_exit)
+                        if call_params['param'].get('trace_flag') is not None:
+                            self.SetTraceFlag(call_params['param']['trace_flag'])
                         b_run_svc = True
 
                     except queue.Empty:
                         if self.eventKill.isSet() is True:
-                            t.logInfo('svc kill event received, exiting', {"svc": self.display})
+                            t.logInfo('svc kill event received, exiting', None, {"svc": self.display})
                             return
 
                         used_fequency -= check_exit
                         if used_fequency <= 0:
                             b_run_svc = True
+                    except Exception as ex:
+                        t.LogCritical(ex)
+                        raise ex
 
                     finally:
                         if b_run_svc is True:
                             trace_flag = self.GetTraceFlag()
                             if trace_flag is True:
-                                t.logTrace('task ' + self.display + " Run " + self.display, None)
+                                t.LogDebug('task ' + self.display + " Run " + self.display, None)
                             # old bug...
                             if call_params['param'] is None or call_params == []:
                                 call_params['param'] = {}

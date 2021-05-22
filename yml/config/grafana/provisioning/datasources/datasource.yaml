@@ -1,0 +1,59 @@
+# config file version
+apiVersion: 1
+
+deleteDatasources:
+  - name: loki
+  - name: prometheus
+  - name: jaeger
+
+datasources:
+- name: loki
+  type: loki
+  uid: loki
+  # uid: my_loki
+  access: proxy
+  url: http://10.5.0.20:3100
+  basicAuth: false
+  isDefault: true
+  version: 1
+  editable: false
+  jsonData:
+    maxLines: 1000
+    derivedFields:
+    - datasourceUid: jaeger
+      matcherRegex: "traceID\": \"(\\w+)"
+      name: traceID
+      # only '${__value.raw}' open in grafana window
+      url: '$${__value.raw}'
+    - datasourceUid: jaeger
+      matcherRegex: "traceID\": \"(\\w+)"
+      name: jaegger
+      # open jaeger in another window
+      url: 'http://localhost:16686/trace/${__value.raw}'
+
+- name: jaeger
+  uid: jaeger
+  type: jaeger
+  url: http://10.5.0.60:16686
+  basicAuth: false
+  isDefault: false
+  version: 1
+  editable: false
+  access: proxy
+  # jsonData:
+  #   maxLines: 1000
+  #   derivedFields:
+  #     - datasourceUid: my_loki
+  #       matcherRegex: "traceID=(\\w+)"
+  #       name: TraceID
+  #       url: "$${__value.raw}"
+
+- name: prometheus
+  type: prometheus
+  uid: prometheus
+  access: proxy
+  url: http://10.5.0.10:9090
+  isDefault: false
+  version: 1
+  editable: false
+  basicAuth: false

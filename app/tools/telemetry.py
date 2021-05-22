@@ -1,4 +1,10 @@
-from app.tools.climConstant import TelemetryConf
+"""
+    Later: need to call only api methods
+    sdk (implementation) will be loaded with env variables
+    But not fully available at the time of coding
+    Then telemetry call directly sdk methods
+    And a no-telemetry mode was coded too..
+"""
 from django.conf import settings
 from opentelemetry import trace
 from opentelemetry.exporter.jaeger.proto import grpc
@@ -17,7 +23,7 @@ class ContextMok:
     ContextMok
         Mok class to simulate context class when no telemetry is used
     """
-    trace_id = None
+    traceID = None
 
 
 class SpanMok:
@@ -47,10 +53,12 @@ class SpanMok:
                 exception_type, exception_object, exception_traceback = sys.exc_info()
                 exception_info = e.__repr__()
                 filename = exception_traceback.tb_frame.f_code.co_filename
+                module = exception_traceback.tb_frame.f_code.co_name
                 line_number = exception_traceback.tb_lineno
                 e.info = {
                     "i": str(exception_info),
                     "f": filename,
+                    "n": module,
                     "l": line_number,
                 }
                 e.done = True
@@ -73,30 +81,32 @@ class SpanMok:
         try:
             if self.trace is False:
                 return
-            print("Span: " + self.name)
-            print_out = ""
-            for an_att in self.atts:
-                print_out += str(an_att["k"]) + ": " + str(an_att["v"]) + ", "
-            self.atts = []
-            if print_out.__len__() > 2:
-                print("     attributes: " + print_out[0:-2])
-                print_out = ""
-            for an_att in self.events:
-                print_out += str(an_att["en"]) + ": " + str(an_att["e"]) + ", "
-            self.atts = []
-            if print_out.__len__() > 2:
-                print("     events: " + print_out[0:-2])
-                print_out = ""
+            # print("Span: " + self.name)
+            # print_out = ""
+            # for an_att in self.atts:
+            #     print_out += str(an_att["k"]) + ": " + str(an_att["v"]) + ", "
+            # self.atts = []
+            # if print_out.__len__() > 2:
+            #     print("     attributes: " + print_out[0:-2])
+            #     print_out = ""
+            # for an_att in self.events:
+            #     print_out += str(an_att["en"]) + ": " + str(an_att["e"]) + ", "
+            # self.atts = []
+            # if print_out.__len__() > 2:
+            #     print("     events: " + print_out[0:-2])
+            #     print_out = ""
             return
         except Exception as e:
             if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
                 exception_type, exception_object, exception_traceback = sys.exc_info()
                 exception_info = e.__repr__()
                 filename = exception_traceback.tb_frame.f_code.co_filename
+                module = exception_traceback.tb_frame.f_code.co_name
                 line_number = exception_traceback.tb_lineno
                 e.info = {
                     "i": str(exception_info),
                     "f": filename,
+                    "n": module,
                     "l": line_number,
                 }
                 e.done = True
@@ -124,7 +134,7 @@ class SpanMok:
         record_exception
             add an exception in the Span
         """
-        t.LogException(exc, self)
+        t.LogCritical(exc, self)
         return
 
     def set_attribute(self, k: str, v):
@@ -143,10 +153,12 @@ class SpanMok:
                 exception_type, exception_object, exception_traceback = sys.exc_info()
                 exception_info = e.__repr__()
                 filename = exception_traceback.tb_frame.f_code.co_filename
+                module = exception_traceback.tb_frame.f_code.co_name
                 line_number = exception_traceback.tb_lineno
                 e.info = {
                     "i": str(exception_info),
                     "f": filename,
+                    "n": module,
                     "l": line_number,
                 }
                 e.done = True
@@ -166,10 +178,12 @@ class SpanMok:
                 exception_type, exception_object, exception_traceback = sys.exc_info()
                 exception_info = e.__repr__()
                 filename = exception_traceback.tb_frame.f_code.co_filename
+                module = exception_traceback.tb_frame.f_code.co_name
                 line_number = exception_traceback.tb_lineno
                 e.info = {
                     "i": str(exception_info),
                     "f": filename,
+                    "n": module,
                     "l": line_number,
                 }
                 e.done = True
@@ -184,6 +198,11 @@ class TracerTriage:
     TracerTriage
         Call the real tracer, or our Mok implementation
     """
+    current_span = None
+    future_attributes = []
+    future_attributes_copy = []
+    trace = False
+
     def __init__(self, tracer: Tracer = None):
         try:
             self.current_span = None
@@ -198,10 +217,12 @@ class TracerTriage:
                 exception_type, exception_object, exception_traceback = sys.exc_info()
                 exception_info = e.__repr__()
                 filename = exception_traceback.tb_frame.f_code.co_filename
+                module = exception_traceback.tb_frame.f_code.co_name
                 line_number = exception_traceback.tb_lineno
                 e.info = {
                     "i": str(exception_info),
                     "f": filename,
+                    "n": module,
                     "l": line_number,
                 }
                 e.done = True
@@ -211,11 +232,47 @@ class TracerTriage:
         return self
 
     def __end__(self):
+        self.end_span()
         return
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.current_span = None
+        self.end_span()
         return
+
+    def end_span(self):
+        self.clean_future_attribute()
+        self.current_span = None
+        self.trace = False
+        return
+
+    def load_future_attributes_in_span(self, my_span):
+        for an_atr in self.future_attributes:
+            my_span.set_attribute(an_atr['k'], an_atr['v'])
+        self.future_attributes = []
+
+    def save_future_attribute(self):
+        self.future_attributes_copy = []
+        for an_atr in self.future_attributes:
+            self.future_attributes_copy.append(an_atr)
+
+    def restore_future_attribute(self, delete_copy: bool = True):
+        for an_atr in self.future_attributes_copy:
+            self.future_attributes.append(an_atr)
+        if delete_copy is True:
+            self.future_attributes_copy = []
+
+    def clean_future_attribute(self):
+        self.future_attributes = []
+        self.future_attributes_copy = []
+
+    def add_future_attribute(self, k: str, v):
+        """
+            add attributes that will be loaded in the next span
+        """
+        if self.current_span is None:
+            self.future_attributes.append({"k": k, "v": v})
+        else:
+            self.current_span.set_attribute(k, v)
 
     def get_current_or_new_span(self, name: str = "???", trace_flag: bool = None):
         """
@@ -229,7 +286,7 @@ class TracerTriage:
         try:
             if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
                 if self.current_span is None:
-                    return SpanMok(name)
+                    self.current_span = self.start_as_current_span(name, trace_flag)
                 return self.current_span
             else:
                 tmp_span = get_current_span()
@@ -242,10 +299,12 @@ class TracerTriage:
                 exception_type, exception_object, exception_traceback = sys.exc_info()
                 exception_info = e.__repr__()
                 filename = exception_traceback.tb_frame.f_code.co_filename
+                module = exception_traceback.tb_frame.f_code.co_name
                 line_number = exception_traceback.tb_lineno
                 e.info = {
                     "i": str(exception_info),
                     "f": filename,
+                    "n": module,
                     "l": line_number,
                 }
                 e.done = True
@@ -268,16 +327,20 @@ class TracerTriage:
                     print("   ** trace_flag is None")
                 return self.current_span
             else:
-                return self.real_tracer.start_as_current_span(span_name)
+                my_span = self.real_tracer.start_as_current_span(span_name)
+                self.current_span = get_current_span()
+                return my_span
         except Exception as e:
             if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
                 exception_type, exception_object, exception_traceback = sys.exc_info()
                 exception_info = e.__repr__()
                 filename = exception_traceback.tb_frame.f_code.co_filename
+                module = exception_traceback.tb_frame.f_code.co_name
                 line_number = exception_traceback.tb_lineno
                 e.info = {
                     "i": str(exception_info),
                     "f": filename,
+                    "n": module,
                     "l": line_number,
                 }
                 e.done = True
@@ -300,16 +363,19 @@ class TracerTriage:
                     print("   ** trace_flag is None")
                 return self.current_span
             else:
-                return self.real_tracer.start_span(span_name)
+                self.current_span = self.real_tracer.start_span(span_name)
+                return self.current_span
         except Exception as e:
             if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
                 exception_type, exception_object, exception_traceback = sys.exc_info()
                 exception_info = e.__repr__()
                 filename = exception_traceback.tb_frame.f_code.co_filename
+                module = exception_traceback.tb_frame.f_code.co_name
                 line_number = exception_traceback.tb_lineno
                 e.info = {
                     "i": str(exception_info),
                     "f": filename,
+                    "n": module,
                     "l": line_number,
                 }
                 e.done = True
@@ -344,9 +410,16 @@ class Telemetry:
                 )
                 tracer = trace.get_tracer(__name__)
 
+                collector_endpoint = "localhost:14250"
+                if hasattr(settings, "JAEGER_COLLECTOR") is True:
+                    collector_endpoint = settings.JAEGER_COLLECTOR
+                collector_insecure = True
+                if hasattr(settings, "JAEGER_INSECURE") is True:
+                    collector_insecure = settings.JAEGER_INSECURE
+
                 jaeger_exporter = grpc.JaegerExporter(
-                    collector_endpoint=TelemetryConf.get("collector"),
-                    insecure=TelemetryConf.get("insecure"),
+                    collector_endpoint=collector_endpoint,
+                    insecure=collector_insecure
                 )
 
                 # create a BatchSpanProcessor and add the exporter to it
@@ -362,10 +435,12 @@ class Telemetry:
                 exception_type, exception_object, exception_traceback = sys.exc_info()
                 exception_info = e.__repr__()
                 filename = exception_traceback.tb_frame.f_code.co_filename
+                module = exception_traceback.tb_frame.f_code.co_name
                 line_number = exception_traceback.tb_lineno
                 e.info = {
                     "i": str(exception_info),
                     "f": filename,
+                    "n": module,
                     "l": line_number,
                 }
                 e.done = True

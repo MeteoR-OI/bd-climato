@@ -3,92 +3,127 @@ from app.tools.dateTools import str_to_date
 from app.classes.repository.aggMeteor import AggMeteor
 from app.classes.repository.posteMeteor import PosteMeteor
 import app.tools.myTools as t
+from app.tools.jsonPlus import JsonPlus
 import sys
 import datetime
 
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument('pid', type=str, nargs='?', default='*', help='filename with extension (should be in data/json_not_in_git')
-        parser.add_argument('--from', action='store_true', help='beginning of start_date included')
-        parser.add_argument('--to', action='store_true', help='end of start_dat included')
-        parser.add_argument('--details', action='store_true', help='dump all, including matching values')
-        parser.add_argument('--hour', action='store_true', help='Check only hour aggregations')
-        parser.add_argument('--day', action='store_true', help='Check only day aggregations')
-        parser.add_argument('--month', action='store_true', help='Check only month aggregations')
-        parser.add_argument('--year', action='store_true', help='Check only year aggregations')
-        parser.add_argument('--all', action='store_true', help='Check only all aggregations')
+        parser.add_argument("pid", type=str, nargs="?", default="*", help="poste_id")
+        parser.add_argument(
+            "--from", action="store_true", help="beginning of start_date included"
+        )
+        parser.add_argument(
+            "--to", action="store_true", help="end of start_dat included"
+        )
+        parser.add_argument(
+            "--details", action="store_true", help="dump all, including matching values"
+        )
+        parser.add_argument(
+            "--hour", action="store_true", help="Check only hour aggregations"
+        )
+        parser.add_argument(
+            "--day", action="store_true", help="Check only day aggregations"
+        )
+        parser.add_argument(
+            "--month", action="store_true", help="Check only month aggregations"
+        )
+        parser.add_argument(
+            "--year", action="store_true", help="Check only year aggregations"
+        )
+        parser.add_argument(
+            "--all", action="store_true", help="Check only all aggregations"
+        )
 
     def handle(self, *args, **options):
         try:
-            if options['pid']:
-                poste_id = int(options['pid'])
+            if options["pid"]:
+                poste_id = int(options["pid"])
             else:
                 raise Exception("compAgg", "missing poste_id")
 
             from_dt = datetime.datetime(1900, 1, 1)
-            if options['from']:
-                from_dt = str_to_date(options['from'])
+            if options["from"]:
+                from_dt = str_to_date(options["from"])
 
             to_dt = datetime.datetime(2900, 1, 1)
-            if options['to']:
-                to_dt = str_to_date(options['to'])
+            if options["to"]:
+                to_dt = str_to_date(options["to"])
 
             disp_details = False
-            if options['details']:
+            if options["details"]:
                 disp_details = True
 
             level = "*"
 
-            if options['hour']:
+            if options["hour"]:
                 level = "H"
 
-            if options['day']:
+            if options["day"]:
                 level = "D"
 
-            if options['month']:
+            if options["month"]:
                 level = "M"
 
-            if options['year']:
+            if options["year"]:
                 level = "Y"
 
-            if options['all']:
+            if options["all"]:
                 level = "A"
 
             self.analyseAggreg(poste_id, from_dt, to_dt, disp_details, level)
         except Exception as e:
-            if e.__dict__.__len__() == 0 or 'done' not in e.__dict__:
+            if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
                 exception_type, exception_object, exception_traceback = sys.exc_info()
                 exception_info = e.__repr__()
                 filename = exception_traceback.tb_frame.f_code.co_filename
+                module = exception_traceback.tb_frame.f_code.co_name
                 line_number = exception_traceback.tb_lineno
                 e.info = {
                     "i": str(exception_info),
                     "f": filename,
+                    "n": module,
                     "l": line_number,
                 }
                 e.done = True
-            t.LogException(e)
+                err = t.LogCritical(e, None, {}, True)
+                print(JsonPlus().dumps(err))
 
-    def analyseAggreg(self, poste_id: int, from_dt: datetime, to_dt: datetime, disp_details: bool, disp_level: str):
+    def analyseAggreg(
+        self,
+        poste_id: int,
+        from_dt: datetime,
+        to_dt: datetime,
+        disp_details: bool,
+        disp_level: str,
+    ):
         try:
             p = PosteMeteor(poste_id)
             agg_done = tmp_agg_done = False
-            for level in ['H', 'D', 'M', 'Y', 'A']:
-                if disp_level == '*' or disp_level == level:
-                    self.display('Poste ' + p.data.meteor + ' level: ' + disp_level)
+            for level in ["H", "D", "M", "Y", "A"]:
+                if disp_level == "*" or disp_level == level:
+                    self.display("Poste " + p.data.meteor + " level: " + disp_level)
 
-                    tmp_agg_obj = AggMeteor.GetAggObj(level + 'T')
+                    tmp_agg_obj = AggMeteor.GetAggObj(level + "T")
                     agg_obj = AggMeteor.GetAggObj(level)
 
-                    all_agg = agg_obj.objects.filter(poste_id_id=poste_id).order_by("start_dat").all()
-                    all_tmp_agg = tmp_agg_obj.objects.filter(poste_id_id=poste_id).order_by("start_dat").all()
+                    all_agg = (
+                        agg_obj.objects.filter(poste_id_id=poste_id)
+                        .order_by("start_dat")
+                        .all()
+                    )
+                    all_tmp_agg = (
+                        tmp_agg_obj.objects.filter(poste_id_id=poste_id)
+                        .order_by("start_dat")
+                        .all()
+                    )
 
                     idx = idx_tmp = 0
                     nb_agg = all_agg.count()
                     nb_tmp_agg = all_tmp_agg.count()
                     max_idx = max(nb_agg, nb_tmp_agg)
-                    while (max(idx, idx_tmp) < max_idx):
+                    while max(idx, idx_tmp) < max_idx:
                         if idx >= nb_agg:
                             agg_done = True
                         else:
@@ -109,10 +144,14 @@ class Command(BaseCommand):
                             my_agg = None
                             agg_done = True
 
-                        if str(my_tmp_agg is not None and my_tmp_agg.start_dat) < str(from_dt):
+                        if str(my_tmp_agg is not None and my_tmp_agg.start_dat) < str(
+                            from_dt
+                        ):
                             idx_tmp += 1
                             continue
-                        if str(my_tmp_agg is not None and my_tmp_agg.start_dat) > str(to_dt):
+                        if str(my_tmp_agg is not None and my_tmp_agg.start_dat) > str(
+                            to_dt
+                        ):
                             tmp_agg_done = True
                             my_tmp_agg = None
 
@@ -123,9 +162,13 @@ class Command(BaseCommand):
                             t.LogError("both aggregations can' be None!!!")
                             break
 
-                        if my_tmp_agg is None or str(my_agg.start_dat) < str(my_tmp_agg.start_dat):
+                        if my_tmp_agg is None or str(my_agg.start_dat) < str(
+                            my_tmp_agg.start_dat
+                        ):
                             my_tmp_agg = None
-                        elif my_agg is None or str(my_agg.start_dat) > str(my_tmp_agg.start_dat):
+                        elif my_agg is None or str(my_agg.start_dat) > str(
+                            my_tmp_agg.start_dat
+                        ):
                             my_agg = None
 
                         k_processed = []
@@ -140,7 +183,7 @@ class Command(BaseCommand):
                                 cols = []
                                 cols.append(k)
                                 if my_agg.j.get(k) is None:
-                                    cols.append('')
+                                    cols.append("")
                                 else:
                                     cols.append(str(my_agg.j.get(k)))
                                 cols.append(str(v))
@@ -153,11 +196,15 @@ class Command(BaseCommand):
                                     cols = []
                                     cols.append(k)
                                     cols.append(str(v))
-                                    cols.append('')
+                                    cols.append("")
                                     data_output.append(cols)
 
                         if data_output.__len__() > 0:
-                            self.display_hdr(my_agg.start_dat if my_agg is not None else '', my_tmp_agg.start_dat if my_tmp_agg is not None else '', level)
+                            self.display_hdr(
+                                my_agg.start_dat if my_agg is not None else "",
+                                my_tmp_agg.start_dat if my_tmp_agg is not None else "",
+                                level,
+                            )
                             # data_sorted = data_output.sort(key=lambda x: x[0])
                             data_sorted = sorted(data_output, key=lambda x: x[0])
                             for line in data_sorted:
@@ -172,10 +219,12 @@ class Command(BaseCommand):
                                 if tmp_f2 is None:
                                     tmp_f2 = line[2]
                                 if str(tmp_f1) == str(tmp_f2):
-                                    self.display_line('   ' + line[0], '  ', '  ', line[1])
+                                    self.display_line(
+                                        "   " + line[0], "  ", "  ", line[1]
+                                    )
                                     # self.display_line('   ' + line[0], '          OK', '          OK', line[1])
                                 else:
-                                    self.display_line('   ' + line[0], line[1], line[2])
+                                    self.display_line("   " + line[0], line[1], line[2])
                         # else:
                         #     display_line('start_dat', my_agg.start_dat, ' ** OK **')
 
@@ -185,14 +234,16 @@ class Command(BaseCommand):
                             idx_tmp += 1
 
         except Exception as e:
-            if e.__dict__.__len__() == 0 or 'done' not in e.__dict__:
+            if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
                 exception_type, exception_object, exception_traceback = sys.exc_info()
                 exception_info = e.__repr__()
                 filename = exception_traceback.tb_frame.f_code.co_filename
+                module = exception_traceback.tb_frame.f_code.co_name
                 line_number = exception_traceback.tb_lineno
                 e.info = {
                     "i": str(exception_info),
                     "f": filename,
+                    "n": module,
                     "l": line_number,
                 }
                 e.done = True
@@ -200,7 +251,7 @@ class Command(BaseCommand):
 
     def is_float_try(self, str):
         try:
-            if str == '':
+            if str == "":
                 return None
             f = float(str)
             return float(int(f * 10) / 10)
@@ -210,58 +261,81 @@ class Command(BaseCommand):
     def display(self, msg: str):
         print(msg)
 
-    def display_missing_tmp_agg(self, one_agg: AggMeteor, level: str, disp_details: bool):
+    def display_missing_tmp_agg(
+        self, one_agg: AggMeteor, level: str, disp_details: bool
+    ):
         # display('')
-        self.display_hdr(one_agg.start_dat, '           None', level)
+        self.display_hdr(one_agg.start_dat, "           None", level)
         # if disp_details is True:
         #     for k, v in one_agg.j.items():
         #         display_line('   ' + k, str(v), '')
 
     def display_missing_agg(self, tmp_agg: AggMeteor, level: str, disp_details: bool):
-        self.display_hdr('           None', tmp_agg.start_dat, level)
+        self.display_hdr("           None", tmp_agg.start_dat, level)
 
         # if disp_details is True:
         #     for k, v in one_agg.j.items():
         #         display_line('   ' + k, '', str(v))
 
-    def display_line(self, key, agg_val, tmp_agg_val, tmp_common: str = ''):
+    def display_line(self, key, agg_val, tmp_agg_val, tmp_common: str = ""):
+        """
+        display_line
+            disply a line of text
+        """
         try:
-            self.display("{:<30}".format(str(key))[0:30] + " I " + "{:<30}".format(str(agg_val))[0:30] + " I " + "{:<30}".format(str(tmp_common))[0:30] + " I " + "{:<30}".format(str(tmp_agg_val))[0:30])
+            self.display(
+                "{:<30}".format(str(key))[0:30]
+                + " I "
+                + "{:<30}".format(str(agg_val))[0:30]
+                + " I "
+                + "{:<30}".format(str(tmp_common))[0:30]
+                + " I "
+                + "{:<30}".format(str(tmp_agg_val))[0:30]
+            )
 
         except Exception as e:
-            if e.__dict__.__len__() == 0 or 'done' not in e.__dict__:
+            if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
                 exception_type, exception_object, exception_traceback = sys.exc_info()
                 exception_info = e.__repr__()
                 filename = exception_traceback.tb_frame.f_code.co_filename
+                module = exception_traceback.tb_frame.f_code.co_name
                 line_number = exception_traceback.tb_lineno
                 e.info = {
                     "i": str(exception_info),
                     "f": filename,
+                    "n": module,
                     "l": line_number,
                 }
                 e.done = True
             raise e
 
-    def display_hdr(self, agg_data, tmp_agg_data, level: str = 'xxxx'):
+    def display_hdr(self, agg_data, tmp_agg_data, level: str = "xxxx"):
         try:
             # level = my_agg.getLevel()
-            tirets = '---------------------------------------------------------------------------------'
+            tirets = "---------------------------------------------------------------------------------"
             self.display_line(tirets, tirets, tirets, tirets)
-            self.display_line('        key', '         agg_' + level + ' only', '       tmp_agg_' + level + ' only', '       both')
+            self.display_line(
+                "        key",
+                "         agg_" + level + " only",
+                "       tmp_agg_" + level + " only",
+                "       both",
+            )
             self.display_line(tirets, tirets, tirets, tirets)
             if str(agg_data) == str(tmp_agg_data):
-                self.display_line('start_dat', ' ', ' ', str(tmp_agg_data))
-            else:    
-                self.display_line('start_dat', str(agg_data), str(tmp_agg_data))
+                self.display_line("start_dat", " ", " ", str(tmp_agg_data))
+            else:
+                self.display_line("start_dat", str(agg_data), str(tmp_agg_data))
         except Exception as e:
-            if e.__dict__.__len__() == 0 or 'done' not in e.__dict__:
+            if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
                 exception_type, exception_object, exception_traceback = sys.exc_info()
                 exception_info = e.__repr__()
                 filename = exception_traceback.tb_frame.f_code.co_filename
+                module = exception_traceback.tb_frame.f_code.co_name
                 line_number = exception_traceback.tb_lineno
                 e.info = {
                     "i": str(exception_info),
                     "f": filename,
+                    "n": module,
                     "l": line_number,
                 }
                 e.done = True

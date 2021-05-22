@@ -1,11 +1,12 @@
-from app.tools.telemetry import Span
 from .jsonPlus import JsonPlus, json
+from app.tools.telemetry import Span
 from django.conf import settings
 import datetime
 import inspect
+import logging
 
 
-def LogException(
+def LogCritical(
     e, my_span=None, params: json = {}, return_string: bool = False, stack_level: int = 0
 ):
     """
@@ -24,26 +25,30 @@ def LogException(
         if filenames.__len__() == 0:
             filenames = ["??"]
         filename = filenames[filenames.__len__() - 1]
-        return _logMeOutput(filename, e.info["l"], e.info["i"], 'error', my_span, params, return_string)
+        return LogMe.GetInstance().LogMeOutput(filename, e.info["l"], e.info["i"], e.info["n"], 'error', my_span, params, return_string)
     else:
-        e_str = str(e)
-    return _logMe(e_str, "error", my_span, params, stack_level, return_string)
+        e_str = str(e.__class__) + ':' + str(e)
+    return LogMe.GetInstance().LogMe(e_str, "critical", my_span, params, stack_level, return_string)
 
 
 def LogError(
     message: str, my_span=None, params: json = {}, return_string: bool = False
 ):
-    return _logMe(message, "error", my_span, params, 1, return_string)
+    return LogMe.GetInstance().LogMe(message, "error", my_span, params, 1, return_string)
+
+
+def logWarning(message: str, my_span=None, params: json = {}, return_string: bool = False):
+    return LogMe.GetInstance().LogMe(message, "warning", my_span, params, 1, return_string)
 
 
 def logInfo(message: str, my_span=None, params: json = {}, return_string: bool = False):
-    return _logMe(message, "info", my_span, params, 1, return_string)
+    return LogMe.GetInstance().LogMe(message, "info", my_span, params, 1, return_string)
 
 
-def logTrace(
+def LogDebug(
     message: str, my_span=None, params: json = {}, return_string: bool = False
 ):
-    return _logMe(message, "trace", my_span, params, 1, return_string)
+    return LogMe.GetInstance().LogMe(message, "trace", my_span, params, 1, return_string)
 
 
 def CopyJson(src: json, dest: json):
@@ -91,118 +96,162 @@ def _copyJson(src: json, dest: json, k: str, v):
     dest[k] = v
 
 
-def _logMe(
-    message: str,
-    level: str = None,
-    my_span: Span = None,
-    params: json = {},
-    stack_level: int = 0,
-    return_string: bool = False,
-):
-    """centralized log output function"""
-    stack_level += 1
+class LogMe:
+    """
+    LogMe
+        Output Log Messages
 
-    if level.lower() not in ["info", "???", "error", "trace"]:
-        level = "??? " + level
+        settings.py
 
-    filename, line_no, stack_info = getStackInfo(level, stack_level)
-    if stack_info.__len__() > 0:
-        params['stack'] = stack_info
-    return _logMeOutput(filename, line_no, message, level, my_span, params, return_string)
+        when used log files are stored in LOG_FILE_DIR/logInfo.log or LOG_FILE_DIR/logDebug.log
 
+        TELEMETRY = True => output JSON on log files
+        PROD=True => output std logging messages on log files
+        PROD = False -> output
+    """
+    debug = False
+    telemetry = False
+    prod = False
 
-def _logMeOutput(
-    filename: str,
-    line_no: int,
-    message: str,
-    level: str = None,
-    my_span: Span = None,
-    params: json = {},
-    return_string: bool = False,
-):
-    # build our json
-    log_j = {
-        "ts": str(datetime.datetime.now()),
-        "filename": filename,
-        "line": line_no,
-        "level": level,
-        "msg": cleanUpMessage(message),
-    }
+    def __init__(self):
+        # get our settings
+        if hasattr(settings, "DEBUG") and settings.DEBUG is True:
+            self.debug = True
+        if hasattr(settings, "PROD") and settings.PROD is True:
+            self.prod = True
+        if hasattr(settings, "TELEMETRY") and settings.TELEMETRY is True:
+            self.telemetry = True
 
-    # add trace_id
-    if my_span is not None:
-        log_j["trace_id"] = my_span.get_span_context().trace_id
-    else:
-        log_j["trace_id"] = "no trace"
-
-    # add our json Keys/Values
-    for k, v in params.items():
-        log_j[k] = v
-
-    if return_string:
-        return log_j
-
-    if hasattr(settings, "TELEMETRY") is True and settings.TELEMETRY is True:
-        print(JsonPlus().dumps(log_j))
-    else:
-        if level == "error":
-            print(
-                "---------------------------------------------------------------------"
-            )
-        print(
-            str(log_j["ts"])
-            + " " + str(log_j["level"]).upper()
-            + " " + str(log_j["filename"])
-            + " " + str(log_j["line"])
-            + " -> " + log_j["msg"]
-            + " [" + str(log_j["trace_id"]) + "] "
-            + JsonPlus().dumps(params)
-        )
-        if log_j.get("stack") is not None:
-            print("     ** stack **:")
-            for a_line_stack in log_j["stack"]:
-                print(a_line_stack)
-        if level == "error":
-            print(
-                "---------------------------------------------------------------------"
-            )
-
-
-def getStackInfo(level: str, stack_level: int = 1):
-    stack_formatted = []
-    loc_caller = "??"
-    loc_filename = "??"
-    loc_line_no = 0
-    idx_up = stack_level + 1
-    idx = 0
-    full_stack = inspect.stack()
-    for a_stack_line in full_stack:
-        if idx >= idx_up:
-            filenames = a_stack_line.filename.split("/")
-            if filenames.__len__() == 0:
-                filenames = ["??"]
-            filename = filenames[filenames.__len__() - 1]
-            caller = a_stack_line.function
-            line_no = a_stack_line.lineno
-
-            if idx == idx_up:
-                loc_filename = filename + '::' + caller
-                loc_line_no = line_no
-            if level in ["error"]:
-                stack_formatted.append(
-                    filename + '--' + loc_caller + '::' + str(loc_line_no) + " -> " + str(a_stack_line.code_context)
-                )
+        if self.prod is True:
+            if self.debug is True:
+                self.log = logging.getLogger('logDebugFile')
             else:
-                break
-        idx += 1
+                self.log = logging.getLogger('logInfoFile')
+        else:
+            if self.debug is True:
+                self.log = logging.getLogger('logDebugConsole')
+            else:
+                self.log = logging.getLogger('logInfoConsole')
 
-    return loc_filename, loc_line_no, stack_formatted
+    @staticmethod
+    def GetInstance():
+        # return the instance
+        if LogMe.__dict__.__contains__('my_instance') is False:
+            LogMe.my_instance = LogMe()
+        return LogMe.my_instance
 
+    def LogMe(
+        self,
+        message: str,
+        level: str = None,
+        my_span: Span = None,
+        params: json = {},
+        stack_level: int = 0,
+        return_string: bool = False,
+    ):
+        """centralized log output function"""
+        stack_level += 1
 
-def cleanUpMessage(msg: str) -> str:
-    """
-        Clean up exception error message
-    """
-    if msg.startswith('ConnectionError(MaxRetryError("HTTPConnectionPool('):
-        return msg.split("):")[0].replace('(MaxRetryError', '')
-    return msg
+        if level.lower() not in ["debug", "info", "warning", "error", "critical"]:
+            level = "info"
+
+        filename, line_no, module, stack_info = self.GetStackInfo(level, stack_level)
+        if stack_info.__len__() > 0:
+            params['stack'] = stack_info
+        return self.LogMeOutput(filename, line_no, module, message, level, my_span, params, return_string)
+
+    def LogMeOutput(
+        self,
+        filename: str,
+        line_no: int,
+        module: str,
+        message: str,
+        level: str = None,
+        my_span: Span = None,
+        params: json = {},
+        return_string: bool = False,
+    ):
+        # build our json
+        log_j = {
+            "ts": str(datetime.datetime.now()),
+            "py_file": filename,
+            "py_line": line_no,
+            "py_func": module,
+            "level": level,
+            "msg": self.CleanUpMessage(message),
+            "params": params,
+        }
+
+        # add traceID
+        if my_span is not None and my_span.get_span_context().traceID is not None:
+            log_j["traceID"] = format(int(my_span.get_span_context().traceID), 'x')
+        else:
+            log_j["traceID"] = "no_trace"
+
+        if return_string:
+            return log_j
+
+        if hasattr(settings, "TELEMETRY") is True and settings.TELEMETRY is True:
+            msg = JsonPlus().dumps(log_j)
+        else:
+            msg = 'ts=' + str(log_j["ts"]) + " "
+            msg += 'level=' + str(log_j["level"]).upper() + " "
+            msg = ' py_file=' + str(log_j["py_file"]) + " "
+            msg += ' py_line=' + str(log_j["py_line"])
+            msg += ' msg=' + str(log_j["msg"]) + ' '
+            if log_j["traceID"] != "no_trace":
+                msg += 'traceID=' + str(log_j["traceID"]) + ' '
+            msg += ' params=' + JsonPlus().dumps(params) + ' '
+
+        if level == 'debug':
+            self.log.debug(msg)
+        elif level == 'info':
+            self.log.info(msg)
+        elif level == 'warning':
+            self.log.warning(msg)
+        elif level == 'error':
+            self.log.error(msg)
+        elif level == 'critical':
+            self.log.critical(msg)
+        else:
+            self.log.critical('Unknow level - ' + msg)
+
+    def GetStackInfo(self, level: str, stack_level: int = 1):
+        stack_formatted = []
+        loc_caller = "??"
+        loc_filename = "??"
+        loc_module = "??"
+        loc_line_no = 0
+        idx_up = stack_level + 1
+        idx = 0
+        full_stack = inspect.stack()
+        for a_stack_line in full_stack:
+            if idx >= idx_up:
+                filenames = a_stack_line.filename.split("/")
+                if filenames.__len__() == 0:
+                    filenames = ["??"]
+                filename = filenames[filenames.__len__() - 1]
+                caller = a_stack_line.function
+                line_no = a_stack_line.lineno
+
+                if idx == idx_up:
+                    loc_filename = filename
+                    loc_module = caller
+                    loc_line_no = line_no
+                if level in ["error"]:
+                    stack_formatted.append(
+                        filename + '--' + loc_caller + '::' + str(loc_line_no) + " -> " + str(a_stack_line.code_context)
+                    )
+                else:
+                    break
+            idx += 1
+
+        return loc_filename, loc_line_no, loc_module, stack_formatted
+
+    def CleanUpMessage(self, msg: str) -> str:
+        """
+            Clean up exception error message
+        """
+        if msg.startswith('ConnectionError(MaxRetryError("HTTPConnectionPool('):
+            return msg.split("):")[0].replace('(MaxRetryError', '')
+        return msg
