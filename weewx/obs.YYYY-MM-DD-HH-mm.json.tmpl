@@ -7,15 +7,15 @@ LOW#slurp
 #end if
 #end def
 ## fonction cle et moyenne
-#def CleAvg($cle,$x,$y,$d)
+#def CleAvg($cle,$x,$y,$d=None)
 #if $x is not None and $y is not None
 #set $val = $x/$y
-#if $d == 0 
+#if $d is None
+#set $nval = $val
+#elif $d == 0 
 #set $nval = round($val)
 #else
 #set $nval = round($val,$d)
-## pour Nico
-#set $nval = $val
 #end if
 "$cle":$nval,#slurp
 #end if
@@ -43,28 +43,28 @@ LOW#slurp
 #end def
 ## fin fonction formatage date avec cle
 ## fonction formatage valeur avec cle
-#def CleVal($cle, $val, $d)
+#def CleVal($cle, $val, $d=None)
 #if $val is not None
-#if $d == 0 
+#if $d is None
+#set $nval = $val
+#elif $d == 0 
 #set $nval = round($val)
 #else
 #set $nval = round($val,$d)
-## pour Nico
-#set $nval = $val
 #end if
 "$cle":$nval,#slurp
 #end if
 #end def
 ## fin fonction formatage valeur avec cle
 ## fonction calcul valeur avec cle
-#def CleCal($cle, $val, $mult, $d)
+#def CleCal($cle, $val, $mult, $d=None)
 #if $val is not None and $mult is not None
-#if $d == 0 
+#if $d is None
+#set $nval = $val*$mult
+#elif $d == 0 
 #set $nval = round($val*$mult)
 #else
 #set $nval = round($val*$mult,$d)
-## pour Nico
-#set $nval = $val*$mult
 #end if
 "$cle":$nval,#slurp
 #end if

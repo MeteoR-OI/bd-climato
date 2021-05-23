@@ -174,6 +174,8 @@ class TimespanBinder(object):
     def records(self):
         manager = self.db_lookup(self.data_binding)
         for record in manager.genBatchRecords(self.timespan.start, self.timespan.stop):
+            # QUETELARD
+            print('dateTime:',format(datetime.fromtimestamp(record['dateTime']),"%Y-%m-%dT%H:%M:%S"))
             yield CurrentObj(self.db_lookup, self.data_binding, record['dateTime'], self.formatter,
                              self.converter, record=record)
 
