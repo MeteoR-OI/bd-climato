@@ -16,7 +16,7 @@ services:
     volumes:
       - ./data/localStorage/prometheus:/prometheus
       - ./yml/config/prometheus:/etc/prometheus
-      - ./data/localStoragelog/prometheus:/var/log
+      - ./data/localStorage/log/prometheus:/var/log
     ports:
         - 9090:9090
     restart: on-failure
