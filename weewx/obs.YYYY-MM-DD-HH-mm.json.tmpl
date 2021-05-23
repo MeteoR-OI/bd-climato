@@ -134,125 +134,125 @@ LOW#slurp
        "start_dat":"$datetime_obs_start",
        "stop_dat":"$datetime_obs_stop",
        "current": {
-       $CleVal("out_temp",$obs.outTemp.raw,1)
+       $CleVal("out_temp",$obs.outTemp.raw)
        #if $final_obs
-       $CleVal("out_temp_min",$currentagg.outTemp.min.raw,1)       
+       $CleVal("out_temp_min",$currentagg.outTemp.min.raw)       
        $CleDat("out_temp_min_time",$currentagg.outTemp.mintime.raw)
-       $CleAvg("out_temp_avg",$currentagg.outTemp.sum.raw,$currentagg.outTemp.count.raw,2)
-       $CleVal("out_temp_max",$currentagg.outTemp.max.raw,1)       
+       $CleAvg("out_temp_avg",$currentagg.outTemp.sum.raw,$currentagg.outTemp.count.raw)
+       $CleVal("out_temp_max",$currentagg.outTemp.max.raw)       
        $CleDat("out_temp_max_time",$currentagg.outTemp.maxtime.raw)
        #end if
-       $CleVal("windchill",$obs.windchill.raw,1)
+       $CleVal("windchill",$obs.windchill.raw)
        #if $final_obs
-       $CleVal("windchill_min",$currentagg.windchill.min.raw,1)       
+       $CleVal("windchill_min",$currentagg.windchill.min.raw)       
        $CleDat("windchill_min_time",$currentagg.windchill.mintime.raw)
-       $CleAvg("windchill_avg",$currentagg.windchill.sum.raw,$currentagg.windchill.count.raw,2)
+       $CleAvg("windchill_avg",$currentagg.windchill.sum.raw,$currentagg.windchill.count.raw)
        #end if
-       $CleVal("heatindex",$obs.heatindex.raw,1)
+       $CleVal("heatindex",$obs.heatindex.raw)
        #if $final_obs
-       $CleVal("heatindex_max",$currentagg.heatindex.max.raw,1)       
+       $CleVal("heatindex_max",$currentagg.heatindex.max.raw)       
        $CleDat("heatindex_max_time",$currentagg.heatindex.maxtime.raw)
-       $CleAvg("heatindex_avg",$currentagg.heatindex.sum.raw,$currentagg.heatindex.count.raw,2)
+       $CleAvg("heatindex_avg",$currentagg.heatindex.sum.raw,$currentagg.heatindex.count.raw)
        #end if
-       $CleVal("dewpoint",$obs.dewpoint.raw,1)
+       $CleVal("dewpoint",$obs.dewpoint.raw)
        #if $final_obs
-       $CleVal("dewpoint_min",$currentagg.dewpoint.min.raw,1)       
+       $CleVal("dewpoint_min",$currentagg.dewpoint.min.raw)       
        $CleDat("dewpoint_min_time",$currentagg.dewpoint.mintime.raw)
-       $CleAvg("dewpoint_avg",$currentagg.dewpoint.sum.raw,$currentagg.dewpoint.count.raw,2)
-       $CleVal("dewpoint_max",$currentagg.dewpoint.max.raw,1)       
+       $CleAvg("dewpoint_avg",$currentagg.dewpoint.sum.raw,$currentagg.dewpoint.count.raw)
+       $CleVal("dewpoint_max",$currentagg.dewpoint.max.raw)       
        $CleDat("dewpoint_max_time",$currentagg.dewpoint.maxtime.raw)
        #end if
        #if $obs.soilTemp1.has_data and $day.soilTemp1.has_data
-       $CleVal("soiltemp",$obs.soilTemp1.raw,1)
+       $CleVal("soiltemp",$obs.soilTemp1.raw)
        #if $final_obs
-       $CleVal("soiltemp_min",$obs.soilTemp1.min.raw,1)
+       $CleVal("soiltemp_min",$obs.soilTemp1.min.raw)
        $CleDat("soiltemp_min_time",$obs.soilTemp1.mintime.raw) 
        #end if     
        #end if     
-       $CleVal("humidity",$obs.outHumidity.raw,1)
+       $CleVal("humidity",$obs.outHumidity.raw,0)
        #if $final_obs
-       $CleVal("humidity_min",$currentagg.outHumidity.min.raw,1)       
+       $CleVal("humidity_min",$currentagg.outHumidity.min.raw)       
        $CleDat("humidity_min_time",$currentagg.outHumidity.mintime.raw)
-       $CleAvg("humidity_avg",$currentagg.outHumidity.sum.raw,$currentagg.outHumidity.count.raw,2)
-       $CleVal("humidity_max",$currentagg.outHumidity.max.raw,1)       
+       $CleAvg("humidity_avg",$currentagg.outHumidity.sum.raw,$currentagg.outHumidity.count.raw)
+       $CleVal("humidity_max",$currentagg.outHumidity.max.raw)       
        $CleDat("humidity_max_time",$currentagg.outHumidity.maxtime.raw)
        #end if
-       $CleVal("barometer",$obs.barometer.raw,1)
+       $CleVal("barometer",$obs.barometer.raw)
        #if $final_obs
-       $CleVal("barometer_min",$currentagg.barometer.min.raw,1)       
+       $CleVal("barometer_min",$currentagg.barometer.min.raw)       
        $CleDat("barometer_min_time",$currentagg.barometer.mintime.raw)
-       $CleAvg("barometer_avg",$currentagg.barometer.sum.raw,$currentagg.barometer.count.raw,2)
-       $CleVal("barometer_max",$currentagg.barometer.max.raw,1)       
+       $CleAvg("barometer_avg",$currentagg.barometer.sum.raw,$currentagg.barometer.count.raw)
+       $CleVal("barometer_max",$currentagg.barometer.max.raw)       
        $CleDat("barometer_max_time",$currentagg.barometer.maxtime.raw)
        #end if
-       $CleVal("pressure",$obs.pressure.raw,1)
+       $CleVal("pressure",$obs.pressure.raw)
        #if $final_obs
-       $CleVal("pressure_min",$currentagg.pressure.min.raw,1)       
+       $CleVal("pressure_min",$currentagg.pressure.min.raw)       
        $CleDat("pressure_min_time",$currentagg.pressure.mintime.raw)
-       $CleAvg("pressure_avg",$currentagg.pressure.sum.raw,$currentagg.pressure.count.raw,2)
-       $CleVal("pressure_max",$currentagg.pressure.max.raw,1)       
+       $CleAvg("pressure_avg",$currentagg.pressure.sum.raw,$currentagg.pressure.count.raw)
+       $CleVal("pressure_max",$currentagg.pressure.max.raw)       
        $CleDat("pressure_max_time",$currentagg.pressure.maxtime.raw)
        #end if
-       $CleVal("wind_avg",$obs.windSpeed.raw,1)
-       $CleVal("wind_dir",$obs.windDir.raw,1)
-       $CleVal("gust",$obs.windGust.raw,1)
-       $CleVal("gust_dir",$obs.windGustDir.raw,1)
+       $CleVal("wind_avg",$obs.windSpeed.raw)
+       $CleVal("wind_dir",$obs.windDir.raw)
+       $CleVal("gust",$obs.windGust.raw)
+       $CleVal("gust_dir",$obs.windGustDir.raw)
        #if $final_obs
-       $CleVal("wind_max",$currentagg.windGust.max.raw,1)
-       $CleVal("wind_max_dir",$currentagg.windGustDir.max.raw,1)        
+       $CleVal("wind_max",$currentagg.windGust.max.raw)
+       $CleVal("wind_max_dir",$currentagg.windGustDir.max.raw)        
        $CleDat("wind_max_time",$currentagg.windGust.maxtime.raw)    
        #end if
-       $CleVal("wind10_avg",$current.windSpeed10.raw,1)
-       $CleVal("rain",$obs.rain.raw,1)
-       $CleVal("rain_rate",$obs.rainRate.raw,1)
+       $CleVal("wind10_avg",$current.windSpeed10.raw)
+       $CleVal("rain",$obs.rain.raw)
+       $CleVal("rain_rate",$obs.rainRate.raw)
        #if $final_obs
        $CleDat("rain_rate_max_time",$currentagg.rainRate.maxtime.raw/10) ## bug bizarre !!!!
-       $CleAvg("rain_rate_avg",$currentagg.rainRate.sum.raw,$currentagg.rainRate.count.raw,2)
+       $CleAvg("rain_rate_avg",$currentagg.rainRate.sum.raw,$currentagg.rainRate.count.raw)
        #end if
        #if $day.UV.has_data
-       $CleVal("uv_indice",$obs.UV.raw,1)
+       $CleVal("uv_indice",$obs.UV.raw)
        #if $final_obs
-       $CleVal("uv_indice_max",$currentagg.UV.max.raw,1)
+       $CleVal("uv_indice_max",$currentagg.UV.max.raw)
        $CleDat("uv_indice_max_time",$currentagg.UV.maxtime.raw)
-       $CleAvg("uv_indice_avg",$currentagg.UV.sum.raw,$currentagg.UV.count.raw,2)
+       $CleAvg("uv_indice_avg",$currentagg.UV.sum.raw,$currentagg.UV.count.raw)
        #end if
        #end if
        #if $obs.radiation.has_data  
        #if $final_obs  
-       $CleCal("radiation_min",$currentagg.radiation.min.raw,0.001,1)
+       $CleCal("radiation_min",$currentagg.radiation.min.raw,0.001)
        $CleDat("radiation_min_time",$currentagg.radiation.mintime.raw)
        #if $currentagg.radiation.sum.raw is not None and $currentagg.radiation.count.raw is not None 
-       $CleCal("radiation",($currentagg.radiation.sum.raw/$currentagg.radiation.count.raw),$amin*0.006,2)
+       $CleCal("radiation",($currentagg.radiation.sum.raw/$currentagg.radiation.count.raw),$amin*0.006)
        #end if
-       $CleCal("radiation_max",$currentagg.radiation.max.raw,0.001,1)
+       $CleCal("radiation_max",$currentagg.radiation.max.raw,0.001)
        $CleDat("radiation_max_time",$currentagg.radiation.maxtime.raw)
        #else
        #if $obs.radiation.raw is not None 
-       $CleCal("radiation",$obs.radiation.raw,$amin*0.006,1)
+       $CleCal("radiation",$obs.radiation.raw,$amin*0.006)
        #end if
        #end if
        #end if
-       $CleVal("in_temp",$obs.inTemp.raw,1)
+       $CleVal("in_temp",$obs.inTemp.raw)
        #if $final_obs
-       $CleVal("in_temp_max",$currentagg.inTemp.max.raw,1)
+       $CleVal("in_temp_max",$currentagg.inTemp.max.raw)
        $CleDat("in_temp_max_time",$currentagg.inTemp.maxtime.raw)
-       $CleAvg("in_temp_avg",$currentagg.inTemp.sum.raw,$currentagg.inTemp.count.raw,2)
-       $CleVal("in_temp_min",$currentagg.inTemp.min.raw,1)
+       $CleAvg("in_temp_avg",$currentagg.inTemp.sum.raw,$currentagg.inTemp.count.raw)
+       $CleVal("in_temp_min",$currentagg.inTemp.min.raw)
        $CleDat("in_temp_min_time",$currentagg.inTemp.mintime.raw)
        #end if
-       $CleVal("in_humidity",$obs.inHumidity.raw,1)
+       $CleVal("in_humidity",$obs.inHumidity.raw,0)
        #if $final_obs
-       $CleVal("in_humidity_max",$currentagg.inHumidity.max.raw,1)
+       $CleVal("in_humidity_max",$currentagg.inHumidity.max.raw)
        $CleDat("in_humidity_max_time",$currentagg.inHumidity.maxtime.raw)
-       $CleAvg("in_humidity_avg",$currentagg.inHumidity.sum.raw,$currentagg.inHumidity.count.raw,2)
-       $CleVal("in_humidity_min",$currentagg.inHumidity.min.raw,1)
+       $CleAvg("in_humidity_avg",$currentagg.inHumidity.sum.raw,$currentagg.inHumidity.count.raw)
+       $CleVal("in_humidity_min",$currentagg.inHumidity.min.raw)
        $CleDat("in_humidity_min_time",$currentagg.inHumidity.mintime.raw)
        #end if
-       $CleVal("rx",$obs.rxCheckPercent.raw,1)
-       $CleVal("voltage",$obs.consBatteryVoltage.raw,1)
+       $CleVal("rx",$obs.rxCheckPercent.raw)
+       $CleVal("voltage",$obs.consBatteryVoltage.raw)
        #if $final_obs
-       $CleAvg("voltage_avg",$currentagg.consBatteryVoltage.sum.raw,$currentagg.consBatteryVoltage.count.raw,2)
-       $CleVal("voltage_min",$currentagg.consBatteryVoltage.min.raw,1)
+       $CleAvg("voltage_avg",$currentagg.consBatteryVoltage.sum.raw,$currentagg.consBatteryVoltage.count.raw)
+       $CleVal("voltage_min",$currentagg.consBatteryVoltage.min.raw)
        $CleDat("voltage_min_time",$currentagg.consBatteryVoltage.mintime.raw)
        #end if
        "duration":$duration
@@ -273,7 +273,7 @@ LOW#slurp
        "level":"H",
        ## traitement special pour affichage de l'etp qui n'est disponible que sur current a heure ronde
 #if $new_hour ##and $day.ET.has_data and $day.ET.sum.raw >0.0
-       $CleVal("etp_sum",$hour.ET.sum.raw,1)
+       $CleVal("etp_sum",$hour.ET.sum.raw)
 #end if
        "start_dat":$datef($hour($hours_ago=$delta_h).dateTime.raw)
 #end if ## fin heure intermediaire
