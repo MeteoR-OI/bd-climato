@@ -13,7 +13,7 @@ import app.tools.myTools as t
 class CalcTestEngine():
     def __init__(self, *args, **kwargs):
         self.calc = AllCalculus()
-        self.calc_obs = CalcObs()
+        self.calc_obs = CalcObs.GetInstance()
         self.calc_agg = CalcAggreg()
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         file_name = os.path.join(base_dir, '../fixtures/calculus_test_suite.json')

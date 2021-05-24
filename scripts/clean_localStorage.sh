@@ -18,7 +18,6 @@ rm -Rf data/localStorage/tempo/
 mkdir data/localStorage/tempo
 
 touch ./data/localStorage/log/django.log
-touch ./data/localStorage/log/django_info.log
 
 mkdir -p data/json_auto_load/done
 mkdir -p data/json_auto_load/failed

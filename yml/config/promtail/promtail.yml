@@ -31,6 +31,6 @@ scrape_configs:
           level: level
           py_file: py_file
           py_line: py_line
-          traceID: traceID
+          trace_id: trace_id
           msg: msg
           params: params

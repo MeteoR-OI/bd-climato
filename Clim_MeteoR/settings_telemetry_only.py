@@ -175,13 +175,13 @@ LOGGING = {
         'logInfoFile_hdl': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': LOG_FILE_DIR + '/django_info.log',
+            'filename': LOG_FILE_DIR + '/django.log',
             'formatter': 'file_fmt'
         },
         'logDebugFile_hdl': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': LOG_FILE_DIR + '/django_debug.log',
+            'filename': LOG_FILE_DIR + '/django.log',
             'formatter': 'file_fmt'
         },
         'console': {

@@ -192,7 +192,7 @@ LOGGING = {
             'style': '{'
         },
         'file_fmt': {
-            'format': '{asctime} {levelname} {module} {lineno} {message}',
+            'format': '{message}',
             'style': '{'
         }
     }

@@ -37,5 +37,5 @@ def _viewLoadJson(file_name: str, delete_flag: bool, trace_flag: bool, is_tmp: b
             "filename": file_name
         }
     }
-    ret = CalcObs().LoadJsonFromSvc(data)
+    ret = CalcObs.GetInstance().LoadJsonFromSvc(data)
     return ret

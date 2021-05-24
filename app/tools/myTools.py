@@ -181,10 +181,10 @@ class LogMe:
         }
 
         # add traceID
-        if my_span is not None and my_span.get_span_context().traceID is not None:
-            log_j["traceID"] = format(int(my_span.get_span_context().traceID), 'x')
+        if my_span is not None and my_span.get_span_context().trace_id is not None:
+            log_j["trace_id"] = format(int(my_span.get_span_context().trace_id), 'x')
         else:
-            log_j["traceID"] = "no_trace"
+            log_j["trace_id"] = "no_trace"
 
         if hasattr(settings, "TELEMETRY") is True and settings.TELEMETRY is True:
             if return_string:
@@ -196,8 +196,8 @@ class LogMe:
             msg = ' py_file=' + str(log_j["py_file"]) + " "
             msg += ' py_line=' + str(log_j["py_line"])
             msg += ' msg=' + str(log_j["msg"]) + ' '
-            if log_j["traceID"] != "no_trace":
-                msg += 'traceID=' + str(log_j["traceID"]) + ' '
+            if log_j["trace_id"] != "no_trace":
+                msg += 'traceID=' + str(log_j["trace_id"]) + ' '
             if log_j["params"] != {}:
                 msg += ' params=' + JsonPlus().dumps(params) + ' '
             if return_string:

@@ -23,6 +23,13 @@ class CalcObs(AllCalculus):
     def __init__(self):
         self.tracer = Telemetry.Start("calculus")
         CalcObs.lock = threading.Lock()
+        t.logWarning("calcObs new instance")
+
+    @staticmethod
+    def GetInstance():
+        if hasattr(CalcObs, "MyInstance") is False:
+            CalcObs.MyInstance = CalcObs()
+        return CalcObs.MyInstance
 
     def LoadJsonFromSvc(self, data: json):
         """

@@ -40,8 +40,7 @@ class CalcAggreg(AllCalculus):
             return ret
 
         except Exception as inst:
-            with self.tracer.start_as_current_span("calculus", trace_flag) as my_span:
-                my_span.record_exception(inst)
+            t.LogCritical(inst)
 
     def ComputeAggregCall(self, is_tmp: bool = False, trace_flag: bool = False):
         self._computeAggreg(is_tmp, trace_flag)
@@ -84,11 +83,10 @@ class CalcAggreg(AllCalculus):
         else:
             trace_flag = RefManager.GetInstance().GetRef("svcAggreg_trace_flag")
 
-        span_name = "Agg"
+        span_name = "Calc agg"
         if is_tmp is True:
             span_name += "_tmp"
-        with self.tracer.start_span(span_name, trace_flag) as my_span:
-            start_time = datetime.datetime.now()
+        with self.tracer.start_as_current_span(span_name, trace_flag) as my_span:
             my_span.set_attribute("obs_id", a_todo.data.obs_id_id)
             my_span.set_attribute("poste_id", a_todo.data.obs_id.poste_id_id)
             my_span.set_attribute("is_tmp", is_tmp)
@@ -116,9 +114,7 @@ class CalcAggreg(AllCalculus):
                         an_agg.add_duration(delta_values["duration"])
 
                     for anAgg in getAggLevels(is_tmp):
-                        with self.tracer.start_span(
-                            "level " + anAgg, trace_flag
-                        ) as span_lvl:
+                        with self.tracer.start_span("level " + anAgg, trace_flag) as span_lvl:
                             b_insert_start_dat = True
                             if idx_delta_value > 0:
                                 span_lvl.set_attribute(
@@ -196,20 +192,19 @@ class CalcAggreg(AllCalculus):
                     a_todo.delete()
 
                     # we're done
+                    duration = datetime.datetime.now() - time_start
                     t.logInfo(
-                        "Observation processed",
+                        "Aggregation computed",
                         my_span,
                         {
                             "obs_id": a_todo.data.obs_id_id,
                             "poste_id": a_todo.data.obs_id.poste_id_id,
                             "queue_length": a_todo.count(),
-                            "time_exec": str(datetime.datetime.now() - time_start),
+                            "time_exec": (duration.microseconds/1000),
                         },
                     )
             finally:
                 poste_metier.unlock()
-                duration = datetime.datetime.now() - start_time
-                t.logInfo("aggregation updated", my_span, {"time_exec": (duration.microseconds/1000)})
 
     def load_aggregations_in_array(
         self, my_measure, anAgg: str, aggregations, m_stop_dat: datetime

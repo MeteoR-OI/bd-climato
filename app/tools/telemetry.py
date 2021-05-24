@@ -23,7 +23,7 @@ class ContextMok:
     ContextMok
         Mok class to simulate context class when no telemetry is used
     """
-    traceID = None
+    trace_id = None
 
 
 class SpanMok:

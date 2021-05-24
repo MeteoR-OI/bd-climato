@@ -21,13 +21,12 @@ datasources:
     maxLines: 1000
     derivedFields:
     - datasourceUid: jaeger
-      matcherRegex: "traceID\": \"(\\w+)"
+      matcherRegex: "trace_id\": \"(\\w+)"
       name: traceID
       # only '${__value.raw}' open in grafana window
       url: '$${__value.raw}'
     - datasourceUid: jaeger
-      matcherRegex: "traceID\": \"(\\w+)"
-      name: jaegger
+      matcherRegex: "trace_id\": \"(\\w+)"
       # open jaeger in another window
       url: 'http://localhost:16686/trace/${__value.raw}'
 
@@ -44,7 +43,7 @@ datasources:
   #   maxLines: 1000
   #   derivedFields:
   #     - datasourceUid: my_loki
-  #       matcherRegex: "traceID=(\\w+)"
+  #       matcherRegex: "trace_id=(\\w+)"
   #       name: TraceID
   #       url: "$${__value.raw}"
 
