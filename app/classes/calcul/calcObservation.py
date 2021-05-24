@@ -23,7 +23,6 @@ class CalcObs(AllCalculus):
     def __init__(self):
         self.tracer = Telemetry.Start("calculus")
         CalcObs.lock = threading.Lock()
-        t.logWarning("calcObs new instance")
 
     @staticmethod
     def GetInstance():
@@ -309,33 +308,46 @@ class CalcObs(AllCalculus):
                 return
 
             # content to load from the server
+            use_recursivity = False,
+
             if params.get("base_dir") is None:
+                use_recursivity = True
                 if hasattr(settings, "AUTOLOAD_DIR") is True:
                     params["base_dir"] = settings.AUTOLOAD_DIR
                 else:
                     params["base_dir"] = (os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/../../data/json_auto_load")
             base_dir = params["base_dir"]
+            files = []
             if params.get("filename") is not None:
-                files = [params["filename"]]
+                files.append({"p": base_dir, "f": params["filename"]})
             else:
-                files = os.listdir(base_dir)
+                if use_recursivity is False:
+                    for filename in os.listdir(base_dir):
+                        if str(filename).endswith('.json'):
+                            files.append({"p": base_dir, "f": filename})
+                else:
+                    for (dirpath, dirnames, filenames) in os.walk(base_dir):
+                        for filename in filenames:
+                            if str(filename).endswith('.json') and str(dirpath).endswith('/done') is False and str(dirpath).endswith('/failed') is False:
+                                files.append({"p": dirpath, "f": filename})
 
-            for aFile in files:
-                if aFile.endswith(".json"):
-                    # with self.tracer.get_current_or_new_span("calculus", params["trace_flag"]) as load_span:
+            for aFileSpec in files:
+                if aFileSpec["f"].endswith(".json"):
                     try:
                         # load our json file
                         texte = ""
-                        with open(base_dir + "/" + aFile, "r") as f:
+
+                        with open(aFileSpec["p"] + '/' + aFileSpec["f"], "r") as f:
                             lignes = f.readlines()
                             for aligne in lignes:
                                 texte += str(aligne)
                         my_json = JsonPlus().loads(texte)
 
                         # load_span.set_attribute("filename", aFile)
-                        yield {"f": aFile, "j": my_json}
+                        yield {"f": aFileSpec["f"], "j": my_json}
                         # load_span.add_event("file.moved to [dest]", {"dest": base_dir + "/done/" + aFile})
-                        os.rename(base_dir + "/" + aFile, base_dir + "/done/" + aFile)
+                        os.makedirs(aFileSpec["p"] + '/done')
+                        os.rename(aFileSpec["p"] + "/" + aFileSpec["f"], aFileSpec["p"] + "/done/" + aFileSpec["f"])
                         # t.logInfo(
                         #     "json file loaded",
                         #     load_span,
@@ -347,9 +359,10 @@ class CalcObs(AllCalculus):
                         t.LogError(
                             "file moved to fail directory",
                             None,
-                            {"filename": aFile, "dest": base_dir + "/failed/" + aFile},
+                            {"filename": aFileSpec["f"], "dest": aFileSpec["p"] + "/failed/" + aFileSpec["f"]},
                         )
-                        os.rename(base_dir + "/" + aFile, base_dir + "/failed/" + aFile)
+                        os.makedirs(aFileSpec["p"] + "/failed")
+                        os.rename(aFileSpec["p"] + "/" + aFileSpec["f"],  aFileSpec["p"] + "/failed/" + aFileSpec["f"])
                         raise exc
 
         except Exception as exc:
