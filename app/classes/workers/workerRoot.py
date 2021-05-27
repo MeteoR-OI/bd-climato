@@ -72,7 +72,7 @@ class WorkerRoot:
                 a_trc['trace_flag'] = trace_flag
                 RefManager.GetInstance().SetRefIfNotExist(self.display + "_trace_flag", trace_flag)
                 t.logInfo(
-                    'task ' + self.name + ' setTraceFlag',
+                    'task ' + self.display + ' setTraceFlag',
                     None,
                     {'trace_flag': trace_flag}
                 )
@@ -125,7 +125,7 @@ class WorkerRoot:
             for a_worker in WorkerRoot.wkrs:
                 if a_worker['name'] == self.name:
                     if a_worker['run'] != thread_found:
-                        t.LogError(
+                        t.logError(
                             'task ' + self.display + ": wrong status",
                             None,
                             {"status.worker": str(a_worker['run']), "status.thread": str(thread_found)},
@@ -181,7 +181,8 @@ class WorkerRoot:
 
                     except queue.Empty:
                         if self.eventKill.isSet() is True:
-                            t.logInfo('svc kill event received, exiting', None, {"svc": self.display})
+                            if trace_flag is True:
+                                t.logInfo('svc kill event received, exiting', None, {"svc": self.display})
                             return
 
                         used_fequency -= check_exit
