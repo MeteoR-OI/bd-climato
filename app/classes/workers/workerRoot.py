@@ -71,11 +71,12 @@ class WorkerRoot:
             if a_trc['s'] == self.name:
                 a_trc['trace_flag'] = trace_flag
                 RefManager.GetInstance().SetRefIfNotExist(self.display + "_trace_flag", trace_flag)
-                t.logInfo(
-                    'task ' + self.display + ' setTraceFlag',
-                    None,
-                    {'trace_flag': trace_flag}
-                )
+                if trace_flag:
+                    t.logInfo(
+                        'task ' + self.display + ' setTraceFlag',
+                        None,
+                        {'trace_flag': trace_flag}
+                    )
                 return
         raise Exception('workerRoot::SetTraceFlag', 'service ' + self.display + ' not found')
 

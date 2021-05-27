@@ -346,7 +346,8 @@ class CalcObs(AllCalculus):
                         # load_span.set_attribute("filename", aFile)
                         yield {"f": aFileSpec["f"], "j": my_json}
                         # load_span.add_event("file.moved to [dest]", {"dest": base_dir + "/done/" + aFile})
-                        os.makedirs(aFileSpec["p"] + '/done')
+                        if not os.path.exists(aFileSpec["p"] + '/done'):
+                            os.makedirs(aFileSpec["p"] + '/done')
                         os.rename(aFileSpec["p"] + "/" + aFileSpec["f"], aFileSpec["p"] + "/done/" + aFileSpec["f"])
                         # t.logInfo(
                         #     "json file loaded",
@@ -361,7 +362,8 @@ class CalcObs(AllCalculus):
                             None,
                             {"filename": aFileSpec["f"], "dest": aFileSpec["p"] + "/failed/" + aFileSpec["f"]},
                         )
-                        os.makedirs(aFileSpec["p"] + "/failed")
+                        if not os.path.exists(aFileSpec["p"] + '/failed'):
+                            os.makedirs(aFileSpec["p"] + '/failed')
                         os.rename(aFileSpec["p"] + "/" + aFileSpec["f"],  aFileSpec["p"] + "/failed/" + aFileSpec["f"])
                         raise exc
 
