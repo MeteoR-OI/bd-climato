@@ -17,13 +17,16 @@ import locale
 # http://docs.python.org/2/library/locale.html#locale.setlocale
 #locale.setlocale(locale.LC_ALL, '')
 
-# modifs QUETELARD
+# added by
+#  QUETELARD
 from datetime import datetime
 import os
+# end added
 
 import weewx.manager
 import weecfg
 
+# added by QUETELARD
 # when program start, in first get lastUpdate of database
 file_name = os.environ['HOME'] + "/root/weewx.conf"
 config_dict = weecfg.read_config(file_name)
@@ -32,3 +35,4 @@ db_binding = 'wx_binding'
 dbm = weewx.manager.open_manager_with_config(config_dict,db_binding)
 last_update_stop = int(dbm._read_metadata('lastUpdate'))
 dbm.close
+# end added

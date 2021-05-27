@@ -57,11 +57,12 @@ class UnknownType(object):
     def __init__(self, obs_type):
         self.obs_type = obs_type
 
-# QUETELARD
+# added by QUETELARD
 class UnknownAggregate(object):
     """Indicates that the aggregate type is unknown."""
     def __init__(self, aggregate_type):
         self.aggregate_type = aggregate_type
+# end added
 
 unit_constants = {'US'       : weewx.US,
                   'METRIC'   : weewx.METRIC,
@@ -1305,7 +1306,7 @@ def as_value_tuple(record_dict, obs_type):
     # Form the value-tuple and return it:
     return ValueTuple(val, unit_type, unit_group)
 
-# QUETELARD nouvelle fonction for accumulator
+# added by QUETELARD new fonction for accumulator
 def as_value_tuple_for_agg(accumulator_dict, obs_type, aggregate_type):
     """Look up an observation type in a accumulator dictionary, returning the result
     as a ValueTuple. If not found, an object of type UnknownType will be returned."""
@@ -1353,9 +1354,10 @@ def as_value_tuple_for_agg(accumulator_dict, obs_type, aggregate_type):
     # particular observation type?
     (unit_type, unit_group) = StdUnitConverters[std_unit_system].getTargetUnit(obs_type)
     # Form the value-tuple and return it:
-    ## QUETELARD
+    ## QUETELARD disable
     #print(obs_type, aggregate_type, val)
     return ValueTuple(val, unit_type, unit_group)
+# end added
 
 if __name__ == "__main__":
     

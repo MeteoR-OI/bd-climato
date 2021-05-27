@@ -10,7 +10,7 @@ from weeutil.weeutil import to_int
 import weewx.units
 from weewx.units import ValueTuple
 
-# QUETELARD
+# added by QUETELARD
 from datetime import datetime
 
 #===============================================================================
@@ -174,8 +174,9 @@ class TimespanBinder(object):
     def records(self):
         manager = self.db_lookup(self.data_binding)
         for record in manager.genBatchRecords(self.timespan.start, self.timespan.stop):
-            # QUETELARD
+            # added by QUETELARD
             print('dateTime:',format(datetime.fromtimestamp(record['dateTime']),"%Y-%m-%dT%H:%M:%S"))
+            # end added
             yield CurrentObj(self.db_lookup, self.data_binding, record['dateTime'], self.formatter,
                              self.converter, record=record)
 
@@ -249,11 +250,11 @@ class TimespanBinder(object):
                                  self.formatter, self.converter, **self.option_dict)
 
 #===============================================================================
-#                    Class CurrentAggBinder   (QUETELARD)
+#                    Class CurrentAggBinder   (added by QUETELARD)
 #===============================================================================
 
 class CurrentAggBinder(object):
-    """Holds a binding for aggregation of accumulator.
+    """Holds a binding for aggregations issued from accumulator.
 
     This class is the final class in the chain of helper classes for aggregations.
 
@@ -304,7 +305,7 @@ class CurrentAggBinder(object):
         # timestamp at hand, we don't have to hit the database.
         if self.accumulator and self.obs_type in self.accumulator and self.accumulator.timespan.stop == self.current_time:
             vt = weewx.units.as_value_tuple_for_agg(self.accumulator, self.obs_type, aggregate_type)
-            # QUETELARD
+            # disable
             #print('currentagg:', self.obs_type, aggregate_type, ':', vt)
         else:
             vt = weewx.units.as_value_tuple_for_agg(None, self.obs_type, aggregate_type)
@@ -399,7 +400,7 @@ class ObservationBinder(object):
         if aggregate_type in ['__call__', 'has_key']:
             raise AttributeError
 
-        # QUETELARD
+        # QUETELARD disable
         #print(self.obs_type, aggregate_type)
         
         return self._do_query(aggregate_type)
@@ -448,13 +449,13 @@ class RecordBinder(object):
         return self.current(timestamp, data_binding=data_binding)
     
 #===============================================================================
-#                             Class AccumulatorBinder  (QUETELARD)
+#                             Class AccumulatorBinder  (added by QUETELARD)
 #===============================================================================
 
 class AccumulatorBinder(object):
 
     def __init__(self, report_time,
-                 formatter=weewx.units.Formatter(), converter=weewx.units.Converter(), accumulator=None): # QUETELARD
+                 formatter=weewx.units.Formatter(), converter=weewx.units.Converter(), accumulator=None):
         self.report_time = report_time
         self.formatter   = formatter
         self.converter   = converter
@@ -499,8 +500,6 @@ class CurrentObj(object):
         # timestamp at hand, we don't have to hit the database.
         if not self.data_binding and self.record and obs_type in self.record and self.record['dateTime'] == self.current_time:
             vt = weewx.units.as_value_tuple(self.record, obs_type)
-            # QUETELARD
-            #print('current:', obs_type, ':', vt)
         else:
             # No. We have to retrieve the record from the database
             try:
@@ -515,23 +514,22 @@ class CurrentObj(object):
                 vt = weewx.units.as_value_tuple(record, obs_type)
             # ... and then finally, return a ValueHelper
 
-        # QUETELARD
         return weewx.units.ValueHelper(vt, 'current',
                                        self.formatter,
                                        self.converter)
 
 
 #===============================================================================
-#                             Class CurrentAggObj (QUETELARD)
+#                             Class CurrentAggObj (added by QUETELARD)
 #===============================================================================
 
 class CurrentAggObj(object):
-    """First Helper class for the "Current" accumulator that contain
+    """First Helper class for the "Current" accumulator that contains
     aggregations for obs_type: 'min', 'mintime', 'max', 'maxtime',
     'wsum', sumtime, 'sum', 'count'
     
     This class allows tags such as:
-      $current.barometer.min
+      $currentagg.barometer.min
     """
         
     def __init__(self,  current_time, 

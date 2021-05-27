@@ -80,7 +80,7 @@ class StdReportEngine(threading.Thread):
     See below for examples of generators.
     """
 
-    # QUETELARD
+    # added by QUETELARD for create json file with wee_json : 
     def __init__(self, config_dict, stn_info, 
             record=None, accumulator=None, 
             start_ts=None, gen_ts=None, first_run=True,
@@ -94,23 +94,34 @@ class StdReportEngine(threading.Thread):
 
         record: The current archive record [Optional; default is None]
 
+        start_ts: The timestamp for which the output json file starts
+        [Optional; default is the first time in the database]
+        
         gen_ts: The timestamp for which the output is to be current
         [Optional; default is the last time in the database]
 
         first_run: True if this is the first time the report engine has been
         run.  If this is the case, then any 'one time' events should be done.
+
+        js_valid: For output json file, creates key 'validation' for tests
+
+        js_level: Defines the aggregation's level for json files.
+        [Optional; default is 'C' for complete data]
+        'H' for hour's and day's aggregations
+        'D' for day's aggregation only.
+         
         """
         threading.Thread.__init__(self, name="ReportThread")
 
         self.config_dict = config_dict
         self.stn_info = stn_info
         self.record = record
-        self.accumulator = accumulator # QUETELARD
-        self.start_ts = start_ts # QUETELARD
+        self.accumulator = accumulator # added by QUETELARD
+        self.start_ts = start_ts # added by QUETELARD
         self.gen_ts = gen_ts
         self.first_run = first_run
-        self.js_valid = js_valid
-        self.js_level = js_level
+        self.js_valid = js_valid # added by QUETELARD
+        self.js_level = js_level # added by QUETELARD
 
     def run(self):
         """This is where the actual work gets done.
@@ -193,14 +204,14 @@ class StdReportEngine(threading.Thread):
                         obj = weeutil.weeutil._get_object(generator)(
                             self.config_dict,
                             skin_dict,
-                            self.start_ts, # QUETELARD
+                            self.start_ts, # added by QUETELARD
                             self.gen_ts,
                             self.first_run,
                             self.stn_info,
-                            self.js_valid,
-                            self.js_level,
+                            self.js_valid,  # added by QUETELARD
+                            self.js_level,  # added by QUETELARD
                             self.record,
-                            self.accumulator) # QUETELARD
+                            self.accumulator) # added by QUETELARD
                     except Exception as e:
                         syslog.syslog(
                             syslog.LOG_CRIT, "reportengine: "
@@ -299,20 +310,20 @@ class StdReportEngine(threading.Thread):
 class ReportGenerator(object):
     """Base class for all report generators."""
 
-    # QUETELARD
+    # modified by QUETELARD
     def __init__(self, config_dict, skin_dict, start_ts, gen_ts, first_run, stn_info, 
                         js_valid, js_level,        
                         record=None, accumulator=None):
         self.config_dict = config_dict
         self.skin_dict = skin_dict
-        self.start_ts = start_ts
+        self.start_ts = start_ts  # added by QUETELARD
         self.gen_ts = gen_ts
         self.first_run = first_run
         self.stn_info = stn_info
-        self.js_valid = js_valid
-        self.js_level = js_level
+        self.js_valid = js_valid  # added by QUETELARD
+        self.js_level = js_level  # added by QUETELARD
         self.record = record
-        self.accumulator = accumulator
+        self.accumulator = accumulator  # added by QUETELARD
         self.db_binder = weewx.manager.DBBinder(self.config_dict)
 
     def start(self):

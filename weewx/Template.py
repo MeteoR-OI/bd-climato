@@ -282,7 +282,7 @@ class Template(Servlet):
                                                'cacheStoreIdPrefix', 'cacheStoreClass')
 
     ## the following are used by .compile(). Most are documented in its docstring.
-    ## QUETELARD
+    ## modified by QUETELARD
     _CHEETAH_cacheModuleFilesForTracebacks = False
     _CHEETAH_cacheDirForModuleFiles = None # change to a dirname
     #_CHEETAH_cacheModuleFilesForTracebacks = True
