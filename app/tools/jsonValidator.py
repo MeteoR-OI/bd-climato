@@ -113,6 +113,16 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
 
                 for key in a_current.__iter__():
                     if str(key).endswith("_max") or str(key).endswith("_min"):
+                        if a_current.__contains__(key + "time") is True and a_current.__contains__(key + "_time") is False:
+                            a_current[key + "_time"] = a_current[key + "time"]
+                            new_val = {
+                                "k": key + "_time",
+                                "v": a_current[key + "time"],
+                                "idx": idx,
+                                "k2": "current",
+                            }
+                            val_to_add.append(new_val)
+
                         if a_current.__contains__(key + "_time") is False:
                             new_val = {
                                 "k": key + "_time",
@@ -121,10 +131,16 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
                                 "k2": "current",
                             }
                             val_to_add.append(new_val)
-                    if (
-                        str(key).endswith("_s")
-                        and a_current.__contains__(key[:-4] + "_duration") is False
-                    ):
+                    if str(key).endswith("_sum"):
+                        new_val = {
+                            "k": str(key).replace("_sum", "_s"),
+                            "v": a_current[key],
+                            "idx": idx,
+                            "k2": "current",
+                        }
+                        val_to_add.append(new_val)
+
+                    if (str(key).endswith("_s") and a_current.__contains__(key[:-4] + "_duration") is False):
                         new_val = {
                             "k": key[:-4] + "_duration",
                             "v": measure_duration,
@@ -170,6 +186,15 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
                             + "]"
                         )
                     for key in a_aggreg.__iter__():
+                        if str(key).endswith("_sum") and str(key).endswith("_s") is False:
+                            new_val_agg = {
+                                "k": str(key).replace("_sum", "_s"),
+                                "v": a_aggreg[key],
+                                "idx": idx,
+                                "idx2": idx2,
+                            }
+                            val_to_add_agg.append(new_val_agg)
+
                         if str(key).endswith("_max") or str(key).endswith("_min"):
                             if all_aggreg.__contains__(key + "_time") is False:
                                 new_val_agg = {
@@ -186,6 +211,7 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
                 idx2 = 0
                 while idx2 < all_validations.__len__():
                     a_aggreg = j["data"][idx]["validation"][idx2]
+
                     if a_aggreg.__contains__("level") is False:
                         return (
                             "no level in data["
@@ -211,7 +237,37 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
                             + "]"
                         )
                     for key in all_validations[idx2].__iter__():
+                        if str(key) == 'out_temp_omm_min':
+                            key = 'out_temp_omm_min'
+                            if str(key).endswith("time") and str(key).endswith("_time") is False:
+                                new_val_val = {
+                                    "k": str(key).replace("time", "_time"),
+                                    "v": all_validations[idx2][key],
+                                    "idx2": idx2,
+                                    "idx": idx,
+                                }
+                                val_to_add_val.append(new_val_val)
+
+                        # fix XX_sum -> XX_s
+                        if str(key).endswith("_sum") and str(key).endswith("_s") is False:
+                            new_val_val = {
+                                "k": str(key).replace("_sum", "_s"),
+                                "v": all_validations[idx2][key],
+                                "idx2": idx2,
+                                "idx": idx,
+                            }
+                            val_to_add_val.append(new_val_val)
+
                         if str(key).endswith("_max") or str(key).endswith("_min"):
+                            if all_validations[idx2].__contains__(key + "time") is True and all_validations[idx2].__contains__(key + "_time") is False:
+                                new_val_val = {
+                                    "k": key + '_time',
+                                    "v": all_validations[idx2][key],
+                                    "idx2": idx2,
+                                    "idx": idx,
+                                }
+                                val_to_add_val.append(new_val_val)
+
                             if all_validations[idx2].__contains__(key + "_time") is False:
                                 new_val_val = {
                                     "k": key + "_time",

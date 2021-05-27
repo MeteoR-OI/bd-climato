@@ -124,16 +124,29 @@ class Command(BaseCommand):
                     nb_agg = all_agg.count()
                     nb_tmp_agg = all_tmp_agg.count()
                     max_idx = max(nb_agg, nb_tmp_agg)
+                    my_agg = my_tmp_agg = None
                     while max(idx, idx_tmp) < max_idx:
                         if idx >= nb_agg:
                             agg_done = True
+                            my_agg = None
                         else:
                             my_agg = all_agg[idx]
 
                         if idx_tmp >= nb_tmp_agg:
                             tmp_agg_done = True
+                            my_tmp_agg = None
                         else:
                             my_tmp_agg = all_tmp_agg[idx_tmp]
+
+                        # if my_agg is None:
+                        #     print("my_agg: None")
+                        # else:
+                        #     print("my_agg: " + str(my_agg.start_dat))
+
+                        # if my_tmp_agg is None:
+                        #     print("my_tmp_agg: None")
+                        # else:
+                        #     print("my_tmp_agg: " + str(my_tmp_agg.start_dat))
 
                         if str(my_agg is not None and my_agg.start_dat) < str(from_dt):
                             idx += 1
@@ -150,6 +163,7 @@ class Command(BaseCommand):
                             my_tmp_agg = None
 
                         if agg_done is True and tmp_agg_done is True:
+                            print("stop")
                             break
 
                         if my_agg is None and my_tmp_agg is None:

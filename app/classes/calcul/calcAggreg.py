@@ -117,9 +117,7 @@ class CalcAggreg(AllCalculus):
                         with self.tracer.start_span("level " + anAgg, trace_flag) as span_lvl:
                             b_insert_start_dat = True
                             if idx_delta_value > 0:
-                                span_lvl.set_attribute(
-                                    "delta_value_idx", idx_delta_value
-                                )
+                                span_lvl.set_attribute("delta_value_idx", idx_delta_value)
                             # adjust start date, depending on the aggregation level
 
                             # dv_next is the delta_values for next level
@@ -127,55 +125,26 @@ class CalcAggreg(AllCalculus):
 
                             # for all type_instruments
                             for an_intrument in all_instr.get_all_instruments():
-
                                 # for all measures
                                 for my_measure in an_intrument["object"].get_all_measures():
-
                                     # load the needed aggregation for this measure
-                                    agg_decas = self.load_aggregations_in_array(
-                                        my_measure, anAgg, aggregations, m_stop_dat
-                                    )
+                                    agg_decas = self.load_aggregations_in_array(my_measure, anAgg, aggregations, m_stop_dat)
 
-                                    m_agg_j = self.get_agg_magg(
-                                        anAgg, a_todo.data.obs_id.j_agg
-                                    )
+                                    m_agg_j = self.get_agg_magg(anAgg, a_todo.data.obs_id.j_agg)
 
                                     if b_insert_start_dat:
                                         b_insert_start_dat = False
-                                        span_lvl.set_attribute(
-                                            "start_dat",
-                                            str(agg_decas[0].data.start_dat),
-                                        )
+                                        span_lvl.set_attribute("start_dat", str(agg_decas[0].data.start_dat))
 
                                     # find the calculus object for my_mesure
                                     for a_calculus in self.all_calculus:
                                         if a_calculus["agg"] == my_measure["agg"]:
                                             if a_calculus["calc_agg"] is not None:
                                                 # load data in our aggregation
-                                                a_calculus[
-                                                    "calc_agg"
-                                                ].loadDVDataInAggregation(
-                                                    my_measure,
-                                                    m_stop_dat,
-                                                    agg_decas[0],
-                                                    m_agg_j,
-                                                    delta_values,
-                                                    dv_next,
-                                                    trace_flag,
-                                                )
+                                                a_calculus["calc_agg"].loadDVDataInAggregation(my_measure, m_stop_dat, agg_decas[0], m_agg_j, delta_values, dv_next, trace_flag)
 
                                                 # get our extreme values
-                                                a_calculus[
-                                                    "calc_agg"
-                                                ].loadDVMaxMinInAggregation(
-                                                    my_measure,
-                                                    m_stop_dat,
-                                                    agg_decas,
-                                                    m_agg_j,
-                                                    delta_values,
-                                                    dv_next,
-                                                    trace_flag,
-                                                )
+                                                a_calculus["calc_agg"].loadDVMaxMinInAggregation(my_measure, m_stop_dat, agg_decas, m_agg_j, delta_values, dv_next, trace_flag)
                                             break
 
                             # loop to the next AggLevel
@@ -206,9 +175,7 @@ class CalcAggreg(AllCalculus):
             finally:
                 poste_metier.unlock()
 
-    def load_aggregations_in_array(
-        self, my_measure, anAgg: str, aggregations, m_stop_dat: datetime
-    ):
+    def load_aggregations_in_array(self, my_measure, anAgg: str, aggregations, m_stop_dat: datetime):
         """load array of aggregations for calculus:
         [0] -> main_deca for data
         [1] -> min_deca
@@ -217,19 +184,19 @@ class CalcAggreg(AllCalculus):
         agg_decas = []
         deca_hours = []
 
-        if my_measure.get("hour_deca") is None:
+        if my_measure.get("hour_deca") is None or anAgg[0] != 'H':
             deca_hours.append(0)
             main_deca = 0
         else:
             main_deca = my_measure["hour_deca"]
             deca_hours.append(main_deca)
 
-        if my_measure.get("deca_max") is None:
+        if my_measure.get("deca_max") is None or anAgg[0] != 'H':
             deca_hours.append(main_deca)
         else:
             deca_hours.append(my_measure["deca_max"])
 
-        if my_measure.get("deca_min") is None:
+        if my_measure.get("deca_min") is None or anAgg[0] != 'H':
             deca_hours.append(main_deca)
         else:
             deca_hours.append(my_measure["deca_min"])
