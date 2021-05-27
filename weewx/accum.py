@@ -288,9 +288,10 @@ class Accum(dict):
     
     def augmentRecord(self, record):
         
-        ## QUETELARD
-        record['radiation'] = record['maxSolarRad']
-        self['radiation']   = self['maxSolarRad']
+        ## modified by QUETELARD
+        ## for test solar radiation -- disabled
+        #record['radiation'] = record['maxSolarRad']
+        #self['radiation']   = self['maxSolarRad']
         #print('radiation:',record['radiation'], vars(self['radiation']))
         # Go through all observation types.
         for obs_type in self:

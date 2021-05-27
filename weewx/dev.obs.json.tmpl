@@ -388,7 +388,7 @@ LOW#slurp
        #end if
        ## fin calcul min temp omm
        $CleVal("out_temp_omm_min",$out_temp_omm_min)
-       $CleDat("out_temp_omm_mintime",$out_temp_omm_mintime)
+       $CleDat("out_temp_omm_min_time",$out_temp_omm_mintime)
        ## calcul max temp de 7h le jour a 7h le lendemain
        #set $max = -1000
        #set $count = 0
@@ -419,7 +419,7 @@ LOW#slurp
        #end if
        ## fin calcul max temp omm
        $CleVal("out_temp_omm_max",$out_temp_omm_max)
-       $CleDat("out_temp_omm_maxtime",$out_temp_omm_maxtime)
+       $CleDat("out_temp_omm_max_time",$out_temp_omm_maxtime)
        ## calcul moy omm de 00h le jour a 00h le lendemain
        #set $sum_temp = 0
        #set $count_temp = 0

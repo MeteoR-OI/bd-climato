@@ -60,8 +60,9 @@ import os.path
 import syslog
 import time
 import datetime
-## QUETELARD
+## added by QUETELARD
 import shutil, sys
+## end added
 
 import configobj
 
@@ -84,8 +85,8 @@ default_search_list = [
     "weewx.cheetahgenerator.Almanac",
     "weewx.cheetahgenerator.Station",
     "weewx.cheetahgenerator.Current",
-    "weewx.cheetahgenerator.CurrentAgg", # QUETELARD
-    "weewx.cheetahgenerator.Json", # QUETELARD
+    "weewx.cheetahgenerator.CurrentAgg", # added by QUETELARD for current aggregations
+    "weewx.cheetahgenerator.Json", # added by QUETELARD for json files parameter
     "weewx.cheetahgenerator.Stats",
     "weewx.cheetahgenerator.UnitInfo",
     "weewx.cheetahgenerator.Extras"]
@@ -264,7 +265,6 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
             return ngen
 
         if gen_ts:
-            # QUETELARD
             record = default_archive.getRecord(gen_ts,
                                             max_delta=to_int(report_dict.get('max_delta')))
             if record:
@@ -328,8 +328,6 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
             tmpname = _fullname + '.tmp'
 
             try:
-                # QUETELARD
-                #print('file_name:',_fullname)
                 compiled_template = Cheetah.Template.Template(
                     file=template,
                     searchList=searchList,
@@ -338,14 +336,6 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
                 with open(tmpname, mode='w') as fd:
                     fd.write(str(compiled_template))
                 os.rename(tmpname, _fullname)
-                ## QUETELARD
-                #if _filename[0:3] == 'obs':
-                #    _fullname_compil = os.path.join(dest_dir, 'compil.json')
-                #    fc = open(_fullname_compil, 'a')
-                #    f  = open(_fullname, 'r')
-                #    shutil.copyfileobj(f, fc)
-                #    fc.close()
-                #    f.close()
 
             except Exception as e:
                 # We would like to get better feedback when there are cheetah
@@ -406,8 +396,8 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
             _yr_str  = "%4d"  % ref_tt[0]
             _mo_str  = "%02d" % ref_tt[1]
             _day_str = "%02d"  % ref_tt[2]
-            _hou_str = "%02d" % ref_tt[3]
-            _min_str = "%02d" % ref_tt[4]
+            _hou_str = "%02d" % ref_tt[3] # added by QUETELARD
+            _min_str = "%02d" % ref_tt[4] # added by QUETELARD
             _week_str = "%02d"  % datetime.date( ref_tt[0], ref_tt[1], ref_tt[2] ).isocalendar()[1];
             # Replace any instances of 'YYYY' with the year string
             _filename = _filename.replace('YYYY', _yr_str)
@@ -417,9 +407,9 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
             _filename = _filename.replace('WW', _week_str)
             # ... and the day
             _filename = _filename.replace('DD', _day_str)
-            # ... and the hour
+            # ... and the hour added by QUETELARD
             _filename = _filename.replace('HH', _hou_str)
-            # ... and the minute
+            # ... and the minute added by QUETELARD
             _filename = _filename.replace('mm', _min_str)
 
         return _filename
@@ -560,7 +550,7 @@ class Current(SearchList):
                                                 record=self.generator.record)
         return [record_binder]
     
-# QUETELARD ajout class for current aggregation
+# QUETELARD class added for current aggregations
 class CurrentAgg(SearchList):
     """Class that implements the $current tag for aggregation"""
      
@@ -570,6 +560,7 @@ class CurrentAgg(SearchList):
                                                 accumulator=self.generator.accumulator)
         return [accumulator_binder]
 
+# QUETELARD class added for json files parameters
 class Json(SearchList):
     """Class that implements the $json tags"""
     
@@ -583,6 +574,7 @@ class JsonObj(object):
         self.start = generator.start_ts
         self.validation = generator.js_valid
         self.level = generator.js_level
+## end added
 
 class Stats(SearchList):
     """Class that implements the time-based statistical tags, such
@@ -666,11 +658,6 @@ class utf8(Cheetah.Filters.Filter):
 
     def filter(self, val, **dummy_kw): #@ReservedAssignment
         """Filter incoming strings, converting to UTF-8"""
-        # QUETELARD
-        #if isinstance(val, weewx.units.ValueHelper):
-        #    print('utf8:', vars(val))
-        #else:
-        #    print('utf8:', val)
         if isinstance(val, unicode):
             filtered = val.encode('utf8')
         elif val is None:
