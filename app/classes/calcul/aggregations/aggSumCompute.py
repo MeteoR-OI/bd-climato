@@ -71,7 +71,7 @@ class AggSumCompute(AggCompute):
             tmp_sum = float(tmp_tmp)
         if delta_values.get(target_key + '_duration') is not None:
             if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm) and agg_level[0] == 'H':
-                tmp_duration = 60
+                tmp_duration = getAggDuration(agg_level[0])
             else:
                 tmp_duration = delta_values[target_key + '_duration']
 
@@ -93,7 +93,7 @@ class AggSumCompute(AggCompute):
                 else:
                     tmp_duration = getAggDuration(agg_level[0])
                 if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm):
-                    tmp_duration = 60
+                    tmp_duration = getAggDuration(agg_level[0])
                 b_value_found = True
 
         # return if the aggregation should not be sent to upper levels

@@ -162,6 +162,9 @@ class CalcAggreg(AllCalculus):
 
                     # we're done
                     duration = datetime.datetime.now() - time_start
+                    dur_millisec = duration.seconds * 1000
+                    if dur_millisec < 10000:
+                        dur_millisec = duration.microseconds / 1000
                     t.logInfo(
                         "Aggregation computed",
                         my_span,
@@ -169,7 +172,7 @@ class CalcAggreg(AllCalculus):
                             "obs_id": a_todo.data.obs_id_id,
                             "poste_id": a_todo.data.obs_id.poste_id_id,
                             "queue_length": a_todo.count(),
-                            "time_exec": (duration.microseconds/1000),
+                            "time_exec": dur_millisec,
                         },
                     )
             finally:

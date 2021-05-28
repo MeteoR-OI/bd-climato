@@ -147,10 +147,13 @@ class CalcObs(AllCalculus):
                     ret = self._loadJsonItemInObs(json_file_data, trace_flag, is_tmp, use_validation)
                     my_span.set_attribute("items_processed", json_file_data["data"].__len__())
                     duration = datetime.datetime.now() - start_time
+                    dur_millisec = duration.seconds * 1000
+                    if dur_millisec < 10000:
+                        dur_millisec = duration.microseconds / 1000
                     t.logInfo(
                         "Json file loaded",
                         my_span,
-                        {"time_exec": int(duration.microseconds / 1000), "items": item_processed, "idx": idx},
+                        {"time_exec": dur_millisec, "items": item_processed, "idx": idx},
                     )
                     ret_data.append(ret)
                     idx += 1
@@ -162,11 +165,14 @@ class CalcObs(AllCalculus):
             self.tracer.end_span()
 
         global_duration = datetime.datetime.now() - debut_full_process
+        dur_millisec = global_duration.seconds * 1000
+        if dur_millisec < 10000:
+            dur_millisec = global_duration.microseconds / 1000
         ret_data.append(
             {
-                "total_exec": int(global_duration.microseconds/1000),
+                "total_exec": dur_millisec,
                 "item_processed": item_processed,
-                "one_exec": int(global_duration.microseconds/1000 / item_processed),
+                "one_exec": dur_millisec / item_processed,
             }
         )
         return ret_data

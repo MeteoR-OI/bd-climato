@@ -73,7 +73,7 @@ class AggAvgCompute(AggCompute):
             tmp_s = float(tmp_tmp)
         if delta_values.get(target_key + '_duration') is not None:
             if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm) and agg_level[0] == 'H':
-                tmp_duration = 60
+                tmp_duration = getAggDuration(agg_level[0])
             else:
                 tmp_duration = delta_values[target_key + '_duration']
 
@@ -95,7 +95,7 @@ class AggAvgCompute(AggCompute):
                 else:
                     tmp_duration = getAggDuration(agg_level[0])
                 if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm) and agg_level[0] == 'H':
-                    tmp_duration = 60
+                    tmp_duration = getAggDuration(agg_level[0])
                 b_value_found = True
             else:
                 tmp_tmp = self.get_json_value(m_agg_j, a_key, ['_avg'], None)
@@ -105,7 +105,7 @@ class AggAvgCompute(AggCompute):
                     if m_agg_j.__contains__(a_key + '_duration') is True:
                         tmp_duration = float(m_agg_j[a_key + '_duration'])
                     if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm) and agg_level[0] == 'H':
-                        tmp_duration = 60
+                        tmp_duration = getAggDuration(agg_level[0])
                     tmp_s = tmp_avg * tmp_duration
                     b_value_found = True
 
