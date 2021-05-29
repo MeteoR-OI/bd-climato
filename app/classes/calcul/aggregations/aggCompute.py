@@ -128,27 +128,27 @@ class AggCompute():
                     else:
                         agg_maxmin = new_calulated_maxmin - 1
 
-                b_change_maxmin = False
-                if (target_key == "wind"):
-                    print('testing: agg_' + agg_decas[idx_maxmin].agg_niveau + ': ' + str(agg_maxmin) + ', new_calc: ' + str(new_calulated_maxmin) + ', equal? ' + str(agg_maxmin == new_calulated_maxmin))
-                    if agg_j.__contains__(target_key + maxmin_suffix + '_time'):
-                        print("  wind_max: old_time=> " + str(agg_j[target_key + maxmin_suffix + '_time']) + ", new=> " + str(new_calulated_maxmin_time))
-                        print("  agg: id: " + str(agg_decas[idx_maxmin].data.id) + ', level: ' + agg_decas[idx_maxmin].agg_niveau + ', start_dat: ' + str(agg_decas[idx_maxmin].data.start_dat))
-                    else:
-                        print("  wind_max: old_time=> ** no data **, new=> " + str(new_calulated_maxmin_time))
-                        print("  agg: id: " + str(agg_decas[idx_maxmin].data.id) + ', level: ' + agg_decas[idx_maxmin].agg_niveau + ', start_dat: ' + str(agg_decas[idx_maxmin].data.start_dat))
+                # b_change_maxmin = False
+                # if (target_key == "wind"):
+                #     print('testing: agg_' + agg_decas[idx_maxmin].agg_niveau + ': ' + str(agg_maxmin) + ', new_calc: ' + str(new_calulated_maxmin) + ', equal? ' + str(agg_maxmin == new_calulated_maxmin))
+                #     if agg_j.__contains__(target_key + maxmin_suffix + '_time'):
+                #         print("  wind_max: old_time=> " + str(agg_j[target_key + maxmin_suffix + '_time']) + ", new=> " + str(new_calulated_maxmin_time))
+                #         print("  agg: id: " + str(agg_decas[idx_maxmin].data.id) + ', level: ' + agg_decas[idx_maxmin].agg_niveau + ', start_dat: ' + str(agg_decas[idx_maxmin].data.start_dat))
+                #     else:
+                #         print("  wind_max: old_time=> ** no data **, new=> " + str(new_calulated_maxmin_time))
+                #         print("  agg: id: " + str(agg_decas[idx_maxmin].data.id) + ', level: ' + agg_decas[idx_maxmin].agg_niveau + ', start_dat: ' + str(agg_decas[idx_maxmin].data.start_dat))
                 # compare the measure data and current maxmin
                 if maxmin_suffix == '_max' and agg_maxmin < new_calulated_maxmin:
-                    if (target_key == "wind"):
-                        print('   *** agg < new_calc')
+                    # if (target_key == "wind"):
+                    #     print('   *** agg < new_calc')
                     b_change_maxmin = True
                 if maxmin_suffix == '_max' and agg_maxmin == new_calulated_maxmin and str(agg_j[target_key + maxmin_suffix + '_time']) < str(new_calulated_maxmin_time):
-                    if (target_key == "wind"):
-                        print('   *** max agg_time < new_calc_time -> yes')
+                    # if (target_key == "wind"):
+                    #     print('   *** max agg_time < new_calc_time -> yes')
                     b_change_maxmin = True
-                if maxmin_suffix == '_max' and agg_maxmin == new_calulated_maxmin and str(agg_j[target_key + maxmin_suffix + '_time']) > str(new_calulated_maxmin_time):
-                    if (target_key == "wind"):
-                        print('   *** max agg_time > new_calc_time -> NO')
+                # if maxmin_suffix == '_max' and agg_maxmin == new_calulated_maxmin and str(agg_j[target_key + maxmin_suffix + '_time']) > str(new_calulated_maxmin_time):
+                #     if (target_key == "wind"):
+                #         print('   *** max agg_time > new_calc_time -> NO')
                 if maxmin_suffix == '_min' and agg_maxmin > new_calulated_maxmin:
                     b_change_maxmin = True
                 if maxmin_suffix == '_min' and agg_maxmin == new_calulated_maxmin and str(agg_j[target_key + maxmin_suffix + '_time']) < str(new_calulated_maxmin_time):
