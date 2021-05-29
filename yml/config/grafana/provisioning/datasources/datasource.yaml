@@ -25,10 +25,10 @@ datasources:
       name: traceID
       # only '${__value.raw}' open in grafana window
       url: '$${__value.raw}'
-    - datasourceUid: jaeger
+    - datasourceUid: localhost
       matcherRegex: "trace_id\": \"(\\w+)"
       # open jaeger in another window
-      url: 'http://localhost:16686/trace/${__value.raw}'
+      url: 'http://localhost:16686/trace/$${__value.raw}'
 
 - name: jaeger
   uid: jaeger

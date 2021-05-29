@@ -12,6 +12,15 @@ mv data/json_auto_load/done/*.json data/json_auto_load
 
 python3 manage.py svc auto --run
 
+python3 manage.py loadJson obs.2021-05-12.json --tmp --validation
+python3 manage.py loadJson obs.2021-05-13.json --tmp --validation
+python3 manage.py loadJson obs.2021-05-14.json --tmp --validation
+python3 manage.py loadJson obs.2021-05-16.json --tmp --validation
+python3 manage.py loadJson obs.2021-05-17.json --tmp --validation
+python3 manage.py loadJson obs.2021-05-18.json --tmp --validation
+python3 manage.py loadJson obs.2021-05-19.json --tmp --validation
+python3 manage.py loadJson obs.2021-05-24.json --tmp --validation
+
 python3 manage.py loadJson obs.2021-05-24.json --tmp --validation
 python3 manage.py loadJson obs.2021-05-25.json --tmp --validation
 

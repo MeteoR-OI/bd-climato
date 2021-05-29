@@ -155,11 +155,11 @@ LOGGING = {
     'disable_existing_loggers': False,
     'loggers': {
         'logInfoFile': {
-            'handlers': ['logInfoFile_hdl'],
+            'handlers': ['logInfoFile_hdl', 'consoleCritical'],
             'level': 'INFO'
         },
         'logDebugFile': {
-            'handlers': ['logDebugFile_hdl'],
+            'handlers': ['logDebugFile_hdl', 'consoleCritical'],
             'level': 'DEBUG'
         },
         'logInfoConsole': {
@@ -187,6 +187,11 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': 'console_fmt'
+        },
+        'consoleCritical': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'console_fmt',
+            'level': 'CRITICAL'
         }
     },
     'formatters': {

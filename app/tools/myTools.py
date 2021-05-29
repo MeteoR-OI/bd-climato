@@ -172,9 +172,9 @@ class LogMe:
         # build our json
         log_j = {
             "ts": str(datetime.datetime.now()),
-            "py_file": filename,
-            "py_line": line_no,
-            "py_func": module,
+            "pyFile": filename,
+            "pyLine": line_no,
+            "pyFunc": module,
             "level": level,
             "msg": self.CleanUpMessage(message),
             "params": params,

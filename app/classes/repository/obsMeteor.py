@@ -7,7 +7,7 @@ from app.tools.aggTools import calcAggDate
 
 @pytest.fixture(autouse=True)
 def enable_db_access_for_all_tests(db):
-    t.logInfo('fixture obsMeteor::enable_db_access_for_all_tests called')
+    # t.logInfo('fixture obsMeteor::enable_db_access_for_all_tests called')
     pass
 
 

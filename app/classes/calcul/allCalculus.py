@@ -34,7 +34,7 @@ class AllCalculus():
             raise Exception('AllCalculus::delete_obs_agg', 'is_tmp not given')
         my_span = {}
         self.tracer.start_span('delete data')
-        my_span.set_attributes('is_tmp', is_tmp)
+        my_span.set_attributes('isTmp', is_tmp)
         with my_span:
             if is_tmp is False:
                 Observation.objects.all().delete()

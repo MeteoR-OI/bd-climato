@@ -6,7 +6,7 @@ from django.db import transaction
 
 @pytest.fixture(autouse=True)
 def enable_db_access_for_all_tests(db):
-    t.logInfo('fixture AggTodoMeteor::enable_db_access_for_all_tests called')
+    # t.logInfo('fixture AggTodoMeteor::enable_db_access_for_all_tests called')
     pass
 
 

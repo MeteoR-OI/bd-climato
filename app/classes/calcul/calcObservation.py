@@ -145,7 +145,7 @@ class CalcObs(AllCalculus):
                     json_file_data = json_data_array[idx]
                     item_processed += json_file_data["data"].__len__()
                     ret = self._loadJsonItemInObs(json_file_data, trace_flag, is_tmp, use_validation)
-                    my_span.set_attribute("items_processed", json_file_data["data"].__len__())
+                    my_span.set_attribute("items", json_file_data["data"].__len__())
                     duration = datetime.datetime.now() - start_time
                     dur_millisec = duration.seconds * 1000
                     if dur_millisec < 10000:
@@ -153,7 +153,7 @@ class CalcObs(AllCalculus):
                     t.logInfo(
                         "Json file loaded",
                         my_span,
-                        {"time_exec": dur_millisec, "items": item_processed, "idx": idx},
+                        {"timeExec": dur_millisec, "items": item_processed, "idx": idx},
                     )
                     ret_data.append(ret)
                     idx += 1
@@ -209,9 +209,9 @@ class CalcObs(AllCalculus):
                 json_file_data["data"][measure_idx]["current"] = {"duration": 0}
             poste_metier = PosteMetier(json_file_data["poste_id"], m_stop_date_agg_start_date)
             if measure_idx == 0:
-                my_span.set_attribute("poste_id", poste_metier.data.id)
+                my_span.set_attribute("posteId", poste_metier.data.id)
                 my_span.set_attribute("stopDat", str(m_stop_date_agg_start_date))
-                my_span.set_attribute("is_tmp", is_tmp)
+                my_span.set_attribute("isTmp", is_tmp)
             try:
                 poste_metier.lock()
                 obs_meteor = poste_metier.observation(m_stop_date_agg_start_date, is_tmp)
@@ -265,7 +265,7 @@ class CalcObs(AllCalculus):
 
                 # save our new data
                 obs_meteor.save()
-                my_span.set_attribute("obs_id_" + str(measure_idx), obs_meteor.data.id)
+                my_span.set_attribute("obsId_" + str(measure_idx), obs_meteor.data.id)
 
                 a_todo = AggTodoMeteor(obs_meteor.data.id, is_tmp)
                 a_todo.data.j_dv.append(delta_values)
@@ -358,7 +358,7 @@ class CalcObs(AllCalculus):
                         # t.logInfo(
                         #     "json file loaded",
                         #     load_span,
-                        #     {"filename": aFile, "dest": base_dir + "/done/" + aFile},
+                        #     {"filename": aFile, "dest": baseDir + "/done/" + aFile},
                         # )
                     except Exception as exc:
                         t.LogCritical(exc)

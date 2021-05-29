@@ -75,7 +75,7 @@ class WorkerRoot:
                     t.logInfo(
                         'task ' + self.display + ' setTraceFlag',
                         None,
-                        {'trace_flag': trace_flag}
+                        {'traceFlag': trace_flag}
                     )
                 return
         raise Exception('workerRoot::SetTraceFlag', 'service ' + self.display + ' not found')
@@ -162,14 +162,14 @@ class WorkerRoot:
             used_fequency = self.frequency
             check_exit = self.ref_mgr.GetRef("worker_kill_frequency")
             if trace_flag is True:
-                t.LogDebug('task ' + self.display + " running", None, {"check_time_out": check_exit})
+                t.LogDebug('task ' + self.display + " running", None, {"checkTimeOut": check_exit})
 
             while True:
                 b_run_svc = False
                 try:
                     trace_flag = self.GetTraceFlag()
                     if trace_flag is True:
-                        t.LogDebug('task ' + self.display + " waiting now", None, {"freq": self.frequency, "freq.used": used_fequency})
+                        t.LogDebug('task ' + self.display + " waiting now", None, {"freq": self.frequency, "freqUsed": used_fequency})
                     call_params = {
                         "param": {}
                     }

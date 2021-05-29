@@ -87,10 +87,10 @@ class CalcAggreg(AllCalculus):
         if is_tmp is True:
             span_name += "_tmp"
         with self.tracer.start_as_current_span(span_name, trace_flag) as my_span:
-            my_span.set_attribute("obs_id", a_todo.data.obs_id_id)
-            my_span.set_attribute("poste_id", a_todo.data.obs_id.poste_id_id)
-            my_span.set_attribute("is_tmp", is_tmp)
-            # my_span.set_attribute("meteor", a_todo.data.obs_id.poste_id.meteor)
+            my_span.set_attribute("obsId", a_todo.data.obs_id_id)
+            my_span.set_attribute("posteId", a_todo.data.obs_id.poste_id_id)
+            my_span.set_attribute("isTmp", is_tmp)
+            my_span.set_attribute("meteor", a_todo.data.obs_id.poste_id.meteor)
             # retrieve data we will need
             span_load_data = self.tracer.start_span("load Aggreg", trace_flag)
             m_stop_dat = a_todo.data.obs_id.stop_dat
@@ -98,7 +98,7 @@ class CalcAggreg(AllCalculus):
             poste_metier = PosteMetier(a_todo.data.obs_id.poste_id_id, a_start_dat)
             poste_metier.lock()
             aggregations = poste_metier.aggregations(m_stop_dat, True, is_tmp)
-            span_load_data.set_attribute("agg_count", aggregations.__len__())
+            span_load_data.set_attribute("items", aggregations.__len__())
             span_load_data.end()
             try:
                 idx_delta_value = -1
@@ -117,7 +117,7 @@ class CalcAggreg(AllCalculus):
                         with self.tracer.start_span("level " + anAgg, trace_flag) as span_lvl:
                             b_insert_start_dat = True
                             if idx_delta_value > 0:
-                                span_lvl.set_attribute("delta_value_idx", idx_delta_value)
+                                span_lvl.set_attribute("deltaValueIdx", idx_delta_value)
                             # adjust start date, depending on the aggregation level
 
                             # dv_next is the delta_values for next level
@@ -134,7 +134,7 @@ class CalcAggreg(AllCalculus):
 
                                     if b_insert_start_dat:
                                         b_insert_start_dat = False
-                                        span_lvl.set_attribute("start_dat", str(agg_decas[0].data.start_dat))
+                                        span_lvl.set_attribute("startDat", str(agg_decas[0].data.start_dat))
 
                                     # find the calculus object for my_mesure
                                     for a_calculus in self.all_calculus:
@@ -169,10 +169,10 @@ class CalcAggreg(AllCalculus):
                         "Aggregation computed",
                         my_span,
                         {
-                            "obs_id": a_todo.data.obs_id_id,
-                            "poste_id": a_todo.data.obs_id.poste_id_id,
-                            "queue_length": a_todo.count(),
-                            "time_exec": dur_millisec,
+                            "obsId": a_todo.data.obs_id_id,
+                            "posteId": a_todo.data.obs_id.poste_id_id,
+                            "queueLength": a_todo.count(),
+                            "timeExec": dur_millisec,
                         },
                     )
             finally:
