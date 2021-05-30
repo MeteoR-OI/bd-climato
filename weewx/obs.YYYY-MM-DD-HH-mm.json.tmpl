@@ -72,7 +72,7 @@ LOW#slurp
 ## fin fonction calcul valeur avec cle
 #from datetime import datetime, timedelta
 #import user.extensions
-[
+##[
 {
   "meteor" : "$BootstrapLabels.station_id",
   "version":2,
@@ -134,38 +134,38 @@ LOW#slurp
        "start_dat":"$datetime_obs_start",
        "stop_dat":"$datetime_obs_stop",
        "current": {
-       $CleVal("out_temp",$obs.outTemp.raw)
+       $CleVal("out_temp",$obs.outTemp.degree_C.raw)
        #if $final_obs
-       $CleVal("out_temp_min",$currentagg.outTemp.min.raw)       
+       $CleVal("out_temp_min",$currentagg.outTemp.min.degree_C.raw)       
        $CleDat("out_temp_min_time",$currentagg.outTemp.mintime.raw)
-       $CleAvg("out_temp_avg",$currentagg.outTemp.sum.raw,$currentagg.outTemp.count.raw)
-       $CleVal("out_temp_max",$currentagg.outTemp.max.raw)       
+       $CleAvg("out_temp_avg",$currentagg.outTemp.sum.degree_C.raw,$currentagg.outTemp.count.raw)
+       $CleVal("out_temp_max",$currentagg.outTemp.max.degree_C.raw)       
        $CleDat("out_temp_max_time",$currentagg.outTemp.maxtime.raw)
        #end if
-       $CleVal("windchill",$obs.windchill.raw)
+       $CleVal("windchill",$obs.windchill.degree_C.raw)
        #if $final_obs
-       $CleVal("windchill_min",$currentagg.windchill.min.raw)       
+       $CleVal("windchill_min",$currentagg.windchill.min.degree_C.raw)       
        $CleDat("windchill_min_time",$currentagg.windchill.mintime.raw)
-       $CleAvg("windchill_avg",$currentagg.windchill.sum.raw,$currentagg.windchill.count.raw)
+       $CleAvg("windchill_avg",$currentagg.windchill.sum.degree_C.raw,$currentagg.windchill.count.raw)
        #end if
-       $CleVal("heatindex",$obs.heatindex.raw)
+       $CleVal("heatindex",$obs.heatindex.degree_C.raw)
        #if $final_obs
-       $CleVal("heatindex_max",$currentagg.heatindex.max.raw)       
+       $CleVal("heatindex_max",$currentagg.heatindex.max.degree_C.raw)       
        $CleDat("heatindex_max_time",$currentagg.heatindex.maxtime.raw)
-       $CleAvg("heatindex_avg",$currentagg.heatindex.sum.raw,$currentagg.heatindex.count.raw)
+       $CleAvg("heatindex_avg",$currentagg.heatindex.sum.degree_C.raw,$currentagg.heatindex.count.raw)
        #end if
-       $CleVal("dewpoint",$obs.dewpoint.raw)
+       $CleVal("dewpoint",$obs.dewpoint.degree_C.raw)
        #if $final_obs
-       $CleVal("dewpoint_min",$currentagg.dewpoint.min.raw)       
+       $CleVal("dewpoint_min",$currentagg.dewpoint.min.degree_C.raw)       
        $CleDat("dewpoint_min_time",$currentagg.dewpoint.mintime.raw)
-       $CleAvg("dewpoint_avg",$currentagg.dewpoint.sum.raw,$currentagg.dewpoint.count.raw)
-       $CleVal("dewpoint_max",$currentagg.dewpoint.max.raw)       
+       $CleAvg("dewpoint_avg",$currentagg.dewpoint.sum.degree_C.raw,$currentagg.dewpoint.count.raw)
+       $CleVal("dewpoint_max",$currentagg.dewpoint.max.degree_C.raw)       
        $CleDat("dewpoint_max_time",$currentagg.dewpoint.maxtime.raw)
        #end if
        #if $obs.soilTemp1.has_data and $day.soilTemp1.has_data
-       $CleVal("soiltemp",$obs.soilTemp1.raw)
+       $CleVal("soiltemp",$obs.soilTemp1.degree_C.raw)
        #if $final_obs
-       $CleVal("soiltemp_min",$obs.soilTemp1.min.raw)
+       $CleVal("soiltemp_min",$obs.soilTemp1.min.degree_C.raw)
        $CleDat("soiltemp_min_time",$obs.soilTemp1.mintime.raw) 
        #end if     
        #end if     
@@ -177,37 +177,35 @@ LOW#slurp
        $CleVal("humidity_max",$currentagg.outHumidity.max.raw)       
        $CleDat("humidity_max_time",$currentagg.outHumidity.maxtime.raw)
        #end if
-       $CleVal("barometer",$obs.barometer.raw)
+       $CleVal("barometer",$obs.barometer.hPa.raw)
        #if $final_obs
-       $CleVal("barometer_min",$currentagg.barometer.min.raw)       
+       $CleVal("barometer_min",$currentagg.barometer.min.hPa.raw)       
        $CleDat("barometer_min_time",$currentagg.barometer.mintime.raw)
-       $CleAvg("barometer_avg",$currentagg.barometer.sum.raw,$currentagg.barometer.count.raw)
-       $CleVal("barometer_max",$currentagg.barometer.max.raw)       
+       $CleAvg("barometer_avg",$currentagg.barometer.sum.hPa.raw,$currentagg.barometer.count.raw)
+       $CleVal("barometer_max",$currentagg.barometer.max.hPa.raw)       
        $CleDat("barometer_max_time",$currentagg.barometer.maxtime.raw)
        #end if
        $CleVal("pressure",$obs.pressure.raw)
        #if $final_obs
-       $CleVal("pressure_min",$currentagg.pressure.min.raw)       
+       $CleVal("pressure_min",$currentagg.pressure.min.hPa.raw)       
        $CleDat("pressure_min_time",$currentagg.pressure.mintime.raw)
-       $CleAvg("pressure_avg",$currentagg.pressure.sum.raw,$currentagg.pressure.count.raw)
-       $CleVal("pressure_max",$currentagg.pressure.max.raw)       
+       $CleAvg("pressure_avg",$currentagg.pressure.sum.hPa.raw,$currentagg.pressure.count.raw)
+       $CleVal("pressure_max",$currentagg.pressure.max.hPa.raw)       
        $CleDat("pressure_max_time",$currentagg.pressure.maxtime.raw)
        #end if
-       $CleVal("wind_avg",$obs.windSpeed.raw)
+       $CleVal("wind_avg",$obs.windSpeed.meter_per_second.raw)
        $CleVal("wind_dir",$obs.windDir.raw)
-       $CleVal("gust",$obs.windGust.raw)
-       $CleVal("gust_dir",$obs.windGustDir.raw)
+       $CleVal("wind_max",$obs.windGust.meter_per_second.raw)
+       $CleVal("wind_max_dir",$obs.windGustDir.raw)
        #if $final_obs
-       $CleVal("wind_max",$currentagg.windGust.max.raw)
-       $CleVal("wind_max_dir",$currentagg.windGustDir.max.raw)        
        $CleDat("wind_max_time",$currentagg.windGust.maxtime.raw)    
        #end if
-       $CleVal("wind10_avg",$current.windSpeed10.raw)
-       $CleVal("rain",$obs.rain.raw)
-       $CleVal("rain_rate",$obs.rainRate.raw)
+       $CleVal("wind10_avg",$current.windSpeed10.meter_per_second.raw)
+       $CleVal("rain",$obs.rain.mm.raw)
+       $CleVal("rain_rate",$obs.rainRate.mm_per_hour.raw)
        #if $final_obs
        $CleDat("rain_rate_max_time",$currentagg.rainRate.maxtime.raw/10) ## bug bizarre !!!!
-       $CleAvg("rain_rate_avg",$currentagg.rainRate.sum.raw,$currentagg.rainRate.count.raw)
+       $CleAvg("rain_rate_avg",$currentagg.rainRate.sum.mm_per_hour.raw,$currentagg.rainRate.count.raw)
        #end if
        #if $day.UV.has_data
        $CleVal("uv_indice",$obs.UV.raw)
@@ -232,12 +230,12 @@ LOW#slurp
        #end if
        #end if
        #end if
-       $CleVal("in_temp",$obs.inTemp.raw)
+       $CleVal("in_temp",$obs.inTemp.degree_C.raw)
        #if $final_obs
-       $CleVal("in_temp_max",$currentagg.inTemp.max.raw)
+       $CleVal("in_temp_max",$currentagg.inTemp.max.degree_C.raw)
        $CleDat("in_temp_max_time",$currentagg.inTemp.maxtime.raw)
-       $CleAvg("in_temp_avg",$currentagg.inTemp.sum.raw,$currentagg.inTemp.count.raw)
-       $CleVal("in_temp_min",$currentagg.inTemp.min.raw)
+       $CleAvg("in_temp_avg",$currentagg.inTemp.sum.degree_C.raw,$currentagg.inTemp.count.raw)
+       $CleVal("in_temp_min",$currentagg.inTemp.min.degree_C.raw)
        $CleDat("in_temp_min_time",$currentagg.inTemp.mintime.raw)
        #end if
        $CleVal("in_humidity",$obs.inHumidity.raw,0)
@@ -272,7 +270,7 @@ LOW#slurp
        [{
        "level":"H",
        ## traitement special pour affichage de l'etp qui n'est disponible que sur current a heure ronde
-#if $new_hour ##and $day.ET.has_data and $day.ET.sum.raw >0.0
+#if $new_hour and $day.ET.has_data and $day.ET.sum.raw >0.0
        $CleVal("etp_sum",$hour.ET.sum.raw)
 #end if
        "start_dat":$datef($hour($hours_ago=$delta_h).dateTime.raw)
@@ -292,4 +290,4 @@ LOW#slurp
      }
    ]
 }
-]
+,##]

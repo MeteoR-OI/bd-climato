@@ -154,29 +154,29 @@ LOW#slurp
 #end if
 #if $json_level == 'C'
        "current": {
-       $CleVal("out_temp",$obs.outTemp.raw)
-       $CleVal("windchill",$obs.windchill.raw)
-       $CleVal("heatindex",$obs.heatindex.raw)
-       $CleVal("dewpoint",$obs.dewpoint.raw)
+       $CleVal("out_temp",$obs.outTemp.degree_C.raw)
+       $CleVal("windchill",$obs.windchill.degree_C.raw)
+       $CleVal("heatindex",$obs.heatindex.degree_C.raw)
+       $CleVal("dewpoint",$obs.dewpoint.degree_C.raw)
        #if $obs.soilTemp1.has_data and $day.soilTemp1.has_data
-       $CleVal("soiltemp",$obs.soilTemp1.raw)
+       $CleVal("soiltemp",$obs.soilTemp1.degree_C.raw)
        #end if     
        $CleVal("humidity",$obs.outHumidity.raw,0)
-       $CleVal("barometer",$obs.barometer.raw)
-       $CleVal("pressure",$obs.pressure.raw)
-       $CleVal("wind_avg",$obs.windSpeed.raw)
+       $CleVal("barometer",$obs.barometer.hPa.raw)
+       $CleVal("pressure",$obs.pressure.hPa.raw)
+       $CleVal("wind_avg",$obs.windSpeed.meter_per_second.raw)
        $CleVal("wind_dir",$obs.windDir.raw)
-       $CleVal("wind_max",$obs.windGust.raw)
+       $CleVal("wind_max",$obs.windGust.meter_per_second.raw)
        $CleVal("wind_max_dir",$obs.windGustDir.raw)
-       $CleVal("rain",$obs.rain.raw)
-       $CleVal("rain_rate",$obs.rainRate.raw)
+       $CleVal("rain",$obs.rain.mm.raw)
+       $CleVal("rain_rate",$obs.rainRate.mm_per_hour.raw)
        #if $day.UV.has_data
        $CleVal("uv_indice",$obs.UV.raw)
        #end if
        #if $obs.radiation.has_data  
        $CleCal("radiation",$obs.radiation.raw,$amin*0.006)
        #end if
-       $CleVal("in_temp",$obs.inTemp.raw)
+       $CleVal("in_temp",$obs.inTemp.degree_C.raw)
        $CleVal("in_humidity",$obs.inHumidity.raw,0)
        $CleVal("rx",$obs.rxCheckPercent.raw)
        $CleVal("voltage",$obs.consBatteryVoltage.raw)
@@ -206,18 +206,18 @@ LOW#slurp
        [{
        "level":"H",
        #if $new_hour and $day.ET.has_data and $day.ET.sum.raw >0.0
-       $CleVal("etp_sum",$hour($hours_ago=$delta_h).ET.sum.raw)
+       $CleVal("etp_sum",$hour($hours_ago=$delta_h).ET.sum.mm.raw)
        #end if
        #if $obs.outTemp.has_data
-       $CleVal("out_temp_omm",$obs.outTemp.raw)
-       $CleCal("out_temp_omm_s",$obs.outTemp.raw,60)
-       $CleVal("out_temp_omm_avg",$obs.outTemp.raw)
+       $CleVal("out_temp_omm",$obs.outTemp.degree_C.raw)
+       $CleCal("out_temp_omm_s",$obs.outTemp.degree_C.raw,60)
+       $CleVal("out_temp_omm_avg",$obs.outTemp.degree_C.raw)
        $CleVal("out_temp_omm_duration",60)
        #end if
        #if $obs.barometer.has_data
-       $CleVal("barometer_omm",$obs.barometer.raw)
-       $CleCal("barometer_omm_s",$obs.barometer.raw,60)
-       $CleVal("barometer_omm_avg",$obs.barometer.raw)
+       $CleVal("barometer_omm",$obs.barometer.hPa.raw)
+       $CleCal("barometer_omm_s",$obs.barometer.hPa.raw,60)
+       $CleVal("barometer_omm_avg",$obs.barometer.hPa.raw)
        $CleVal("barometer_omm_duration",60)
        #end if
        #if $obs.outHumidity.has_data
@@ -227,15 +227,15 @@ LOW#slurp
        $CleVal("humidity_omm_duration",60)
        #end if
        #if $obs.windSpeed.has_data       
-       $CleVal("wind_omm",$obs.windSpeed.raw)
-       $CleCal("wind_omm_s",$obs.windSpeed.raw,60)
-       $CleVal("wind_omm_avg",$obs.windSpeed.raw)
+       $CleVal("wind_omm",$obs.windSpeed.meter_per_second.raw)
+       $CleCal("wind_omm_s",$obs.windSpeed.meter_per_second.raw,60)
+       $CleVal("wind_omm_avg",$obs.windSpeed.meter_per_second.raw)
        $CleVal("wind_omm_duration",60)
        #end if
        #if $obs.rain.has_data
-       $CleVal("rain_omm",$hour($hours_ago=$delta_h).rain.sum.raw)
-       $CleVal("rain_omm_sum",$hour($hours_ago=$delta_h).rain.sum.raw)
-       $CleVal("rain_omm_avg",$hour($hours_ago=$delta_h).rain.avg.raw)
+       $CleVal("rain_omm",$hour($hours_ago=$delta_h).rain.sum.mm.raw)
+       $CleVal("rain_omm_sum",$hour($hours_ago=$delta_h).rain.sum.mm.raw)
+       $CleVal("rain_omm_avg",$hour($hours_ago=$delta_h).rain.avg.mm.raw)
        $CleCal("rain_omm_duration",$hour($hours_ago=$delta_h).rain.count.raw,$amin)
        #end if
        "start_dat":$datef($hour($hours_ago=$delta_h).dateTime.raw)
@@ -280,22 +280,22 @@ LOW#slurp
 #end if 
 #set $aggregation_day = 1
        "level":"D",
-       $CleVal("out_temp_max",$day($days_ago=$delta_d).outTemp.max.raw)
+       $CleVal("out_temp_max",$day($days_ago=$delta_d).outTemp.max.degree_C.raw)
        $CleDat("out_temp_max_time",$day($days_ago=$delta_d).outTemp.maxtime.raw)
-       $CleVal("out_temp_avg",$day($days_ago=$delta_d).outTemp.avg.raw)
-       $CleCal("out_temp_s",$day($days_ago=$delta_d).outTemp.sum.raw,$amin)
+       $CleVal("out_temp_avg",$day($days_ago=$delta_d).outTemp.avg.degree_C.raw)
+       $CleCal("out_temp_s",$day($days_ago=$delta_d).outTemp.sum.degree_C.raw,$amin)
        $CleCal("out_temp_duration",$day($days_ago=$delta_d).outTemp.count.raw,$amin)
-       $CleVal("out_temp_min",$day($days_ago=$delta_d).outTemp.min.raw)
+       $CleVal("out_temp_min",$day($days_ago=$delta_d).outTemp.min.degree_C.raw)
        $CleDat("out_temp_min_time",$day($days_ago=$delta_d).outTemp.mintime.raw)
-       $CleVal("heatindex_max",$day($days_ago=$delta_d).heatindex.max.raw)
+       $CleVal("heatindex_max",$day($days_ago=$delta_d).heatindex.max.degree_C.raw)
        $CleDat("heatindex_max_time",$day($days_ago=$delta_d).heatindex.maxtime.raw)
-       $CleVal("heatindex_avg",$day($days_ago=$delta_d).heatindex.avg.raw)
-       $CleCal("heatindex_s",$day($days_ago=$delta_d).heatindex.sum.raw,$amin)
+       $CleVal("heatindex_avg",$day($days_ago=$delta_d).heatindex.avg.degree_C.raw)
+       $CleCal("heatindex_s",$day($days_ago=$delta_d).heatindex.sum.degree_C.raw,$amin)
        $CleCal("heatindex_duration",$day($days_ago=$delta_d).heatindex.count.raw,$amin)
-       $CleVal("windchill_min",$day($days_ago=$delta_d).windchill.min.raw)
+       $CleVal("windchill_min",$day($days_ago=$delta_d).windchill.min.degree_C.raw)
        $CleDat("windchill_min_time",$day($days_ago=$delta_d).windchill.mintime.raw)
-       $CleCal("windchill_s",$day($days_ago=$delta_d).windchill.sum.raw,$amin)
-       $CleVal("windchill_avg",$day($days_ago=$delta_d).windchill.avg.raw)
+       $CleCal("windchill_s",$day($days_ago=$delta_d).windchill.sum.degree_C.raw,$amin)
+       $CleVal("windchill_avg",$day($days_ago=$delta_d).windchill.avg.degree_C.raw)
        $CleCal("windchill_duration",$day($days_ago=$delta_d).windchill.count.raw,$amin)
        $CleVal("humidity_max",$day($days_ago=$delta_d).outHumidity.max.raw)
        $CleDat("humidity_max_time",$day($days_ago=$delta_d).outHumidity.maxtime.raw)
@@ -304,32 +304,32 @@ LOW#slurp
        $CleVal("humidity_min",$day($days_ago=$delta_d).outHumidity.min.raw)
        $CleDat("humidity_min_time",$day($days_ago=$delta_d).outHumidity.mintime.raw)
        $CleCal("humidity_duration",$day($days_ago=$delta_d).outHumidity.count.raw,$amin)
-       $CleVal("dewpoint_max",$day($days_ago=$delta_d).dewpoint.max.raw)
+       $CleVal("dewpoint_max",$day($days_ago=$delta_d).dewpoint.max.degree_C.raw)
        $CleDat("dewpoint_max_time",$day($days_ago=$delta_d).dewpoint.maxtime.raw)
-       $CleCal("dewpoint_s",$day($days_ago=$delta_d).dewpoint.sum.raw,$amin)
-       $CleVal("dewpoint_avg",$day($days_ago=$delta_d).dewpoint.avg.raw)
-       $CleVal("dewpoint_min",$day($days_ago=$delta_d).dewpoint.min.raw)
+       $CleCal("dewpoint_s",$day($days_ago=$delta_d).dewpoint.sum.degree_C.raw,$amin)
+       $CleVal("dewpoint_avg",$day($days_ago=$delta_d).dewpoint.avg.degree_C.raw)
+       $CleVal("dewpoint_min",$day($days_ago=$delta_d).dewpoint.min.degree_C.raw)
        $CleDat("dewpoint_min_time",$day($days_ago=$delta_d).dewpoint.mintime.raw)
        $CleCal("dewpoint_duration",$day($days_ago=$delta_d).dewpoint.count.raw,$amin)
-       $CleVal("barometer_max",$day($days_ago=$delta_d).barometer.max.raw)
+       $CleVal("barometer_max",$day($days_ago=$delta_d).barometer.max.hPa.raw)
        $CleDat("barometer_max_time",$day($days_ago=$delta_d).barometer.maxtime.raw)
-       $CleCal("barometer_s",$day($days_ago=$delta_d).barometer.sum.raw,$amin)
-       $CleVal("barometer_avg",$day($days_ago=$delta_d).barometer.avg.raw)
-       $CleVal("barometer_min",$day($days_ago=$delta_d).barometer.min.raw)
+       $CleCal("barometer_s",$day($days_ago=$delta_d).barometer.sum.hPa.raw,$amin)
+       $CleVal("barometer_avg",$day($days_ago=$delta_d).barometer.avg.hPa.raw)
+       $CleVal("barometer_min",$day($days_ago=$delta_d).barometer.min.hPa.raw)
        $CleDat("barometer_min_time",$day($days_ago=$delta_d).barometer.mintime.raw)
        $CleCal("barometer_duration",$day($days_ago=$delta_d).barometer.count.raw,$amin)
-       $CleVal("pressure_max",$day($days_ago=$delta_d).pressure.max.raw)
+       $CleVal("pressure_max",$day($days_ago=$delta_d).pressure.max.hPa.raw)
        $CleDat("pressure_max_time",$day($days_ago=$delta_d).pressure.maxtime.raw)
-       $CleCal("pressure_s",$day($days_ago=$delta_d).pressure.sum.raw,$amin)
-       $CleVal("pressure_avg",$day($days_ago=$delta_d).pressure.avg.raw)
-       $CleVal("pressure_min",$day($days_ago=$delta_d).pressure.min.raw)
+       $CleCal("pressure_s",$day($days_ago=$delta_d).pressure.sum.hPa.raw,$amin)
+       $CleVal("pressure_avg",$day($days_ago=$delta_d).pressure.avg.hPa.raw)
+       $CleVal("pressure_min",$day($days_ago=$delta_d).pressure.min.hPa.raw)
        $CleDat("pressure_min_time",$day($days_ago=$delta_d).pressure.mintime.raw)
        $CleCal("pressure_duration",$day($days_ago=$delta_d).pressure.count.raw,$amin)
-       $CleVal("rain_sum",$day($days_ago=$delta_d).rain.sum.raw)
-       $CleVal("rain_max",$day($days_ago=$delta_d).rain.max.raw)
+       $CleVal("rain_sum",$day($days_ago=$delta_d).rain.sum.mm.raw)
+       $CleVal("rain_max",$day($days_ago=$delta_d).rain.max.mm.raw)
        $CleDat("rain_max_time",$day($days_ago=$delta_d).rain.maxtime.raw)
-       $CleVal("rain_avg",$day($days_ago=$delta_d).rain.avg.raw)
-       $CleVal("rain_min",$day($days_ago=$delta_d).rain.min.raw)
+       $CleVal("rain_avg",$day($days_ago=$delta_d).rain.avg.mm.raw)
+       $CleVal("rain_min",$day($days_ago=$delta_d).rain.min.mm.raw)
        $CleDat("rain_min_time",$day($days_ago=$delta_d).rain.mintime.raw)  
        $CleCal("rain_duration",$day($days_ago=$delta_d).rain.count.raw,$amin)
        ## calcul sum rr de 07h le jour a 07h le lendemain
@@ -337,7 +337,7 @@ LOW#slurp
        #set $count = 0
        #for $hr in $day($days_ago=$delta_d).hours
        #if datetime.fromtimestamp($hr.dateTime.raw).hour >= 7 and $hr.rain.sum.raw is not None
-       #set $sum += $hr.rain.sum.raw
+       #set $sum += $hr.rain.sum.mm.raw
        #set $count += 1
        #set $h=datetime.fromtimestamp($hr.dateTime.raw).hour
        #end if
@@ -345,7 +345,7 @@ LOW#slurp
        #if $delta_d > 0
        #for $hr in $day($days_ago=$delta_d - 1).hours
        #if datetime.fromtimestamp($hr.dateTime.raw).hour < 7 and $hr.rain.sum.raw is not None
-       #set $sum += $hr.rain.sum.raw
+       #set $sum += $hr.rain.sum.mm.raw
        #set $count += 1
        #set $h=datetime.fromtimestamp($hr.dateTime.raw).hour
        #end if
@@ -363,8 +363,8 @@ LOW#slurp
        #set $count = 0
        #for $hr in $day($days_ago=$delta_d + 1).hours
        #if datetime.fromtimestamp($hr.dateTime.raw).hour >= 19 and $hr.outTemp.min.raw is not None
-       #if $hr.outTemp.min.raw < $min
-       #set $min = $hr.outTemp.min.raw
+       #if $hr.outTemp.min.degree_C.raw < $min
+       #set $min = $hr.outTemp.min.degree_C.raw
        #set $min_time = $hr.outTemp.mintime.raw
        #set $count += 1
        #end if 
@@ -372,8 +372,8 @@ LOW#slurp
        #end for
        #for $hr in $day($days_ago=$delta_d).hours
        #if datetime.fromtimestamp($hr.dateTime.raw).hour < 19 and $hr.outTemp.min.raw is not None
-       #if $hr.outTemp.min.raw < $min
-       #set $min = $hr.outTemp.min.raw
+       #if $hr.outTemp.min.degree_C.raw < $min
+       #set $min = $hr.outTemp.min.degree_C.raw
        #set $min_time = $hr.outTemp.mintime.raw
        #set $count += 1
        #end if 
@@ -394,8 +394,8 @@ LOW#slurp
        #set $count = 0
        #for $hr in $day($days_ago=$delta_d).hours
        #if datetime.fromtimestamp($hr.dateTime.raw).hour >= 7 and $hr.outTemp.max.raw is not None
-       #if $hr.outTemp.max.raw > $max
-       #set $max = $hr.outTemp.max.raw
+       #if $hr.outTemp.max.degree_C.raw > $max
+       #set $max = $hr.outTemp.max.degree_C.raw
        #set $max_time = $hr.outTemp.maxtime.raw
        #set $count += 1
        #end if 
@@ -403,8 +403,8 @@ LOW#slurp
        #end for
        #for $hr in $day($days_ago=$delta_d).hours
        #if datetime.fromtimestamp($hr.dateTime.raw).hour < 7 and $hr.outTemp.max.raw is not None
-       #if $hr.outTemp.max.raw > $max
-       #set $max = $hr.outTemp.max.raw
+       #if $hr.outTemp.max.degree_C.raw > $max
+       #set $max = $hr.outTemp.max.degree_C.raw
        #set $max_time = $hr.outTemp.maxtime.raw
        #set $count += 1
        #end if 
@@ -432,8 +432,8 @@ LOW#slurp
        #set $sum_barometer = 0
        #set $count_barometer = 0
        #for $hr in $day($days_ago=$delta_d).hours
-       #if $hr.outTemp.last.raw is not None
-       #set $sum_temp += $hr.outTemp.last.raw
+       #if $hr.outTemp.last.degree_C.raw is not None
+       #set $sum_temp += $hr.outTemp.last.degree_C.raw
        #set $count_temp += 1       
        #end if
        #if $hr.outHumidity.last.raw is not None
@@ -441,11 +441,11 @@ LOW#slurp
        #set $count_humidity += 1
        #end if
        #if $hr.windSpeed.last.raw is not None
-       #set $sum_wind += $hr.windSpeed.last.raw
+       #set $sum_wind += $hr.windSpeed.last.meter_per_second.raw
        #set $count_wind += 1
        #end if
        #if $hr.barometer.last.raw is not None
-       #set $sum_barometer += $hr.barometer.last.raw
+       #set $sum_barometer += $hr.barometer.last.hPa.raw
        #set $count_barometer += 1
        #end if
        #set $h=datetime.fromtimestamp($hr.dateTime.raw).hour
@@ -475,15 +475,15 @@ LOW#slurp
        $CleVal("humidity_omm_avg",$humidity_omm_avg)
        $CleVal("wind_omm_avg",$wind_omm_avg)
        $CleVal("barometer_omm_avg",$barometer_omm_avg)
-       $CleVal("rain_rate_max",$day($days_ago=$delta_d).rainRate.max.raw)
+       $CleVal("rain_rate_max",$day($days_ago=$delta_d).rainRate.max.mm_per_hour.raw)
        $CleDat("rain_rate_max_time",$day($days_ago=$delta_d).rainRate.maxtime.raw)
        $CleCal("rain_rate_duration",$day($days_ago=$delta_d).rainRate.count.raw,$amin)
-       $CleVal("rain_rate_avg",$day($days_ago=$delta_d).rainRate.avg.raw)
-       $CleVal("wind_max",$day($days_ago=$delta_d).wind.max.raw)
+       $CleVal("rain_rate_avg",$day($days_ago=$delta_d).rainRate.avg.mm_per_hour.raw)
+       $CleVal("wind_max",$day($days_ago=$delta_d).wind.max.meter_per_second.raw)
        $CleVal("wind_max_dir",$day($days_ago=$delta_d).wind.gustdir.raw)
        $CleDat("wind_max_time",$day($days_ago=$delta_d).wind.maxtime.raw)
-       $CleVal("wind_avg",$day($days_ago=$delta_d).windSpeed.avg.raw)
-       $CleCal("wind_s",$day($days_ago=$delta_d).windSpeed.sum.raw,$amin)
+       $CleVal("wind_avg",$day($days_ago=$delta_d).windSpeed.avg.meter_per_second.raw)
+       $CleCal("wind_s",$day($days_ago=$delta_d).windSpeed.sum.meter_per_second.raw,$amin)
        $CleCal("wind_duration",$day($days_ago=$delta_d).windSpeed.count.raw,$amin)
 #if $day($days_ago=$delta_d).UV.has_data
        $CleVal("uv_indice_max",$day($days_ago=$delta_d).UV.max.raw)
@@ -493,11 +493,11 @@ LOW#slurp
        $CleCal("uv_indice_duration",$day($days_ago=$delta_d).UV.count.raw,$amin)
 #end if
 #if $day($days_ago=$delta_d).ET.has_data and $day.ET.sum.raw >0.0
-       $CleVal("etp_sum",$day($days_ago=$delta_d).ET.sum.raw)
-       $CleVal("etp_max",$day($days_ago=$delta_d).ET.max.raw)
+       $CleVal("etp_sum",$day($days_ago=$delta_d).ET.sum.mm.raw)
+       $CleVal("etp_max",$day($days_ago=$delta_d).ET.max.mm.raw)
        $CleDat("etp_max_time",$day($days_ago=$delta_d).ET.maxtime.raw)
-       $CleVal("etp_avg",$day($days_ago=$delta_d).ET.avg.raw)
-       $CleVal("etp_min",$day($days_ago=$delta_d).ET.min.raw)
+       $CleVal("etp_avg",$day($days_ago=$delta_d).ET.avg.mm.raw)
+       $CleVal("etp_min",$day($days_ago=$delta_d).ET.min.mm.raw)
        $CleDat("etp_min_time",$day($days_ago=$delta_d).ET.mintime.raw)
        $CleCal("etp_duration",$day($days_ago=$delta_d).ET.count.raw,$amin)       
 #end if
@@ -528,11 +528,11 @@ LOW#slurp
        $CleDat("voltage_min_time",$day($days_ago=$delta_d).consBatteryVoltage.mintime.raw)
        $CleCal("voltage_duration",$day($days_ago=$delta_d).consBatteryVoltage.count.raw,$amin)
 #end if
-       $CleVal("in_temp_min",$day($days_ago=$delta_d).inTemp.min.raw)
+       $CleVal("in_temp_min",$day($days_ago=$delta_d).inTemp.min.degree_C.raw)
        $CleDat("in_temp_min_time",$day($days_ago=$delta_d).inTemp.mintime.raw)
-       $CleVal("in_temp_avg",$day($days_ago=$delta_d).inTemp.avg.raw)
-       $CleCal("in_temp_s",$day($days_ago=$delta_d).inTemp.sum.raw,$amin)
-       $CleVal("in_temp_max",$day($days_ago=$delta_d).inTemp.max.raw)
+       $CleVal("in_temp_avg",$day($days_ago=$delta_d).inTemp.avg.degree_C.raw)
+       $CleCal("in_temp_s",$day($days_ago=$delta_d).inTemp.sum.degree_C.raw,$amin)
+       $CleVal("in_temp_max",$day($days_ago=$delta_d).inTemp.max.degree_C.raw)
        $CleDat("in_temp_max_time",$day($days_ago=$delta_d).inTemp.maxtime.raw)
        $CleCal("in_temp_duration",$day($days_ago=$delta_d).inTemp.count.raw,$amin)
        $CleVal("in_humidity_min",$day($days_ago=$delta_d).inHumidity.min.raw)
@@ -548,22 +548,22 @@ LOW#slurp
         },
        {
        "level":"M",
-       $CleVal("out_temp_max",$month($months_ago=$delta_m).outTemp.max.raw)
+       $CleVal("out_temp_max",$month($months_ago=$delta_m).outTemp.max.degree_C.raw)
        $CleDat("out_temp_max_time",$month($months_ago=$delta_m).outTemp.maxtime.raw)
-       $CleVal("out_temp_avg",$month($months_ago=$delta_m).outTemp.avg.raw)
-       $CleCal("out_temp_s",$month($months_ago=$delta_m).outTemp.sum.raw,$amin)
-       $CleVal("out_temp_min",$month($months_ago=$delta_m).outTemp.min.raw)
+       $CleVal("out_temp_avg",$month($months_ago=$delta_m).outTemp.avg.degree_C.raw)
+       $CleCal("out_temp_s",$month($months_ago=$delta_m).outTemp.sum.degree_C.raw,$amin)
+       $CleVal("out_temp_min",$month($months_ago=$delta_m).outTemp.min.degree_C.raw)
        $CleDat("out_temp_min_time",$month($months_ago=$delta_m).outTemp.mintime.raw)
        $CleCal("out_temp_duration",$month($months_ago=$delta_m).outTemp.count.raw,$amin)
-       $CleVal("heatindex_max",$month($months_ago=$delta_m).heatindex.max.raw)
+       $CleVal("heatindex_max",$month($months_ago=$delta_m).heatindex.max.degree_C.raw)
        $CleDat("heatindex_max_time",$month($months_ago=$delta_m).heatindex.maxtime.raw)
-       $CleVal("heatindex_avg",$month($months_ago=$delta_m).heatindex.avg.raw)
-       $CleCal("heatindex_s",$month($months_ago=$delta_m).heatindex.sum.raw,$amin)
+       $CleVal("heatindex_avg",$month($months_ago=$delta_m).heatindex.avg.degree_C.raw)
+       $CleCal("heatindex_s",$month($months_ago=$delta_m).heatindex.sum.degree_C.raw,$amin)
        $CleCal("heatindex_duration",$month($months_ago=$delta_m).heatindex.count.raw,$amin)
-       $CleVal("windchill_min",$month($months_ago=$delta_m).windchill.min.raw)
+       $CleVal("windchill_min",$month($months_ago=$delta_m).windchill.min.degree_C.raw)
        $CleDat("windchill_min_time",$month($months_ago=$delta_m).windchill.mintime.raw)
-       $CleCal("windchill_s",$month($months_ago=$delta_m).windchill.sum.raw,$amin)
-       $CleVal("windchill_avg",$month($months_ago=$delta_m).windchill.avg.raw)
+       $CleCal("windchill_s",$month($months_ago=$delta_m).windchill.sum.degree_C.raw,$amin)
+       $CleVal("windchill_avg",$month($months_ago=$delta_m).windchill.avg.degree_C.raw)
        $CleCal("windchill_duration",$month($months_ago=$delta_m).windchill.count.raw,$amin)
        $CleVal("humidity_max",$month($months_ago=$delta_m).outHumidity.max.raw)
        $CleDat("humidity_max_time",$month($months_ago=$delta_m).outHumidity.maxtime.raw)
@@ -572,35 +572,35 @@ LOW#slurp
        $CleVal("humidity_min",$month($months_ago=$delta_m).outHumidity.min.raw)
        $CleDat("humidity_min_time",$month($months_ago=$delta_m).outHumidity.mintime.raw)
        $CleCal("humidity_duration",$month($months_ago=$delta_m).outHumidity.count.raw,$amin)
-       $CleVal("dewpoint_max",$month($months_ago=$delta_m).dewpoint.max.raw)
+       $CleVal("dewpoint_max",$month($months_ago=$delta_m).dewpoint.max.degree_C.raw)
        $CleDat("dewpoint_max_time",$month($months_ago=$delta_m).dewpoint.maxtime.raw)
-       $CleCal("dewpoint_s",$month($months_ago=$delta_m).dewpoint.sum.raw,$amin)
-       $CleVal("dewpoint_avg",$month($months_ago=$delta_m).dewpoint.avg.raw)
-       $CleVal("dewpoint_min",$month($months_ago=$delta_m).dewpoint.min.raw)
+       $CleCal("dewpoint_s",$month($months_ago=$delta_m).dewpoint.sum.degree_C.raw,$amin)
+       $CleVal("dewpoint_avg",$month($months_ago=$delta_m).dewpoint.avg.degree_C.raw)
+       $CleVal("dewpoint_min",$month($months_ago=$delta_m).dewpoint.min.degree_C.raw)
        $CleDat("dewpoint_min_time",$month($months_ago=$delta_m).dewpoint.mintime.raw)
        $CleCal("dewpoint_duration",$month($months_ago=$delta_m).dewpoint.count.raw,$amin)
-       $CleVal("barometer_max",$month($months_ago=$delta_m).barometer.max.raw)
+       $CleVal("barometer_max",$month($months_ago=$delta_m).barometer.max.hPa.raw)
        $CleDat("barometer_max_time",$month($months_ago=$delta_m).barometer.maxtime.raw)
-       $CleCal("barometer_s",$month($months_ago=$delta_m).barometer.sum.raw,$amin)
-       $CleVal("barometer_avg",$month($months_ago=$delta_m).barometer.avg.raw)
-       $CleVal("barometer_min",$month($months_ago=$delta_m).barometer.min.raw)
+       $CleCal("barometer_s",$month($months_ago=$delta_m).barometer.sum.hPa.raw,$amin)
+       $CleVal("barometer_avg",$month($months_ago=$delta_m).barometer.avg.hPa.raw)
+       $CleVal("barometer_min",$month($months_ago=$delta_m).barometer.min.hPa.raw)
        $CleDat("barometer_min_time",$month($months_ago=$delta_m).barometer.mintime.raw)
        $CleCal("barometer_duration",$month($months_ago=$delta_m).barometer.count.raw,$amin)
-       $CleVal("rain_sum",$month($months_ago=$delta_m).rain.sum.raw)
-       $CleVal("rain_max",$month($months_ago=$delta_m).rain.max.raw)
+       $CleVal("rain_sum",$month($months_ago=$delta_m).rain.sum.mm.raw)
+       $CleVal("rain_max",$month($months_ago=$delta_m).rain.max.mm.raw)
        $CleDat("rain_max_time",$month($months_ago=$delta_m).rain.maxtime.raw)
-       $CleVal("rain_avg",$month($months_ago=$delta_m).rain.avg.raw)
-       $CleVal("rain_min",$month($months_ago=$delta_m).rain.min.raw)
+       $CleVal("rain_avg",$month($months_ago=$delta_m).rain.avg.mm.raw)
+       $CleVal("rain_min",$month($months_ago=$delta_m).rain.min.mm.raw)
        $CleCal("rain_duration",$month($months_ago=$delta_m).rain.count.raw,$amin)
        $CleDat("rain_min_time",$month($months_ago=$delta_m).rain.mintime.raw)       
-       $CleVal("rain_rate_max",$month($months_ago=$delta_m).rainRate.max.raw)
+       $CleVal("rain_rate_max",$month($months_ago=$delta_m).rainRate.max.mm_per_hour.raw)
        $CleDat("rain_rate_max_time",$month($months_ago=$delta_m).rainRate.maxtime.raw)
        $CleCal("rain_rate_duration",$month($months_ago=$delta_m).rainRate.count.raw,$amin)
-       $CleVal("wind_max",$month($months_ago=$delta_m).wind.max.raw)
+       $CleVal("wind_max",$month($months_ago=$delta_m).wind.max.meter_per_second.raw)
        $CleVal("wind_max_dir",$month($months_ago=$delta_m).wind.gustdir.raw)
        $CleDat("wind_max_time",$month($months_ago=$delta_m).wind.maxtime.raw)
-       $CleVal("wind_avg",$month($months_ago=$delta_m).windSpeed.avg.raw)
-       $CleCal("wind_s",$month($months_ago=$delta_m).windSpeed.sum.raw,$amin)
+       $CleVal("wind_avg",$month($months_ago=$delta_m).windSpeed.avg.meter_per_second.raw)
+       $CleCal("wind_s",$month($months_ago=$delta_m).windSpeed.sum.meter_per_second.raw,$amin)
        $CleCal("wind_duration",$month($months_ago=$delta_m).windSpeed.count.raw,$amin)
 #if $month($months_ago=$delta_m).UV.has_data
        $CleVal("uv_indice_max",$month($months_ago=$delta_m).UV.max.raw)
@@ -610,11 +610,11 @@ LOW#slurp
        $CleCal("uv_indice_duration",$month($months_ago=$delta_m).UV.count.raw,$amin)
 #end if
 #if $month($months_ago=$delta_m).ET.has_data and $month($months_ago=$delta_m).ET.sum.raw >0.0
-       $CleVal("etp_sum",$month($months_ago=$delta_m).ET.sum.raw)
-       $CleVal("etp_max",$month($months_ago=$delta_m).ET.max.raw)
+       $CleVal("etp_sum",$month($months_ago=$delta_m).ET.sum.mm.raw)
+       $CleVal("etp_max",$month($months_ago=$delta_m).ET.max.mm.raw)
        $CleDat("etp_max_time",$month($months_ago=$delta_m).ET.maxtime.raw)
-       $CleVal("etp_avg",$month($months_ago=$delta_m).ET.avg.raw)
-       $CleVal("etp_min",$month($months_ago=$delta_m).ET.min.raw)
+       $CleVal("etp_avg",$month($months_ago=$delta_m).ET.avg.mm.raw)
+       $CleVal("etp_min",$month($months_ago=$delta_m).ET.min.mm.raw)
        $CleDat("etp_min_time",$month($months_ago=$delta_m).ET.mintime.raw)
        $CleCal("etp_duration",$month($months_ago=$delta_m).ET.count.raw,$amin)      
 #end if
@@ -645,11 +645,11 @@ LOW#slurp
        $CleDat("voltage_min_time",$month($months_ago=$delta_m).consBatteryVoltage.mintime.raw)
        $CleCal("voltage_duration",$month($months_ago=$delta_m).consBatteryVoltage.count.raw,$amin)
 #end if
-       $CleVal("in_temp_min",$month($months_ago=$delta_m).inTemp.min.raw)
+       $CleVal("in_temp_min",$month($months_ago=$delta_m).inTemp.min.degree_C.raw)
        $CleDat("in_temp_min_time",$month($months_ago=$delta_m).inTemp.mintime.raw)
-       $CleVal("in_temp_avg",$month($months_ago=$delta_m).inTemp.avg.raw)
-       $CleCal("in_temp_s",$month($months_ago=$delta_m).inTemp.sum.raw,$amin)
-       $CleVal("in_temp_max",$month($months_ago=$delta_m).inTemp.max.raw)
+       $CleVal("in_temp_avg",$month($months_ago=$delta_m).inTemp.avg.degree_C.raw)
+       $CleCal("in_temp_s",$month($months_ago=$delta_m).inTemp.sum.degree_C.raw,$amin)
+       $CleVal("in_temp_max",$month($months_ago=$delta_m).inTemp.max.degree_C.raw)
        $CleDat("in_temp_max_time",$month($months_ago=$delta_m).inTemp.maxtime.raw)
        $CleCal("in_temp_duration",$month($months_ago=$delta_m).inTemp.count.raw,$amin)
        $CleVal("in_humidity_min",$month($months_ago=$delta_m).inHumidity.min.raw)
@@ -665,22 +665,22 @@ LOW#slurp
         },
        {
        "level":"Y",
-       $CleVal("out_temp_max",$year($years_ago=$delta_y).outTemp.max.raw)
+       $CleVal("out_temp_max",$year($years_ago=$delta_y).outTemp.max.degree_C.raw)
        $CleDat("out_temp_max_time",$year($years_ago=$delta_y).outTemp.maxtime.raw)
-       $CleVal("out_temp_avg",$year($years_ago=$delta_y).outTemp.avg.raw)
-       $CleCal("out_temp_s",$year($years_ago=$delta_y).outTemp.sum.raw,$amin)
-       $CleVal("out_temp_min",$year($years_ago=$delta_y).outTemp.min.raw)
+       $CleVal("out_temp_avg",$year($years_ago=$delta_y).outTemp.avg.degree_C.raw)
+       $CleCal("out_temp_s",$year($years_ago=$delta_y).outTemp.sum.degree_C.raw,$amin)
+       $CleVal("out_temp_min",$year($years_ago=$delta_y).outTemp.min.degree_C.raw)
        $CleDat("out_temp_min_time",$year($years_ago=$delta_y).outTemp.mintime.raw)
        $CleCal("out_temp_duration",$year($years_ago=$delta_y).outTemp.count.raw,$amin)
-       $CleVal("heatindex_max",$year($years_ago=$delta_y).heatindex.max.raw)
+       $CleVal("heatindex_max",$year($years_ago=$delta_y).heatindex.max.degree_C.raw)
        $CleDat("heatindex_max_time",$year($years_ago=$delta_y).heatindex.maxtime.raw)
-       $CleVal("heatindex_avg",$year($years_ago=$delta_y).heatindex.avg.raw)
-       $CleCal("heatindex_s",$year($years_ago=$delta_y).heatindex.sum.raw,$amin)
+       $CleVal("heatindex_avg",$year($years_ago=$delta_y).heatindex.avg.degree_C.raw)
+       $CleCal("heatindex_s",$year($years_ago=$delta_y).heatindex.sum.degree_C.raw,$amin)
        $CleCal("heatindex_duration",$year($years_ago=$delta_y).heatindex.count.raw,$amin)
-       $CleVal("windchill_min",$year($years_ago=$delta_y).windchill.min.raw)
+       $CleVal("windchill_min",$year($years_ago=$delta_y).windchill.min.degree_C.raw)
        $CleDat("windchill_min_time",$year($years_ago=$delta_y).windchill.mintime.raw)
-       $CleCal("windchill_s",$year($years_ago=$delta_y).windchill.sum.raw,$amin)
-       $CleVal("windchill_avg",$year($years_ago=$delta_y).windchill.avg.raw)
+       $CleCal("windchill_s",$year($years_ago=$delta_y).windchill.sum.degree_C.raw,$amin)
+       $CleVal("windchill_avg",$year($years_ago=$delta_y).windchill.avg.degree_C.raw)
        $CleCal("windchill_duration",$year($years_ago=$delta_y).windchill.count.raw,$amin)
        $CleVal("humidity_max",$year($years_ago=$delta_y).outHumidity.max.raw)
        $CleDat("humidity_max_time",$year($years_ago=$delta_y).outHumidity.maxtime.raw)
@@ -689,35 +689,35 @@ LOW#slurp
        $CleVal("humidity_min",$year($years_ago=$delta_y).outHumidity.min.raw)
        $CleDat("humidity_min_time",$year($years_ago=$delta_y).outHumidity.mintime.raw)
        $CleCal("humidity_duration",$year($years_ago=$delta_y).outHumidity.count.raw,$amin)
-       $CleVal("dewpoint_max",$year($years_ago=$delta_y).dewpoint.max.raw)
+       $CleVal("dewpoint_max",$year($years_ago=$delta_y).dewpoint.max.degree_C.raw)
        $CleDat("dewpoint_max_time",$year($years_ago=$delta_y).dewpoint.maxtime.raw)
-       $CleCal("dewpoint_s",$year($years_ago=$delta_y).dewpoint.sum.raw,$amin)
-       $CleVal("dewpoint_avg",$year($years_ago=$delta_y).dewpoint.avg.raw)
-       $CleVal("dewpoint_min",$year($years_ago=$delta_y).dewpoint.min.raw)
+       $CleCal("dewpoint_s",$year($years_ago=$delta_y).dewpoint.sum.degree_C.raw,$amin)
+       $CleVal("dewpoint_avg",$year($years_ago=$delta_y).dewpoint.avg.degree_C.raw)
+       $CleVal("dewpoint_min",$year($years_ago=$delta_y).dewpoint.min.degree_C.raw)
        $CleDat("dewpoint_min_time",$year($years_ago=$delta_y).dewpoint.mintime.raw)
        $CleCal("dewpoint_duration",$year($years_ago=$delta_y).dewpoint.count.raw,$amin)
-       $CleVal("barometer_max",$year($years_ago=$delta_y).barometer.max.raw)
+       $CleVal("barometer_max",$year($years_ago=$delta_y).barometer.max.hPa.raw)
        $CleDat("barometer_max_time",$year($years_ago=$delta_y).barometer.maxtime.raw)
-       $CleCal("barometer_s",$year($years_ago=$delta_y).barometer.sum.raw,$amin)
-       $CleVal("barometer_avg",$year($years_ago=$delta_y).barometer.avg.raw)
-       $CleVal("barometer_min",$year($years_ago=$delta_y).barometer.min.raw)
+       $CleCal("barometer_s",$year($years_ago=$delta_y).barometer.sum.hPa.raw,$amin)
+       $CleVal("barometer_avg",$year($years_ago=$delta_y).barometer.avg.hPa.raw)
+       $CleVal("barometer_min",$year($years_ago=$delta_y).barometer.min.hPa.raw)
        $CleDat("barometer_min_time",$year($years_ago=$delta_y).barometer.mintime.raw)
        $CleCal("barometer_duration",$year($years_ago=$delta_y).barometer.count.raw,$amin)
-       $CleVal("rain_sum",$year($years_ago=$delta_y).rain.sum.raw)
-       $CleVal("rain_max",$year($years_ago=$delta_y).rain.max.raw)
+       $CleVal("rain_sum",$year($years_ago=$delta_y).rain.sum.mm.raw)
+       $CleVal("rain_max",$year($years_ago=$delta_y).rain.max.mm.raw)
        $CleDat("rain_max_time",$year($years_ago=$delta_y).rain.maxtime.raw)
-       $CleVal("rain_avg",$year($years_ago=$delta_y).rain.avg.raw)
-       $CleVal("rain_min",$year($years_ago=$delta_y).rain.min.raw)
+       $CleVal("rain_avg",$year($years_ago=$delta_y).rain.avg.mm.raw)
+       $CleVal("rain_min",$year($years_ago=$delta_y).rain.min.mm.raw)
        $CleDat("rain_min_time",$year($years_ago=$delta_y).rain.mintime.raw)       
        $CleCal("rain_duration",$year($years_ago=$delta_y).rain.count.raw,$amin)
-       $CleVal("rain_rate_max",$year($years_ago=$delta_y).rainRate.max.raw)
+       $CleVal("rain_rate_max",$year($years_ago=$delta_y).rainRate.max.mm_per_hour.raw)
        $CleDat("rain_rate_max_time",$year($years_ago=$delta_y).rainRate.maxtime.raw)
        $CleCal("rain_rate_duration",$year($years_ago=$delta_y).rainRate.count.raw,$amin)
-       $CleVal("wind_max",$year($years_ago=$delta_y).wind.max.raw)
+       $CleVal("wind_max",$year($years_ago=$delta_y).wind.max.meter_per_second.raw)
        $CleVal("wind_max_dir",$year($years_ago=$delta_y).wind.gustdir.raw)
        $CleDat("wind_max_time",$year($years_ago=$delta_y).wind.maxtime.raw)
-       $CleVal("wind_avg",$year($years_ago=$delta_y).windSpeed.avg.raw)
-       $CleCal("wind_s",$year($years_ago=$delta_y).windSpeed.sum.raw,$amin)
+       $CleVal("wind_avg",$year($years_ago=$delta_y).windSpeed.avg.meter_per_second.raw)
+       $CleCal("wind_s",$year($years_ago=$delta_y).windSpeed.sum.meter_per_second.raw,$amin)
        $CleCal("wind_duration",$year($years_ago=$delta_y).windSpeed.count.raw,$amin)
 #if $year($years_ago=$delta_y).UV.has_data
        $CleVal("uv_indice_max",$year($years_ago=$delta_y).UV.max.raw)
@@ -727,11 +727,11 @@ LOW#slurp
        $CleCal("uv_indice_duration",$year($years_ago=$delta_y).UV.count.raw,$amin)
 #end if
 #if $year($years_ago=$delta_y).ET.has_data and $year($years_ago=$delta_y).ET.sum.raw >0.0
-       $CleVal("etp_sum",$year($years_ago=$delta_y).ET.sum.raw)
-       $CleVal("etp_max",$year($years_ago=$delta_y).ET.max.raw)
+       $CleVal("etp_sum",$year($years_ago=$delta_y).ET.sum.mm.raw)
+       $CleVal("etp_max",$year($years_ago=$delta_y).ET.max.mm.raw)
        $CleDat("etp_max_time",$year($years_ago=$delta_y).ET.maxtime.raw)
-       $CleVal("etp_avg",$year($years_ago=$delta_y).ET.avg.raw)
-       $CleVal("etp_min",$year($years_ago=$delta_y).ET.min.raw)
+       $CleVal("etp_avg",$year($years_ago=$delta_y).ET.avg.mm.raw)
+       $CleVal("etp_min",$year($years_ago=$delta_y).ET.min.mm.raw)
        $CleDat("etp_min_time",$year($years_ago=$delta_y).ET.mintime.raw)
        $CleCal("etp_duration",$year($years_ago=$delta_y).ET.count.raw,$amin)      
 #end if
@@ -762,11 +762,11 @@ LOW#slurp
        $CleDat("voltage_min_time",$year($years_ago=$delta_y).consBatteryVoltage.mintime.raw)
        $CleCal("voltage_duration",$year($years_ago=$delta_y).consBatteryVoltage.count.raw,$amin)
 #end if
-       $CleVal("in_temp_min",$year($years_ago=$delta_y).inTemp.min.raw)
+       $CleVal("in_temp_min",$year($years_ago=$delta_y).inTemp.min.degree_C.raw)
        $CleDat("in_temp_min_time",$year($years_ago=$delta_y).inTemp.mintime.raw)
-       $CleVal("in_temp_avg",$year($years_ago=$delta_y).inTemp.avg.raw)
-       $CleCal("in_temp_s",$year($years_ago=$delta_y).inTemp.sum.raw,$amin)
-       $CleVal("in_temp_max",$year($years_ago=$delta_y).inTemp.max.raw)
+       $CleVal("in_temp_avg",$year($years_ago=$delta_y).inTemp.avg.degree_C.raw)
+       $CleCal("in_temp_s",$year($years_ago=$delta_y).inTemp.sum.degree_C.raw,$amin)
+       $CleVal("in_temp_max",$year($years_ago=$delta_y).inTemp.max.degree_C.raw)
        $CleDat("in_temp_max_time",$year($years_ago=$delta_y).inTemp.maxtime.raw)
        $CleCal("in_temp_duration",$year($years_ago=$delta_y).inTemp.count.raw,$amin)
        $CleVal("in_humidity_min",$year($years_ago=$delta_y).inHumidity.min.raw)
