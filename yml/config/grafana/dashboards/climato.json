@@ -15,11 +15,10 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 14,
   "links": [],
   "panels": [
     {
-      "datasource": "PostgreSQL",
+      "datasource": "postgres",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -43,13 +42,17 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 11,
-        "w": 16,
+        "h": 9,
+        "w": 4,
         "x": 0,
         "y": 0
       },
       "id": 10,
       "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -57,9 +60,8 @@
           "fields": "",
           "values": false
         },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "text": {}
+        "text": {},
+        "textMode": "auto"
       },
       "pluginVersion": "7.5.6",
       "targets": [
@@ -93,7 +95,7 @@
         }
       ],
       "title": "Calc Queue length",
-      "type": "gauge"
+      "type": "stat"
     },
     {
       "datasource": null,
@@ -120,10 +122,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 9,
         "w": 8,
-        "x": 0,
-        "y": 11
+        "x": 4,
+        "y": 0
       },
       "id": 2,
       "options": {
@@ -144,11 +146,13 @@
       "pluginVersion": "7.5.6",
       "targets": [
         {
-          "expr": "count_over_time({job=\"django_debug\"} |= \"Json file loaded\" [10s])",
-          "legendFormat": "",
+          "expr": "avg_over_time({job=\"django_debug\"} |= \"Json file loaded\" | json exec=\"params.timeExec\", meteor=\"params.meteor\" | unwrap exec | __error__ = \"\"  [5s]) by (meteor)",
+          "legendFormat": "{{meteor}}",
           "refId": "A"
         }
       ],
+      "timeFrom": null,
+      "timeShift": null,
       "title": "Json Load Rate",
       "type": "stat"
     },
@@ -177,10 +181,69 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 9,
         "w": 8,
-        "x": 8,
-        "y": 11
+        "x": 12,
+        "y": 0
+      },
+      "id": 8,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.5.6",
+      "targets": [
+        {
+          "expr": "avg_over_time({job=\"django_debug\"} |= \"Aggregation\" | json exec=\"params.timeExec\", meteor=\"params.meteor\" | unwrap exec | __error__ = \"\"  [5s]) by (meteor)",
+          "legendFormat": "{{meteor}}",
+          "refId": "Aavg_over_time({job=\"django_debug\"} |= \"Json file loaded\" | json exec=\"params.timeExec\", meteor=\"params.meteor\" | unwrap exec | __error__ = \"\"  [5s]) by (meteor)"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Calc Rate",
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 20,
+        "x": 0,
+        "y": 9
       },
       "id": 4,
       "options": {
@@ -201,7 +264,8 @@
       "pluginVersion": "7.5.6",
       "targets": [
         {
-          "expr": "avg_over_time({job=\"django_debug\"} |= \"Json file loaded\" | json exec=\"params.timeExec\" | unwrap exec | __error__ = \"\"  [10s])",
+          "expr": "avg_over_time({job=\"django_debug\"} |= \"Json file loaded\" | json exec=\"params.timeExec\", meteor=\"params.meteor\" | unwrap exec | __error__ = \"\"  [1h]) by (meteor)",
+          "legendFormat": "{{meteor}}",
           "refId": "A"
         }
       ],
@@ -235,67 +299,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
-        "w": 8,
+        "h": 10,
+        "w": 20,
         "x": 0,
-        "y": 19
-      },
-      "id": 8,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "7.5.6",
-      "targets": [
-        {
-          "expr": "count_over_time({job=\"django_debug\"} |= \"Aggregation computed\" [10s])",
-          "refId": "A"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Calc Rate",
-      "type": "stat"
-    },
-    {
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 8,
-        "x": 8,
         "y": 19
       },
       "id": 6,
@@ -317,7 +323,8 @@
       "pluginVersion": "7.5.6",
       "targets": [
         {
-          "expr": "avg_over_time({job=\"django_debug\"} |= \"Aggregation computed\" | json exec=\"params.timeExec\", poste=\"params.posteId\" | unwrap exec | __error__ = \"\"  [10s]) by (poste)",
+          "expr": "avg_over_time({job=\"django_debug\"} |= \"Aggregation computed\" | json exec=\"params.timeExec\", meteor=\"params.meteor\" | unwrap exec | __error__ = \"\"  [5s]) by (meteor)",
+          "legendFormat": "{{meteor}}",
           "refId": "A"
         }
       ],
@@ -335,12 +342,12 @@
     "list": []
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
-  "title": "clima Copy",
+  "title": "newClimato",
   "uid": "z6kT5e3Gk",
-  "version": 2
+  "version": 3
 }

@@ -5,6 +5,7 @@ deleteDatasources:
   - name: loki
   - name: prometheus
   - name: jaeger
+  - name: postgres
 
 datasources:
 - name: loki
@@ -22,10 +23,10 @@ datasources:
     derivedFields:
     - datasourceUid: jaeger
       matcherRegex: "trace_id\": \"(\\w+)"
-      name: traceID
+      name: trace_id
       # only '${__value.raw}' open in grafana window
       url: '$${__value.raw}'
-    - datasourceUid: localhost
+    - name: trace_id
       matcherRegex: "trace_id\": \"(\\w+)"
       # open jaeger in another window
       url: 'http://localhost:16686/trace/$${__value.raw}'
@@ -56,3 +57,19 @@ datasources:
   version: 1
   editable: false
   basicAuth: false
+
+- name: postgres
+  type: postgres
+  url: host.docker.internal:5432
+  database: climatest
+  user: postgres
+  secureJsonData:
+    password: "Funiculi"
+  jsonData:
+    sslmode: "disable" # disable/require/verify-ca/verify-full
+    maxOpenConns: 0         # Grafana v5.4+
+    maxIdleConns: 2         # Grafana v5.4+
+    connMaxLifetime: 14400  # Grafana v5.4+
+    postgresVersion: 1000 # 903=9.3, 904=9.4, 905=9.5, 906=9.6, 1000=10
+    timescaledb: false
+  

@@ -88,7 +88,7 @@ class CalcAggreg(AllCalculus):
             span_name += "_tmp"
         with self.tracer.start_as_current_span(span_name, trace_flag) as my_span:
             my_span.set_attribute("obsId", a_todo.data.obs_id_id)
-            my_span.set_attribute("posteId", a_todo.data.obs_id.poste_id_id)
+            my_span.set_attribute("meteor", a_todo.data.obs_id.poste_id.meteor)
             my_span.set_attribute("isTmp", is_tmp)
             my_span.set_attribute("meteor", a_todo.data.obs_id.poste_id.meteor)
             # retrieve data we will need
@@ -170,7 +170,7 @@ class CalcAggreg(AllCalculus):
                         my_span,
                         {
                             "obsId": a_todo.data.obs_id_id,
-                            "posteId": a_todo.data.obs_id.poste_id_id,
+                            "meteor": a_todo.data.obs_id.poste_id.meteor,
                             "queueLength": a_todo.count(),
                             "timeExec": dur_millisec,
                         },

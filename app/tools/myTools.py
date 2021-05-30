@@ -171,7 +171,7 @@ class LogMe:
     ):
         # build our json
         log_j = {
-            "ts": str(datetime.datetime.now()),
+            "timestamp": str(datetime.datetime.now()),
             "pyFile": filename,
             "pyLine": line_no,
             "pyFunc": module,
@@ -191,13 +191,13 @@ class LogMe:
                 return log_j
             msg = JsonPlus().dumps(log_j)
         else:
-            msg = 'ts=' + str(log_j.get("ts")) + " "
+            msg = 'timestamp=' + str(log_j.get("timestamp")) + " "
             msg += 'level=' + str(log_j.get("level")).upper() + " "
             msg = ' pyFile=' + str(log_j.get("pyFile")) + " "
             msg += ' pyLine=' + str(log_j.get("pyLine"))
             msg += ' pyFunc=' + str(log_j.get("pyFunc"))
             msg += ' msg=' + str(log_j.get("msg")) + ' '
-            if log_j.get("trace_id") != "no_trace" and log_j.get("trace_id")  is not None:
+            if log_j.get("trace_id") != "no_trace" and log_j.get("trace_id") is not None:
                 msg += 'traceID=' + str(log_j.get("trace_id")) + ' '
             if log_j.get("params") != {} and log_j.get("params") is not None:
                 msg += ' params=' + JsonPlus().dumps(params) + ' '

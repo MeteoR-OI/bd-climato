@@ -153,7 +153,7 @@ class CalcObs(AllCalculus):
                     t.logInfo(
                         "Json file loaded",
                         my_span,
-                        {"timeExec": dur_millisec, "items": item_processed, "idx": idx},
+                        {"timeExec": dur_millisec, "items": item_processed, "idx": idx, "meteor": json_file_data.get("meteor")},
                     )
                     ret_data.append(ret)
                     idx += 1
