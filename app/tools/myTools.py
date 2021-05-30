@@ -191,14 +191,15 @@ class LogMe:
                 return log_j
             msg = JsonPlus().dumps(log_j)
         else:
-            msg = 'ts=' + str(log_j["ts"]) + " "
-            msg += 'level=' + str(log_j["level"]).upper() + " "
-            msg = ' py_file=' + str(log_j["py_file"]) + " "
-            msg += ' py_line=' + str(log_j["py_line"])
-            msg += ' msg=' + str(log_j["msg"]) + ' '
-            if log_j["trace_id"] != "no_trace":
-                msg += 'traceID=' + str(log_j["trace_id"]) + ' '
-            if log_j["params"] != {}:
+            msg = 'ts=' + str(log_j.get("ts")) + " "
+            msg += 'level=' + str(log_j.get("level")).upper() + " "
+            msg = ' pyFile=' + str(log_j.get("pyFile")) + " "
+            msg += ' pyLine=' + str(log_j.get("pyLine"))
+            msg += ' pyFunc=' + str(log_j.get("pyFunc"))
+            msg += ' msg=' + str(log_j.get("msg")) + ' '
+            if log_j.get("trace_id") != "no_trace" and log_j.get("trace_id")  is not None:
+                msg += 'traceID=' + str(log_j.get("trace_id")) + ' '
+            if log_j.get("params") != {} and log_j.get("params") is not None:
                 msg += ' params=' + JsonPlus().dumps(params) + ' '
             if return_string:
                 return msg

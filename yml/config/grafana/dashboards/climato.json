@@ -15,7 +15,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 13,
+  "id": 14,
   "links": [],
   "panels": [
     {
@@ -43,8 +43,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
-        "w": 12,
+        "h": 11,
+        "w": 16,
         "x": 0,
         "y": 0
       },
@@ -123,7 +123,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 8
+        "y": 11
       },
       "id": 2,
       "options": {
@@ -144,7 +144,7 @@
       "pluginVersion": "7.5.6",
       "targets": [
         {
-          "expr": "count_over_time({job=\"django_debug\"} |= \"Json file loaded\" [1m])",
+          "expr": "count_over_time({job=\"django_debug\"} |= \"Json file loaded\" [10s])",
           "legendFormat": "",
           "refId": "A"
         }
@@ -180,7 +180,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 8
+        "y": 11
       },
       "id": 4,
       "options": {
@@ -201,7 +201,7 @@
       "pluginVersion": "7.5.6",
       "targets": [
         {
-          "expr": "avg_over_time({job=\"django_debug\"} |= \"Json file loaded\" | json exec=\"params.timeExec\" | unwrap exec | __error__ = \"\"  [5s])",
+          "expr": "avg_over_time({job=\"django_debug\"} |= \"Json file loaded\" | json exec=\"params.timeExec\" | unwrap exec | __error__ = \"\"  [10s])",
           "refId": "A"
         }
       ],
@@ -238,7 +238,7 @@
         "h": 6,
         "w": 8,
         "x": 0,
-        "y": 16
+        "y": 19
       },
       "id": 8,
       "options": {
@@ -259,7 +259,7 @@
       "pluginVersion": "7.5.6",
       "targets": [
         {
-          "expr": "count_over_time({job=\"django_debug\"} |= \"Aggregation computed\" [30m])",
+          "expr": "count_over_time({job=\"django_debug\"} |= \"Aggregation computed\" [10s])",
           "refId": "A"
         }
       ],
@@ -296,7 +296,7 @@
         "h": 6,
         "w": 8,
         "x": 8,
-        "y": 16
+        "y": 19
       },
       "id": 6,
       "options": {
@@ -317,7 +317,7 @@
       "pluginVersion": "7.5.6",
       "targets": [
         {
-          "expr": "avg_over_time({job=\"django_debug\"} |= \"Aggregation computed\" | json exec=\"params.timeExec\", poste=\"params.posteId\" | unwrap exec | __error__ = \"\"  [5s]) by (poste)",
+          "expr": "avg_over_time({job=\"django_debug\"} |= \"Aggregation computed\" | json exec=\"params.timeExec\", poste=\"params.posteId\" | unwrap exec | __error__ = \"\"  [10s]) by (poste)",
           "refId": "A"
         }
       ],
@@ -340,7 +340,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "clima",
-  "uid": "bleYF63Mk",
-  "version": 7
+  "title": "clima Copy",
+  "uid": "z6kT5e3Gk",
+  "version": 2
 }
