@@ -40,6 +40,8 @@ class ProcessJsonData():
         #     return
 
         my_values = {}
+        if target_key == "rain_rate":
+            target_key = "rain_rate"
 
         self.loadValuesFromCurrent(my_measure, json_file_data, measure_idx, src_key, target_key, exclusion, my_values, obs_meteor.data.stop_dat, trace_flag)
 
@@ -197,7 +199,10 @@ class ProcessJsonData():
                 else:
                     if my_value_avg is not None or my_value_instant is not None:
                         my_values[target_key + maxmin_suffix] = my_value_instant if my_value_instant is not None else my_value_avg
-                        my_values[target_key + maxmin_suffix + '_time'] = stop_dat
+                        if data_src is not None and data_src.get(src_key + maxmin_suffix + "_time") is not None:
+                            my_values[target_key + maxmin_suffix + '_time'] = data_src[src_key + maxmin_suffix + '_time']
+                        else:
+                            my_values[target_key + maxmin_suffix + '_time'] = stop_dat
 
     def loadDataInObs(
         self,
@@ -250,6 +255,8 @@ class ProcessJsonData():
         for maxmin_key in ['max', 'min']:
             # is max or min needed for this measure
             maxmin_suffix = '_' + maxmin_key
+            # if target_key == "rain_rate":
+            #     target_key = "rain_rate"
             if my_measure.__contains__(maxmin_key) is True and my_measure[maxmin_key] is True:
                 # propagate the check request
                 if my_values.get(target_key + '_check' + maxmin_suffix) is not None:

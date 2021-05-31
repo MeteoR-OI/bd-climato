@@ -181,6 +181,8 @@ class Command(BaseCommand):
                         # process values in agg
                         if my_tmp_agg is not None:
                             for k, v in my_tmp_agg.j.items():
+                                if "_omm_max" in k or "_omm_min" in k:
+                                    continue
                                 if k not in k_processed:
                                     k_processed.append(k)
                                     cols = []
@@ -198,6 +200,8 @@ class Command(BaseCommand):
                         if my_agg is not None:
                             # ad values in agg, not in tmp_agg
                             for k, v in my_agg.j.items():
+                                if "_omm_max" in k or "_omm_min" in k:
+                                    continue
                                 if k not in k_processed:
                                     cols = []
                                     cols.append(k)

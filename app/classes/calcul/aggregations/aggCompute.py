@@ -72,7 +72,7 @@ class AggCompute():
                     new_calulated_maxmin = my_measure['dataType'](delta_values[target_key + maxmin_suffix])
                     new_calulated_maxmin_time = delta_values[target_key + maxmin_suffix + '_time']
                     if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                        if m_agg_j.__contains__(target_key + maxmin_suffix + '_dir') is True:
+                        if delta_values.__contains__(target_key + maxmin_suffix + '_dir') is True:
                             new_calulated_maxmin_dir = float(delta_values[target_key + maxmin_suffix + '_dir'])
 
                 if m_agg_j.__contains__(target_key + maxmin_suffix):
@@ -142,10 +142,12 @@ class AggCompute():
                     # if (target_key == "wind"):
                     #     print('   *** agg < new_calc')
                     b_change_maxmin = True
-                if maxmin_suffix == '_max' and agg_maxmin == new_calulated_maxmin and str(agg_j[target_key + maxmin_suffix + '_time']) < str(new_calulated_maxmin_time):
-                    # if (target_key == "wind"):
-                    #     print('   *** max agg_time < new_calc_time -> yes')
-                    b_change_maxmin = True
+
+                # code to keep the latest _max/min_time in case of equality
+                # if maxmin_suffix == '_max' and agg_maxmin == new_calulated_maxmin and str(agg_j[target_key + maxmin_suffix + '_time']) < str(new_calulated_maxmin_time):
+                #     # if (target_key == "wind"):
+                #     #     print('   *** max agg_time < new_calc_time -> yes')
+                #     b_change_maxmin = True
                 # if maxmin_suffix == '_max' and agg_maxmin == new_calulated_maxmin and str(agg_j[target_key + maxmin_suffix + '_time']) > str(new_calulated_maxmin_time):
                 #     if (target_key == "wind"):
                 #         print('   *** max agg_time > new_calc_time -> NO')
