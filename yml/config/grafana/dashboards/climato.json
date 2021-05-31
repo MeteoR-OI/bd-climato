@@ -15,6 +15,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
+  "id": 10,
   "links": [],
   "panels": [
     {
@@ -146,7 +147,7 @@
       "pluginVersion": "7.5.6",
       "targets": [
         {
-          "expr": "avg_over_time({job=\"django_debug\"} |= \"Json file loaded\" | json exec=\"params.timeExec\", meteor=\"params.meteor\" | unwrap exec | __error__ = \"\"  [5s]) by (meteor)",
+          "expr": "count_over_time({job=\"django_debug\"} |= \"Json file loaded\" [5s])",
           "legendFormat": "{{meteor}}",
           "refId": "A"
         }
@@ -205,7 +206,7 @@
       "pluginVersion": "7.5.6",
       "targets": [
         {
-          "expr": "avg_over_time({job=\"django_debug\"} |= \"Aggregation\" | json exec=\"params.timeExec\", meteor=\"params.meteor\" | unwrap exec | __error__ = \"\"  [5s]) by (meteor)",
+          "expr": "count_over_time({job=\"django_debug\"} |= \"Aggregation\"  [5s])",
           "legendFormat": "{{meteor}}",
           "refId": "Aavg_over_time({job=\"django_debug\"} |= \"Json file loaded\" | json exec=\"params.timeExec\", meteor=\"params.meteor\" | unwrap exec | __error__ = \"\"  [5s]) by (meteor)"
         }
@@ -347,7 +348,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "newClimato",
-  "uid": "z6kT5e3Gk",
-  "version": 3
+  "title": "newClim",
+  "uid": "440WKMeMk",
+  "version": 1
 }

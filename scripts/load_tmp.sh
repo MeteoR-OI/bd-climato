@@ -19,7 +19,6 @@ python3 manage.py loadJson obs.2021-05-16.json --tmp --validation
 python3 manage.py loadJson obs.2021-05-17.json --tmp --validation
 python3 manage.py loadJson obs.2021-05-18.json --tmp --validation
 python3 manage.py loadJson obs.2021-05-19.json --tmp --validation
-python3 manage.py loadJson obs.2021-05-24.json --tmp --validation
 
 python3 manage.py loadJson obs.2021-05-24.json --tmp --validation
 python3 manage.py loadJson obs.2021-05-25.json --tmp --validation
