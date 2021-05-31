@@ -96,7 +96,7 @@ class Command(BaseCommand):
                     "is_tmp": is_tmp,
                     "validation": use_validation
                 }
-                self.callService('loadobs', SvcRequestType.Run, False, params)
+                self.callService('auto', SvcRequestType.Run, False, params)
 
         except Exception as e:
             if e.__dict__.__len__() == 0 or 'done' not in e.__dict__:
