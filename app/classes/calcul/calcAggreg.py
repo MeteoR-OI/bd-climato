@@ -88,9 +88,9 @@ class CalcAggreg(AllCalculus):
             span_name += "_tmp"
         with self.tracer.start_as_current_span(span_name, trace_flag) as my_span:
             my_span.set_attribute("obsId", a_todo.data.obs_id_id)
+            my_span.set_attribute("stopDat", str(a_todo.data.obs_id.stop_dat))
             my_span.set_attribute("meteor", a_todo.data.obs_id.poste_id.meteor)
             my_span.set_attribute("isTmp", is_tmp)
-            my_span.set_attribute("meteor", a_todo.data.obs_id.poste_id.meteor)
             # retrieve data we will need
             span_load_data = self.tracer.start_span("load Aggreg", trace_flag)
             m_stop_dat = a_todo.data.obs_id.stop_dat
