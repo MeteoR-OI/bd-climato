@@ -73,3 +73,5 @@
   Visualiser le log
 
   Et apres il faut apprendre LogQL...
+  bonne video: https://grafana.com/go/observabilitycon/observability-with-logs-grafana/?pg=gcon-2021&plcmt=past-highlights-1
+  
