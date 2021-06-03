@@ -287,6 +287,10 @@ LOW#slurp
        $CleCal("out_temp_duration",$day($days_ago=$delta_d).outTemp.count.raw,$amin)
        $CleVal("out_temp_min",$day($days_ago=$delta_d).outTemp.min.degree_C.raw)
        $CleDat("out_temp_min_time",$day($days_ago=$delta_d).outTemp.mintime.raw)
+#if $day($days_ago=$delta_d).soilTemp1.has_data
+       $CleVal("soiltemp_min",$day($days_ago=$delta_d).soilTemp1.min.degree_C.raw)
+       $CleDat("soiltemp_min_time",$day($days_ago=$delta_d).soilTemp1.mintime.raw) 
+#end if     
        $CleVal("heatindex_max",$day($days_ago=$delta_d).heatindex.max.degree_C.raw)
        $CleDat("heatindex_max_time",$day($days_ago=$delta_d).heatindex.maxtime.raw)
        $CleVal("heatindex_avg",$day($days_ago=$delta_d).heatindex.avg.degree_C.raw)
@@ -555,6 +559,10 @@ LOW#slurp
        $CleVal("out_temp_min",$month($months_ago=$delta_m).outTemp.min.degree_C.raw)
        $CleDat("out_temp_min_time",$month($months_ago=$delta_m).outTemp.mintime.raw)
        $CleCal("out_temp_duration",$month($months_ago=$delta_m).outTemp.count.raw,$amin)
+#if $month($months_ago=$delta_m).soilTemp1.has_data
+       $CleVal("soiltemp_min",$month($months_ago=$delta_m).soilTemp1.min.degree_C.raw)
+       $CleDat("soiltemp_min_time",$month($months_ago=$delta_m).soilTemp1.mintime.raw) 
+#end if     
        $CleVal("heatindex_max",$month($months_ago=$delta_m).heatindex.max.degree_C.raw)
        $CleDat("heatindex_max_time",$month($months_ago=$delta_m).heatindex.maxtime.raw)
        $CleVal("heatindex_avg",$month($months_ago=$delta_m).heatindex.avg.degree_C.raw)
@@ -672,6 +680,10 @@ LOW#slurp
        $CleVal("out_temp_min",$year($years_ago=$delta_y).outTemp.min.degree_C.raw)
        $CleDat("out_temp_min_time",$year($years_ago=$delta_y).outTemp.mintime.raw)
        $CleCal("out_temp_duration",$year($years_ago=$delta_y).outTemp.count.raw,$amin)
+#if $year($years_ago=$delta_y).soilTemp1.has_data
+       $CleVal("soiltemp_min",$year($years_ago=$delta_y).soilTemp1.min.degree_C.raw)
+       $CleDat("soiltemp_min_time",$year($years_ago=$delta_y).soilTemp1.mintime.raw) 
+#end if     
        $CleVal("heatindex_max",$year($years_ago=$delta_y).heatindex.max.degree_C.raw)
        $CleDat("heatindex_max_time",$year($years_ago=$delta_y).heatindex.maxtime.raw)
        $CleVal("heatindex_avg",$year($years_ago=$delta_y).heatindex.avg.degree_C.raw)
