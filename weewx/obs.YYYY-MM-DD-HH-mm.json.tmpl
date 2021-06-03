@@ -113,13 +113,13 @@ LOW#slurp
 #set $duration = round($obs.interval.raw)
 #if $start == 1 ## si premiere obs, obs precedente initialisee
 #set $datetime_obs_prev = datetime.fromtimestamp($obs.dateTime.raw) - timedelta(minutes=$amin,seconds=-1)
-#set $new_hour  = $datetime_obs.hour <> $datetime_obs_prev.hour
+#set $new_hour  = $datetime_obs.hour != $datetime_obs_prev.hour
 #set $final_obs = $datetime_obs == $datetime_cur
 #set $restartw  = $h_delta > 0
 #set $start = 0
 #set $aggregation_hour = 0
 #else
-#set $new_hour  = $datetime_obs.hour <> $datetime_obs_prev.hour
+#set $new_hour  = $datetime_obs.hour != $datetime_obs_prev.hour
 #set $final_obs = $datetime_obs == $datetime_cur
 #set $restartw  = $h_delta > 0
 #if $aggregation_hour == 0

@@ -110,10 +110,10 @@ LOW#slurp
 ##end if ## fin level 'C' or 'H'
 #if $start == 1 ## si premiere obs, obs precedente initialisee
 #set $datetime_obs_prev = datetime.fromtimestamp($obs.dateTime.raw) - timedelta(minutes=$amin,seconds=-1)
-#set $new_hour  = $datetime_obs.hour <> $datetime_obs_prev.hour
-#set $new_day   = $datetime_obs.day <> $datetime_obs_prev.day
-#set $new_month = $datetime_obs.month <> $datetime_obs_prev.month
-#set $new_year  = $datetime_obs.year <> $datetime_obs_prev.year
+#set $new_hour  = $datetime_obs.hour != $datetime_obs_prev.hour
+#set $new_day   = $datetime_obs.day != $datetime_obs_prev.day
+#set $new_month = $datetime_obs.month != $datetime_obs_prev.month
+#set $new_year  = $datetime_obs.year != $datetime_obs_prev.year
 #set $diff_time = time.mktime($datetime_obs.timetuple()) - time.mktime($datetime_cur.timetuple())
 #set $final_obs = abs($diff_time) < 100
 #set $start = 0
@@ -122,10 +122,10 @@ LOW#slurp
 #set $aggregation_month = 0
 #set $aggregation_year  = 0
 #else
-#set $new_hour  = $datetime_obs.hour <> $datetime_obs_prev.hour
-#set $new_day   = $datetime_obs.day <> $datetime_obs_prev.day
-#set $new_month = $datetime_obs.month <> $datetime_obs_prev.month
-#set $new_year  = $datetime_obs.year <> $datetime_obs_prev.year
+#set $new_hour  = $datetime_obs.hour != $datetime_obs_prev.hour
+#set $new_day   = $datetime_obs.day != $datetime_obs_prev.day
+#set $new_month = $datetime_obs.month != $datetime_obs_prev.month
+#set $new_year  = $datetime_obs.year != $datetime_obs_prev.year
 #set $diff_time = time.mktime($datetime_obs.timetuple()) - time.mktime($datetime_cur.timetuple())
 #set $final_obs = abs($diff_time) < 100
 #if ($aggregation_hour == 0 and $aggregation_day == 0)

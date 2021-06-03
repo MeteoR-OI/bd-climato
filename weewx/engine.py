@@ -753,7 +753,7 @@ class StdReport(StdService):
     def new_archive_record(self, event):
         """Cache the archive record to pass to the report thread."""
         self.record = event.record
-       # added by QUETELARD 
+        # added by QUETELARD 
         self.accumulator = event.accumulator
     
     def launch_report_thread(self, event):  # @UnusedVariable
