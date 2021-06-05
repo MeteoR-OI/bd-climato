@@ -163,10 +163,10 @@ LOW#slurp
        $CleDat("dewpoint_max_time",$currentagg.dewpoint.maxtime.raw)
        #end if
        #if $obs.soilTemp1.has_data and $day.soilTemp1.has_data
-       $CleVal("soiltemp",$obs.soilTemp1.degree_C.raw)
+       $CleVal("soil_temp",$obs.soilTemp1.degree_C.raw)
        #if $final_obs
-       $CleVal("soiltemp_min",$obs.soilTemp1.min.degree_C.raw)
-       $CleDat("soiltemp_min_time",$obs.soilTemp1.mintime.raw) 
+       $CleVal("soil_temp_min",$obs.soilTemp1.min.degree_C.raw)
+       $CleDat("soil_temp_min_time",$obs.soilTemp1.mintime.raw) 
        #end if     
        #end if     
        $CleVal("humidity",$obs.outHumidity.raw,0)
