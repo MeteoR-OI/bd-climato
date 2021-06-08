@@ -137,12 +137,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 9,
-        "w": 12,
+        "h": 8,
+        "w": 9,
         "x": 4,
         "y": 1
       },
-      "id": 26,
+      "id": 20,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -161,12 +161,14 @@
       "pluginVersion": "7.5.6",
       "targets": [
         {
-          "expr": "(max_over_time({job=\"django_debug\"} |~ \"(Json file loaded|Aggregation computed)\" | json exec=\"params.timeExec\", msg=\"msg\" | unwrap exec | __error__ = \"\"  [5s]))",
-          "legendFormat": "{{msg}}",
+          "expr": "avg(rate({job=\"django_debug\"} |json level=\"level\" [1m])) by (level)",
+          "legendFormat": "{{level}}",
           "refId": "A"
         }
       ],
-      "title": "Perf per process",
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Log Rate per Level",
       "type": "stat"
     },
     {
@@ -184,107 +186,15 @@
       "type": "row"
     },
     {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
       "datasource": null,
       "fieldConfig": {
         "defaults": {},
         "overrides": []
       },
-      "fill": 1,
-      "fillGradient": 0,
       "gridPos": {
-        "h": 8,
-        "w": 9,
+        "h": 9,
+        "w": 21,
         "x": 0,
-        "y": 11
-      },
-      "hiddenSeries": false,
-      "id": 20,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "7.5.6",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "avg(rate({job=\"django_debug\"} |json level=\"level\" [1m])) by (level)",
-          "legendFormat": "{{level}}",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Log Rate per Level",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 9,
         "y": 11
       },
       "id": 24,
@@ -321,7 +231,7 @@
         "h": 8,
         "w": 21,
         "x": 0,
-        "y": 19
+        "y": 20
       },
       "hiddenSeries": false,
       "id": 22,
@@ -397,137 +307,136 @@
       }
     },
     {
-      "collapsed": true,
+      "collapsed": false,
       "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 27
+        "y": 28
       },
       "id": 14,
-      "panels": [
-        {
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 9,
-            "w": 6,
-            "x": 0,
-            "y": 19
-          },
-          "id": 2,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "text": {},
-            "textMode": "auto"
-          },
-          "pluginVersion": "7.5.6",
-          "targets": [
-            {
-              "expr": "avg_over_time({job=\"django_debug\"} |= \"Json file loaded\" | json exec=\"params.timeExec\", meteor=\"params.meteor\" | unwrap exec | __error__ = \"\"  [5s]) by (meteor)",
-              "legendFormat": "{{meteor}}",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Json Load Rate",
-          "type": "stat"
-        },
-        {
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 10,
-            "w": 15,
-            "x": 6,
-            "y": 19
-          },
-          "id": 4,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "text": {},
-            "textMode": "auto"
-          },
-          "pluginVersion": "7.5.6",
-          "targets": [
-            {
-              "expr": "avg_over_time({job=\"django_debug\"} |= \"Json file loaded\" | json exec=\"params.timeExec\", meteor=\"params.meteor\" | unwrap exec | __error__ = \"\"  [1h]) by (meteor)",
-              "legendFormat": "{{meteor}}",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Json Load Perf",
-          "type": "stat"
-        }
-      ],
+      "panels": [],
       "title": "Json Processing",
       "type": "row"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 6,
+        "x": 0,
+        "y": 29
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.5.6",
+      "targets": [
+        {
+          "expr": "count_over_time({job=\"django_debug\"} |= \"Json file loaded\" | json meteor=\"params.meteor\" [5s])",
+          "legendFormat": "{{meteor}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Json Load Rate",
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 15,
+        "x": 6,
+        "y": 29
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.5.6",
+      "targets": [
+        {
+          "expr": "avg_over_time({job=\"django_debug\"} |= \"Json file loaded\" | json exec=\"params.timeExec\", meteor=\"params.meteor\" | unwrap exec | __error__ = \"\"  [1h]) by (meteor)",
+          "legendFormat": "{{meteor}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Json Load Perf",
+      "type": "stat"
     },
     {
       "collapsed": false,
@@ -536,7 +445,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 28
+        "y": 39
       },
       "id": 12,
       "panels": [],
@@ -571,7 +480,7 @@
         "h": 9,
         "w": 6,
         "x": 0,
-        "y": 29
+        "y": 40
       },
       "id": 8,
       "options": {
@@ -592,7 +501,7 @@
       "pluginVersion": "7.5.6",
       "targets": [
         {
-          "expr": "avg_over_time({job=\"django_debug\"} |= \"Aggregation\" | json exec=\"params.timeExec\", meteor=\"params.meteor\" | unwrap exec | __error__ = \"\"  [5s]) by (meteor)",
+          "expr": "count_over_time({job=\"django_debug\"} |= \"Aggregation\" | json meteor=\"params.meteor\" | __error__ = \"\"  [5s])",
           "legendFormat": "{{meteor}}",
           "refId": "Aavg_over_time({job=\"django_debug\"} |= \"Json file loaded\" | json exec=\"params.timeExec\", meteor=\"params.meteor\" | unwrap exec | __error__ = \"\"  [5s]) by (meteor)"
         }
@@ -630,7 +539,7 @@
         "h": 9,
         "w": 13,
         "x": 8,
-        "y": 29
+        "y": 40
       },
       "id": 6,
       "options": {
@@ -670,7 +579,7 @@
     "list": []
   },
   "time": {
-    "from": "now-12h",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},
