@@ -49,15 +49,15 @@ def main():
     
     # Now we are ready to parse the command line:
     (options, args) = parser.parse_args()
-    config_path, config_dict = weecfg.read_config('weewx_dev.conf', args)
+    config_path, config_dict = weecfg.read_config('weewx_json.conf', args)
     
-    print "Using configuration file %s" % config_path
+    print("Using configuration file %s" % config_path)
 
     start_d, stop_d = _parse_dates(options)
     if stop_d is None:
-        print "Generating json file from %s to current time" % timestamp_to_string(start_d)
+        print("Generating json file from %s to current time" % timestamp_to_string(start_d))
     else:
-        print "Generating from %s to %s" % (timestamp_to_string(start_d), timestamp_to_string(stop_d))
+        print("Generating from %s to %s" % (timestamp_to_string(start_d), timestamp_to_string(stop_d)))
         
     # Look for the debug flag. If set, ask for extra logging
     weewx.debug = int(config_dict.get('debug', 0))
