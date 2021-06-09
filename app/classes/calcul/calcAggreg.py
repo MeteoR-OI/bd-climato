@@ -187,6 +187,9 @@ class CalcAggreg(AllCalculus):
         agg_decas = []
         deca_hours = []
 
+        if my_measure.get('target_key') == 'rain_omm':
+            agg_decas = []
+
         if my_measure.get("hour_deca") is None or anAgg[0] != 'H':
             deca_hours.append(0)
             main_deca = 0
