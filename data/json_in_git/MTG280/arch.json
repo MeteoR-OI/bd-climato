@@ -1,0 +1,789 @@
+[
+{
+  "meteor" : "MTG280",
+  "version":2,
+  "info" : {
+     "title":"JSON pour BDClimato",
+     "time":"14/06/2018 à 06h59",
+     "uptime":"0 jours, 0 heures, 0 minutes",
+     "last_update":"2021-06-14 11:35:00",
+     "last_update_before_stop":"2021-06-14 11:35:00", 
+     "json_level":"D"  
+     },
+  "data":
+     [
+      {
+       "start_dat":"2018-06-10T23:55:00",
+       "stop_dat":"2018-06-11T00:00:00",
+       "aggregations":
+       [{
+       "level":"D",
+       "start_dat":"2018-06-10T00:00:00"
+       }],
+       "validation":
+       [{
+       "level":"D",
+       "out_temp_max":26.0555555556,
+       "out_temp_max_time":"2018-06-10T11:39:58",
+       "out_temp_avg":22.4413580247,
+       "out_temp_s":32315.5555556,
+       "out_temp_duration":1440.0,
+       "out_temp_min":20.1111111111,
+       "out_temp_min_time":"2018-06-10T00:39:59",
+       "heatindex_max":27.6666666667,
+       "heatindex_max_time":"2018-06-10T11:39:58",
+       "heatindex_avg":22.1527777778,
+       "heatindex_s":31900.0,
+       "heatindex_duration":1440.0,
+       "windchill_min":21.3888888889,
+       "windchill_min_time":"2018-06-10T00:49:57",
+       "windchill_s":34983.6111111,
+       "windchill_avg":24.2941743827,
+       "windchill_duration":1440.0,
+       "humidity_max":91.0,
+       "humidity_max_time":"2018-06-10T00:24:57",
+       "humidity_s":119770.0,
+       "humidity_avg":83.1736111111,
+       "humidity_min":72.0,
+       "humidity_min_time":"2018-06-10T10:54:58",
+       "humidity_duration":1440.0,
+       "dewpoint_max":21.7222222222,
+       "dewpoint_max_time":"2018-06-10T11:39:58",
+       "dewpoint_s":27950.0,
+       "dewpoint_avg":19.4097222222,
+       "dewpoint_min":16.5555555556,
+       "dewpoint_min_time":"2018-06-10T23:59:57",
+       "dewpoint_duration":1440.0,
+       "barometer_max":1020.31875225,
+       "barometer_max_time":"2018-06-10T21:34:57",
+       "barometer_s":1466941.02055,
+       "barometer_avg":1018.70904205,
+       "barometer_min":1017.27100291,
+       "barometer_min_time":"2018-06-10T14:14:58",
+       "barometer_duration":1440.0,
+       "pressure_max":990.592666576,
+       "pressure_max_time":"2018-06-10T21:34:57",
+       "pressure_s":1424106.33011,
+       "pressure_avg":988.962729245,
+       "pressure_min":987.605569836,
+       "pressure_min_time":"2018-06-10T15:54:58",
+       "pressure_duration":1440.0,
+       "rain_sum":0.0,
+       "rain_max":0.0,
+       "rain_max_time":"2018-06-10T00:04:59",
+       "rain_avg":0.0,
+       "rain_min":0.0,
+       "rain_min_time":"2018-06-10T00:04:59",  
+       "rain_duration":1440.0,
+       "rain_omm_sum":0.0,
+       "out_temp_omm_min":19.8888888889,
+       "out_temp_omm_min_time":"2018-06-09T21:29:59",
+       "out_temp_omm_max":26.0555555556,
+       "out_temp_omm_max_time":"2018-06-10T11:39:58",
+       "out_temp_omm_avg":22.4768518519,
+       "humidity_omm_avg":82.6666666667,
+       "wind_omm_avg":1.89992000152,
+       "barometer_omm_avg":1018.73843778,
+       
+       
+       
+       
+       "wind_max":8.94080000715,
+       
+       "wind_max_time":"2018-06-10T11:24:58",
+       "wind_avg":1.78350333476,
+       "wind_s":2568.24480205,
+       "wind_duration":1440.0,
+       "uv_indice_max":5.1,
+       "uv_indice_max_time":"2018-06-10T11:34:58",
+       "uv_indice_avg":0.78125,
+       "uv_indice_s":1125.0,
+       "uv_indice_duration":1440.0,
+       "etp_sum":2.47272757904,
+       "etp_max":0.0404958801829,
+       "etp_max_time":"2018-06-10T11:39:58",
+       "etp_avg":0.00858585964944,
+       "etp_min":0.0,
+       "etp_min_time":"2018-06-10T05:29:57",
+       "etp_duration":1440.0,       
+       "radiation_max":0.96,
+       "radiation_max_time":"2018-06-10T11:34:58",
+       "radiation_avg":0.146920138889,
+       "radiation_sum":1269.39,
+       "radiation_min":0.0,
+       "radiation_min_time":"2018-06-10T00:04:59",
+       "radiation_duration":1440.0,
+       
+       
+       
+       "in_temp_s":0.0,
+       
+       
+       "in_temp_duration":0.0,
+       
+       
+       
+       "in_humidity_s":0.0,
+       
+       
+       "in_humidity_duration":0.0,
+       "start_dat":"2018-06-10T00:00:00"
+       }]
+      }, 
+      {
+       "start_dat":"2018-06-11T23:55:00",
+       "stop_dat":"2018-06-12T00:00:00",
+       "aggregations":
+       [{
+       "level":"D",
+       "start_dat":"2018-06-11T00:00:00"
+       }],
+       "validation":
+       [{
+       "level":"D",
+       "out_temp_max":25.7222222222,
+       "out_temp_max_time":"2018-06-11T10:49:58",
+       "out_temp_avg":21.8838734568,
+       "out_temp_s":31512.7777778,
+       "out_temp_duration":1440.0,
+       "out_temp_min":19.6666666667,
+       "out_temp_min_time":"2018-06-11T22:04:59",
+       "heatindex_max":26.8333333333,
+       "heatindex_max_time":"2018-06-11T10:49:58",
+       "heatindex_avg":22.6180555556,
+       "heatindex_s":32570.0,
+       "heatindex_duration":1440.0,
+       "windchill_min":19.6111111111,
+       "windchill_min_time":"2018-06-11T22:04:59",
+       "windchill_s":33160.0,
+       "windchill_avg":23.0277777778,
+       "windchill_duration":1440.0,
+       "humidity_max":94.0,
+       "humidity_max_time":"2018-06-11T16:09:58",
+       "humidity_s":110035.0,
+       "humidity_avg":76.4131944444,
+       "humidity_min":65.0,
+       "humidity_min_time":"2018-06-11T10:29:58",
+       "humidity_duration":1440.0,
+       "dewpoint_max":20.2222222222,
+       "dewpoint_max_time":"2018-06-11T11:49:58",
+       "dewpoint_s":25143.6111111,
+       "dewpoint_avg":17.4608410494,
+       "dewpoint_min":15.0555555556,
+       "dewpoint_min_time":"2018-06-11T04:44:57",
+       "dewpoint_duration":1440.0,
+       "barometer_max":1021.3346687,
+       "barometer_max_time":"2018-06-11T21:04:57",
+       "barometer_s":1468720.56752,
+       "barometer_avg":1019.94483856,
+       "barometer_min":1018.62555817,
+       "barometer_min_time":"2018-06-11T04:34:57",
+       "barometer_duration":1440.0,
+       "pressure_max":991.557035592,
+       "pressure_max_time":"2018-06-11T22:19:59",
+       "pressure_s":1425814.27598,
+       "pressure_avg":990.148802761,
+       "pressure_min":988.849760492,
+       "pressure_min_time":"2018-06-11T04:44:57",
+       "pressure_duration":1440.0,
+       "rain_sum":17.526,
+       "rain_max":3.81,
+       "rain_max_time":"2018-06-11T15:59:58",
+       "rain_avg":0.0608541666667,
+       "rain_min":0.0,
+       "rain_min_time":"2018-06-11T00:04:57",  
+       "rain_duration":1440.0,
+       "rain_omm_sum":17.526,
+       "out_temp_omm_min":20.0,
+       "out_temp_omm_min_time":"2018-06-11T17:29:58",
+       "out_temp_omm_max":25.7222222222,
+       "out_temp_omm_max_time":"2018-06-11T10:49:58",
+       "out_temp_omm_avg":21.8657407407,
+       "humidity_omm_avg":76.5833333333,
+       "wind_omm_avg":2.45872000197,
+       "barometer_omm_avg":1020.00833334,
+       
+       
+       
+       
+       "wind_max":9.83488000787,
+       
+       "wind_max_time":"2018-06-11T10:44:58",
+       "wind_avg":2.57668889095,
+       "wind_s":3710.43200297,
+       "wind_duration":1440.0,
+       "uv_indice_max":5.3,
+       "uv_indice_max_time":"2018-06-11T11:59:58",
+       "uv_indice_avg":0.83125,
+       "uv_indice_s":1197.0,
+       "uv_indice_duration":1440.0,
+       "etp_sum":2.87974517303,
+       "etp_max":0.0449086622316,
+       "etp_max_time":"2018-06-11T13:09:58",
+       "etp_avg":0.00999911518414,
+       "etp_min":0.0,
+       "etp_min_time":"2018-06-11T07:24:58",
+       "etp_duration":1440.0,       
+       "radiation_max":0.984,
+       "radiation_max_time":"2018-06-11T13:04:58",
+       "radiation_avg":0.150368055556,
+       "radiation_sum":1299.18,
+       "radiation_min":0.0,
+       "radiation_min_time":"2018-06-11T00:04:57",
+       "radiation_duration":1440.0,
+       
+       
+       
+       "in_temp_s":0.0,
+       
+       
+       "in_temp_duration":0.0,
+       
+       
+       
+       "in_humidity_s":0.0,
+       
+       
+       "in_humidity_duration":0.0,
+       "start_dat":"2018-06-11T00:00:00"
+       }]
+      }, 
+      {
+       "start_dat":"2018-06-12T23:55:00",
+       "stop_dat":"2018-06-13T00:00:00",
+       "aggregations":
+       [{
+       "level":"D",
+       "start_dat":"2018-06-12T00:00:00"
+       }],
+       "validation":
+       [{
+       "level":"D",
+       "out_temp_max":25.5555555556,
+       "out_temp_max_time":"2018-06-12T10:24:58",
+       "out_temp_avg":21.6001157407,
+       "out_temp_s":31104.1666667,
+       "out_temp_duration":1440.0,
+       "out_temp_min":18.6666666667,
+       "out_temp_min_time":"2018-06-12T19:34:59",
+       "heatindex_max":26.5,
+       "heatindex_max_time":"2018-06-12T10:24:58",
+       "heatindex_avg":22.6714891975,
+       "heatindex_s":32646.9444444,
+       "heatindex_duration":1440.0,
+       "windchill_min":19.1666666667,
+       "windchill_min_time":"2018-06-12T19:44:59",
+       "windchill_s":33059.1666667,
+       "windchill_avg":22.9577546296,
+       "windchill_duration":1440.0,
+       "humidity_max":94.0,
+       "humidity_max_time":"2018-06-12T18:44:59",
+       "humidity_s":105415.0,
+       "humidity_avg":73.2048611111,
+       "humidity_min":53.0,
+       "humidity_min_time":"2018-06-12T09:19:58",
+       "humidity_duration":1440.0,
+       "dewpoint_max":20.0555555556,
+       "dewpoint_max_time":"2018-06-12T11:59:58",
+       "dewpoint_s":23656.1111111,
+       "dewpoint_avg":16.4278549383,
+       "dewpoint_min":12.6111111111,
+       "dewpoint_min_time":"2018-06-12T07:04:58",
+       "dewpoint_duration":1440.0,
+       "barometer_max":1020.65739107,
+       "barometer_max_time":"2018-06-12T00:04:59",
+       "barometer_s":1468094.08572,
+       "barometer_avg":1019.50978175,
+       "barometer_min":1017.94828054,
+       "barometer_min_time":"2018-06-12T15:09:58",
+       "barometer_duration":1440.0,
+       "pressure_max":990.907717629,
+       "pressure_max_time":"2018-06-12T10:19:58",
+       "pressure_s":1425097.30133,
+       "pressure_avg":989.650903699,
+       "pressure_min":988.174561616,
+       "pressure_min_time":"2018-06-12T15:39:58",
+       "pressure_duration":1440.0,
+       "rain_sum":5.08,
+       "rain_max":1.27,
+       "rain_max_time":"2018-06-12T18:04:59",
+       "rain_avg":0.0176388888889,
+       "rain_min":0.0,
+       "rain_min_time":"2018-06-12T00:04:59",  
+       "rain_duration":1440.0,
+       "rain_omm_sum":5.08,
+       "out_temp_omm_min":19.3333333333,
+       "out_temp_omm_min_time":"2018-06-12T18:59:59",
+       "out_temp_omm_max":25.5555555556,
+       "out_temp_omm_max_time":"2018-06-12T10:24:58",
+       "out_temp_omm_avg":21.6736111111,
+       "humidity_omm_avg":73.0,
+       "wind_omm_avg":1.95580000156,
+       "barometer_omm_avg":1019.51448506,
+       
+       
+       
+       
+       "wind_max":8.94080000715,
+       
+       "wind_max_time":"2018-06-12T21:14:57",
+       "wind_avg":1.88439777929,
+       "wind_s":2713.53280217,
+       "wind_duration":1440.0,
+       "uv_indice_max":5.1,
+       "uv_indice_max_time":"2018-06-12T11:54:58",
+       "uv_indice_avg":0.693055555556,
+       "uv_indice_s":998.0,
+       "uv_indice_duration":1440.0,
+       "etp_sum":2.63182366164,
+       "etp_max":0.0423436767845,
+       "etp_max_time":"2018-06-12T11:59:58",
+       "etp_avg":0.0091382766029,
+       "etp_min":0.0,
+       "etp_min_time":"2018-06-12T07:29:58",
+       "etp_duration":1440.0,       
+       "radiation_max":0.984,
+       "radiation_max_time":"2018-06-12T11:59:58",
+       "radiation_avg":0.135496527778,
+       "radiation_sum":1170.69,
+       "radiation_min":0.0,
+       "radiation_min_time":"2018-06-12T00:04:59",
+       "radiation_duration":1440.0,
+       
+       
+       
+       "in_temp_s":0.0,
+       
+       
+       "in_temp_duration":0.0,
+       
+       
+       
+       "in_humidity_s":0.0,
+       
+       
+       "in_humidity_duration":0.0,
+       "start_dat":"2018-06-12T00:00:00"
+       }]
+      }, 
+      {
+       "start_dat":"2018-06-13T23:55:00",
+       "stop_dat":"2018-06-14T00:00:00",
+       "aggregations":
+       [{
+       "level":"D",
+       "start_dat":"2018-06-13T00:00:00"
+       }],
+       "validation":
+       [{
+       "level":"D",
+       "out_temp_max":26.2777777778,
+       "out_temp_max_time":"2018-06-13T11:04:58",
+       "out_temp_avg":21.744212963,
+       "out_temp_s":31311.6666667,
+       "out_temp_duration":1440.0,
+       "out_temp_min":18.8888888889,
+       "out_temp_min_time":"2018-06-13T06:44:57",
+       "heatindex_max":27.6111111111,
+       "heatindex_max_time":"2018-06-13T11:04:58",
+       "heatindex_avg":22.9438657407,
+       "heatindex_s":33039.1666667,
+       "heatindex_duration":1440.0,
+       "windchill_min":19.8333333333,
+       "windchill_min_time":"2018-06-13T00:19:59",
+       "windchill_s":34285.2777778,
+       "windchill_avg":23.809220679,
+       "windchill_duration":1440.0,
+       "humidity_max":87.0,
+       "humidity_max_time":"2018-06-13T00:04:59",
+       "humidity_s":107795.0,
+       "humidity_avg":74.8576388889,
+       "humidity_min":66.0,
+       "humidity_min_time":"2018-06-13T10:39:58",
+       "humidity_duration":1440.0,
+       "dewpoint_max":19.8888888889,
+       "dewpoint_max_time":"2018-06-13T11:04:58",
+       "dewpoint_s":24546.3888889,
+       "dewpoint_avg":17.0461033951,
+       "dewpoint_min":14.8888888889,
+       "dewpoint_min_time":"2018-06-13T04:29:57",
+       "dewpoint_duration":1440.0,
+       "barometer_max":1020.31875225,
+       "barometer_max_time":"2018-06-13T10:49:58",
+       "barometer_s":1466932.55458,
+       "barometer_avg":1018.7031629,
+       "barometer_min":1016.93236409,
+       "barometer_min_time":"2018-06-13T15:29:58",
+       "barometer_duration":1440.0,
+       "pressure_max":990.537906957,
+       "pressure_max_time":"2018-06-13T10:49:58",
+       "pressure_s":1423973.72179,
+       "pressure_avg":988.870640132,
+       "pressure_min":987.186420487,
+       "pressure_min_time":"2018-06-13T15:49:56",
+       "pressure_duration":1440.0,
+       "rain_sum":0.0,
+       "rain_max":0.0,
+       "rain_max_time":"2018-06-13T00:04:59",
+       "rain_avg":0.0,
+       "rain_min":0.0,
+       "rain_min_time":"2018-06-13T00:04:59",  
+       "rain_duration":1440.0,
+       "rain_omm_sum":0.254,
+       "out_temp_omm_min":18.6666666667,
+       "out_temp_omm_min_time":"2018-06-12T19:34:59",
+       "out_temp_omm_max":26.2777777778,
+       "out_temp_omm_max_time":"2018-06-13T11:04:58",
+       "out_temp_omm_avg":21.7222222222,
+       "humidity_omm_avg":74.4583333333,
+       "wind_omm_avg":0.856826667352,
+       "barometer_omm_avg":1018.66788802,
+       
+       
+       
+       
+       "wind_max":9.38784000751,
+       
+       "wind_max_time":"2018-06-13T20:54:57",
+       "wind_avg":1.17348000094,
+       "wind_s":1689.81120135,
+       "wind_duration":1440.0,
+       "uv_indice_max":4.6,
+       "uv_indice_max_time":"2018-06-13T11:04:58",
+       "uv_indice_avg":0.624305555556,
+       "uv_indice_s":899.0,
+       "uv_indice_duration":1440.0,
+       "etp_sum":2.25587715446,
+       "etp_max":0.0401190341522,
+       "etp_max_time":"2018-06-13T11:09:58",
+       "etp_avg":0.00783290678633,
+       "etp_min":0.0,
+       "etp_min_time":"2018-06-13T04:59:57",
+       "etp_duration":1440.0,       
+       "radiation_max":0.939,
+       "radiation_max_time":"2018-06-13T11:39:58",
+       "radiation_avg":0.125878472222,
+       "radiation_sum":1087.59,
+       "radiation_min":0.0,
+       "radiation_min_time":"2018-06-13T00:04:59",
+       "radiation_duration":1440.0,
+       
+       
+       
+       "in_temp_s":0.0,
+       
+       
+       "in_temp_duration":0.0,
+       
+       
+       
+       "in_humidity_s":0.0,
+       
+       
+       "in_humidity_duration":0.0,
+       "start_dat":"2018-06-13T00:00:00"
+       }]
+      }, 
+      {
+       "start_dat":"2018-06-14T06:55:00",
+       "stop_dat":"2018-06-14T07:00:00",
+       "aggregations":
+       [{
+       "level":"D",
+       "start_dat":"2018-06-14T00:00:00"
+       }],
+       "validation":
+       [{
+       "level":"D",
+       "out_temp_max":25.4444444444,
+       "out_temp_max_time":"2018-06-14T12:59:58",
+       "out_temp_avg":21.6801697531,
+       "out_temp_s":31219.4444444,
+       "out_temp_duration":1440.0,
+       "out_temp_min":18.4444444444,
+       "out_temp_min_time":"2018-06-14T04:34:57",
+       "heatindex_max":26.4444444444,
+       "heatindex_max_time":"2018-06-14T12:59:58",
+       "heatindex_avg":23.0644290123,
+       "heatindex_s":33212.7777778,
+       "heatindex_duration":1440.0,
+       "windchill_min":18.5,
+       "windchill_min_time":"2018-06-14T04:34:57",
+       "windchill_s":33175.2777778,
+       "windchill_avg":23.0383873457,
+       "windchill_duration":1440.0,
+       "humidity_max":90.0,
+       "humidity_max_time":"2018-06-14T04:29:58",
+       "humidity_s":105880.0,
+       "humidity_avg":73.5277777778,
+       "humidity_min":65.0,
+       "humidity_min_time":"2018-06-14T12:59:58",
+       "humidity_duration":1440.0,
+       "dewpoint_max":18.8888888889,
+       "dewpoint_max_time":"2018-06-14T10:49:58",
+       "dewpoint_s":24045.1642176,
+       "dewpoint_avg":16.6980307067,
+       "dewpoint_min":14.8888888889,
+       "dewpoint_min_time":"2018-06-14T23:34:57",
+       "dewpoint_duration":1440.0,
+       "barometer_max":1019.98011344,
+       "barometer_max_time":"2018-06-14T08:59:58",
+       "barometer_s":1466585.44979,
+       "barometer_avg":1018.46211791,
+       "barometer_min":1017.27100291,
+       "barometer_min_time":"2018-06-14T03:34:59",
+       "barometer_duration":1440.0,
+       "pressure_max":990.259021224,
+       "pressure_max_time":"2018-06-14T10:39:58",
+       "pressure_s":1423650.23721,
+       "pressure_avg":988.64599806,
+       "pressure_min":987.341586264,
+       "pressure_min_time":"2018-06-14T16:24:58",
+       "pressure_duration":1440.0,
+       "rain_sum":0.254,
+       "rain_max":0.254,
+       "rain_max_time":"2018-06-14T04:19:57",
+       "rain_avg":0.000881944444444,
+       "rain_min":0.0,
+       "rain_min_time":"2018-06-14T00:04:59",  
+       "rain_duration":1440.0,
+       "rain_omm_sum":0.0,
+       "out_temp_omm_min":18.4444444444,
+       "out_temp_omm_min_time":"2018-06-14T04:34:57",
+       "out_temp_omm_max":25.4444444444,
+       "out_temp_omm_max_time":"2018-06-14T12:59:58",
+       "out_temp_omm_avg":21.7037037037,
+       "humidity_omm_avg":73.4166666667,
+       "wind_omm_avg":2.71949333551,
+       "barometer_omm_avg":1018.48445867,
+       
+       
+       
+       
+       "wind_max":11.6230400093,
+       
+       "wind_max_time":"2018-06-14T11:14:58",
+       "wind_avg":2.13430555726,
+       "wind_s":3073.40000246,
+       "wind_duration":1440.0,
+       "uv_indice_max":5.3,
+       "uv_indice_max_time":"2018-06-14T11:59:58",
+       "uv_indice_avg":1.02048611111,
+       "uv_indice_s":1469.5,
+       "uv_indice_duration":1440.0,
+       "etp_sum":3.31449956294,
+       "etp_max":0.0462317523196,
+       "etp_max_time":"2018-06-14T13:04:58",
+       "etp_avg":0.011508679038,
+       "etp_min":0.0,
+       "etp_min_time":"2018-06-14T07:29:58",
+       "etp_duration":1440.0,       
+       "radiation_max":0.893,
+       "radiation_max_time":"2018-06-14T12:59:58",
+       "radiation_avg":0.192045138889,
+       "radiation_sum":1659.27,
+       "radiation_min":0.0,
+       "radiation_min_time":"2018-06-14T00:04:59",
+       "radiation_duration":1440.0,
+       
+       
+       
+       "in_temp_s":0.0,
+       
+       
+       "in_temp_duration":0.0,
+       
+       
+       
+       "in_humidity_s":0.0,
+       
+       
+       "in_humidity_duration":0.0,
+       "start_dat":"2018-06-14T00:00:00"
+        },
+       {
+       "level":"M",
+       "out_temp_max":27.4444444444,
+       "out_temp_max_time":"2018-06-07T12:14:58",
+       "out_temp_avg":21.5430596001,
+       "out_temp_s":924735.833333,
+       "out_temp_min":17.0555555556,
+       "out_temp_min_time":"2018-06-28T06:39:57",
+       "out_temp_duration":42925.0,
+       "heatindex_max":29.5,
+       "heatindex_max_time":"2018-06-07T12:14:58",
+       "heatindex_avg":22.8614896784,
+       "heatindex_s":981329.444444,
+       "heatindex_duration":42925.0,
+       "windchill_min":17.8888888889,
+       "windchill_min_time":"2018-06-27T06:24:57",
+       "windchill_s":994686.388889,
+       "windchill_avg":23.1726590306,
+       "windchill_duration":42925.0,
+       "humidity_max":97.0,
+       "humidity_max_time":"2018-06-06T11:09:58",
+       "humidity_s":3202171.5,
+       "humidity_avg":74.599219569,
+       "humidity_min":42.0,
+       "humidity_min_time":"2018-06-27T11:59:58",
+       "humidity_duration":42925.0,
+       "dewpoint_max":22.3888888889,
+       "dewpoint_max_time":"2018-06-06T13:54:58",
+       "dewpoint_s":718079.053107,
+       "dewpoint_avg":16.728690812,
+       "dewpoint_min":10.3333333333,
+       "dewpoint_min_time":"2018-06-28T02:14:59",
+       "dewpoint_duration":42925.0,
+       "barometer_max":1021.3346687,
+       "barometer_max_time":"2018-06-11T21:04:57",
+       "barometer_s":43668358.3087,
+       "barometer_avg":1017.31760766,
+       "barometer_min":1011.17550422,
+       "barometer_min_time":"2018-06-05T04:09:57",
+       "barometer_duration":42925.0,
+       "rain_sum":61.468,
+       "rain_max":3.81,
+       "rain_max_time":"2018-06-11T15:59:58",
+       "rain_avg":0.00715993011066,
+       "rain_min":0.0,
+       "rain_duration":42925.0,
+       "rain_min_time":"2018-06-01T04:04:57",       
+       
+       
+       
+       "wind_max":16.0934400129,
+       
+       "wind_max_time":"2018-06-15T10:24:58",
+       "wind_avg":2.05923235203,
+       "wind_s":88392.5487107,
+       "wind_duration":42925.0,
+       "uv_indice_max":6.4,
+       "uv_indice_max_time":"2018-06-07T12:14:58",
+       "uv_indice_avg":0.844589400116,
+       "uv_indice_s":36254.0,
+       "uv_indice_duration":42925.0,
+       "etp_sum":84.9672830966,
+       "etp_max":0.049729842698,
+       "etp_max_time":"2018-06-28T13:14:58",
+       "etp_avg":0.00989717916093,
+       "etp_min":0.0,
+       "etp_min_time":"2018-06-01T04:04:57",
+       "etp_duration":42925.0,      
+       "radiation_max":1.06,
+       "radiation_max_time":"2018-06-04T11:39:58",
+       "radiation_avg":0.157157716948,
+       "radiation_sum":40475.97,
+       "radiation_min":0.0,
+       "radiation_min_time":"2018-06-01T04:04:57",
+       "radiation_duration":42925.0,
+       
+       
+       
+       "in_temp_s":0.0,
+       
+       
+       "in_temp_duration":0.0,
+       
+       
+       
+       "in_humidity_s":0.0,
+       
+       
+       "in_humidity_duration":0.0,
+       "start_dat":"2018-06-01T00:00:00"
+        },
+       {
+       "level":"Y",
+       "out_temp_max":31.1666666667,
+       "out_temp_max_time":"2018-12-23T14:49:59",
+       "out_temp_avg":22.1086144469,
+       "out_temp_s":7176935.77778,
+       "out_temp_min":15.7777777778,
+       "out_temp_min_time":"2018-07-21T03:09:59",
+       "out_temp_duration":324630.0,
+       "heatindex_max":36.8333333333,
+       "heatindex_max_time":"2018-12-23T14:39:59",
+       "heatindex_avg":23.6712226755,
+       "heatindex_s":7365182.57938,
+       "heatindex_duration":311145.0,
+       "windchill_min":15.6666666667,
+       "windchill_min_time":"2018-07-21T03:14:59",
+       "windchill_s":7140380.55556,
+       "windchill_avg":22.9549943919,
+       "windchill_duration":311060.0,
+       "humidity_max":97.0,
+       "humidity_max_time":"2018-06-06T11:09:58",
+       "humidity_s":22382700.5,
+       "humidity_avg":71.9330906929,
+       "humidity_min":35.8,
+       "humidity_min_time":"2018-08-19T13:54:58",
+       "humidity_duration":311160.0,
+       "dewpoint_max":24.2222222222,
+       "dewpoint_max_time":"2018-12-23T14:39:59",
+       "dewpoint_s":5188653.84087,
+       "dewpoint_avg":16.6759994243,
+       "dewpoint_min":5.33333333333,
+       "dewpoint_min_time":"2018-07-10T00:54:59",
+       "dewpoint_duration":311145.0,
+       "barometer_max":1026.41425094,
+       "barometer_max_time":"2018-08-11T09:54:58",
+       "barometer_s":332128984.524,
+       "barometer_avg":1016.9600555,
+       "barometer_min":1003.04817264,
+       "barometer_min_time":"2018-12-23T02:29:58",
+       "barometer_duration":326590.0,
+       "rain_sum":208.234,
+       "rain_max":3.81,
+       "rain_max_time":"2018-06-11T15:59:58",
+       "rain_avg":0.0031363549007,
+       "rain_min":0.0,
+       "rain_min_time":"2018-05-25T23:49:00",       
+       "rain_duration":312200.0,
+       
+       
+       
+       "wind_max":19.2227200154,
+       
+       "wind_max_time":"2018-07-24T12:54:58",
+       "wind_avg":2.50244629002,
+       "wind_s":780913.389265,
+       "wind_duration":312060.0,
+       "uv_indice_max":15.2,
+       "uv_indice_max_time":"2018-11-27T12:39:59",
+       "uv_indice_avg":1.68141796322,
+       "uv_indice_s":523055.5,
+       "uv_indice_duration":311080.0,
+       "etp_sum":889.814371032,
+       "etp_max":0.0754000652406,
+       "etp_max_time":"2018-12-06T12:39:59",
+       "etp_avg":0.0142875507158,
+       "etp_min":0.0,
+       "etp_min_time":"2018-05-27T00:02:00",
+       "etp_duration":311395.0,      
+       "radiation_max":1.607,
+       "radiation_max_time":"2018-12-24T13:04:59",
+       "radiation_avg":0.235279413656,
+       "radiation_sum":439144.32,
+       "radiation_min":0.0,
+       "radiation_min_time":"2018-05-26T17:47:00",
+       "radiation_duration":311080.0,
+       
+       
+       
+       "in_temp_s":0.0,
+       
+       
+       "in_temp_duration":0.0,
+       
+       
+       
+       "in_humidity_s":0.0,
+       
+       
+       "in_humidity_duration":0.0,
+       "start_dat":"2018-01-01T00:00:00"
+       }]
+     }
+   ]
+}
+]
