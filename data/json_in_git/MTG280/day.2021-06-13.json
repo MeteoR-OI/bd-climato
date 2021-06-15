@@ -1,5 +1,17 @@
 [
 {
+	"meteor" : "MTG280",
+	"version":2,
+	"info" : {
+		"title":"JSON pour BDClimato",
+		"time":"10/06/2021 à 09h15",
+		"uptime":"0 jours, 0 heures, 4 minutes",
+		"last_update":"2021-06-10 09:15:00",
+		"last_update_before_stop":"2021-06-10 09:00:00" 
+		},
+	"data":
+		[	
+{
  "start_dat":"2021-06-13T23:55:00",
  "stop_dat":"2021-06-14T00:00:00",
  "aggregations":
@@ -130,5 +142,7 @@
  "in_humidity_duration":1440.0,
  "start_dat":"2021-06-13T00:00:00"
  }]
+}
+]
 }
 ]
