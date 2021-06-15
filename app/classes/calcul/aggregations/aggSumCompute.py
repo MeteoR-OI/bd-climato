@@ -45,6 +45,9 @@ class AggSumCompute(AggCompute):
         agg_level = agg_deca.getLevelCode()
         has_data = False
 
+        if target_key == 'rain_omm':
+            has_data = False
+
         # load old measure values in case of an update of Observation, and only in agg_hour
         tmp_sum_old = tmp_duration_old = 0
         if delta_values.__contains__(target_key + '_sum_old'):

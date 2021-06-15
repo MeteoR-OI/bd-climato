@@ -1,26 +1,23 @@
 
 
-psql -d climatest < data/sqlScripts/delete_all.sql
-cp data/json_in_git/obs_05_23/*.json  data/json_auto_load/done
-cp data/json_in_git/obs_05_24/*.json  data/json_auto_load/done
-cp data/json_in_git/obs_05_25/*.json  data/json_auto_load/done
+python3 manage.py loadJson day.2021-05-30.json --tmp --validation
+python3 manage.py loadJson day.2021-05-31.json --tmp --validation
+python3 manage.py loadJson day.2021-06-01.json --tmp --validation
+python3 manage.py loadJson day.2021-06-02.json --tmp --validation
+python3 manage.py loadJson day.2021-06-03.json --tmp --validation
+python3 manage.py loadJson day.2021-06-04.json --tmp --validation
+python3 manage.py loadJson day.2021-06-05.json --tmp --validation
+python3 manage.py loadJson day.2021-06-06.json --tmp --validation
+python3 manage.py loadJson day.2021-06-07.json --tmp --validation
+python3 manage.py loadJson day.2021-06-08.json --tmp --validation
+python3 manage.py loadJson day.2021-06-09.json --tmp --validation
+python3 manage.py loadJson day.2021-06-10.json --tmp --validation
+python3 manage.py loadJson day.2021-06-11.json --tmp --validation
+python3 manage.py loadJson day.2021-06-12.json --tmp --validation
+python3 manage.py loadJson day.2021-06-13.json --tmp --validation
+python3 manage.py loadJson day.2021-06-14.json --tmp --validation
 
-cp data/json_in_git/obs.2021-05-24.json  data/json_not_in_git
-cp data/json_in_git/obs.2021-05-25.json  data/json_not_in_git
-
-mv data/json_auto_load/done/*.json data/json_auto_load
-
-python3 manage.py svc auto --run
-
-python3 manage.py loadJson obs.2021-05-12.json --tmp --validation
-python3 manage.py loadJson obs.2021-05-13.json --tmp --validation
-python3 manage.py loadJson obs.2021-05-14.json --tmp --validation
-python3 manage.py loadJson obs.2021-05-16.json --tmp --validation
-python3 manage.py loadJson obs.2021-05-17.json --tmp --validation
-python3 manage.py loadJson obs.2021-05-18.json --tmp --validation
-python3 manage.py loadJson obs.2021-05-19.json --tmp --validation
-
-python3 manage.py loadJson obs.2021-05-24.json --tmp --validation
-python3 manage.py loadJson obs.2021-05-25.json --tmp --validation
-
-python3 manage.py compAgg 2 --day
+python3 manage.py loadJson MTG280.day.2021-06-11.json --tmp --validation
+python3 manage.py loadJson MTG280.day.2021-06-12.json --tmp --validation
+python3 manage.py loadJson MTG280.day.2021-06-13.json --tmp --validation
+python3 manage.py loadJson MTG280.day.2021-06-14.json --tmp --validation

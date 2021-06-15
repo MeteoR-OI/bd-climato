@@ -66,7 +66,7 @@ class PosteMetier(PosteMeteor):
             my_start_date_utc = calcAggDate('H', start_date_utc, 0, True)
         # m_duration = self.data.du
         needed_dates = [my_start_date_utc]
-        calculated_deca = {}
+        calculated_deca = {'d0': True}
         ti_all = AllTypeInstruments()
         for an_instru in ti_all.get_all_instruments():
             for a_measure in an_instru['object'].measures:
@@ -76,7 +76,7 @@ class PosteMetier(PosteMeteor):
                         if calculated_deca.get('d' + str(hour_deca)) is None:
                             calculated_deca['d' + str(hour_deca)] = True
                             deca_duration = datetime.timedelta(hours=int(hour_deca))
-                            needed_dates.append(my_start_date_utc + deca_duration)
+                            needed_dates.append(my_start_date_utc - deca_duration)
 
         # now load the needed aggregations
         ret = []

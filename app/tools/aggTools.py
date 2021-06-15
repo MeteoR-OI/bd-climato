@@ -247,7 +247,7 @@ def calcAggDate(
                     0,
                     datetime.timezone.utc,
                 )
-                + delta_dt
+                - delta_dt
             )
 
         if niveau_agg == "D" or niveau_agg == "DT":

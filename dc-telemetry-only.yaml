@@ -54,12 +54,13 @@ services:
     volumes:
       - ./yml/config/grafana/dashboards:/etc/grafana/dashboards/
       - ./yml/config/grafana/provisioning:/etc/grafana/provisioning/
+      - ./yml/config/grafana/plugins:/var/lib/grafana/plugins
       - ./data/localStorage/grafana:/var/lib/grafana
-      - ./data/localStorage/docker/grafana:/var/log
+      - ./data/localStorage/docker/grafana:/var/log/grafana
     environment:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-      - GF_AUTH_DISABLE_LOGIN_FORM=true   
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
     restart: on-failure
     depends_on:
       - loki
