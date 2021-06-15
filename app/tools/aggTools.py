@@ -210,7 +210,7 @@ def fixUtcDate(my_date: datetime) -> datetime:
 
 def calcAggDate(
     niveau_agg: str,
-    start_dt_utc: datetime,
+    start_dt_utc_given: datetime,
     factor: float = 0,
     is_measure_date: bool = False,
 ) -> datetime:
@@ -225,99 +225,28 @@ def calcAggDate(
         is_measure_date: flag to determine if is is a start or a stop date
     """
     try:
-        if niveau_agg == "H" or niveau_agg == "HT":
-            # if is_measure_date is True:
-            #     delta_dt = datetime.timedelta(minutes=int(60 * (factor + ComputationParam.AddHourToMeasureInAggHour)))
-            # else:
-            delta_dt = datetime.timedelta(minutes=int(60 * factor))
-            if (
-                is_measure_date
-                and start_dt_utc.minute == 0
-                and start_dt_utc.second == 0
-            ):
-                start_dt_utc = start_dt_utc - datetime.timedelta(hours=1)
-            return fixUtcDate(
-                datetime.datetime(
-                    start_dt_utc.year,
-                    start_dt_utc.month,
-                    start_dt_utc.day,
-                    start_dt_utc.hour,
-                    0,
-                    0,
-                    0,
-                    datetime.timezone.utc,
-                )
-                - delta_dt
-            )
+        # start_dt_utc
+        start_dt_utc = datetime.datetime(start_dt_utc_given.year, start_dt_utc_given.month, start_dt_utc_given.day, start_dt_utc_given.hour, 0, 0, 0, datetime.timezone.utc)
 
-        if niveau_agg == "D" or niveau_agg == "DT":
-            delta_dt = datetime.timedelta(minutes=int(60 * factor))
-            if (
-                is_measure_date
-                and start_dt_utc.minute == 0
-                and start_dt_utc.second == 0
-            ):
+        if is_measure_date:
+            if start_dt_utc_given.minute == 0 and start_dt_utc_given.second == 0:
                 start_dt_utc = start_dt_utc - datetime.timedelta(hours=1)
-            if delta_dt != 0:
-                start_dt_utc = start_dt_utc + delta_dt
-            return fixUtcDate(
-                datetime.datetime(
-                    start_dt_utc.year,
-                    start_dt_utc.month,
-                    start_dt_utc.day,
-                    0,
-                    0,
-                    0,
-                    0,
-                    datetime.timezone.utc,
-                )
-            )
-        elif niveau_agg == "M" or niveau_agg == "MT":
-            delta_dt = datetime.timedelta(minutes=int(60 * factor))
-            if (
-                is_measure_date
-                and start_dt_utc.minute == 0
-                and start_dt_utc.second == 0
-            ):
-                start_dt_utc = start_dt_utc - datetime.timedelta(hours=1)
-            if delta_dt != 0:
-                start_dt_utc = start_dt_utc + delta_dt
-            return fixUtcDate(
-                datetime.datetime(
-                    start_dt_utc.year,
-                    start_dt_utc.month,
-                    1,
-                    0,
-                    0,
-                    0,
-                    0,
-                    datetime.timezone.utc,
-                )
-            )
+            start_dt_utc = datetime.datetime(start_dt_utc.year, start_dt_utc.month, start_dt_utc.day, start_dt_utc.hour, 0, 0, 0, datetime.timezone.utc)
+            start_dt_utc += datetime.timedelta(minutes=int(60 * factor))
 
-        elif niveau_agg == "Y" or niveau_agg == "YT":
-            delta_dt = datetime.timedelta(minutes=int(60 * factor))
-            if (
-                is_measure_date
-                and start_dt_utc.minute == 0
-                and start_dt_utc.second == 0
-            ):
-                start_dt_utc = start_dt_utc - datetime.timedelta(hours=1)
-            if delta_dt != 0:
-                start_dt_utc = start_dt_utc + delta_dt
-            return fixUtcDate(
-                datetime.datetime(
-                    start_dt_utc.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc
-                )
-            )
+        if niveau_agg[0] == "H":
+            return fixUtcDate(start_dt_utc)
+        if niveau_agg[0] == "D":
+            return fixUtcDate(datetime.datetime(start_dt_utc.year, start_dt_utc.month, start_dt_utc.day, 0, 0, 0, 0, datetime.timezone.utc))
+        if niveau_agg[0] == "M":
+            return fixUtcDate(datetime.datetime(start_dt_utc.year, start_dt_utc.month, 1, 0, 0, 0, 0, datetime.timezone.utc))
+        if niveau_agg[0] == "Y":
+            return fixUtcDate(datetime.datetime(start_dt_utc.year, 1, 1, 0, 0, 0, 0, datetime.timezone.utc))
+        if niveau_agg[0] == "A":
+            return fixUtcDate(datetime.datetime(1900, 1, 1, 0, 0, 0, 0, datetime.timezone.utc))
 
-        elif niveau_agg == "A" or niveau_agg == "AT":
-            return fixUtcDate(
-                datetime.datetime(1900, 1, 1, 0, 0, 0, 0, datetime.timezone.utc)
-            )
+        raise Exception("calc_period_date", "wrong niveau_agg: " + niveau_agg)
 
-        else:
-            raise Exception("calc_period_date", "wrong niveau_agg: " + niveau_agg)
     except Exception as e:
         if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
             exception_type, exception_object, exception_traceback = sys.exc_info()

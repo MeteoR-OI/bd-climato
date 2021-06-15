@@ -56,7 +56,7 @@ class RootTypeInstrument:
         for a_measure in self.measures:
             if a_measure.get('agg') is None:
                 raise Exception('RootTypeInstrument', 'no <agg> key defined for ' + a_measure.get('src_key'))
-            for default_param in [('special', 0), ('hour_deca', 0), ('calcAvg', True), ('max', True), ('min', True), ('dataType', float), ('measureType', 'both')]:
+            for default_param in [('special', 0), ('hour_deca', 0), ('calcAvg', True), ('max', True), ('min', True), ('dataType', float), ('measureType', 'both'), ('syno', [])]:
                 if a_measure.get(default_param[0]) is None:
                     a_measure[default_param[0]] = default_param[1]
 
@@ -77,8 +77,6 @@ class RootTypeInstrument:
                 rate_key = a_measure['src_key'] + '_rate'
                 if '_rate_rate' in rate_key:
                     rate_key = a_measure['src_key']
-                if a_measure.get('syno') is None:
-                    a_measure['syno'] = []
                 if rate_key in a_measure['syno'] is False:
                     a_measure['syno'].append(rate_key)
                 if a_measure.get('target_key') is None:
@@ -97,7 +95,7 @@ class RootTypeInstrument:
                 if a_measure.get('target_key') is None:
                     a_measure['target_key'] = a_measure['src_key']
 
-            for default_param in [('deca_max', a_measure['hour_deca']), ('deca_max', a_measure['hour_deca']), ('target_key', a_measure['src_key'])]:
+            for default_param in [('deca_max', a_measure['hour_deca']), ('deca_min', a_measure['hour_deca']), ('target_key', a_measure['src_key'])]:
                 if a_measure.get(default_param[0]) is None:
                     a_measure[default_param[0]] = default_param[1]
 

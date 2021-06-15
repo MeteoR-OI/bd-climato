@@ -1,7 +1,7 @@
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.tools.climConstant import MeasureProcessingBitMask
 from app.tools.aggTools import isFlagged
-from app.tools.aggTools import shouldNullify, loadFromExclu, calcAggDate
+from app.tools.aggTools import loadFromExclu, calcAggDate
 import json
 import datetime
 

@@ -42,8 +42,8 @@ class AvgOmmCompute(AggAvgCompute):
         trace_flag: bool = False,
         b_use_rate: bool = False,
     ):
-        if m_stop_date.minute > 0 or m_stop_date.second > 1:
-            return
+        # if m_stop_date.minute > 0 or m_stop_date.second > 1:
+        #     return
         if str(agg_decas[1].getLevel()[0]).lower() == 'h':
             # get the max/min of the value from the agg_hour
             target_key = my_measure['target_key']

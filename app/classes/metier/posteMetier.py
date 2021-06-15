@@ -54,40 +54,31 @@ class PosteMetier(PosteMeteor):
         """
             get_agg
 
-            my_start_date_utc: date en UTC
-                aggregation start_dat, or obs.stop_date
             return an array of aggregations needed by our calculus function
 
             load empty agg_xxxx if does not exist
         """
         # determine all dates needed to process the measure at the given date
-        my_start_date_utc = start_date_utc
-        if is_measure_date is True:
-            my_start_date_utc = calcAggDate('H', start_date_utc, 0, True)
         # m_duration = self.data.du
-        needed_dates = [my_start_date_utc]
-        calculated_deca = {'d0': True}
+        needed_dates = [0]
         ti_all = AllTypeInstruments()
         for an_instru in ti_all.get_all_instruments():
             for a_measure in an_instru['object'].measures:
+
                 for deca_type in ['hour_deca', 'deca_max', 'deca_min']:
-                    if a_measure.get(deca_type) is not None:
-                        hour_deca = int(a_measure[deca_type])
-                        if calculated_deca.get('d' + str(hour_deca)) is None:
-                            calculated_deca['d' + str(hour_deca)] = True
-                            deca_duration = datetime.timedelta(hours=int(hour_deca))
-                            needed_dates.append(my_start_date_utc - deca_duration)
+                    hour_deca = int(a_measure[deca_type])
+                    if hour_deca not in needed_dates:
+                        needed_dates.append(hour_deca)
 
         # now load the needed aggregations
         ret = []
-        for a_needed_date in needed_dates:
-            tmp_dt = a_needed_date
+        for a_needed_hour in needed_dates:
             b_need_to_sum_duration = False
-            if str(a_needed_date) == str(my_start_date_utc):
+            if a_needed_hour == 0:
                 b_need_to_sum_duration = True
             for agg_niveau in getAggLevels(is_tmp):
                 # is_measure_date only used in agg_hour
-                tmp_dt = calcAggDate(agg_niveau, tmp_dt, 0, False)
+                tmp_dt = calcAggDate(agg_niveau, start_date_utc, a_needed_hour, is_measure_date)
                 already_loaded = False
                 for a_ret in ret:
                     if a_ret.data.start_dat == tmp_dt and a_ret.agg_niveau == agg_niveau:

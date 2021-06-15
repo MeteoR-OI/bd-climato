@@ -1,6 +1,5 @@
 from app.models import AggTodo, TmpAggTodo
 import pytest
-import app.tools.myTools as t
 from django.db import transaction
 
 
@@ -69,7 +68,7 @@ class AggTodoMeteor():
         if myModelObj.objects.filter(status=0).count() == 0:
             return None
         a_todo = myModelObj.objects.filter(status=0).order_by("priority", "id").select_for_update(skip_locked=True).first()
-        a_todo.status = 9
+        a_todo.status = 1
         a_todo.save()
         agg_todo = AggTodoMeteor(a_todo.obs_id_id, is_tmp)
         return agg_todo

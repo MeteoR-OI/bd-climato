@@ -30,11 +30,11 @@ class AggCompute():
             update dv_next for nest level
         """
         target_key = my_measure['target_key']
-        idx_maxmin = 1
+        idx_maxmin = 0
         for maxmin_suffix in ['_max', '_min']:
+            idx_maxmin += 1
             agg_j = agg_decas[idx_maxmin].data.j
             agg_decas[idx_maxmin].dirty = True
-            idx_maxmin += 1
 
             maxmin_key = maxmin_suffix.split('_')[1]
 
@@ -129,7 +129,6 @@ class AggCompute():
                         agg_maxmin = new_calulated_maxmin - 1
 
                 # if (target_key == "wind"):
-                #     print('testing: agg_' + agg_decas[idx_maxmin].agg_niveau + ': ' + str(agg_maxmin) + ', new_calc: ' + str(new_calulated_maxmin) + ', equal? ' + str(agg_maxmin == new_calulated_maxmin))
                 #     if agg_j.__contains__(target_key + maxmin_suffix + '_time'):
                 #         print("  wind_max: old_time=> " + str(agg_j[target_key + maxmin_suffix + '_time']) + ", new=> " + str(new_calulated_maxmin_time))
                 #         print("  agg: id: " + str(agg_decas[idx_maxmin].data.id) + ', level: ' + agg_decas[idx_maxmin].agg_niveau + ', start_dat: ' + str(agg_decas[idx_maxmin].data.start_dat))

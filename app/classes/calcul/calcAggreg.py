@@ -139,6 +139,8 @@ class CalcAggreg(AllCalculus):
                                     # find the calculus object for my_mesure
                                     for a_calculus in self.all_calculus:
                                         if a_calculus["agg"] == my_measure["agg"]:
+                                            # if my_measure.get('target_key') == 'out_temp_omm':
+                                            #     print('out_temp_omm')
                                             if a_calculus["calc_agg"] is not None:
                                                 # load data in our aggregation
                                                 a_calculus["calc_agg"].loadDVDataInAggregation(my_measure, m_stop_dat, agg_decas[0], m_agg_j, delta_values, dv_next, trace_flag)
@@ -187,22 +189,25 @@ class CalcAggreg(AllCalculus):
         agg_decas = []
         deca_hours = []
 
+        if my_measure.get('target_key') == 'out_temp_omm':
+            deca_hour = []
+
         if my_measure.get('target_key') == 'rain_omm':
             agg_decas = []
 
-        if my_measure.get("hour_deca") is None or anAgg[0] != 'H':
+        if my_measure.get("hour_deca") is None:
             deca_hours.append(0)
             main_deca = 0
         else:
             main_deca = my_measure["hour_deca"]
             deca_hours.append(main_deca)
 
-        if my_measure.get("deca_max") is None or anAgg[0] != 'H':
+        if my_measure.get("deca_max") is None:
             deca_hours.append(main_deca)
         else:
             deca_hours.append(my_measure["deca_max"])
 
-        if my_measure.get("deca_min") is None or anAgg[0] != 'H':
+        if my_measure.get("deca_min") is None:
             deca_hours.append(main_deca)
         else:
             deca_hours.append(my_measure["deca_min"])

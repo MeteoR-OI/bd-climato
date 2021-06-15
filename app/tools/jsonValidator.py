@@ -237,16 +237,16 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
                             + "]"
                         )
                     for key in all_validations[idx2].__iter__():
-                        if str(key) == 'out_temp_omm_min':
-                            key = 'out_temp_omm_min'
-                            if str(key).endswith("time") and str(key).endswith("_time") is False:
-                                new_val_val = {
-                                    "k": str(key).replace("time", "_time"),
-                                    "v": all_validations[idx2][key],
-                                    "idx2": idx2,
-                                    "idx": idx,
-                                }
-                                val_to_add_val.append(new_val_val)
+                        # if str(key) == 'out_temp_omm_min':
+                        #     key = 'out_temp_omm_min'
+                        if str(key).endswith("time") and str(key).endswith("_time") is False:
+                            new_val_val = {
+                                "k": str(key).replace("time", "_time"),
+                                "v": all_validations[idx2][key],
+                                "idx2": idx2,
+                                "idx": idx,
+                            }
+                            val_to_add_val.append(new_val_val)
 
                         # fix XX_sum -> XX_s
                         if str(key).endswith("_sum") and str(key).endswith("_s") is False:
