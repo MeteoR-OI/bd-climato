@@ -34,8 +34,6 @@ services:
       - ./yml/config/loki:/etc/loki
       - ./data/localStorage/docker/loki:/var/log
     command: -config.file=/etc/loki/loki.yml
-    depends_on:
-      - promtail
     networks:
       vpcbr:
         ipv4_address: 10.5.0.20
@@ -79,6 +77,8 @@ services:
       - /var/log:/home/django/loghost
       - ./data/localStorage/docker/promtail:/var/log
     command: -config.file=/etc/promtail/promtail.yml
+    depends_on:
+      - loki
     networks:
       vpcbr:
         ipv4_address: 10.5.0.40
