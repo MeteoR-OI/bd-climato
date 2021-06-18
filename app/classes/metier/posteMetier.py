@@ -60,7 +60,7 @@ class PosteMetier(PosteMeteor):
         """
         # determine all dates needed to process the measure at the given date
         # m_duration = self.data.du
-        needed_dates = [0]
+        needed_dates = []
         ti_all = AllTypeInstruments()
         for an_instru in ti_all.get_all_instruments():
             for a_measure in an_instru['object'].measures:

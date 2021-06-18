@@ -137,7 +137,7 @@ class AggCompute():
                 #         print("  agg: id: " + str(agg_decas[idx_maxmin].data.id) + ', level: ' + agg_decas[idx_maxmin].agg_niveau + ', start_dat: ' + str(agg_decas[idx_maxmin].data.start_dat))
                 # compare the measure data and current maxmin
                 b_change_maxmin = False
-                if maxmin_suffix == '_max' and agg_maxmin < new_calulated_maxmin:
+                if maxmin_suffix == '_max' and agg_maxmin > new_calulated_maxmin:
                     # if (target_key == "wind"):
                     #     print('   *** agg < new_calc')
                     b_change_maxmin = True
@@ -152,7 +152,7 @@ class AggCompute():
                 #         print('   *** max agg_time > new_calc_time -> NO')
                 if maxmin_suffix == '_min' and agg_maxmin > new_calulated_maxmin:
                     b_change_maxmin = True
-                if maxmin_suffix == '_min' and agg_maxmin == new_calulated_maxmin and str(agg_j[target_key + maxmin_suffix + '_time']) < str(new_calulated_maxmin_time):
+                if maxmin_suffix == '_min' and agg_maxmin == new_calulated_maxmin and str(agg_j[target_key + maxmin_suffix + '_time']) > str(new_calulated_maxmin_time):
                     b_change_maxmin = True
 
                 if b_change_maxmin:

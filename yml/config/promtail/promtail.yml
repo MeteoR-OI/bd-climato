@@ -7,6 +7,12 @@ positions:
 
 client:
   url: http://10.5.0.20:3100/loki/api/v1/push
+  batchwait: 1s
+  batchsize: 51200
+  backoff_config:
+    min_period: 500ms
+    max_period: 1m
+    max_retries: 60
 
 scrape_configs:
   - job_name: system
