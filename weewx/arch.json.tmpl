@@ -85,8 +85,10 @@ LOW#slurp
      "last_update":"$last_timestamp",
 #set $last_update_stop = datetime.fromtimestamp(user.extensions.last_update_stop)
      "last_update_before_stop":"$last_update_stop", ## final maj depuis arret weewx
-     #set $json_level = $json.level
-     "json_level":"$json_level"  
+#set $json_level = $json.level
+     "json_level":"$json_level",  
+#set $json_valid = $json.validation
+     "json_valid":"$json_valid"  
      },
   "data":
      [
@@ -197,12 +199,20 @@ LOW#slurp
 #end if
 #if $json_level == 'C' or $json_level == 'H'
 #set $aggregation_hour = 1
+       #if $json_valid
        "aggregations":
+       #else
+       "validation":
+       #end if
        [{
        "level":"H",
        "start_dat":$datef($hour($hours_ago=$delta_h).dateTime.raw)
        }],
+       #if $json_valid
        "validation":
+       #else
+       "aggregations":
+       #end if
        [{
        "level":"H",
        #if $new_hour and $day.ET.has_data and $day.ET.sum.raw >0.0
@@ -267,12 +277,20 @@ LOW#slurp
 #if not $json_level == 'D'
        },
 #end if
+#if $json_valid
        "aggregations":
+#else
+       "validation":
+#end if
        [{
        "level":"D",
        "start_dat":$datef($day($days_ago=$delta_d).dateTime.raw)
        }],
+#if $json_valid
        "validation":
+#else
+       "aggregations":
+#end if
        [{
 #else
        },
