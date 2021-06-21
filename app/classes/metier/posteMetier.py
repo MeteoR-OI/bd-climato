@@ -20,8 +20,11 @@ class PosteMetier(PosteMeteor):
         """ load our instance from db, load exclusions at date_histo """
         super().__init__(poste_id)
         self.exclus = ExcluMeteor.getAllForAPoste(self.data.id, start_date)
-        self.lock_event = threading.Event()
-        # self.analysis_date = start_date
+        if hasattr(PosteMetier, 'poste_events') is False:
+            PosteMetier.poste_events = {}
+        poste_events = PosteMetier.poste_events
+        if poste_events.get('p_' + str(self.data.id)) is None:
+            poste_events['p_' + str(self.data.id)] = threading.Event()
 
     def lock(self):
         """
@@ -34,11 +37,13 @@ class PosteMetier(PosteMeteor):
 
             Cela doit se faire par poste, donc gerer les locks a ce niveau est la meilleure (et plus simple a coder) approche
         """
-        self.lock_event.set()
+        poste_events = PosteMetier.poste_events
+        poste_events['p_' + str(self.data.id)].set()
 
     def unlock(self):
-        if self.lock_event.is_set():
-            self.lock_event.clear()
+        poste_events = PosteMetier.poste_events
+        if poste_events['p_' + str(self.data.id)].is_set():
+            poste_events['p_' + str(self.data.id)].clear()
 
     def exclusion(self, type_intrument_id) -> json:
         """ retourne la premiere exclusion active pour le type instrument """
