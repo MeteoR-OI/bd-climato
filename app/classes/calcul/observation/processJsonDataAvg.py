@@ -47,6 +47,9 @@ class ProcessJsonDataAvg(ProcessJsonData):
         """
         obs_j = obs_meteor.data.j
 
+        if my_measure['target_key'] == 'barometer':
+            my_value_avg = my_values.get(target_key + '_a')
+
         my_value_avg = my_values.get(target_key + '_a')
         my_value_instant = my_values.get(target_key + '_i')
         my_value_dir = my_values.get(target_key + '_di')
@@ -58,9 +61,21 @@ class ProcessJsonDataAvg(ProcessJsonData):
                 return
             else:
                 my_value_avg = my_value_instant
-        tmp_s = my_value_avg * tmp_duration
 
-        if my_value_avg is None:
+        # get our value to aggregate
+        if my_measure.__contains__('measureType'):
+            if my_measure['measureType'] == 'inst':
+                # for omm measure...
+                my_value_aggreg = my_value_instant
+            else:
+                my_value_aggreg = my_value_avg
+        else:
+            if my_value_instant is not None:
+                my_value_aggreg = my_value_instant
+
+        tmp_s = my_value_aggreg * tmp_duration
+
+        if my_value_aggreg is None:
             # no data suitable for us
             return
 
@@ -84,8 +99,7 @@ class ProcessJsonDataAvg(ProcessJsonData):
         delta_values[target_key + '_duration'] = tmp_duration
 
         # save data in obs
-        if my_value_instant is not None:
-            obs_j[target_key] = my_value_instant
+        obs_j[target_key] = my_value_aggreg
 
         if my_value_dir is not None:
             obs_j[target_key + '_dir'] = my_value_dir
