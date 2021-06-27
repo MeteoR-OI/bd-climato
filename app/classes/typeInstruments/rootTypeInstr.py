@@ -18,6 +18,7 @@ from app.tools.climConstant import MeasureProcessingBitMask
 # measureType: default = both
 #   avg -> only use the average value ([field]_avg)
 #   inst -> only use the instantaneous value ie [field]
+#   both -> use the avg is present, else use the inst value
 
 # agg: Type aggregation: avg, avgomm, rate
 #   avg: classic average (sum(value * duration)/duration)

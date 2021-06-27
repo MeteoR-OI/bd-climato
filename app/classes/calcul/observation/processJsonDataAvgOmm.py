@@ -26,7 +26,7 @@ class ProcessJsonDataAvgOmm(ProcessJsonDataAvg):
         trace_flag: bool,
     ):
         if stop_dat.minute == 00 and stop_dat.second <= 2:
-            self._loadValuesFromCurrent(my_measure, json_file_data, measure_idx, src_key, target_key, exclusion, my_values, '_avg', stop_dat, trace_flag)
+            self._loadValuesFromCurrent(my_measure, json_file_data, measure_idx, src_key, target_key, exclusion, my_values, '', stop_dat, trace_flag)
 
     def loadDataInObs(
         self,

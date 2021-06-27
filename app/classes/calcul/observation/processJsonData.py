@@ -114,15 +114,15 @@ class ProcessJsonData():
         my_value_instant = my_value_avg = None
         my_value_dir = None
 
+        if my_measure['target_key'] == 'barometer':
+            measure_type = 3
+
         measure_type = 3
-        key_preffix_first = True
         if my_measure.__contains__('measureType'):
             if my_measure['measureType'] == 'avg':
                 measure_type = 1
-                key_preffix_first = True
             elif my_measure['measureType'] == 'inst':
                 measure_type = 2
-                key_preffix_first = False
             elif my_measure['measureType'] != 'both':
                 raise Exception('processJsonDataAvg::loadDataInObs', 'invalid measureType: ' + my_measure['measureType'] + ' for ' + src_key)
 
@@ -142,10 +142,10 @@ class ProcessJsonData():
                 continue
             if data_src is not None:
                 if data_src.__contains__(a_srckey) and (measure_type & 2) == 2:
-                    my_value_instant = self.get_json_value(data_src, a_srckey, [], key_preffix_first)
+                    my_value_instant = self.get_json_value(data_src, a_srckey, [], True)
                     value_found = True
                 if data_src.__contains__(a_srckey + key_suffix) and (measure_type & 1) == 1:
-                    my_value_avg = self.get_json_value(data_src, a_srckey + key_suffix, [], key_preffix_first)
+                    my_value_avg = self.get_json_value(data_src, a_srckey + key_suffix, [], True)
                     value_found = True
                 if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
                     if data_src.__contains__(a_srckey + '_dir'):
@@ -169,10 +169,10 @@ class ProcessJsonData():
             if measure_type == 2:
                 my_value_avg = None
         if measure_type == 3:
-            if my_value_instant is None:
-                my_value_instant = my_value_avg
             if my_value_avg is None:
                 my_value_avg = my_value_instant
+            if my_value_instant is None:
+                my_value_instant = my_value_avg
 
         if my_value_avg is not None:
             my_values[target_key + '_a'] = my_value_avg

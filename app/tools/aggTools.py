@@ -120,7 +120,7 @@ def getAggDuration(niveau_agg: str) -> int:
         elif niveau_agg == "Y" or niveau_agg == "YT":
             return 525960  # int(365.25 * 24 * 60)
         elif niveau_agg == "A" or niveau_agg == "AT":
-            raise Exception("get_agg_duration", "global has no duration")
+            return 0
         else:
             raise Exception("get_agg_duration", "wrong niveau_agg: " + niveau_agg)
     except Exception as e:
