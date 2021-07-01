@@ -223,20 +223,28 @@ class Command(BaseCommand):
                                 # if str(line[0]).endswith('_duration'):
                                 #     continue
                                 tmp_f1 = self.is_float_try(line[1])
+                                tmp_prec = 0
+                                bIsFloat = True
+                                if line[0] == "barometer_avg":
+                                    line[0] = "barometer_avg"
                                 if tmp_f1 is None:
+                                    bIsFloat = False
                                     tmp_f1 = line[1]
                                 tmp_f2 = self.is_float_try(line[2])
                                 if tmp_f2 is None:
+                                    bIsFloat = False
                                     tmp_f2 = line[2]
-                                if str(tmp_f1) == str(tmp_f2):
-                                    self.display_line(
-                                        "   " + line[0], "  ", "  ", line[1]
-                                    )
-                                    # self.display_line('   ' + line[0], '          OK', '          OK', line[1])
+                                if bIsFloat is True and tmp_f1 != 0:
+                                    tmp_delta = tmp_f1 - tmp_f2
+                                    tmp_prec = abs((tmp_delta / tmp_f1) * 100)
+                                    tmp_prec = int(tmp_prec * 10000) / 10000
+                                if tmp_prec > 0 and tmp_prec < 1:
+                                    self.display_line("   " + line[0], "  ", "  ", str(tmp_f1) + ' (@' + str(tmp_prec) + '%)')
                                 else:
-                                    self.display_line("   " + line[0], line[1], line[2])
-                        # else:
-                        #     display_line('start_dat', my_agg.start_dat, ' ** OK **')
+                                    if str(tmp_f1) == str(tmp_f2):
+                                        self.display_line("   " + line[0], "  ", "  ", str(tmp_f1))
+                                    else:
+                                        self.display_line("   " + line[0], str(tmp_f1), str(tmp_f2))
 
                         if my_agg is not None:
                             idx += 1
@@ -297,7 +305,7 @@ class Command(BaseCommand):
             if str == "":
                 return None
             f = float(str)
-            return int(f * 10) / 10
+            return int(f * 1000) / 1000
         except ValueError:
             return None
 
