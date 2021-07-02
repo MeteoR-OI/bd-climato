@@ -32,6 +32,7 @@ python3 manage.py loadJson day.2021-06-26.json --tmp --validation
 python3 manage.py loadJson day.2021-06-27.json --tmp --validation
 python3 manage.py loadJson day.2021-06-28.json --tmp --validation
 python3 manage.py loadJson day.2021-06-29.json --tmp --validation
+python3 manage.py loadJson day.2021-06-30.json --tmp --validation
 
 
 python3 manage.py loadJson MTG280.day.2021-06-11.json --tmp --validation
