@@ -1,6 +1,6 @@
 from app.models import AggHour, AggDay, AggMonth, AggYear, AggAll   #
 from app.models import TmpAggHour, TmpAggDay, TmpAggMonth, TmpAggYear, TmpAggAll   #
-from app.tools.aggTools import calcAggDate
+from app.tools.aggTools import calcAggDate, getAggDuration
 import datetime
 import pytest
 import app.tools.myTools as t
@@ -40,7 +40,8 @@ class AggMeteor():
         if agg_object.objects.filter(poste_id_id=poste_id).filter(start_dat=my_start_date).exists():
             self.data = agg_object.objects.filter(poste_id_id=poste_id).filter(start_dat=my_start_date).first()
         else:
-            self.data = agg_object(poste_id_id=poste_id, start_dat=my_start_date, duration_sum=0, j={})
+            self.data = agg_object(poste_id_id=poste_id, start_dat=my_start_date, duration_sum=0, duration_max=0, j={})
+            self.data.duration_max = getAggDuration(agg_niveau, my_start_date)
         self.b_need_to_sum_duration = b_need_to_sum_duration
 
     def save(self):
@@ -52,6 +53,8 @@ class AggMeteor():
                     dirty_found = True
                     break
             if dirty_found is False or self.dirty is True:
+                if self.data.duration_sum > self.data.duration_max:
+                    raise Exception("duration overflow for agg_" + self.agg_niveau + ', id: ' + str(self.data.id))
                 self.data.save()
 
     def add_duration(self, duration: int):

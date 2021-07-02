@@ -62,7 +62,7 @@ class AggAvgCompute(AggCompute):
         # ------------------------------------------------------------------
 
         if delta_values.get('duration') is None:
-            tmp_duration = getAggDuration(agg_level[0])
+            tmp_duration = getAggDuration(agg_level[0], agg_deca.data.start_dat)
         else:
             tmp_duration = float(delta_values["duration"])
 
@@ -73,7 +73,7 @@ class AggAvgCompute(AggCompute):
             tmp_s = float(tmp_tmp)
         if delta_values.get(target_key + '_duration') is not None:
             if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm) and agg_level[0] == 'H':
-                tmp_duration = getAggDuration(agg_level[0])
+                tmp_duration = getAggDuration(agg_level[0], agg_deca.data.start_dat)
             else:
                 tmp_duration = delta_values[target_key + '_duration']
 
@@ -93,9 +93,9 @@ class AggAvgCompute(AggCompute):
                 if m_agg_j.__contains__(a_key + '_duration') is True:
                     tmp_duration = float(m_agg_j[a_key + '_duration'])
                 else:
-                    tmp_duration = getAggDuration(agg_level[0])
+                    tmp_duration = getAggDuration(agg_level[0], agg_deca.data.start_dat)
                 if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm) and agg_level[0] == 'H':
-                    tmp_duration = getAggDuration(agg_level[0])
+                    tmp_duration = getAggDuration(agg_level[0], agg_deca.data.start_dat)
                 b_value_found = True
             else:
                 tmp_tmp = self.get_json_value(m_agg_j, a_key, ['_avg'], None)
@@ -105,7 +105,7 @@ class AggAvgCompute(AggCompute):
                     if m_agg_j.__contains__(a_key + '_duration') is True:
                         tmp_duration = float(m_agg_j[a_key + '_duration'])
                     if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm) and agg_level[0] == 'H':
-                        tmp_duration = getAggDuration(agg_level[0])
+                        tmp_duration = getAggDuration(agg_level[0], agg_deca.data.start_dat)
                     tmp_s = tmp_avg * tmp_duration
                     b_value_found = True
 
@@ -140,7 +140,7 @@ class AggAvgCompute(AggCompute):
         dv_next[target_key + agg_suffix] = tmp_s - tmp_s_old
         dv_next[target_key + '_duration'] = tmp_duration - tmp_duration_old
         if delta_values.get('duration') is None:
-            dv_next['duration'] = getAggDuration(agg_level[0])
+            dv_next['duration'] = getAggDuration(agg_level[0], agg_deca.data.start_dat)
         else:
             dv_next["duration"] = delta_values['duration']
 

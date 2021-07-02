@@ -1,4 +1,5 @@
 import datetime
+import calendar
 import dateutil.parser
 import json
 import sys
@@ -108,19 +109,22 @@ def getRightAggregation(
         raise e
 
 
-def getAggDuration(niveau_agg: str) -> int:
-    """get the aggregation (in sec) depending on the level"""
+def getAggDuration(niveau_agg: str, start_dat: datetime) -> int:
+    """get the aggregation (in minutes) depending on the level"""
     try:
         if niveau_agg == "H" or niveau_agg == "HT":
             return 60
         elif niveau_agg == "D" or niveau_agg == "DT":
             return 1440
         elif niveau_agg == "M" or niveau_agg == "MT":
-            return 43920  # int(30.5 * 24 * 60)
+            return int(calendar.monthrange(start_dat.year, start_dat.month)[1]) * 1440
         elif niveau_agg == "Y" or niveau_agg == "YT":
-            return 525960  # int(365.25 * 24 * 60)
+            if calendar.isleap(start_dat.year):
+                return 366 * 1440
+            return 365 * 1440
         elif niveau_agg == "A" or niveau_agg == "AT":
-            return 0
+            # 100 years max...
+            return 525600 * 100
         else:
             raise Exception("get_agg_duration", "wrong niveau_agg: " + niveau_agg)
     except Exception as e:

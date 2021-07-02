@@ -1,4 +1,4 @@
-➜  climato_test git:(test/prototype) ✗ python manage.py compAgg 2 --day
+➜  climato_test git:(test/prototype) ✗ python3 manage.py compAgg 2 --day
 *** "DJANGO_SETTINGS_MODULE" = Clim_MeteoR.settings ***
 Poste MTG320 level: D
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
@@ -1474,610 +1474,701 @@ start_dat                      I                                I 2021-06-20 00:
         key                    I          agg_D only            I        both                    I        tmp_agg_D only
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
 start_dat                      I                                I 2021-06-21 00:00:00+04:00      I
-   barometer_avg               I 1023.347                       I                                I
-   barometer_duration          I 1440.0                         I                                I
-   barometer_min               I 1021.978                       I                                I
-   barometer_min_time          I 2021-06-21 15:26:02+04:00      I                                I
-   barometer_omm_avg           I 1023.384                       I                                I
-   barometer_omm_duration      I 1440.0                         I                                I
-   barometer_omm_s             I 1473674.176                    I                                I
-   barometer_s                 I 1473620.696                    I                                I
-   dewpoint_min                I 12.763                         I                                I
-   dewpoint_min_time           I 2021-06-21 23:14:21+04:00      I                                I
-   humidity_avg                I 76.256                         I                                I
-   humidity_duration           I 1440.0                         I                                I
-   humidity_min                I 67.0                           I                                I
-   humidity_min_time           I 2021-06-21 12:04:41+04:00      I                                I
-   humidity_omm_avg            I 76.375                         I                                I
-   humidity_omm_duration       I 1440.0                         I                                I
-   humidity_omm_s              I 109980.0                       I                                I
-   humidity_s                  I 109808.922                     I                                I
-   in_humidity_avg             I 59.718                         I                                I
-   in_humidity_duration        I 1440.0                         I                                I
-   in_humidity_min             I 57.0                           I                                I
-   in_humidity_min_time        I 2021-06-21 22:50:03+04:00      I                                I
-   in_humidity_s               I 85994.039                      I                                I
-   in_temp_avg                 I 22.635                         I                                I
-   in_temp_duration            I 1440.0                         I                                I
-   in_temp_min                 I 22.0                           I                                I
-   in_temp_min_time            I 2021-06-21 09:30:01+04:00      I                                I
-   in_temp_s                   I 32595.498                      I                                I
-   out_temp_avg                I 18.847                         I                                I
-   out_temp_duration           I 1440.0                         I                                I
-   out_temp_min                I 16.277                         I                                I
-   out_temp_min_time           I 2021-06-21 07:22:41+04:00      I                                I
-   out_temp_omm_avg            I 18.835                         I                                I
-   out_temp_omm_duration       I 1440.0                         I                                I
-   out_temp_omm_s              I 27123.333                      I                                I
-   out_temp_s                  I 27140.232                      I                                I
-   pressure_min                I 985.091                        I                                I
-   pressure_min_time           I 2021-06-21 15:57:46+04:00      I                                I
-   rain_duration               I 1440.0                         I                                I
+   barometer_avg               I                                I 1023.347 (@0.0001%)            I
+   barometer_duration          I                                I 1440.0                         I
+   barometer_min               I                                I 1021.978                       I
+   barometer_min_time          I                                I 2021-06-21 15:26:02+04:00      I
+   barometer_omm_avg           I                                I 1023.384                       I
+   barometer_omm_duration      I                                I 1440.0                         I
+   barometer_omm_s             I                                I 1473674.176                    I
+   barometer_s                 I                                I 1473622.703                    I
+   dewpoint_min                I                                I 12.763                         I
+   dewpoint_min_time           I                                I 2021-06-21 23:14:21+04:00      I
+   humidity_avg                I                                I 76.256 (@0.0354%)              I
+   humidity_duration           I                                I 1440.0                         I
+   humidity_min                I                                I 67.0                           I
+   humidity_min_time           I                                I 2021-06-21 12:04:41+04:00      I
+   humidity_omm_avg            I                                I 76.375                         I
+   humidity_omm_duration       I                                I 1440.0                         I
+   humidity_omm_s              I                                I 109980.0                       I
+   humidity_s                  I                                I 109770.0                       I
+   in_humidity_avg             I                                I 59.718 (@0.0184%)              I
+   in_humidity_duration        I                                I 1440.0                         I
+   in_humidity_min             I                                I 57.0                           I
+   in_humidity_min_time        I                                I 2021-06-21 22:50:03+04:00      I
+   in_humidity_s               I                                I 86010.0                        I
+   in_temp_avg                 I                                I 22.635 (@0.0088%)              I
+   in_temp_duration            I                                I 1440.0                         I
+   in_temp_min                 I                                I 22.0                           I
+   in_temp_min_time            I 2021-06-21 09:30:01+04:00      I                                I 2021-06-21 09:37:01+04:00
+   in_temp_s                   I                                I 32592.5                        I
+   out_temp_avg                I                                I 18.847                         I
+   out_temp_duration           I                                I 1440.0                         I
+   out_temp_min                I                                I 16.277                         I
+   out_temp_min_time           I 2021-06-21 07:22:41+04:00      I                                I 2021-06-21 07:25:01+04:00
+   out_temp_omm_avg            I                                I 18.835                         I
+   out_temp_omm_duration       I                                I 1440.0                         I
+   out_temp_omm_s              I                                I 27123.333                      I
+   out_temp_s                  I                                I 27140.833                      I
+   pressure_min                I                                I 985.091                        I
+   pressure_min_time           I                                I 2021-06-21 15:57:46+04:00      I
+   rain_duration               I                                I 1440.0                         I
    rain_omm_duration           I                                I 1440.0                         I
    rain_omm_sum                I                                I 0.0                            I
-   rain_sum                    I 0.0                            I                                I
-   rx_avg                      I 99.539                         I                                I
-   rx_duration                 I 1440.0                         I                                I
-   rx_min                      I 97.375                         I                                I
-   rx_min_time                 I 2021-06-21 09:15:00+04:00      I                                I
-   rx_s                        I 143337.187                     I                                I
-   voltage_avg                 I 4.589                          I                                I
-   voltage_duration            I 1440.0                         I                                I
-   voltage_min                 I 4.58                           I                                I
-   voltage_min_time            I 2021-06-21 13:27:02+04:00      I                                I
-   voltage_s                   I 6609.58                        I                                I
-   wind_avg                    I 2.298                          I                                I
-   wind_duration               I 1440.0                         I                                I
-   wind_s                      I 3310.339                       I                                I
-   windchill_min               I 16.277                         I                                I
-   windchill_min_time          I 2021-06-21 07:22:41+04:00      I                                I
+   rain_rate_avg               I                                I                                I 0.0
+   rain_rate_duration          I                                I                                I 1440.0
+   rain_rate_s                 I                                I                                I 0.0
+   rain_sum                    I                                I 0.0                            I
+   rx_avg                      I                                I 99.539                         I
+   rx_duration                 I                                I 1440.0                         I
+   rx_min                      I                                I 97.375                         I
+   rx_min_time                 I                                I 2021-06-21 09:15:00+04:00      I
+   rx_s                        I                                I 143337.187                     I
+   voltage_avg                 I                                I 4.589 (@0.0217%)               I
+   voltage_duration            I                                I 1440.0                         I
+   voltage_min                 I                                I 4.58                           I
+   voltage_min_time            I                                I 2021-06-21 13:27:02+04:00      I
+   voltage_s                   I                                I 6609.6                         I
+   wind_avg                    I                                I 2.298                          I
+   wind_duration               I                                I 1440.0                         I
+   wind_s                      I                                I 3310.339                       I
+   windchill_min               I                                I 16.277                         I
+   windchill_min_time          I 2021-06-21 07:22:41+04:00      I                                I 2021-06-21 07:25:01+04:00
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
         key                    I          agg_D only            I        both                    I        tmp_agg_D only
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
-start_dat                      I 2021-06-22 00:00:00+04:00      I                                I
-   barometer_avg               I 1022.58                        I                                I
-   barometer_duration          I 1440.0                         I                                I
-   barometer_min               I 1021.063                       I                                I
-   barometer_min_time          I 2021-06-22 15:01:02+04:00      I                                I
-   barometer_omm_avg           I 1022.549                       I                                I
-   barometer_omm_duration      I 1440.0                         I                                I
-   barometer_omm_s             I 1472471.331                    I                                I
-   barometer_s                 I 1472516.58                     I                                I
-   dewpoint_min                I 12.495                         I                                I
-   dewpoint_min_time           I 2021-06-22 01:21:38+04:00      I                                I
-   humidity_avg                I 75.206                         I                                I
-   humidity_duration           I 1440.0                         I                                I
-   humidity_min                I 61.0                           I                                I
-   humidity_min_time           I 2021-06-22 13:26:50+04:00      I                                I
-   humidity_omm_avg            I 75.083                         I                                I
-   humidity_omm_duration       I 1440.0                         I                                I
-   humidity_omm_s              I 108120.0                       I                                I
-   humidity_s                  I 108296.807                     I                                I
-   in_humidity_avg             I 58.636                         I                                I
-   in_humidity_duration        I 1440.0                         I                                I
-   in_humidity_min             I 57.0                           I                                I
-   in_humidity_min_time        I 2021-06-22 00:00:01+04:00      I                                I
-   in_humidity_s               I 84435.859                      I                                I
-   in_temp_avg                 I 22.726                         I                                I
-   in_temp_duration            I 1440.0                         I                                I
-   in_temp_min                 I 21.611                         I                                I
-   in_temp_min_time            I 2021-06-22 08:10:01+04:00      I                                I
-   in_temp_s                   I 32726.588                      I                                I
-   out_temp_avg                I 19.247                         I                                I
-   out_temp_duration           I 1440.0                         I                                I
-   out_temp_min                I 16.277                         I                                I
-   out_temp_min_time           I 2021-06-22 05:01:21+04:00      I                                I
-   out_temp_omm_avg            I 19.25                          I                                I
-   out_temp_omm_duration       I 1440.0                         I                                I
-   out_temp_omm_s              I 27720.0                        I                                I
-   out_temp_s                  I 27715.974                      I                                I
-   pressure_min                I 984.297                        I                                I
-   pressure_min_time           I 2021-06-22 14:52:02+04:00      I                                I
-   rain_duration               I 1440.0                         I                                I
-   rain_omm_duration           I 1440.0                         I                                I
-   rain_omm_sum                I 0.0                            I                                I
-   rain_sum                    I 0.0                            I                                I
-   rx_avg                      I 99.057                         I                                I
-   rx_duration                 I 1440.0                         I                                I
-   rx_min                      I 81.145                         I                                I
-   rx_min_time                 I 2021-06-22 22:00:00+04:00      I                                I
-   rx_s                        I 142642.499                     I                                I
-   voltage_avg                 I 4.589                          I                                I
-   voltage_duration            I 1440.0                         I                                I
-   voltage_min                 I 4.58                           I                                I
-   voltage_min_time            I 2021-06-22 05:54:01+04:00      I                                I
-   voltage_s                   I 6609.559                       I                                I
-   wind_avg                    I 1.988                          I                                I
-   wind_duration               I 1440.0                         I                                I
-   wind_s                      I 2863.298                       I                                I
-   windchill_min               I 16.277                         I                                I
-   windchill_min_time          I 2021-06-22 05:01:21+04:00      I                                I
+start_dat                      I                                I 2021-06-22 00:00:00+04:00      I
+   barometer_avg               I 1022.58                        I                                I 1022.579
+   barometer_duration          I                                I 1440.0                         I
+   barometer_min               I                                I 1021.063                       I
+   barometer_min_time          I                                I 2021-06-22 15:01:02+04:00      I
+   barometer_omm_avg           I                                I 1022.549                       I
+   barometer_omm_duration      I                                I 1440.0                         I
+   barometer_omm_s             I                                I 1472471.331                    I
+   barometer_s                 I                                I 1472514.338                    I
+   dewpoint_min                I                                I 12.495                         I
+   dewpoint_min_time           I                                I 2021-06-22 01:21:38+04:00      I
+   humidity_avg                I                                I 75.206 (@0.0159%)              I
+   humidity_duration           I                                I 1440.0                         I
+   humidity_min                I                                I 61.0                           I
+   humidity_min_time           I                                I 2021-06-22 13:26:50+04:00      I
+   humidity_omm_avg            I                                I 75.083                         I
+   humidity_omm_duration       I                                I 1440.0                         I
+   humidity_omm_s              I                                I 108119.999                     I
+   humidity_s                  I                                I 108296.807 (@0.0155%)          I
+   in_humidity_avg             I                                I 58.636 (@0.0272%)              I
+   in_humidity_duration        I                                I 1440.0                         I
+   in_humidity_min             I                                I 57.0                           I
+   in_humidity_min_time        I                                I 2021-06-22 00:00:01+04:00      I
+   in_humidity_s               I                                I 84460.0                        I
+   in_temp_avg                 I                                I 22.726 (@0.0088%)              I
+   in_temp_duration            I                                I 1440.0                         I
+   in_temp_min                 I                                I 21.611                         I
+   in_temp_min_time            I                                I 2021-06-22 08:10:01+04:00      I
+   in_temp_s                   I                                I 32728.611                      I
+   out_temp_avg                I                                I 19.247 (@0.0207%)              I
+   out_temp_duration           I                                I 1440.0                         I
+   out_temp_min                I                                I 16.277                         I
+   out_temp_min_time           I 2021-06-22 05:01:21+04:00      I                                I 2021-06-22 05:05:01+04:00
+   out_temp_omm_avg            I                                I 19.25                          I
+   out_temp_omm_duration       I                                I 1440.0                         I
+   out_temp_omm_s              I                                I 27720.0                        I
+   out_temp_s                  I                                I 27711.111                      I
+   pressure_min                I                                I 984.297                        I
+   pressure_min_time           I                                I 2021-06-22 14:52:02+04:00      I
+   rain_duration               I                                I 1440.0                         I
+   rain_omm_duration           I                                I 1440.0                         I
+   rain_omm_sum                I                                I 0.0                            I
+   rain_rate_avg               I                                I                                I 0.0
+   rain_rate_duration          I                                I                                I 1440.0
+   rain_rate_s                 I                                I                                I 0.0
+   rain_sum                    I                                I 0.0                            I
+   rx_avg                      I                                I 99.057                         I
+   rx_duration                 I                                I 1440.0                         I
+   rx_min                      I                                I 81.145                         I
+   rx_min_time                 I                                I 2021-06-22 22:00:00+04:00      I
+   rx_s                        I                                I 142642.5                       I
+   voltage_avg                 I                                I 4.589                          I
+   voltage_duration            I                                I 1440.0                         I
+   voltage_min                 I                                I 4.58                           I
+   voltage_min_time            I                                I 2021-06-22 05:54:01+04:00      I
+   voltage_s                   I                                I 6609.5                         I
+   wind_avg                    I                                I 1.988                          I
+   wind_duration               I                                I 1440.0                         I
+   wind_s                      I                                I 2863.298                       I
+   windchill_min               I                                I 16.277                         I
+   windchill_min_time          I 2021-06-22 05:01:21+04:00      I                                I 2021-06-22 05:05:01+04:00
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
         key                    I          agg_D only            I        both                    I        tmp_agg_D only
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
-start_dat                      I 2021-06-23 00:00:00+04:00      I                                I
-   barometer_avg               I 1022.338                       I                                I
-   barometer_duration          I 1440.0                         I                                I
-   barometer_min               I 1020.826                       I                                I
-   barometer_min_time          I 2021-06-23 15:16:00+04:00      I                                I
-   barometer_omm_avg           I 1022.359                       I                                I
-   barometer_omm_duration      I 1440.0                         I                                I
-   barometer_omm_s             I 1472197.033                    I                                I
-   barometer_s                 I 1472167.313                    I                                I
-   dewpoint_min                I 12.522                         I                                I
-   dewpoint_min_time           I 2021-06-23 04:38:13+04:00      I                                I
-   humidity_avg                I 78.181                         I                                I
-   humidity_duration           I 1440.0                         I                                I
-   humidity_min                I 69.0                           I                                I
-   humidity_min_time           I 2021-06-23 18:48:58+04:00      I                                I
-   humidity_omm_avg            I 78.25                          I                                I
-   humidity_omm_duration       I 1440.0                         I                                I
-   humidity_omm_s              I 112680.0                       I                                I
-   humidity_s                  I 112581.969                     I                                I
-   in_humidity_avg             I 60.115                         I                                I
-   in_humidity_duration        I 1440.0                         I                                I
-   in_humidity_min             I 59.0                           I                                I
-   in_humidity_min_time        I 2021-06-23 00:00:59+04:00      I                                I
-   in_humidity_s               I 86566.013                      I                                I
-   in_temp_avg                 I 22.502                         I                                I
-   in_temp_duration            I 1440.0                         I                                I
-   in_temp_min                 I 21.555                         I                                I
-   in_temp_min_time            I 2021-06-23 09:36:59+04:00      I                                I
-   in_temp_s                   I 32403.394                      I                                I
-   out_temp_avg                I 18.479                         I                                I
-   out_temp_duration           I 1440.0                         I                                I
-   out_temp_min                I 15.666                         I                                I
-   out_temp_min_time           I 2021-06-23 04:55:51+04:00      I                                I
-   out_temp_omm_avg            I 18.483                         I                                I
-   out_temp_omm_duration       I 1440.0                         I                                I
-   out_temp_omm_s              I 26616.666                      I                                I
-   out_temp_s                  I 26610.401                      I                                I
-   pressure_min                I 983.889                        I                                I
-   pressure_min_time           I 2021-06-23 15:40:00+04:00      I                                I
-   rain_duration               I 1440.0                         I                                I
-   rain_omm_duration           I 1440.0                         I                                I
-   rain_omm_sum                I 1.27                           I                                I
-   rain_sum                    I 1.27                           I                                I
-   rx_avg                      I 98.233                         I                                I
-   rx_duration                 I 1440.0                         I                                I
-   rx_min                      I 82.854                         I                                I
-   rx_min_time                 I 2021-06-23 04:50:00+04:00      I                                I
-   rx_s                        I 141456.458                     I                                I
-   voltage_avg                 I 4.589                          I                                I
-   voltage_duration            I 1420.0                         I                                I
-   voltage_min                 I 4.58                           I                                I
-   voltage_min_time            I 2021-06-23 04:35:59+04:00      I                                I
-   voltage_s                   I 6517.769                       I                                I
-   wind_avg                    I 2.516                          I                                I
-   wind_duration               I 1440.0                         I                                I
-   wind_s                      I 3623.268                       I                                I
-   windchill_min               I 15.666                         I                                I
-   windchill_min_time          I 2021-06-23 04:55:51+04:00      I                                I
+start_dat                      I                                I 2021-06-23 00:00:00+04:00      I
+   barometer_avg               I                                I 1022.338 (@0.0005%)            I
+   barometer_duration          I                                I 1440.0                         I
+   barometer_min               I                                I 1020.826                       I
+   barometer_min_time          I                                I 2021-06-23 15:16:00+04:00      I
+   barometer_omm_avg           I                                I 1022.359                       I
+   barometer_omm_duration      I                                I 1440.0                         I
+   barometer_omm_s             I                                I 1472197.033                    I
+   barometer_s                 I                                I 1472175.699                    I
+   dewpoint_min                I                                I 12.522                         I
+   dewpoint_min_time           I                                I 2021-06-23 04:38:13+04:00      I
+   humidity_avg                I                                I 78.181 (@0.0102%)              I
+   humidity_duration           I                                I 1440.0                         I
+   humidity_min                I                                I 69.0                           I
+   humidity_min_time           I                                I 2021-06-23 18:48:58+04:00      I
+   humidity_omm_avg            I                                I 78.25                          I
+   humidity_omm_duration       I                                I 1440.0                         I
+   humidity_omm_s              I                                I 112680.0                       I
+   humidity_s                  I                                I 112570.0                       I
+   in_humidity_avg             I                                I 60.115 (@0.0133%)              I
+   in_humidity_duration        I                                I 1440.0                         I
+   in_humidity_min             I                                I 59.0                           I
+   in_humidity_min_time        I                                I 2021-06-23 00:00:59+04:00      I
+   in_humidity_s               I                                I 86555.0                        I
+   in_temp_avg                 I                                I 22.502 (@0.0044%)              I
+   in_temp_duration            I                                I 1440.0                         I
+   in_temp_min                 I                                I 21.555                         I
+   in_temp_min_time            I 2021-06-23 09:36:59+04:00      I                                I 2021-06-23 10:25:00+04:00
+   in_temp_s                   I                                I 32404.722                      I
+   out_temp_avg                I                                I 18.479 (@0.0108%)              I
+   out_temp_duration           I                                I 1440.0                         I
+   out_temp_min                I                                I 15.666                         I
+   out_temp_min_time           I 2021-06-23 04:55:51+04:00      I                                I 2021-06-23 05:00:07+04:00
+   out_temp_omm_avg            I                                I 18.483                         I
+   out_temp_omm_duration       I                                I 1440.0                         I
+   out_temp_omm_s              I                                I 26616.666                      I
+   out_temp_s                  I                                I 26613.055                      I
+   pressure_min                I                                I 983.889                        I
+   pressure_min_time           I 2021-06-23 15:40:00+04:00      I                                I 2021-06-23 15:40:02+04:00
+   rain_duration               I                                I 1440.0                         I
+   rain_omm_duration           I                                I 1440.0                         I
+   rain_omm_sum                I 1.27                           I                                I 0.0
+   rain_rate_avg               I                                I                                I 0.056
+   rain_rate_duration          I                                I                                I 1440.0
+   rain_rate_s                 I                                I                                I 81.279
+   rain_sum                    I                                I 1.27                           I
+   rx_avg                      I                                I 98.233                         I
+   rx_duration                 I                                I 1440.0                         I
+   rx_min                      I                                I 82.854                         I
+   rx_min_time                 I 2021-06-23 04:50:00+04:00      I                                I 2021-06-23 05:05:00+04:00
+   rx_s                        I                                I 141456.458                     I
+   voltage_avg                 I                                I 4.589                          I
+   voltage_duration            I                                I 1420.0                         I
+   voltage_min                 I                                I 4.58                           I
+   voltage_min_time            I                                I 2021-06-23 04:35:59+04:00      I
+   voltage_s                   I                                I 6517.7                         I
+   wind_avg                    I                                I 2.516                          I
+   wind_duration               I                                I 1440.0                         I
+   wind_s                      I                                I 3623.268                       I
+   windchill_min               I                                I 15.666                         I
+   windchill_min_time          I 2021-06-23 04:55:51+04:00      I                                I 2021-06-23 05:00:07+04:00
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
         key                    I          agg_D only            I        both                    I        tmp_agg_D only
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
-start_dat                      I 2021-06-24 00:00:00+04:00      I                                I
-   barometer_avg               I 1022.622                       I                                I
-   barometer_duration          I 1440.0                         I                                I
-   barometer_min               I 1021.402                       I                                I
-   barometer_min_time          I 2021-06-24 15:44:01+04:00      I                                I
-   barometer_omm_avg           I 1022.62                        I                                I
-   barometer_omm_duration      I 1440.0                         I                                I
-   barometer_omm_s             I 1472572.922                    I                                I
-   barometer_s                 I 1472576.672                    I                                I
-   dewpoint_min                I 9.078                          I                                I
-   dewpoint_min_time           I 2021-06-24 21:35:10+04:00      I                                I
-   humidity_avg                I 67.474                         I                                I
-   humidity_duration           I 1440.0                         I                                I
-   humidity_min                I 55.0                           I                                I
-   humidity_min_time           I 2021-06-24 11:22:22+04:00      I                                I
-   humidity_omm_avg            I 67.333                         I                                I
-   humidity_omm_duration       I 1440.0                         I                                I
-   humidity_omm_s              I 96960.0                        I                                I
-   humidity_s                  I 97162.789                      I                                I
-   in_humidity_avg             I 56.231                         I                                I
-   in_humidity_duration        I 1440.0                         I                                I
-   in_humidity_min             I 55.0                           I                                I
-   in_humidity_min_time        I 2021-06-24 08:16:01+04:00      I                                I
-   in_humidity_s               I 80974.064                      I                                I
-   in_temp_avg                 I 22.586                         I                                I
-   in_temp_duration            I 1440.0                         I                                I
-   in_temp_min                 I 21.611                         I                                I
-   in_temp_min_time            I 2021-06-24 07:52:01+04:00      I                                I
-   in_temp_s                   I 32523.994                      I                                I
-   out_temp_avg                I 19.427                         I                                I
-   out_temp_duration           I 1440.0                         I                                I
-   out_temp_min                I 17.222                         I                                I
-   out_temp_min_time           I 2021-06-24 05:10:29+04:00      I                                I
-   out_temp_omm_avg            I 19.418                         I                                I
-   out_temp_omm_duration       I 1440.0                         I                                I
-   out_temp_omm_s              I 27963.333                      I                                I
-   out_temp_s                  I 27975.143                      I                                I
-   pressure_min                I 984.556                        I                                I
-   pressure_min_time           I 2021-06-24 15:44:01+04:00      I                                I
-   rain_duration               I 1440.0                         I                                I
-   rain_omm_duration           I 1440.0                         I                                I
-   rain_omm_sum                I 0.0                            I                                I
-   rain_sum                    I 0.0                            I                                I
-   rx_avg                      I 99.381                         I                                I
-   rx_duration                 I 1440.0                         I                                I
-   rx_min                      I 87.979                         I                                I
-   rx_min_time                 I 2021-06-24 20:55:00+04:00      I                                I
-   rx_s                        I 143108.645                     I                                I
-   voltage_avg                 I 4.589                          I                                I
-   voltage_duration            I 1350.0                         I                                I
-   voltage_min                 I 4.58                           I                                I
-   voltage_min_time            I 2021-06-24 17:37:01+04:00      I                                I
-   voltage_s                   I 6196.48                        I                                I
-   wind_avg                    I 2.624                          I                                I
-   wind_duration               I 1440.0                         I                                I
-   wind_s                      I 3779.732                       I                                I
-   windchill_min               I 17.222                         I                                I
-   windchill_min_time          I 2021-06-24 05:10:29+04:00      I                                I
+start_dat                      I                                I 2021-06-24 00:00:00+04:00      I
+   barometer_avg               I                                I 1022.622 (@0.0004%)            I
+   barometer_duration          I                                I 1440.0                         I
+   barometer_min               I                                I 1021.402                       I
+   barometer_min_time          I                                I 2021-06-24 15:44:01+04:00      I
+   barometer_omm_avg           I                                I 1022.62                        I
+   barometer_omm_duration      I                                I 1440.0                         I
+   barometer_omm_s             I                                I 1472572.922                    I
+   barometer_s                 I                                I 1472569.536                    I
+   dewpoint_min                I                                I 9.078                          I
+   dewpoint_min_time           I                                I 2021-06-24 21:35:10+04:00      I
+   humidity_avg                I                                I 67.474 (@0.0133%)              I
+   humidity_duration           I                                I 1440.0                         I
+   humidity_min                I                                I 55.0                           I
+   humidity_min_time           I                                I 2021-06-24 11:22:22+04:00      I
+   humidity_omm_avg            I                                I 67.333                         I
+   humidity_omm_duration       I                                I 1440.0                         I
+   humidity_omm_s              I                                I 96959.999                      I
+   humidity_s                  I                                I 97150.0                        I
+   in_humidity_avg             I                                I 56.231 (@0.0017%)              I
+   in_humidity_duration        I                                I 1440.0                         I
+   in_humidity_min             I                                I 55.0                           I
+   in_humidity_min_time        I                                I 2021-06-24 08:16:01+04:00      I
+   in_humidity_s               I                                I 80975.0                        I
+   in_temp_avg                 I                                I 22.586 (@0.0088%)              I
+   in_temp_duration            I                                I 1440.0                         I
+   in_temp_min                 I                                I 21.611                         I
+   in_temp_min_time            I                                I 2021-06-24 07:52:01+04:00      I
+   in_temp_s                   I                                I 32522.222                      I
+   out_temp_avg                I                                I 19.427 (@0.0102%)              I
+   out_temp_duration           I                                I 1440.0                         I
+   out_temp_min                I                                I 17.222                         I
+   out_temp_min_time           I                                I 2021-06-24 05:10:29+04:00      I
+   out_temp_omm_avg            I                                I 19.418                         I
+   out_temp_omm_duration       I                                I 1440.0                         I
+   out_temp_omm_s              I                                I 27963.333                      I
+   out_temp_s                  I                                I 27977.777                      I
+   pressure_min                I                                I 984.556                        I
+   pressure_min_time           I 2021-06-24 15:44:01+04:00      I                                I 2021-06-24 15:45:00+04:00
+   rain_duration               I                                I 1440.0                         I
+   rain_omm_duration           I                                I 1440.0                         I
+   rain_omm_sum                I 0.0                            I                                I 1.27
+   rain_rate_avg               I                                I                                I 0.0
+   rain_rate_duration          I                                I                                I 1440.0
+   rain_rate_s                 I                                I                                I 0.0
+   rain_sum                    I                                I 0.0                            I
+   rx_avg                      I                                I 99.381                         I
+   rx_duration                 I                                I 1440.0                         I
+   rx_min                      I                                I 87.979                         I
+   rx_min_time                 I                                I 2021-06-24 20:55:00+04:00      I
+   rx_s                        I                                I 143108.645                     I
+   voltage_avg                 I                                I 4.589 (@0.0217%)               I
+   voltage_duration            I                                I 1350.0                         I
+   voltage_min                 I                                I 4.58                           I
+   voltage_min_time            I                                I 2021-06-24 17:37:01+04:00      I
+   voltage_s                   I                                I 6196.5                         I
+   wind_avg                    I                                I 2.624                          I
+   wind_duration               I                                I 1440.0                         I
+   wind_s                      I                                I 3779.732                       I
+   windchill_min               I                                I 17.222                         I
+   windchill_min_time          I                                I 2021-06-24 05:10:29+04:00      I
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
         key                    I          agg_D only            I        both                    I        tmp_agg_D only
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
-start_dat                      I 2021-06-25 00:00:00+04:00      I                                I
-   barometer_avg               I 1020.835                       I                                I
-   barometer_duration          I 1440.0                         I                                I
-   barometer_min               I 1018.761                       I                                I
-   barometer_min_time          I 2021-06-25 15:20:01+04:00      I                                I
-   barometer_omm_avg           I 1020.818                       I                                I
-   barometer_omm_duration      I 1440.0                         I                                I
-   barometer_omm_s             I 1469978.272                    I                                I
-   barometer_s                 I 1470003.294                    I                                I
-   dewpoint_min                I 11.587                         I                                I
-   dewpoint_min_time           I 2021-06-25 00:47:12+04:00      I                                I
-   humidity_avg                I 76.908                         I                                I
-   humidity_duration           I 1440.0                         I                                I
-   humidity_min                I 63.0                           I                                I
-   humidity_min_time           I 2021-06-25 10:14:09+04:00      I                                I
-   humidity_omm_avg            I 77.166                         I                                I
-   humidity_omm_duration       I 1440.0                         I                                I
-   humidity_omm_s              I 111120.0                       I                                I
-   humidity_s                  I 110747.689                     I                                I
-   in_humidity_avg             I 58.22                          I                                I
-   in_humidity_duration        I 1440.0                         I                                I
-   in_humidity_min             I 54.0                           I                                I
-   in_humidity_min_time        I 2021-06-25 00:19:00+04:00      I                                I
-   in_humidity_s               I 83836.953                      I                                I
-   in_temp_avg                 I 22.895                         I                                I
-   in_temp_duration            I 1440.0                         I                                I
-   in_temp_min                 I 21.388                         I                                I
-   in_temp_min_time            I 2021-06-25 08:39:01+04:00      I                                I
-   in_temp_s                   I 32969.239                      I                                I
-   out_temp_avg                I 19.306                         I                                I
-   out_temp_duration           I 1440.0                         I                                I
-   out_temp_min                I 15.277                         I                                I
-   out_temp_min_time           I 2021-06-25 06:09:44+04:00      I                                I
-   out_temp_omm_avg            I 19.337                         I                                I
-   out_temp_omm_duration       I 1440.0                         I                                I
-   out_temp_omm_s              I 27846.666                      I                                I
-   out_temp_s                  I 27800.969                      I                                I
-   pressure_min                I 981.943                        I                                I
-   pressure_min_time           I 2021-06-25 15:41:01+04:00      I                                I
-   rain_duration               I 1440.0                         I                                I
-   rain_omm_duration           I 1440.0                         I                                I
-   rain_omm_sum                I 0.0                            I                                I
-   rain_sum                    I 0.0                            I                                I
-   rx_avg                      I 99.544                         I                                I
-   rx_duration                 I 1440.0                         I                                I
-   rx_min                      I 97.375                         I                                I
-   rx_min_time                 I 2021-06-25 02:35:00+04:00      I                                I
-   rx_s                        I 143344.791                     I                                I
-   voltage_avg                 I 4.589                          I                                I
-   voltage_duration            I 1330.0                         I                                I
-   voltage_min                 I 4.58                           I                                I
-   voltage_min_time            I 2021-06-25 05:32:00+04:00      I                                I
-   voltage_s                   I 6104.669                       I                                I
-   wind_avg                    I 1.587                          I                                I
-   wind_duration               I 1440.0                         I                                I
-   wind_s                      I 2286.615                       I                                I
-   windchill_min               I 15.277                         I                                I
-   windchill_min_time          I 2021-06-25 06:09:44+04:00      I                                I
+start_dat                      I                                I 2021-06-25 00:00:00+04:00      I
+   barometer_avg               I                                I 1020.835                       I
+   barometer_duration          I                                I 1440.0                         I
+   barometer_min               I                                I 1018.761                       I
+   barometer_min_time          I                                I 2021-06-25 15:20:01+04:00      I
+   barometer_omm_avg           I                                I 1020.818                       I
+   barometer_omm_duration      I                                I 1440.0                         I
+   barometer_omm_s             I                                I 1469978.272                    I
+   barometer_s                 I                                I 1470002.484                    I
+   dewpoint_min                I                                I 11.587                         I
+   dewpoint_min_time           I 2021-06-25 00:47:12+04:00      I                                I 2021-06-25 00:50:16+04:00
+   humidity_avg                I                                I 76.908 (@0.0338%)              I
+   humidity_duration           I                                I 1440.0                         I
+   humidity_min                I                                I 63.0                           I
+   humidity_min_time           I                                I 2021-06-25 10:14:09+04:00      I
+   humidity_omm_avg            I                                I 77.166                         I
+   humidity_omm_duration       I                                I 1440.0                         I
+   humidity_omm_s              I                                I 111120.0                       I
+   humidity_s                  I                                I 110785.0                       I
+   in_humidity_avg             I                                I 58.22 (@0.0085%)               I
+   in_humidity_duration        I                                I 1440.0                         I
+   in_humidity_min             I                                I 54.0                           I
+   in_humidity_min_time        I                                I 2021-06-25 00:19:00+04:00      I
+   in_humidity_s               I                                I 83830.0                        I
+   in_temp_avg                 I                                I 22.895 (@0.0043%)              I
+   in_temp_duration            I                                I 1440.0                         I
+   in_temp_min                 I                                I 21.388                         I
+   in_temp_min_time            I 2021-06-25 08:39:01+04:00      I                                I 2021-06-25 09:15:01+04:00
+   in_temp_s                   I                                I 32968.333                      I
+   out_temp_avg                I                                I 19.306                         I
+   out_temp_duration           I                                I 1440.0                         I
+   out_temp_min                I                                I 15.277                         I
+   out_temp_min_time           I 2021-06-25 06:09:44+04:00      I                                I 2021-06-25 06:10:34+04:00
+   out_temp_omm_avg            I                                I 19.337                         I
+   out_temp_omm_duration       I                                I 1440.0                         I
+   out_temp_omm_s              I                                I 27846.666                      I
+   out_temp_s                  I                                I 27801.666                      I
+   pressure_min                I                                I 981.943                        I
+   pressure_min_time           I                                I 2021-06-25 15:41:01+04:00      I
+   rain_duration               I                                I 1440.0                         I
+   rain_omm_duration           I                                I 1440.0                         I
+   rain_omm_sum                I                                I 0.0                            I
+   rain_rate_avg               I                                I                                I 0.0
+   rain_rate_duration          I                                I                                I 1440.0
+   rain_rate_s                 I                                I                                I 0.0
+   rain_sum                    I                                I 0.0                            I
+   rx_avg                      I                                I 99.544                         I
+   rx_duration                 I                                I 1440.0                         I
+   rx_min                      I                                I 97.375                         I
+   rx_min_time                 I                                I 2021-06-25 02:35:00+04:00      I
+   rx_s                        I                                I 143344.791                     I
+   voltage_avg                 I                                I 4.589                          I
+   voltage_duration            I                                I 1330.0                         I
+   voltage_min                 I                                I 4.58                           I
+   voltage_min_time            I                                I 2021-06-25 05:32:00+04:00      I
+   voltage_s                   I                                I 6104.65                        I
+   wind_avg                    I                                I 1.587                          I
+   wind_duration               I                                I 1440.0                         I
+   wind_s                      I                                I 2286.615                       I
+   windchill_min               I                                I 15.277                         I
+   windchill_min_time          I 2021-06-25 06:09:44+04:00      I                                I 2021-06-25 06:10:34+04:00
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
         key                    I          agg_D only            I        both                    I        tmp_agg_D only
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
-start_dat                      I 2021-06-26 00:00:00+04:00      I                                I
-   barometer_avg               I 1019.684                       I                                I
-   barometer_duration          I 1435.0                         I                                I
-   barometer_min               I 1018.523                       I                                I
-   barometer_min_time          I 2021-06-26 15:57:02+04:00      I                                I
-   barometer_omm_avg           I 1019.712                       I                                I
-   barometer_omm_duration      I 1440.0                         I                                I
-   barometer_omm_s             I 1468385.315                    I                                I
-   barometer_s                 I 1463247.202                    I                                I
-   dewpoint_min                I 13.544                         I                                I
-   dewpoint_min_time           I 2021-06-26 03:13:32+04:00      I                                I
-   humidity_avg                I 81.686                         I                                I
-   humidity_duration           I 1435.0                         I                                I
-   humidity_min                I 70.0                           I                                I
-   humidity_min_time           I 2021-06-26 11:26:53+04:00      I                                I
-   humidity_omm_avg            I 81.916                         I                                I
-   humidity_omm_duration       I 1440.0                         I                                I
-   humidity_omm_s              I 117960.0                       I                                I
-   humidity_s                  I 117220.629                     I                                I
-   in_humidity_avg             I 61.858                         I                                I
-   in_humidity_duration        I 1435.0                         I                                I
-   in_humidity_min             I 58.0                           I                                I
-   in_humidity_min_time        I 2021-06-26 01:38:00+04:00      I                                I
-   in_humidity_s               I 88767.019                      I                                I
-   in_temp_avg                 I 23.931                         I                                I
-   in_temp_duration            I 1435.0                         I                                I
-   in_temp_min                 I 22.777                         I                                I
-   in_temp_min_time            I 2021-06-26 08:18:01+04:00      I                                I
-   in_temp_s                   I 34342.191                      I                                I
-   out_temp_avg                I 20.346                         I                                I
-   out_temp_duration           I 1435.0                         I                                I
-   out_temp_min                I 17.166                         I                                I
-   out_temp_min_time           I 2021-06-26 07:25:53+04:00      I                                I
-   out_temp_omm_avg            I 20.379                         I                                I
-   out_temp_omm_duration       I 1440.0                         I                                I
-   out_temp_omm_s              I 29346.666                      I                                I
-   out_temp_s                  I 29197.803                      I                                I
-   pressure_min                I 981.903                        I                                I
-   pressure_min_time           I 2021-06-26 18:00:04+04:00      I                                I
-   rain_duration               I 1435.0                         I                                I
-   rain_omm_duration           I 1440.0                         I                                I
-   rain_omm_sum                I 0.0                            I                                I
-   rain_sum                    I 0.0                            I                                I
-   rx_avg                      I 99.015                         I                                I
-   rx_duration                 I 1435.0                         I                                I
-   rx_min                      I 17.937                         I                                I
-   rx_min_time                 I 2021-06-26 17:30:00+04:00      I                                I
-   rx_s                        I 142087.916                     I                                I
-   voltage_avg                 I 4.589                          I                                I
-   voltage_duration            I 1360.0                         I                                I
-   voltage_min                 I 4.58                           I                                I
-   voltage_min_time            I 2021-06-26 05:46:00+04:00      I                                I
-   voltage_s                   I 6242.36                        I                                I
-   wind_avg                    I 1.39                           I                                I
-   wind_duration               I 1435.0                         I                                I
-   wind_s                      I 1996.038                       I                                I
-   windchill_min               I 17.166                         I                                I
-   windchill_min_time          I 2021-06-26 07:25:53+04:00      I                                I
+start_dat                      I                                I 2021-06-26 00:00:00+04:00      I
+   barometer_avg               I 1019.684                       I                                I 1019.685
+   barometer_duration          I                                I 1435.0                         I
+   barometer_min               I                                I 1018.523                       I
+   barometer_min_time          I                                I 2021-06-26 15:57:02+04:00      I
+   barometer_omm_avg           I                                I 1019.712                       I
+   barometer_omm_duration      I                                I 1440.0                         I
+   barometer_omm_s             I                                I 1468385.315                    I
+   barometer_s                 I                                I 1463249.01                     I
+   dewpoint_min                I                                I 13.544                         I
+   dewpoint_min_time           I                                I 2021-06-26 03:13:32+04:00      I
+   humidity_avg                I                                I 81.686 (@0.0048%)              I
+   humidity_duration           I                                I 1435.0                         I
+   humidity_min                I                                I 70.0                           I
+   humidity_min_time           I                                I 2021-06-26 11:26:53+04:00      I
+   humidity_omm_avg            I                                I 81.916                         I
+   humidity_omm_duration       I                                I 1440.0                         I
+   humidity_omm_s              I                                I 117960.0                       I
+   humidity_s                  I                                I 117215.0                       I
+   in_humidity_avg             I                                I 61.858 (@0.008%)               I
+   in_humidity_duration        I                                I 1435.0                         I
+   in_humidity_min             I                                I 58.0                           I
+   in_humidity_min_time        I                                I 2021-06-26 01:38:00+04:00      I
+   in_humidity_s               I                                I 88760.0                        I
+   in_temp_avg                 I                                I 23.931                         I
+   in_temp_duration            I                                I 1435.0                         I
+   in_temp_min                 I                                I 22.777                         I
+   in_temp_min_time            I 2021-06-26 08:18:01+04:00      I                                I 2021-06-26 09:03:01+04:00
+   in_temp_s                   I                                I 34341.666                      I
+   out_temp_avg                I                                I 20.346 (@0.0049%)              I
+   out_temp_duration           I                                I 1435.0                         I
+   out_temp_min                I                                I 17.166                         I
+   out_temp_min_time           I                                I 2021-06-26 07:25:53+04:00      I
+   out_temp_omm_avg            I                                I 20.379                         I
+   out_temp_omm_duration       I                                I 1440.0                         I
+   out_temp_omm_s              I                                I 29346.666                      I
+   out_temp_s                  I                                I 29198.611                      I
+   pressure_min                I                                I 981.903                        I
+   pressure_min_time           I                                I 2021-06-26 18:00:04+04:00      I
+   rain_duration               I                                I 1435.0                         I
+   rain_omm_duration           I                                I 1440.0                         I
+   rain_omm_sum                I                                I 0.0                            I
+   rain_rate_avg               I                                I                                I 0.0
+   rain_rate_duration          I                                I                                I 1435.0
+   rain_rate_s                 I                                I                                I 0.0
+   rain_sum                    I                                I 0.0                            I
+   rx_avg                      I                                I 99.015                         I
+   rx_duration                 I                                I 1435.0                         I
+   rx_min                      I                                I 17.937                         I
+   rx_min_time                 I 2021-06-26 17:30:00+04:00      I                                I 2021-06-26 17:32:00+04:00
+   rx_s                        I                                I 142087.916                     I
+   voltage_avg                 I                                I 4.589 (@0.0217%)               I
+   voltage_duration            I                                I 1360.0                         I
+   voltage_min                 I                                I 4.58                           I
+   voltage_min_time            I                                I 2021-06-26 05:46:00+04:00      I
+   voltage_s                   I                                I 6242.4                         I
+   wind_avg                    I                                I 1.39                           I
+   wind_duration               I                                I 1435.0                         I
+   wind_s                      I                                I 1996.038                       I
+   windchill_min               I                                I 17.166                         I
+   windchill_min_time          I                                I 2021-06-26 07:25:53+04:00      I
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
         key                    I          agg_D only            I        both                    I        tmp_agg_D only
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
-start_dat                      I 2021-06-27 00:00:00+04:00      I                                I
-   barometer_avg               I 1020.594                       I                                I
-   barometer_duration          I 1440.0                         I                                I
-   barometer_min               I 1018.93                        I                                I
-   barometer_min_time          I 2021-06-27 03:51:00+04:00      I                                I
-   barometer_omm_avg           I 1020.605                       I                                I
-   barometer_omm_duration      I 1440.0                         I                                I
-   barometer_omm_s             I 1469671.465                    I                                I
-   barometer_s                 I 1469656.278                    I                                I
-   dewpoint_min                I 16.492                         I                                I
-   dewpoint_min_time           I 2021-06-27 01:03:26+04:00      I                                I
-   humidity_avg                I 82.089                         I                                I
-   humidity_duration           I 1440.0                         I                                I
-   humidity_min                I 71.0                           I                                I
-   humidity_min_time           I 2021-06-27 13:26:34+04:00      I                                I
-   humidity_omm_avg            I 82.208                         I                                I
-   humidity_omm_duration       I 1440.0                         I                                I
-   humidity_omm_s              I 118380.0                       I                                I
-   humidity_s                  I 118209.307                     I                                I
-   in_humidity_avg             I 64.806                         I                                I
-   in_humidity_duration        I 1440.0                         I                                I
-   in_humidity_min             I 64.0                           I                                I
-   in_humidity_min_time        I 2021-06-27 01:51:00+04:00      I                                I
-   in_humidity_s               I 93320.96                       I                                I
-   in_temp_avg                 I 24.609                         I                                I
-   in_temp_duration            I 1440.0                         I                                I
-   in_temp_min                 I 23.611                         I                                I
-   in_temp_min_time            I 2021-06-27 06:55:01+04:00      I                                I
-   in_temp_s                   I 35437.359                      I                                I
-   out_temp_avg                I 21.627                         I                                I
-   out_temp_duration           I 1440.0                         I                                I
-   out_temp_min                I 18.611                         I                                I
-   out_temp_min_time           I 2021-06-27 00:01:08+04:00      I                                I
-   out_temp_omm_avg            I 21.673                         I                                I
-   out_temp_omm_duration       I 1440.0                         I                                I
-   out_temp_omm_s              I 31210.0                        I                                I
-   out_temp_s                  I 31144.267                      I                                I
-   pressure_min                I 982.407                        I                                I
-   pressure_min_time           I 2021-06-27 05:44:00+04:00      I                                I
-   rain_duration               I 1440.0                         I                                I
-   rain_omm_duration           I 1435.0                         I                                I
-   rain_omm_sum                I 0.0                            I                                I
-   rain_sum                    I 0.0                            I                                I
-   rx_avg                      I 99.523                         I                                I
-   rx_duration                 I 1440.0                         I                                I
-   rx_min                      I 96.52                          I                                I
-   rx_min_time                 I 2021-06-27 10:35:00+04:00      I                                I
-   rx_s                        I 143313.645                     I                                I
-   voltage_avg                 I 4.589                          I                                I
-   voltage_duration            I 1440.0                         I                                I
-   voltage_min                 I 4.58                           I                                I
-   voltage_min_time            I 2021-06-27 11:49:01+04:00      I                                I
-   voltage_s                   I 6609.53                        I                                I
-   wind_avg                    I 2.478                          I                                I
-   wind_duration               I 1440.0                         I                                I
-   wind_s                      I 3569.623                       I                                I
-   windchill_min               I 18.611                         I                                I
-   windchill_min_time          I 2021-06-27 00:01:08+04:00      I                                I
+start_dat                      I                                I 2021-06-27 00:00:00+04:00      I
+   barometer_avg               I                                I 1020.594 (@0.0001%)            I
+   barometer_duration          I                                I 1440.0                         I
+   barometer_min               I                                I 1018.93                        I
+   barometer_min_time          I                                I 2021-06-27 03:51:00+04:00      I
+   barometer_omm_avg           I                                I 1020.605                       I
+   barometer_omm_duration      I                                I 1440.0                         I
+   barometer_omm_s             I                                I 1469671.465                    I
+   barometer_s                 I                                I 1469659.105                    I
+   dewpoint_min                I                                I 16.492                         I
+   dewpoint_min_time           I                                I 2021-06-27 01:03:26+04:00      I
+   humidity_avg                I                                I 82.089 (@0.0328%)              I
+   humidity_duration           I                                I 1440.0                         I
+   humidity_min                I                                I 71.0                           I
+   humidity_min_time           I                                I 2021-06-27 13:26:34+04:00      I
+   humidity_omm_avg            I                                I 82.208                         I
+   humidity_omm_duration       I                                I 1440.0                         I
+   humidity_omm_s              I                                I 118379.999                     I
+   humidity_s                  I                                I 118170.0                       I
+   in_humidity_avg             I                                I 64.806 (@0.0015%)              I
+   in_humidity_duration        I                                I 1440.0                         I
+   in_humidity_min             I                                I 64.0                           I
+   in_humidity_min_time        I                                I 2021-06-27 01:51:00+04:00      I
+   in_humidity_s               I                                I 93320.0                        I
+   in_temp_avg                 I                                I 24.609 (@0.004%)               I
+   in_temp_duration            I                                I 1440.0                         I
+   in_temp_min                 I                                I 23.611                         I
+   in_temp_min_time            I                                I 2021-06-27 06:55:01+04:00      I
+   in_temp_s                   I                                I 35438.611                      I
+   out_temp_avg                I                                I 21.627 (@0.0231%)              I
+   out_temp_duration           I                                I 1440.0                         I
+   out_temp_min                I                                I 18.611                         I
+   out_temp_min_time           I                                I 2021-06-27 00:01:08+04:00      I
+   out_temp_omm_avg            I                                I 21.673                         I
+   out_temp_omm_duration       I                                I 1440.0                         I
+   out_temp_omm_s              I                                I 31209.999                      I
+   out_temp_s                  I                                I 31151.111                      I
+   pressure_min                I                                I 982.407                        I
+   pressure_min_time           I                                I 2021-06-27 05:44:00+04:00      I
+   rain_duration               I                                I 1440.0                         I
+   rain_omm_duration           I                                I 1435.0 (@0.3484%)              I
+   rain_omm_sum                I                                I 0.0                            I
+   rain_rate_avg               I                                I                                I 0.0
+   rain_rate_duration          I                                I                                I 1440.0
+   rain_rate_s                 I                                I                                I 0.0
+   rain_sum                    I                                I 0.0                            I
+   rx_avg                      I                                I 99.523                         I
+   rx_duration                 I                                I 1440.0                         I
+   rx_min                      I                                I 96.52                          I
+   rx_min_time                 I                                I 2021-06-27 10:35:00+04:00      I
+   rx_s                        I                                I 143313.645                     I
+   voltage_avg                 I                                I 4.589                          I
+   voltage_duration            I                                I 1440.0                         I
+   voltage_min                 I                                I 4.58                           I
+   voltage_min_time            I                                I 2021-06-27 11:49:01+04:00      I
+   voltage_s                   I                                I 6609.55                        I
+   wind_avg                    I                                I 2.478                          I
+   wind_duration               I                                I 1440.0                         I
+   wind_s                      I                                I 3569.623                       I
+   windchill_min               I                                I 18.611                         I
+   windchill_min_time          I                                I 2021-06-27 00:01:08+04:00      I
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
         key                    I          agg_D only            I        both                    I        tmp_agg_D only
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
-start_dat                      I 2021-06-28 00:00:00+04:00      I                                I
-   barometer_avg               I 1021.594                       I                                I
-   barometer_duration          I 1440.0                         I                                I
-   barometer_min               I 1020.352                       I                                I
-   barometer_min_time          I 2021-06-28 15:20:00+04:00      I                                I
-   barometer_omm_avg           I 1021.59                        I                                I
-   barometer_omm_duration      I 1440.0                         I                                I
-   barometer_omm_s             I 1471089.684                    I                                I
-   barometer_s                 I 1471095.446                    I                                I
-   dewpoint_min                I 15.381                         I                                I
-   dewpoint_min_time           I 2021-06-28 21:48:04+04:00      I                                I
-   humidity_avg                I 80.582                         I                                I
-   humidity_duration           I 1440.0                         I                                I
-   humidity_min                I 69.0                           I                                I
-   humidity_min_time           I 2021-06-28 14:16:14+04:00      I                                I
-   humidity_omm_avg            I 80.583                         I                                I
-   humidity_omm_duration       I 1440.0                         I                                I
-   humidity_omm_s              I 116040.0                       I                                I
-   humidity_s                  I 116038.359                     I                                I
-   in_humidity_avg             I 64.636                         I                                I
-   in_humidity_duration        I 1440.0                         I                                I
-   in_humidity_min             I 60.0                           I                                I
-   in_humidity_min_time        I 2021-06-28 21:50:02+04:00      I                                I
-   in_humidity_s               I 93076.079                      I                                I
-   in_temp_avg                 I 24.642                         I                                I
-   in_temp_duration            I 1440.0                         I                                I
-   in_temp_min                 I 23.722                         I                                I
-   in_temp_min_time            I 2021-06-28 07:36:01+04:00      I                                I
-   in_temp_s                   I 35485.308                      I                                I
-   out_temp_avg                I 21.376                         I                                I
-   out_temp_duration           I 1440.0                         I                                I
-   out_temp_min                I 19.277                         I                                I
-   out_temp_min_time           I 2021-06-28 04:42:06+04:00      I                                I
-   out_temp_omm_avg            I 21.319                         I                                I
-   out_temp_omm_duration       I 1440.0                         I                                I
-   out_temp_omm_s              I 30700.0                        I                                I
-   out_temp_s                  I 30782.575                      I                                I
-   pressure_min                I 983.771                        I                                I
-   pressure_min_time           I 2021-06-28 15:37:24+04:00      I                                I
-   rain_duration               I 1440.0                         I                                I
-   rain_omm_duration           I 1440.0                         I                                I
-   rain_omm_sum                I 1.778                          I                                I
-   rain_sum                    I 1.778                          I                                I
-   rx_avg                      I 98.882                         I                                I
-   rx_duration                 I 1440.0                         I                                I
-   rx_min                      I 28.187                         I                                I
-   rx_min_time                 I 2021-06-28 14:55:00+04:00      I                                I
-   rx_s                        I 142391.145                     I                                I
-   voltage_avg                 I 4.589                          I                                I
-   voltage_duration            I 1375.0                         I                                I
-   voltage_min                 I 4.58                           I                                I
-   voltage_min_time            I 2021-06-28 00:32:00+04:00      I                                I
-   voltage_s                   I 6311.2                         I                                I
-   wind_avg                    I 2.672                          I                                I
-   wind_duration               I 1440.0                         I                                I
-   wind_s                      I 3849.023                       I                                I
-   windchill_min               I 19.277                         I                                I
-   windchill_min_time          I 2021-06-28 04:42:06+04:00      I                                I
+start_dat                      I                                I 2021-06-28 00:00:00+04:00      I
+   barometer_avg               I                                I 1021.594 (@0.0001%)            I
+   barometer_duration          I                                I 1440.0                         I
+   barometer_min               I                                I 1020.352                       I
+   barometer_min_time          I 2021-06-28 15:20:00+04:00      I                                I 2021-06-28 15:30:00+04:00
+   barometer_omm_avg           I                                I 1021.59 (@0.0001%)             I
+   barometer_omm_duration      I                                I 1440.0                         I
+   barometer_omm_s             I                                I 1471087.652                    I
+   barometer_s                 I                                I 1471093.917                    I
+   dewpoint_min                I                                I 15.381                         I
+   dewpoint_min_time           I                                I 2021-06-28 21:48:04+04:00      I
+   humidity_avg                I                                I 80.582 (@0.0074%)              I
+   humidity_duration           I                                I 1440.0                         I
+   humidity_min                I                                I 69.0                           I
+   humidity_min_time           I                                I 2021-06-28 14:16:14+04:00      I
+   humidity_omm_avg            I                                I 80.583                         I
+   humidity_omm_duration       I                                I 1440.0                         I
+   humidity_omm_s              I                                I 116039.999                     I
+   humidity_s                  I                                I 116030.0                       I
+   in_humidity_avg             I                                I 64.636 (@0.017%)               I
+   in_humidity_duration        I                                I 1440.0                         I
+   in_humidity_min             I                                I 60.0                           I
+   in_humidity_min_time        I                                I 2021-06-28 21:50:02+04:00      I
+   in_humidity_s               I                                I 93060.0                        I
+   in_temp_avg                 I                                I 24.642 (@0.004%)               I
+   in_temp_duration            I                                I 1440.0                         I
+   in_temp_min                 I                                I 23.722                         I
+   in_temp_min_time            I                                I 2021-06-28 07:36:01+04:00      I
+   in_temp_s                   I                                I 35486.388                      I
+   out_temp_avg                I                                I 21.376 (@0.0046%)              I
+   out_temp_duration           I                                I 1440.0                         I
+   out_temp_min                I                                I 19.277                         I
+   out_temp_min_time           I 2021-06-28 04:42:06+04:00      I                                I 2021-06-28 04:50:59+04:00
+   out_temp_omm_avg            I                                I 21.319 (@0.0234%)              I
+   out_temp_omm_duration       I                                I 1440.0                         I
+   out_temp_omm_s              I                                I 30706.666                      I
+   out_temp_s                  I                                I 30783.888                      I
+   pressure_min                I                                I 983.771                        I
+   pressure_min_time           I                                I 2021-06-28 15:37:24+04:00      I
+   rain_duration               I                                I 1440.0                         I
+   rain_omm_duration           I                                I 1440.0                         I
+   rain_omm_sum                I                                I 1.778                          I
+   rain_rate_avg               I                                I                                I 0.074
+   rain_rate_duration          I                                I                                I 1440.0
+   rain_rate_s                 I                                I                                I 106.679
+   rain_sum                    I                                I 1.778                          I
+   rx_avg                      I                                I 98.882 (@0.0535%)              I
+   rx_duration                 I                                I 1440.0                         I
+   rx_min                      I 28.187                         I                                I 12.812
+   rx_min_time                 I 2021-06-28 14:55:00+04:00      I                                I 2021-06-28 15:00:00+04:00
+   rx_s                        I                                I 142314.27                      I
+   voltage_avg                 I                                I 4.589                          I
+   voltage_duration            I                                I 1375.0                         I
+   voltage_min                 I                                I 4.58                           I
+   voltage_min_time            I                                I 2021-06-28 00:32:00+04:00      I
+   voltage_s                   I                                I 6311.2                         I
+   wind_avg                    I                                I 2.672 (@0.0748%)               I
+   wind_duration               I                                I 1440.0                         I
+   wind_s                      I                                I 3851.259                       I
+   windchill_min               I                                I 19.277                         I
+   windchill_min_time          I 2021-06-28 04:42:06+04:00      I                                I 2021-06-28 04:50:59+04:00
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
         key                    I          agg_D only            I        both                    I        tmp_agg_D only
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
-start_dat                      I 2021-06-29 00:00:00+04:00      I                                I
-   barometer_avg               I 1021.976                       I                                I
-   barometer_duration          I 1440.0                         I                                I
-   barometer_min               I 1020.488                       I                                I
-   barometer_min_time          I 2021-06-29 14:21:00+04:00      I                                I
-   barometer_omm_avg           I 1021.987                       I                                I
-   barometer_omm_duration      I 1440.0                         I                                I
-   barometer_omm_s             I 1471662.661                    I                                I
-   barometer_s                 I 1471646.282                    I                                I
-   dewpoint_min                I 12.557                         I                                I
-   dewpoint_min_time           I 2021-06-29 07:13:33+04:00      I                                I
-   humidity_avg                I 79.144                         I                                I
-   humidity_duration           I 1440.0                         I                                I
-   humidity_min                I 60.0                           I                                I
-   humidity_min_time           I 2021-06-29 06:17:11+04:00      I                                I
-   humidity_omm_avg            I 79.333                         I                                I
-   humidity_omm_duration       I 1440.0                         I                                I
-   humidity_omm_s              I 114240.0                       I                                I
-   humidity_s                  I 113968.058                     I                                I
-   in_humidity_avg             I 61.827                         I                                I
-   in_humidity_duration        I 1440.0                         I                                I
-   in_humidity_min             I 58.0                           I                                I
-   in_humidity_min_time        I 2021-06-29 07:22:59+04:00      I                                I
-   in_humidity_s               I 89032.052                      I                                I
-   in_temp_avg                 I 24.57                          I                                I
-   in_temp_duration            I 1440.0                         I                                I
-   in_temp_min                 I 23.555                         I                                I
-   in_temp_min_time            I 2021-06-29 07:49:59+04:00      I                                I
-   in_temp_s                   I 35381.336                      I                                I
-   out_temp_avg                I 20.98                          I                                I
-   out_temp_duration           I 1440.0                         I                                I
-   out_temp_min                I 18.166                         I                                I
-   out_temp_min_time           I 2021-06-29 23:14:21+04:00      I                                I
-   out_temp_omm_avg            I 20.912                         I                                I
-   out_temp_omm_duration       I 1440.0                         I                                I
-   out_temp_omm_s              I 30113.333                      I                                I
-   out_temp_s                  I 30211.456                      I                                I
-   pressure_min                I 983.95                         I                                I
-   pressure_min_time           I 2021-06-29 15:27:00+04:00      I                                I
-   rain_duration               I 1440.0                         I                                I
-   rain_omm_duration           I 1440.0                         I                                I
-   rain_omm_sum                I 0.0                            I                                I
-   rain_sum                    I 0.0                            I                                I
-   rx_avg                      I 99.394                         I                                I
-   rx_duration                 I 1440.0                         I                                I
-   rx_min                      I 93.958                         I                                I
-   rx_min_time                 I 2021-06-29 01:20:00+04:00      I                                I
-   rx_s                        I 143127.604                     I                                I
-   voltage_avg                 I 4.589                          I                                I
-   voltage_duration            I 1440.0                         I                                I
-   voltage_min                 I 4.58                           I                                I
-   voltage_min_time            I 2021-06-29 00:42:58+04:00      I                                I
-   voltage_s                   I 6609.51                        I                                I
-   wind_avg                    I 1.631                          I                                I
-   wind_duration               I 1440.0                         I                                I
-   wind_s                      I 2349.201                       I                                I
-   windchill_min               I 18.166                         I                                I
-   windchill_min_time          I 2021-06-29 23:14:21+04:00      I                                I
+start_dat                      I                                I 2021-06-29 00:00:00+04:00      I
+   barometer_avg               I                                I 1021.976 (@0.0003%)            I
+   barometer_duration          I                                I 1440.0                         I
+   barometer_min               I                                I 1020.488                       I
+   barometer_min_time          I 2021-06-29 14:21:00+04:00      I                                I 2021-06-29 15:27:00+04:00
+   barometer_omm_avg           I                                I 1021.987                       I
+   barometer_omm_duration      I                                I 1440.0                         I
+   barometer_omm_s             I                                I 1471662.661                    I
+   barometer_s                 I                                I 1471652.333                    I
+   dewpoint_min                I                                I 12.557                         I
+   dewpoint_min_time           I                                I 2021-06-29 07:13:33+04:00      I
+   humidity_avg                I                                I 79.144 (@0.0202%)              I
+   humidity_duration           I                                I 1440.0                         I
+   humidity_min                I                                I 60.0                           I
+   humidity_min_time           I                                I 2021-06-29 06:17:11+04:00      I
+   humidity_omm_avg            I                                I 79.333                         I
+   humidity_omm_duration       I                                I 1440.0                         I
+   humidity_omm_s              I                                I 114239.999                     I
+   humidity_s                  I                                I 113945.0                       I
+   in_humidity_avg             I                                I 61.827 (@0.0145%)              I
+   in_humidity_duration        I                                I 1440.0                         I
+   in_humidity_min             I                                I 58.0                           I
+   in_humidity_min_time        I                                I 2021-06-29 07:22:59+04:00      I
+   in_humidity_s               I                                I 89045.0                        I
+   in_temp_avg                 I                                I 24.57 (@0.004%)                I
+   in_temp_duration            I                                I 1440.0                         I
+   in_temp_min                 I                                I 23.555                         I
+   in_temp_min_time            I 2021-06-29 07:49:59+04:00      I                                I 2021-06-29 09:05:01+04:00
+   in_temp_s                   I                                I 35379.444                      I
+   out_temp_avg                I                                I 20.98 (@0.0095%)               I
+   out_temp_duration           I                                I 1440.0                         I
+   out_temp_min                I                                I 18.166                         I
+   out_temp_min_time           I 2021-06-29 23:14:21+04:00      I                                I 2021-06-29 23:25:01+04:00
+   out_temp_omm_avg            I                                I 20.912                         I
+   out_temp_omm_duration       I                                I 1440.0                         I
+   out_temp_omm_s              I                                I 30113.333                      I
+   out_temp_s                  I                                I 30209.166                      I
+   pressure_min                I                                I 983.95                         I
+   pressure_min_time           I                                I 2021-06-29 15:27:00+04:00      I
+   rain_duration               I                                I 1440.0                         I
+   rain_omm_duration           I                                I 1440.0                         I
+   rain_omm_sum                I                                I 0.0                            I
+   rain_rate_avg               I                                I                                I 0.0
+   rain_rate_duration          I                                I                                I 1440.0
+   rain_rate_s                 I                                I                                I 0.0
+   rain_sum                    I                                I 0.0                            I
+   rx_avg                      I                                I 99.394                         I
+   rx_duration                 I                                I 1440.0                         I
+   rx_min                      I                                I 93.958                         I
+   rx_min_time                 I                                I 2021-06-29 01:20:00+04:00      I
+   rx_s                        I                                I 143127.604                     I
+   voltage_avg                 I                                I 4.589 (@0.0217%)               I
+   voltage_duration            I                                I 1440.0                         I
+   voltage_min                 I                                I 4.58                           I
+   voltage_min_time            I                                I 2021-06-29 00:42:58+04:00      I
+   voltage_s                   I                                I 6609.6                         I
+   wind_avg                    I                                I 1.631                          I
+   wind_duration               I                                I 1440.0                         I
+   wind_s                      I                                I 2349.201                       I
+   windchill_min               I                                I 18.166                         I
+   windchill_min_time          I 2021-06-29 23:14:21+04:00      I                                I 2021-06-29 23:25:01+04:00
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
         key                    I          agg_D only            I        both                    I        tmp_agg_D only
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
-start_dat                      I 2021-06-30 00:00:00+04:00      I                                I
-   barometer_avg               I 1022.228                       I                                I
-   barometer_duration          I 420.0                          I                                I
-   barometer_min               I 1021.639                       I                                I
-   barometer_min_time          I 2021-06-30 06:56:59+04:00      I                                I
-   barometer_omm_avg           I 1022.157                       I                                I
+start_dat                      I                                I 2021-06-30 00:00:00+04:00      I
+   barometer_avg               I                                I 1022.181 (@0.0001%)            I
+   barometer_duration          I                                I 1440.0                         I
+   barometer_min               I                                I 1020.86                        I
+   barometer_min_time          I 2021-06-30 13:39:00+04:00      I                                I 2021-06-30 13:45:00+04:00
+   barometer_omm_avg           I                                I 1022.162                       I
+   barometer_omm_duration      I                                I 1440.0                         I
+   barometer_omm_s             I                                I 1471914.608                    I
+   barometer_s                 I                                I 1471937.805                    I
+   dewpoint_min                I                                I 14.849                         I
+   dewpoint_min_time           I 2021-06-30 00:58:12+04:00      I                                I 2021-06-30 01:00:02+04:00
+   humidity_avg                I                                I 80.752 (@0.0309%)              I
+   humidity_duration           I                                I 1440.0                         I
+   humidity_min                I                                I 69.0                           I
+   humidity_min_time           I                                I 2021-06-30 15:04:18+04:00      I
+   humidity_omm_avg            I                                I 80.625                         I
+   humidity_omm_duration       I                                I 1440.0                         I
+   humidity_omm_s              I                                I 116100.0                       I
+   humidity_s                  I                                I 116320.0                       I
+   in_humidity_avg             I                                I 63.519 (@0.0015%)              I
+   in_humidity_duration        I                                I 1440.0                         I
+   in_humidity_min             I                                I 61.0                           I
+   in_humidity_min_time        I                                I 2021-06-30 21:25:01+04:00      I
+   in_humidity_s               I                                I 91470.0                        I
+   in_temp_avg                 I                                I 24.551                         I
+   in_temp_duration            I                                I 1440.0                         I
+   in_temp_min                 I                                I 23.444                         I
+   in_temp_min_time            I                                I 2021-06-30 08:08:59+04:00      I
+   in_temp_s                   I                                I 35354.722                      I
+   out_temp_avg                I                                I 20.678 (@0.0048%)              I
+   out_temp_duration           I                                I 1440.0                         I
+   out_temp_min                I                                I 17.555                         I
+   out_temp_min_time           I 2021-06-30 03:09:25+04:00      I                                I 2021-06-30 03:10:07+04:00
+   out_temp_omm_avg            I                                I 20.671                         I
+   out_temp_omm_duration       I                                I 1440.0                         I
+   out_temp_omm_s              I                                I 29766.666                      I
+   out_temp_s                  I                                I 29778.611                      I
+   pressure_min                I                                I 984.245                        I
+   pressure_min_time           I                                I 2021-06-30 13:44:00+04:00      I
+   rain_duration               I                                I 1440.0                         I
+   rain_omm_duration           I                                I 1440.0                         I
+   rain_omm_sum                I                                I 0.254                          I
+   rain_rate_avg               I                                I                                I 0.0
+   rain_rate_duration          I                                I                                I 1440.0
+   rain_rate_s                 I                                I                                I 0.0
+   rain_sum                    I                                I 0.254                          I
+   rx_avg                      I                                I 99.457                         I
+   rx_duration                 I                                I 1440.0                         I
+   rx_min                      I                                I 97.375                         I
+   rx_min_time                 I                                I 2021-06-30 05:30:00+04:00      I
+   rx_s                        I                                I 143218.229                     I
+   voltage_avg                 I                                I 4.589                          I
+   voltage_duration            I                                I 1440.0                         I
+   voltage_min                 I                                I 4.58                           I
+   voltage_min_time            I                                I 2021-06-30 02:49:59+04:00      I
+   voltage_s                   I                                I 6609.55                        I
+   wind_avg                    I                                I 1.561                          I
+   wind_duration               I                                I 1440.0                         I
+   wind_s                      I                                I 2248.616                       I
+   windchill_min               I                                I 17.555                         I
+   windchill_min_time          I 2021-06-30 03:09:25+04:00      I                                I 2021-06-30 03:10:07+04:00
+------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
+        key                    I          agg_D only            I        both                    I        tmp_agg_D only
+------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
+start_dat                      I                                I 2021-07-01 00:00:00+04:00      I
+   barometer_avg               I 1021.59                        I                                I
+   barometer_duration          I 435.0                          I                                I
+   barometer_min               I 1021.131                       I                                I
+   barometer_min_time          I 2021-07-01 03:20:59+04:00      I                                I
+   barometer_omm_avg           I 1021.605                       I                                I
    barometer_omm_duration      I 420.0                          I                                I
-   barometer_omm_s             I 429305.972                     I                                I
-   barometer_s                 I 429335.903                     I                                I
-   dewpoint_min                I 14.849                         I                                I
-   dewpoint_min_time           I 2021-06-30 00:58:12+04:00      I                                I
-   humidity_avg                I 85.216                         I                                I
-   humidity_duration           I 420.0                          I                                I
-   humidity_min                I 81.0                           I                                I
-   humidity_min_time           I 2021-06-30 03:38:25+04:00      I                                I
-   humidity_omm_avg            I 84.714                         I                                I
+   barometer_omm_s             I 429074.343                     I                                I
+   barometer_s                 I 444391.715                     I                                I
+   dewpoint_min                I 14.791                         I                                I
+   dewpoint_min_time           I 2021-07-01 00:05:22+04:00      I                                I
+   humidity_avg                I 80.721                         I                                I
+   humidity_duration           I 435.0                          I                                I
+   humidity_min                I 74.0                           I                                I
+   humidity_min_time           I 2021-07-01 00:00:44+04:00      I                                I
+   humidity_omm_avg            I 81.0                           I                                I
    humidity_omm_duration       I 420.0                          I                                I
-   humidity_omm_s              I 35580.0                        I                                I
-   humidity_s                  I 35790.889                      I                                I
-   in_humidity_avg             I 63.045                         I                                I
-   in_humidity_duration        I 420.0                          I                                I
-   in_humidity_min             I 62.0                           I                                I
-   in_humidity_min_time        I 2021-06-30 03:24:59+04:00      I                                I
-   in_humidity_s               I 26478.973                      I                                I
-   in_temp_avg                 I 24.048                         I                                I
-   in_temp_duration            I 420.0                          I                                I
-   in_temp_min                 I 23.555                         I                                I
-   in_temp_min_time            I 2021-06-30 06:39:59+04:00      I                                I
-   in_temp_s                   I 10100.185                      I                                I
-   out_temp_avg                I 18.436                         I                                I
-   out_temp_duration           I 420.0                          I                                I
-   out_temp_min                I 17.555                         I                                I
-   out_temp_min_time           I 2021-06-30 03:09:25+04:00      I                                I
-   out_temp_omm_avg            I 18.428                         I                                I
+   humidity_omm_s              I 34020.0                        I                                I
+   humidity_s                  I 35113.816                      I                                I
+   in_humidity_avg             I 61.257                         I                                I
+   in_humidity_duration        I 435.0                          I                                I
+   in_humidity_min             I 61.0                           I                                I
+   in_humidity_min_time        I 2021-07-01 00:00:03+04:00      I                                I
+   in_humidity_s               I 26647.019                      I                                I
+   in_temp_avg                 I 24.213                         I                                I
+   in_temp_duration            I 435.0                          I                                I
+   in_temp_min                 I 23.777                         I                                I
+   in_temp_min_time            I 2021-07-01 06:45:59+04:00      I                                I
+   in_temp_s                   I 10532.914                      I                                I
+   out_temp_avg                I 19.575                         I                                I
+   out_temp_duration           I 435.0                          I                                I
+   out_temp_min                I 19.111                         I                                I
+   out_temp_min_time           I 2021-07-01 05:28:15+04:00      I                                I
+   out_temp_omm_avg            I 19.571                         I                                I
    out_temp_omm_duration       I 420.0                          I                                I
-   out_temp_omm_s              I 7739.999                       I                                I
-   out_temp_s                  I 7743.183                       I                                I
-   pressure_min                I 984.813                        I                                I
-   pressure_min_time           I 2021-06-30 06:57:19+04:00      I                                I
-   rain_duration               I 420.0                          I                                I
-   rain_omm_duration           I 840.0                          I                                I
-   rain_omm_sum                I 0.254                          I                                I
+   out_temp_omm_s              I 8219.999                       I                                I
+   out_temp_s                  I 8515.388                       I                                I
+   pressure_min                I 984.489                        I                                I
+   pressure_min_time           I 2021-07-01 04:52:13+04:00      I                                I
+   rain_duration               I 435.0                          I                                I
+   rain_omm_duration           I 855.0                          I                                I 1440.0
+   rain_omm_sum                I                                I 0.254                          I
    rain_sum                    I 0.254                          I                                I
-   rx_avg                      I 99.452                         I                                I
-   rx_duration                 I 420.0                          I                                I
-   rx_min                      I 97.375                         I                                I
-   rx_min_time                 I 2021-06-30 05:30:00+04:00      I                                I
-   rx_s                        I 41769.999                      I                                I
-   voltage_avg                 I 4.589                          I                                I
-   voltage_duration            I 420.0                          I                                I
-   voltage_min                 I 4.58                           I                                I
-   voltage_min_time            I 2021-06-30 02:49:59+04:00      I                                I
-   voltage_s                   I 1927.779                       I                                I
-   wind_avg                    I 1.282                          I                                I
-   wind_duration               I 420.0                          I                                I
-   wind_s                      I 538.684                        I                                I
-   windchill_min               I 17.555                         I                                I
-   windchill_min_time          I 2021-06-30 03:09:25+04:00      I                                I
+   rx_avg                      I 99.42                          I                                I
+   rx_duration                 I 435.0                          I                                I
+   rx_min                      I 98.229                         I                                I
+   rx_min_time                 I 2021-07-01 00:30:00+04:00      I                                I
+   rx_s                        I 43248.02                       I                                I
+   voltage_avg                 I 4.59                           I                                I
+   voltage_duration            I 435.0                          I                                I
+   voltage_min                 I 4.59                           I                                I
+   voltage_min_time            I 2021-07-01 00:00:03+04:00      I                                I
+   voltage_s                   I 1996.65                        I                                I
+   wind_avg                    I 1.757                          I                                I
+   wind_duration               I 435.0                          I                                I
+   wind_s                      I 764.44                         I                                I
+   windchill_min               I 19.111                         I                                I
+   windchill_min_time          I 2021-07-01 05:28:15+04:00      I                                I
 ➜  climato_test git:(test/prototype) ✗

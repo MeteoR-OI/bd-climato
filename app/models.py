@@ -284,6 +284,7 @@ class AggHour(models.Model):
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
     duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
+    duration_max = models.IntegerField(null=False, verbose_name="Max des durations des donnees de cette agregation", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
@@ -304,6 +305,7 @@ class TmpAggHour(models.Model):
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
     duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
+    duration_max = models.IntegerField(null=False, verbose_name="Max des durations des donnees de cette agregation", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
@@ -324,6 +326,7 @@ class AggDay(models.Model):
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
     duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
+    duration_max = models.IntegerField(null=False, verbose_name="Max des durations des donnees de cette agregation", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
@@ -344,6 +347,7 @@ class TmpAggDay(models.Model):
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
     duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
+    duration_max = models.IntegerField(null=False, verbose_name="Max des durations des donnees de cette agregation", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
@@ -364,6 +368,7 @@ class AggMonth(models.Model):
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
     duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
+    duration_max = models.IntegerField(null=False, verbose_name="Max des durations des donnees de cette agregation", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
@@ -384,6 +389,7 @@ class TmpAggMonth(models.Model):
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
     duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
+    duration_max = models.IntegerField(null=False, verbose_name="Max des durations des donnees de cette agregation", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
@@ -404,6 +410,7 @@ class AggYear(models.Model):
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
     duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
+    duration_max = models.IntegerField(null=False, verbose_name="Max des durations des donnees de cette agregation", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
@@ -424,6 +431,7 @@ class TmpAggYear(models.Model):
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
     duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
+    duration_max = models.IntegerField(null=False, verbose_name="Max des durations des donnees de cette agregation", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
@@ -444,6 +452,7 @@ class AggAll(models.Model):
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
     duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
+    duration_max = models.IntegerField(null=False, verbose_name="Max des durations des donnees de cette agregation", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
@@ -464,6 +473,7 @@ class TmpAggAll(models.Model):
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
     duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
+    duration_max = models.IntegerField(null=False, verbose_name="Max des durations des donnees de cette agregation", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)

@@ -1,16 +1,16 @@
 import datetime
-from app.tools.aggTools import getAggDuration, addJson, calcAggDate
+from app.tools.aggTools import addJson, calcAggDate
 from app.tools.climConstant import ComputationParam
 from app.tools.dateTools import str_to_date
 import pytest
 
 
-@pytest.mark.unit
-def test_getAggDuration():
-    assert int(getAggDuration('H')) == int(60)
-    assert int(getAggDuration('D')) == int(1440)
-    assert int(getAggDuration('M')) == int(43920)
-    assert int(getAggDuration('Y')) == int(525960)
+# @pytest.mark.unit
+# def test_getAggDuration():
+#     assert int(getAggDuration('H')) == int(60)
+#     assert int(getAggDuration('D')) == int(1440)
+#     assert int(getAggDuration('M')) == int(43920)
+#     assert int(getAggDuration('Y')) == int(525960)
 
 
 @pytest.mark.unit

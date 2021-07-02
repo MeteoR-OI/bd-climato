@@ -63,7 +63,7 @@ class AggSumCompute(AggCompute):
         # ------------------------------------------------------------------
 
         if delta_values.get('duration') is None:
-            tmp_duration = getAggDuration(agg_level[0])
+            tmp_duration = getAggDuration(agg_level[0], agg_deca.data.start_dat)
         else:
             tmp_duration = float(delta_values["duration"])
 
@@ -74,7 +74,7 @@ class AggSumCompute(AggCompute):
             tmp_sum = float(tmp_tmp)
         if delta_values.get(target_key + '_duration') is not None:
             if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm) and agg_level[0] == 'H':
-                tmp_duration = getAggDuration(agg_level[0])
+                tmp_duration = getAggDuration(agg_level[0], agg_deca.data.start_dat)
             else:
                 tmp_duration = delta_values[target_key + '_duration']
 
@@ -94,9 +94,9 @@ class AggSumCompute(AggCompute):
                 if m_agg_j.__contains__(a_key + '_duration') is True:
                     tmp_duration = float(m_agg_j[a_key + '_duration'])
                 else:
-                    tmp_duration = getAggDuration(agg_level[0])
+                    tmp_duration = getAggDuration(agg_level[0], agg_deca.data.start_dat)
                 if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm):
-                    tmp_duration = getAggDuration(agg_level[0])
+                    tmp_duration = getAggDuration(agg_level[0], agg_deca.data.start_dat)
                 b_value_found = True
 
         # return if the aggregation should not be sent to upper levels
