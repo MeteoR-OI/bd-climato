@@ -49,7 +49,7 @@ def main():
     
     # Now we are ready to parse the command line:
     (options, args) = parser.parse_args()
-    config_path, config_dict = weecfg.read_config('weewx_json.conf', args)
+    config_path, config_dict = weecfg.read_config('skins/Json/weewx.conf', args)
     
     print "Using configuration file %s" % config_path
 

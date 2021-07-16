@@ -79,6 +79,8 @@ LOW#slurp
   "version":2,
   "info" : {
      "title":"JSON pour BDClimato",
+     "hardware":"$station.hardware",
+     "weewxVersion":"$station.version",
      "time":"$current.dateTime",
      "uptime":"$station.uptime",
 #set $last_timestamp=datetime.fromtimestamp($db_lookup.last_timestamp)
