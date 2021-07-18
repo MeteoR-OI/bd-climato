@@ -337,13 +337,14 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
                     fd.write(str(compiled_template))
                 os.rename(tmpname, _fullname)
                 # QUETELARD
-                if _filename[0:3] == 'obs':
-                    _fullname_compil = os.path.join(dest_dir, 'compil.json')
-                    fc = open(_fullname_compil, 'a')
-                    f  = open(_fullname, 'r')
-                    shutil.copyfileobj(f, fc)
-                    fc.close()
-                    f.close()                
+                # disabled
+                # if _filename[0:3] == 'obs':
+                #     _fullname_compil = os.path.join(dest_dir, 'compil.json')
+                #     fc = open(_fullname_compil, 'a')
+                #     f  = open(_fullname, 'r')
+                #     shutil.copyfileobj(f, fc)
+                #     fc.close()
+                #     f.close()                
 
             except Exception as e:
                 # We would like to get better feedback when there are cheetah

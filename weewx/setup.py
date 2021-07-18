@@ -48,11 +48,11 @@ from weecfg import Logger
 
 logger=Logger(verbosity=1)
 
-start_scripts = ['util/init.d/weewx.bsd',
-                 'util/init.d/weewx.debian',
-                 'util/init.d/weewx.lsb',
-                 'util/init.d/weewx.redhat',
-                 'util/init.d/weewx.suse']
+# start_scripts = ['util/init.d/weewx.bsd',
+#                  'util/init.d/weewx.debian',
+#                  'util/init.d/weewx.lsb',
+#                  'util/init.d/weewx.redhat',
+#                  'util/init.d/weewx.suse']
 
 # The default station information:
 stn_info = {'station_type': 'Simulator',
@@ -156,8 +156,8 @@ class weewx_install_data(install_data):
         elif f == 'skins/Json/skin.conf':
             rv = self.process_Json_skin_file(f, install_dir, **kwargs) 
         # end added by QUETELARD  
-        elif f in start_scripts:
-            rv = self.massage_start_file(f, install_dir, **kwargs)
+        # elif f in start_scripts:
+        #     rv = self.massage_start_file(f, install_dir, **kwargs)
         else:
             rv = install_data.copy_file(self, f, install_dir, **kwargs)
         return rv
@@ -408,7 +408,6 @@ class weewx_install_data(install_data):
 
         # Do we have an old json skin file?
         if os.path.isfile(install_path):
-            print('is file!')
             # Yes. Read it
             skin_path, skin_dict = weecfg.read_config(install_path, None)
             if DEBUG:
@@ -420,12 +419,10 @@ class weewx_install_data(install_data):
                             dist_skin_dict['CheetahGenerator']['ToDate']['JSON']
                 skin_dict['CheetahGenerator']['ToDate'].comments['JSON'] = ['    # added by QUETELARD']
         else:
-            print('is not file!')
             # No old Json skin file. Use the distribution file, then, if we can,
             # use the Bootstrap skin file for update distribution file
             skin_dict = dist_skin_dict
             skin_dict['Extras']['station_id'] = skin_dict_ref['BootstrapLabels']['station_id']
-            print('skin_dict', skin_dict)
             
         # Time to write it out. Get a temporary file:
         tmpfd, tmpfn = tempfile.mkstemp()
@@ -550,8 +547,8 @@ def remove_obsolete_files(install_dir):
     except OSError:
         pass
 
-    # The directory start_scripts is no longer used
-    shutil.rmtree(os.path.join(install_dir, 'start_scripts'), True)
+    # # The directory start_scripts is no longer used
+    # shutil.rmtree(os.path.join(install_dir, 'start_scripts'), True)
 
     # The file docs/README.txt is now gone
     try:
@@ -634,6 +631,7 @@ if __name__ == "__main__":
               ('',
                ['LICENSE.txt',
                 'README',
+                'trans_json.sh',
                 'weewx.conf']),
               ## added by QUETELARD  
               ('skins/Bootstrap',
@@ -644,7 +642,9 @@ if __name__ == "__main__":
                ['skins/Json/skin.conf',
                 'skins/Json/weewx.conf']),
               ('skins/Json/json',
-               ['skins/Json/json/arch.json.tmpl'])
+               ['skins/Json/json/arch.json.tmpl']),
+              ('json_archive',
+               ['json_archive/daily.json'])            
               ## end added by QUETELARD
-          ]
+            ]
           )
