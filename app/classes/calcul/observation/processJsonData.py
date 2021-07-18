@@ -109,6 +109,9 @@ class ProcessJsonData():
             Load ou values in delta_value for value passing to loadDataInObs, and loadMaxMinInObsInObservation
         """
         # b_exclu = True -> load data from exclusion, False -> normal processing
+        if src_key == 'rain_rate':
+            b_exclu = loadFromExclu(exclusion, src_key)
+
         b_exclu = loadFromExclu(exclusion, src_key)
 
         my_value_instant = my_value_avg = None

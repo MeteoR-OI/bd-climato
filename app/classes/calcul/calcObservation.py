@@ -98,7 +98,7 @@ class CalcObs(AllCalculus):
             # delete is not part of the transaction
             if delete_flag:
                 self.delete_obs_agg(is_tmp)
-            ret = self._loadJsonArrayInObs(json_data_array, trace_flag, is_tmp, use_validation)
+            ret = self._loadJsonArrayInObs(json_data_array, trace_flag, is_tmp, use_validation, filename)
             return ret
         except Exception as inst:
             t.LogCritical(inst)
@@ -116,6 +116,7 @@ class CalcObs(AllCalculus):
         trace_flag: bool = False,
         is_tmp: bool = None,
         use_validation: bool = False,
+        filename: str = "????",
     ) -> json:
         """
         processJson
@@ -144,7 +145,7 @@ class CalcObs(AllCalculus):
                         my_span.set_attribute("idx", idx)
                     json_file_data = json_data_array[idx]
                     item_processed += json_file_data["data"].__len__()
-                    ret = self._loadJsonItemInObs(json_file_data, trace_flag, is_tmp, use_validation)
+                    ret = self._loadJsonItemInObs(json_file_data, trace_flag, is_tmp, use_validation, filename)
                     my_span.set_attribute("items", json_file_data["data"].__len__())
                     duration = datetime.datetime.now() - start_time
                     dur_millisec = duration.seconds * 1000
@@ -153,7 +154,7 @@ class CalcObs(AllCalculus):
                     t.logInfo(
                         "Json file loaded",
                         my_span,
-                        {"timeExec": dur_millisec, "items": item_processed, "idx": idx, "meteor": json_file_data.get("meteor")},
+                        {"filename": filename, "timeExec": dur_millisec, "items": item_processed, "idx": idx, "meteor": json_file_data.get("meteor")},
                     )
                     ret_data.append(ret)
                     idx += 1
@@ -183,6 +184,7 @@ class CalcObs(AllCalculus):
         trace_flag: bool = False,
         is_tmp: bool = False,
         use_validation: bool = False,
+        filename: str = '???',
     ) -> json:
         """
         processJson
@@ -217,7 +219,7 @@ class CalcObs(AllCalculus):
                 obs_meteor = poste_metier.observation(m_stop_date_agg_start_date, is_tmp)
                 if (obs_meteor.data.id is not None and json_file_data["data"][measure_idx].__contains__("update_me") is False):
                     t.logInfo(
-                        "skipping data[" + str(measure_idx) + "], stop_dat: " + str(m_stop_date_agg_start_date) + " already loaded",
+                        "file: " + filename + " skipping data[" + str(measure_idx) + "], stop_dat: " + str(m_stop_date_agg_start_date) + " already loaded",
                         my_span,
                     )
                     continue

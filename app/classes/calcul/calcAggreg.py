@@ -127,6 +127,8 @@ class CalcAggreg(AllCalculus):
                             for an_intrument in all_instr.get_all_instruments():
                                 # for all measures
                                 for my_measure in an_intrument["object"].get_all_measures():
+                                    if my_measure['target_key'] == 'rain_rate':
+                                        my_measure['target_key'] = 'rain_rate'
                                     # load the needed aggregation for this measure
                                     agg_decas = self.load_aggregations_in_array(my_measure, anAgg, aggregations, m_stop_dat)
 

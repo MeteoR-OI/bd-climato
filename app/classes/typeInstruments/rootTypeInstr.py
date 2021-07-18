@@ -75,14 +75,15 @@ class RootTypeInstrument:
 
             # add _rate suffix for sum type of aggregation
             if 'rate' in str(a_measure['agg']):
-                rate_key = a_measure['src_key'] + '_rate'
-                if '_rate_rate' in rate_key:
+                if '_rate' in a_measure['src_key']:
                     rate_key = a_measure['src_key']
+                else:
+                    rate_key = a_measure['src_key'] + '_rate'
                 if rate_key in a_measure['syno'] is False:
                     a_measure['syno'].append(rate_key)
                 if a_measure.get('target_key') is None:
-                    a_measure['target_key'] = a_measure['src_key']
-                a_measure['agg'] = str(a_measure['agg']).replace('rate', 'avg')
+                    a_measure['target_key'] = rate_key
+                a_measure['agg'] = 'avg'
 
             # add _sum suffix for sum type of aggregation
             if 'sum' in str(a_measure['agg']):
