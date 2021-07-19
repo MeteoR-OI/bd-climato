@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>$station.location</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+    <!-- Menu navbar -->
+#include "menu.html.tmpl"
+ 
+  
+    <!-- Main container -->  
+    <div class="container">
+      <div class="row">
+      
+      
+        <!-- Gauge panel -->      
+#include "direct.html.tmpl"
+
+
+          <!-- Graph panel -->        
+          <div class="col-md-8 main">
+              <ul class="nav nav-pills">
+                <li class="active"><a href="#">$BootstrapLabels.timespans.day</a></li>
+                <li><a href="week.html">$BootstrapLabels.timespans.week</a></li>
+                <li><a href="month.html">$BootstrapLabels.timespans.month</a></li>
+                <li><a href="year.html">$BootstrapLabels.timespans.year</a></li>
+              </ul>          
+              <br>                  
+                             
+              <div class="row">
+                <div class="col-md-6" align="center">
+                  <a href="big_images/daytempchill-Bootstrap.png" data-toggle="lightbox">
+                    <img src="images/daytempchill-Bootstrap.png" alt="" class="img-responsive" style="max-width:100%;">
+                  </a>
+                </div>
+            
+                <div class="col-md-6" align="center">
+                  <a href="big_images/daybarometer-Bootstrap.png" data-toggle="lightbox">
+                    <img src="images/daybarometer-Bootstrap.png" alt="" class="img-responsive" style="max-width:100%;">
+                  </a>
+                </div>          
+              </div>
+                  
+              <br>
+              <div class="row">
+                <div class="col-md-6" align="center">
+                  <a href="big_images/dayrain-Bootstrap.png" data-toggle="lightbox">
+                    <img src="images/dayrain-Bootstrap.png" alt="" class="img-responsive" style="max-width:100%;">
+                  </a>
+                </div>          
+            
+              <div class="row">
+                <div class="col-md-6" align="center">
+                  <a href="big_images/dayrainrate-Bootstrap.png" data-toggle="lightbox">
+                    <img src="images/dayrainrate-Bootstrap.png" alt="" class="img-responsive" style="max-width:100%;">
+                  </a>
+                </div>
+
+              <br>
+              <div class="row">
+                <div class="col-md-6" align="center">
+                  <a href="big_images/daywind-Bootstrap.png" data-toggle="lightbox">
+                    <img src="images/daywind-Bootstrap.png" alt="" class="img-responsive" style="max-width:100%;">
+                  </a>
+                </div>          
+            
+                <div class="col-md-6" align="center">
+                  <a href="big_images/daywinddir-Bootstrap.png" data-toggle="lightbox">
+                    <img src="images/daywinddir-Bootstrap.png" alt="" class="img-responsive" style="max-width:100%;">
+                  </a>
+                </div>          
+              </div>
+
+              <br>
+              <div class="col-md-6" align="center">
+                  <a href="big_images/dayhumidity-Bootstrap.png" data-toggle="lightbox">
+                    <img src="images/dayhumidity-Bootstrap.png" alt="" class="img-responsive" style="max-width:100%;">
+                  </a>
+                </div>          
+              </div>
+              
+#if "enable" in ($MeteoR_OI.Display.radiation, $MeteoR_OI.Display.uv)
+              <br>
+              <div class="row">
+                #if $MeteoR_OI.Display.radiation == "enable"
+                <div class="col-md-6" align="center">
+                  <a href="big_images/dayradiation-Bootstrap.png" data-toggle="lightbox">
+                    <img src="images/dayradiation-Bootstrap.png" alt="" class="img-responsive" style="max-width:100%;">
+                  </a>
+                </div>
+                #end if
+                #if $MeteoR_OI.Display.uv == "enable"
+                <div class="col-md-6" align="center">
+                  <a href="big_images/dayUV-Bootstrap.png" data-toggle="lightbox">
+                    <img src="images/dayUV-Bootstrap.png" alt="" class="img-responsive" style="max-width:100%;">
+                  </a>
+                </div>
+                #end if
+              </div>
+#end if
+        </div>
+
+
+      </div>
+  
+    <hr>
+    <footer>
+      <p>$BootstrapLabels.footer</p>
+    </footer>    
+    </div>
+
+<!-- 'raw' makes Cheetah skip this section so it doesn't get confused by the dollar signs in the js -->
+#raw
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+    <!-- Lightbox -->
+    <script src="js/ekko-lightbox.min.js"></script>
+	<script type="text/javascript">
+        $(document).delegate('*[data-toggle="lightbox"]', 'click', function(event) {
+            event.preventDefault();
+            $(this).ekkoLightbox();
+        });
+	</script>
+#end raw
+
+  </body>
+</html>

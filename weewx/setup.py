@@ -643,6 +643,8 @@ if __name__ == "__main__":
                 'skins/Json/weewx.conf']),
               ('skins/Json/json',
                ['skins/Json/json/arch.json.tmpl']),
+              ('skins/Images',
+               ['skins/Images/skin.conf']),
               ('json_archive',
                ['json_archive/daily.json'])            
               ## end added by QUETELARD
