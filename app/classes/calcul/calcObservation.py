@@ -15,6 +15,18 @@ import json
 import os
 
 
+class IsErrorClass():
+    isError = False
+
+    def get(self):
+        isErrorTmp = self.isError
+        self.isError = False
+        return isErrorTmp
+
+    def set(self, value: bool = True):
+        self.isError = value
+
+
 class CalcObs(AllCalculus):
     """
     Control all the processing of a json data, with our Observation table
@@ -51,34 +63,39 @@ class CalcObs(AllCalculus):
         if params.get("trace_flag") is not None:
             trace_flag = params["trace_flag"]
 
-        try:
-            # load our parameters
-            is_tmp = delete_flag = use_validation = False
-            ret = []
-            if params.get("is_tmp") is not None:
-                is_tmp = params["is_tmp"]
-            if params.get("delete") is not None:
-                delete_flag = params["delete"]
-            if params.get("validation") is not None:
-                use_validation = params["validation"]
+        # try:
+        # load our parameters
+        is_tmp = delete_flag = use_validation = False
+        ret = []
+        if params.get("is_tmp") is not None:
+            is_tmp = params["is_tmp"]
+        if params.get("delete") is not None:
+            delete_flag = params["delete"]
+        if params.get("validation") is not None:
+            use_validation = params["validation"]
 
-            # delete is not part of the transaction
-            if delete_flag:
-                self.delete_obs_agg(is_tmp)
+        # delete is not part of the transaction
+        if delete_flag:
+            self.delete_obs_agg(is_tmp)
 
-            # load the content of files on the server
-            # getJsonData create a new span
-            for j_data in self._getJsonData(params):
+        # load the content of files on the server
+        # getJsonData create a new span
+        isError = IsErrorClass()
+        for j_data in self._getJsonData(params, isError):
+            try:
                 func_ret = self.LoadJsonFromCall(j_data["j"], trace_flag, False, is_tmp, use_validation, j_data["f"])
                 ret.append(func_ret[0])
 
-            # activate the computation of aggregations
-            SvcAggreg.runMe({"is_tmp": is_tmp, "trace_flag": trace_flag})
-            return ret
+            except Exception:
+                isError.set(True)
 
-        except Exception as inst:
-            t.LogCritical(inst)
-            raise inst
+        # activate the computation of aggregations
+        SvcAggreg.runMe({"is_tmp": is_tmp, "trace_flag": trace_flag})
+        return ret
+
+        # except Exception as inst:
+        #     t.LogCritical(inst)
+        #     raise inst
 
     def LoadJsonFromCall(
         self,
@@ -93,16 +110,13 @@ class CalcObs(AllCalculus):
             t.logWarning("lock time-out !")
             return
         try:
-            self.tracer.add_future_attribute("json_file", filename)
-            self.tracer.save_future_attribute()
-            # delete is not part of the transaction
             if delete_flag:
                 self.delete_obs_agg(is_tmp)
             ret = self._loadJsonArrayInObs(json_data_array, trace_flag, is_tmp, use_validation, filename)
             return ret
-        except Exception as inst:
-            t.LogCritical(inst)
-            raise inst
+        # except Exception as inst:
+        #     t.LogCritical(inst)
+        #     raise inst
         finally:
             CalcObs.lock.release()
 
@@ -126,56 +140,63 @@ class CalcObs(AllCalculus):
         debut_full_process = datetime.datetime.now()
         ret_data = []
         item_processed = 0
-
-        # validate our json
-        check_result = checkJson(json_data_array)
-        if check_result is not None:
-            raise Exception("Invalid Json: " + str(check_result))
-
+        all_item_processed = 0
         idx = 0
-        try:
-            while idx < json_data_array.__len__():
-                # regenerate our future_attribute to all span(s) processing this json data
-                self.tracer.restore_future_attribute(False)
-                with self.tracer.start_as_current_span("Load Obs", trace_flag) as my_span:
-                    self.tracer.load_future_attributes_in_span(my_span)
-                    my_span.set_attribute("idx", idx)
+        meteor = "???"
+
+        with self.tracer.start_as_current_span("Load Obs", trace_flag) as my_span:
+            try:
+                # validate our json
+                meteor = str(json_data_array[0].get("meteor"))
+                check_result = checkJson(json_data_array)
+                if check_result is not None:
+                    raise Exception("Meteor: " + meteor + ", filenme: " + filename + str(check_result))
+
+                while idx < json_data_array.__len__():
                     start_time = datetime.datetime.now()
-                    if json_data_array.__len__() > 1:
-                        my_span.set_attribute("idx", idx)
                     json_file_data = json_data_array[idx]
-                    item_processed += json_file_data["data"].__len__()
+                    if idx == 0:
+                        my_span.set_attribute("meteor", meteor)
+                        my_span.set_attribute("filename", filename)
+
+                    item_processed = json_file_data["data"].__len__()
+                    all_item_processed += item_processed
+
                     ret = self._loadJsonItemInObs(json_file_data, trace_flag, is_tmp, use_validation, filename)
-                    my_span.set_attribute("items", json_file_data["data"].__len__())
+
                     duration = datetime.datetime.now() - start_time
                     dur_millisec = duration.seconds * 1000
                     if dur_millisec < 10000:
                         dur_millisec = duration.microseconds / 1000
-                    t.logInfo(
-                        "Json file loaded",
-                        my_span,
-                        {"filename": filename, "timeExec": dur_millisec, "items": item_processed, "idx": idx, "meteor": json_file_data.get("meteor")},
-                    )
+
+                    my_span.set_attribute("stat_" + str(idx), {"items": item_processed, "timeExec": dur_millisec})
                     ret_data.append(ret)
                     idx += 1
-        except Exception as exc:
-            t.LogCritical(exc)
-            raise exc
 
-        finally:
-            self.tracer.end_span()
+                global_duration = datetime.datetime.now() - debut_full_process
+                dur_millisec = global_duration.seconds * 1000
+                if dur_millisec < 10000:
+                    dur_millisec = global_duration.microseconds / 1000
+                ret_data.append(
+                    {
+                        "total_exec": dur_millisec,
+                        "item_processed": all_item_processed,
+                        "one_exec": dur_millisec / item_processed,
+                    }
+                )
+                t.logInfo(
+                    "Json file loaded",
+                    my_span,
+                    {"filename": filename, "timeExec": dur_millisec, "items": all_item_processed, "meteor": meteor},
+                )
 
-        global_duration = datetime.datetime.now() - debut_full_process
-        dur_millisec = global_duration.seconds * 1000
-        if dur_millisec < 10000:
-            dur_millisec = global_duration.microseconds / 1000
-        ret_data.append(
-            {
-                "total_exec": dur_millisec,
-                "item_processed": item_processed,
-                "one_exec": dur_millisec / item_processed,
-            }
-        )
+            except Exception as exc:
+                my_span.record_exception(exc)
+                raise exc
+
+            finally:
+                self.tracer.end_span()
+
         return ret_data
 
     def _loadJsonItemInObs(
@@ -300,7 +321,7 @@ class CalcObs(AllCalculus):
 
         return ret
 
-    def _getJsonData(self, params: json):
+    def _getJsonData(self, params: json, isError: IsErrorClass):
         """
             yield filename, file_content
         """
@@ -353,26 +374,28 @@ class CalcObs(AllCalculus):
 
                         # load_span.set_attribute("filename", aFile)
                         yield {"f": aFileSpec["f"], "j": my_json}
-                        # load_span.add_event("file.moved to [dest]", {"dest": base_dir + "/done/" + aFile})
-                        if not os.path.exists(aFileSpec["p"] + '/done'):
-                            os.makedirs(aFileSpec["p"] + '/done')
-                        os.rename(aFileSpec["p"] + "/" + aFileSpec["f"], aFileSpec["p"] + "/done/" + aFileSpec["f"])
-                        # t.logInfo(
-                        #     "json file loaded",
-                        #     load_span,
-                        #     {"filename": aFile, "dest": baseDir + "/done/" + aFile},
-                        # )
+                        if isError.get() is False:
+                            # load_span.add_event("file.moved to [dest]", {"dest": base_dir + "/done/" + aFile})
+                            if not os.path.exists(aFileSpec["p"] + '/done'):
+                                os.makedirs(aFileSpec["p"] + '/done')
+                            os.rename(aFileSpec["p"] + "/" + aFileSpec["f"], aFileSpec["p"] + "/done/" + aFileSpec["f"])
+                            # t.logInfo(
+                            #     "json file loaded",
+                            #     load_span,
+                            #     {"filename": aFile, "dest": baseDir + "/done/" + aFile},
+                            # )
+                        else:
+                            t.logInfo(
+                                "file moved to fail directory",
+                                None,
+                                {"filename": aFileSpec["f"], "dest": aFileSpec["p"] + "/failed/" + aFileSpec["f"]},
+                            )
+                            if not os.path.exists(aFileSpec["p"] + '/failed'):
+                                os.makedirs(aFileSpec["p"] + '/failed')
+                            os.rename(aFileSpec["p"] + "/" + aFileSpec["f"],  aFileSpec["p"] + "/failed/" + aFileSpec["f"])
+
                     except Exception as exc:
                         t.LogCritical(exc)
-                        # load_span.add_event("Exception, file moved to failed", {"dest": base_dir + "/failed/" + aFile})
-                        t.LogError(
-                            "file moved to fail directory",
-                            None,
-                            {"filename": aFileSpec["f"], "dest": aFileSpec["p"] + "/failed/" + aFileSpec["f"]},
-                        )
-                        if not os.path.exists(aFileSpec["p"] + '/failed'):
-                            os.makedirs(aFileSpec["p"] + '/failed')
-                        os.rename(aFileSpec["p"] + "/" + aFileSpec["f"],  aFileSpec["p"] + "/failed/" + aFileSpec["f"])
                         raise exc
 
         except Exception as exc:

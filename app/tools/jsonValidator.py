@@ -4,7 +4,7 @@ import json
 import sys
 
 
-def checkJson(j_arr: json) -> str:
+def checkJson(j_arr: json, meteor: str = "???", filename: str = "???") -> str:
     """
     checkJson
         Check Json integrity
@@ -20,10 +20,11 @@ def checkJson(j_arr: json) -> str:
         if pid is None:
             return "code meteor inconnu: " + j_arr[0]["meteor"]
 
+        stop_dat_list = []
         idx = 0
         while idx < j_arr.__len__():
             j = j_arr[idx]
-            ret = _checkJsonOneItem(j, pid, j_arr[0]["meteor"])
+            ret = _checkJsonOneItem(j, pid, j_arr[0]["meteor"], stop_dat_list)
             if ret is not None:
                 return "Error in item " + str(idx) + ": " + ret
             idx += 1
@@ -44,7 +45,7 @@ def checkJson(j_arr: json) -> str:
         raise e
 
 
-def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
+def _checkJsonOneItem(j: json, pid: int, meteor: str, stop_dat_list: list) -> str:
     try:
         idx = 0
         val_to_add = []
@@ -64,10 +65,7 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
             new_val_agg = {}
             new_val_val = {}
             a_current = j["data"][idx].get("current")
-
-            tmp_stop_dat = None
-            if j["data"][idx].__contains__("stop_dat") is True:
-                tmp_stop_dat = j["data"][idx]["stop_dat"]
+            tmp_stop_dat = j["data"][idx].get("stop_dat")
 
             if a_current is None:
                 if (
@@ -87,9 +85,7 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
                 if j["data"][idx].__contains__("stop_dat") is False:
                     if j["data"][idx].__contains__("start_dat") is False:
                         return "no start and stop_dat in j.data[" + str(idx) + "].current"
-                    measure_duration = datetime.timedelta(
-                        minutes=int(a_current["duration"])
-                    )
+                    measure_duration = datetime.timedelta(minutes=int(a_current["duration"]))
                     new_val = {
                         "k": "stop_dat",
                         "v": j["data"][idx]["start_dat"] + measure_duration,
@@ -100,10 +96,12 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
                 else:
                     tmp_stop_dat = j["data"][idx]["stop_dat"]
 
+                if str(tmp_stop_dat) in stop_dat_list:
+                    return "stop_dat: " + str(tmp_stop_dat) + " present twice"
+                stop_dat_list.append(str(tmp_stop_dat))
+
                 if j["data"][idx].__contains__("start_dat") is False:
-                    measure_duration = datetime.timedelta(
-                        minutes=int(a_current["duration"])
-                    )
+                    measure_duration = datetime.timedelta(minutes=int(a_current["duration"]))
                     new_val = {
                         "k": "start_dat",
                         "v": j["data"][idx]["stop_dat"],

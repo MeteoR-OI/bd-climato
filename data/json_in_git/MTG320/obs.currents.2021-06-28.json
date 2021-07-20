@@ -15217,36 +15217,6 @@
        "start_dat":"2021-06-28T14:55:00",
        "stop_dat":"2021-06-28T15:00:00",
        "current": {
-       "out_temp":22.9444444444,
-       "windchill":22.9444444444,
-       "heatindex":22.9444444444,
-       "dewpoint":18.6896895406,
-       "humidity":77.0,
-       "barometer":1020.45420778,
-       "pressure":983.911460635,
-       "wind_avg":2.68224666883,
-       "wind_dir":90.0,
-       "wind_max":3.57632889177,
-       "wind_max_dir":90.0,
-       "wind10_avg":3.57632889177,
-       "rain":0.0,
-       "rain_rate_max":0.0,
-       "in_temp":25.4444444444,
-       "in_humidity":64.0,
-       "rx":28.1875,
-       
-       "duration":5.0
-       },
-       "aggregations":
-       [{
-       "level":"H",
-       "start_dat":"2021-06-28T14:00:00"
-       }]
-      }, 
-      {
-       "start_dat":"2021-06-28T14:55:00",
-       "stop_dat":"2021-06-28T15:00:00",
-       "current": {
        "out_temp":23.0555555556,
        "windchill":23.0555555556,
        "heatindex":23.0555555556,
