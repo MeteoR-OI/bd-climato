@@ -1,4 +1,3 @@
-➜  ~ cd projects/climato_test
 ➜  climato_test git:(test/prototype) ✗ python3 manage.py compAgg 2 --day
 *** "DJANGO_SETTINGS_MODULE" = Clim_MeteoR.settings ***
 Poste MTG320 level: D
@@ -569,7 +568,7 @@ start_dat                      I                                I 2021-06-04 00:
    in_humidity_avg             I                                I 59.954 (@0.0183%)              I
    in_humidity_duration        I                                I 1440.0                         I
    in_humidity_max             I                                I 64.0                           I
-   in_humidity_max_time        I 2021-06-04 22:50:01+04:00      I                                I 2021-06-04 22:45:01+04:00
+   in_humidity_max_time        I                                I 2021-06-04 22:45:01+04:00      I
    in_humidity_min             I                                I 56.0                           I
    in_humidity_min_time        I                                I 2021-06-04 03:02:01+04:00      I
    in_humidity_s               I                                I 86350.0                        I
@@ -1875,89 +1874,89 @@ start_dat                      I                                I 2021-06-18 00:
         key                    I          agg_D only            I        both                    I        tmp_agg_D only
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
 start_dat                      I                                I 2021-06-19 00:00:00+04:00      I
-   barometer_avg               I                                I 1022.297 (@0.0083%)            I
-   barometer_duration          I 1440.0                         I                                I 1900.0
+   barometer_avg               I                                I 1022.297 (@0.0004%)            I
+   barometer_duration          I                                I 1440.0                         I
    barometer_max               I                                I 1024.213                       I
    barometer_max_time          I                                I 2021-06-19 20:46:02+04:00      I
    barometer_min               I                                I 1020.792                       I
    barometer_min_time          I                                I 2021-06-19 15:21:02+04:00      I
-   barometer_omm_avg           I                                I 1022.332 (@0.0175%)            I
-   barometer_omm_duration      I 1440.0                         I                                I 2880.0
-   barometer_omm_s             I 1472158.428                    I                                I 2943800.772
-   barometer_s                 I 1472108.021                    I                                I 1942203.666
+   barometer_omm_avg           I                                I 1022.332                       I
+   barometer_omm_duration      I                                I 1440.0                         I
+   barometer_omm_s             I                                I 1472158.428                    I
+   barometer_s                 I                                I 1472108.021 (@0.0005%)         I
    dewpoint_max                I                                I 19.715                         I
    dewpoint_max_time           I 2021-06-19 11:29:07+04:00      I                                I 2021-06-19 11:30:01+04:00
    dewpoint_min                I                                I 15.487                         I
    dewpoint_min_time           I 2021-06-19 07:09:29+04:00      I                                I 2021-06-19 07:10:09+04:00
    heatindex_max               I                                I 24.444                         I
    heatindex_max_time          I 2021-06-19 11:29:07+04:00      I                                I 2021-06-19 11:30:01+04:00
-   humidity_avg                I 83.128                         I                                I 84.081
-   humidity_duration           I 1440.0                         I                                I 1900.0
+   humidity_avg                I                                I 83.128 (@0.012%)               I
+   humidity_duration           I                                I 1440.0                         I
    humidity_max                I                                I 90.0                           I
    humidity_max_time           I                                I 2021-06-19 06:23:39+04:00      I
    humidity_min                I                                I 71.0                           I
    humidity_min_time           I                                I 2021-06-19 11:11:29+04:00      I
-   humidity_omm_avg            I 83.25                          I                                I 85.25
-   humidity_omm_duration       I 1440.0                         I                                I 2880.0
-   humidity_omm_s              I 119880.0                       I                                I 245520.0
-   humidity_s                  I 119705.282                     I                                I 159755.0
-   in_humidity_avg             I                                I 64.097 (@0.0405%)              I
-   in_humidity_duration        I 1440.0                         I                                I 1900.0
+   humidity_omm_avg            I                                I 83.25                          I
+   humidity_omm_duration       I                                I 1440.0                         I
+   humidity_omm_s              I                                I 119880.0                       I
+   humidity_s                  I                                I 119690.0                       I
+   in_humidity_avg             I                                I 64.097 (@0.0062%)              I
+   in_humidity_duration        I                                I 1440.0                         I
    in_humidity_max             I                                I 65.0                           I
    in_humidity_max_time        I                                I 2021-06-19 12:47:01+04:00      I
    in_humidity_min             I                                I 63.0                           I
    in_humidity_min_time        I                                I 2021-06-19 08:32:01+04:00      I
-   in_humidity_s               I 92301.059                      I                                I 121735.0
-   in_temp_avg                 I                                I 23.766 (@0.143%)               I
-   in_temp_duration            I 1440.0                         I                                I 1900.0
+   in_humidity_s               I                                I 92295.0                        I
+   in_temp_avg                 I                                I 23.766 (@0.0042%)              I
+   in_temp_duration            I                                I 1440.0                         I
    in_temp_max                 I                                I 24.666                         I
    in_temp_max_time            I                                I 2021-06-19 17:14:02+04:00      I
    in_temp_min                 I                                I 23.0                           I
    in_temp_min_time            I                                I 2021-06-19 09:00:01+04:00      I
-   in_temp_s                   I 34223.3                        I                                I 45091.388
-   out_temp_avg                I 19.995                         I                                I 19.569
-   out_temp_duration           I 1440.0                         I                                I 1900.0
+   in_temp_s                   I                                I 34225.277                      I
+   out_temp_avg                I                                I 19.995 (@0.01%)                I
+   out_temp_duration           I                                I 1440.0                         I
    out_temp_max                I                                I 24.444                         I
    out_temp_max_time           I 2021-06-19 11:29:07+04:00      I                                I 2021-06-19 11:30:01+04:00
    out_temp_min                I                                I 17.388                         I
    out_temp_min_time           I 2021-06-19 06:37:11+04:00      I                                I 2021-06-19 06:40:01+04:00
-   out_temp_omm_avg            I 19.967                         I                                I 19.06
-   out_temp_omm_duration       I 1440.0                         I                                I 2880.0
-   out_temp_omm_s              I 28753.333                      I                                I 54893.333
-   out_temp_s                  I 28793.372                      I                                I 37182.499
+   out_temp_omm_avg            I                                I 19.967                         I
+   out_temp_omm_duration       I                                I 1440.0                         I
+   out_temp_omm_s              I                                I 28753.333                      I
+   out_temp_s                  I                                I 28791.111                      I
    pressure_max                I                                I 987.367                        I
    pressure_max_time           I                                I 2021-06-19 20:46:02+04:00      I
    pressure_min                I                                I 984.088                        I
    pressure_min_time           I                                I 2021-06-19 15:46:02+04:00      I
-   rain_duration               I 1440.0                         I                                I 1900.0
-   rain_omm_duration           I 1440.0                         I                                I 2880.0
+   rain_duration               I                                I 1440.0                         I
+   rain_omm_duration           I                                I 1440.0                         I
    rain_omm_sum                I                                I 0.0                            I
    rain_rate_avg               I                                I 0.0                            I
-   rain_rate_duration          I 1440.0                         I                                I 1900.0
+   rain_rate_duration          I                                I 1440.0                         I
    rain_rate_max               I                                I 0.0                            I
    rain_rate_max_time          I                                I 2021-06-19 00:00:02+04:00      I
    rain_rate_s                 I                                I 0.0                            I
    rain_sum                    I                                I 0.0                            I
-   rx_avg                      I                                I 99.476 (@0.013%)               I
-   rx_duration                 I 1440.0                         I                                I 1900.0
+   rx_avg                      I                                I 99.476                         I
+   rx_duration                 I                                I 1440.0                         I
    rx_max                      I                                I 100.0                          I
    rx_max_time                 I                                I 2021-06-19 00:35:00+04:00      I
    rx_min                      I                                I 91.395                         I
    rx_min_time                 I                                I 2021-06-19 23:55:00+04:00      I
-   rx_s                        I 143246.874                     I                                I 188980.833
+   rx_s                        I                                I 143246.875                     I
    voltage_avg                 I                                I 4.589                          I
-   voltage_duration            I 1440.0                         I                                I 1900.0
+   voltage_duration            I                                I 1440.0                         I
    voltage_max                 I                                I 4.59                           I
    voltage_max_time            I 2021-06-19 00:05:00+04:00      I                                I 2021-06-19 00:00:02+04:00
    voltage_min                 I                                I 4.58                           I
    voltage_min_time            I                                I 2021-06-19 05:12:00+04:00      I
-   voltage_s                   I 6609.549                       I                                I 8720.9
-   wind_avg                    I 1.732                          I                                I 1.809
-   wind_duration               I 1440.0                         I                                I 1900.0
+   voltage_s                   I                                I 6609.5                         I
+   wind_avg                    I                                I 1.732                          I
+   wind_duration               I                                I 1440.0                         I
    wind_max                    I                                I 7.152                          I
    wind_max_dir                I 90.0                           I                                I 82.0
    wind_max_time               I                                I 2021-06-19 11:19:41+04:00      I
-   wind_s                      I 2494.489                       I                                I 3437.746
+   wind_s                      I                                I 2494.489                       I
    windchill_min               I                                I 17.388                         I
    windchill_min_time          I 2021-06-19 06:37:11+04:00      I                                I 2021-06-19 06:40:01+04:00
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
@@ -2676,13 +2675,13 @@ start_dat                      I                                I 2021-06-27 00:
         key                    I          agg_D only            I        both                    I        tmp_agg_D only
 ------------------------------ I ------------------------------ I ------------------------------ I ------------------------------
 start_dat                      I                                I 2021-06-28 00:00:00+04:00      I
-   barometer_avg               I                                I 1021.594 (@0.0001%)            I
+   barometer_avg               I 1021.593                       I                                I 1021.592
    barometer_duration          I                                I 1440.0                         I
    barometer_max               I                                I 1023.197                       I
    barometer_max_time          I 2021-06-28 09:34:01+04:00      I                                I 2021-06-28 09:35:00+04:00
    barometer_min               I                                I 1020.352                       I
    barometer_min_time          I 2021-06-28 15:20:00+04:00      I                                I 2021-06-28 15:30:00+04:00
-   barometer_omm_avg           I                                I 1021.59 (@0.0001%)             I
+   barometer_omm_avg           I                                I 1021.588                       I
    barometer_omm_duration      I                                I 1440.0                         I
    barometer_omm_s             I                                I 1471087.652                    I
    barometer_s                 I                                I 1471093.917                    I
@@ -2716,13 +2715,13 @@ start_dat                      I                                I 2021-06-28 00:
    in_temp_min                 I                                I 23.722                         I
    in_temp_min_time            I                                I 2021-06-28 07:36:01+04:00      I
    in_temp_s                   I                                I 35486.388                      I
-   out_temp_avg                I                                I 21.376 (@0.0046%)              I
+   out_temp_avg                I                                I 21.377                         I
    out_temp_duration           I                                I 1440.0                         I
    out_temp_max                I                                I 24.888                         I
    out_temp_max_time           I                                I 2021-06-28 12:33:57+04:00      I
    out_temp_min                I                                I 19.277                         I
    out_temp_min_time           I 2021-06-28 04:42:06+04:00      I                                I 2021-06-28 04:50:59+04:00
-   out_temp_omm_avg            I                                I 21.319 (@0.0234%)              I
+   out_temp_omm_avg            I                                I 21.324                         I
    out_temp_omm_duration       I                                I 1440.0                         I
    out_temp_omm_s              I                                I 30706.666                      I
    out_temp_s                  I                                I 30783.888                      I
@@ -2739,12 +2738,12 @@ start_dat                      I                                I 2021-06-28 00:
    rain_rate_max_time          I 2021-06-28 01:30:30+04:00      I                                I 2021-06-28 01:35:00+04:00
    rain_rate_s                 I 9.812                          I                                I 106.679
    rain_sum                    I                                I 1.778                          I
-   rx_avg                      I                                I 98.882 (@0.0535%)              I
+   rx_avg                      I                                I 98.829                         I
    rx_duration                 I                                I 1440.0                         I
    rx_max                      I                                I 100.0                          I
    rx_max_time                 I                                I 2021-06-28 00:30:00+04:00      I
-   rx_min                      I 28.187                         I                                I 12.812
-   rx_min_time                 I 2021-06-28 14:55:00+04:00      I                                I 2021-06-28 15:00:00+04:00
+   rx_min                      I                                I 12.812                         I
+   rx_min_time                 I                                I 2021-06-28 15:00:00+04:00      I
    rx_s                        I                                I 142314.27                      I
    voltage_avg                 I                                I 4.589                          I
    voltage_duration            I                                I 1375.0                         I
@@ -2753,7 +2752,7 @@ start_dat                      I                                I 2021-06-28 00:
    voltage_min                 I                                I 4.58                           I
    voltage_min_time            I                                I 2021-06-28 00:32:00+04:00      I
    voltage_s                   I                                I 6311.2                         I
-   wind_avg                    I                                I 2.672 (@0.0748%)               I
+   wind_avg                    I                                I 2.674                          I
    wind_duration               I                                I 1440.0                         I
    wind_max                    I                                I 10.281                         I
    wind_max_dir                I 180.0                          I                                I 169.0
@@ -3028,4 +3027,4 @@ start_dat                      I                                I 2021-07-01 00:
    wind_s                      I 764.44                         I                                I
    windchill_min               I 19.111                         I                                I
    windchill_min_time          I 2021-07-01 05:28:15+04:00      I                                I
-➜  climato_test git:(test/prototype) ✗
+➜  climato_test git:(test/prototype)
