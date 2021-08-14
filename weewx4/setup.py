@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/srv/weewx/virtualenv/bin python
 #
 #    weewx --- A simple, high-performance weather station server
 #
@@ -31,7 +31,7 @@ from distutils.command.install_lib import install_lib
 from distutils.core import setup
 from distutils.debug import DEBUG
 
-VERSION = "4.5.1"
+VERSION = "4.5.1-1"
 
 if sys.version_info < (2, 7):
     log.fatal('WeeWX requires Python V2.7 or greater.')
@@ -167,6 +167,7 @@ class weewx_install_data(install_data):
         #   Group 2: ' foo'
         #   Group 3: '  # A comment'
         pattern = re.compile(r'(^\s*WEEWX_ROOT\s*)=(\s*\S+)(\s*#?.*)')
+        print('pattern:', pattern)
 
         done = 0
 
@@ -322,12 +323,14 @@ if __name__ == "__main__":
                    'bin/wee_import',
                    'bin/wee_reports',
                    'bin/weewxd',
-                   'bin/wunderfixer'],
+                   'bin/wunderfixer',
+                   'bin/wee_json'],
           data_files=[('', ['LICENSE.txt', 'README.md', 'weewx.conf']), ]
                      + find_files('docs')
                      + find_files('examples')
                      + find_files('skins')
-                     + find_files('util'),
+                     + find_files('util')
+                     + find_files('json_archive'),
           cmdclass={
               "install": weewx_install,
               "install_data": weewx_install_data,
