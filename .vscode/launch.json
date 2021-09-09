@@ -64,8 +64,7 @@
             "program": "${workspaceFolder}/manage.py",
             "args": [
                 "svc",
-                "auto",
-                "--run",
+                "--list",
                 "--trace"
             ]
         },

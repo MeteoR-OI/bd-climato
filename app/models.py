@@ -11,8 +11,6 @@ class DateCharField(models.CharField):
     # description = "String Date in db, datetime in python"
 
     def __init__(self, *args, **kwargs):
-        if False:
-            t.log('coucou')
         # self.max_length = 20
         super(DateCharField, self).__init__(*args, **kwargs)
 

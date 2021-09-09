@@ -169,7 +169,8 @@ class CalcObs(AllCalculus):
                     if dur_millisec < 10000:
                         dur_millisec = duration.microseconds / 1000
 
-                    my_span.set_attribute("stat_" + str(idx), {"items": item_processed, "timeExec": dur_millisec})
+                    my_span.set_attribute("items_" + str(idx), item_processed)
+                    my_span.set_attribute("timeExec_" + str(idx), dur_millisec)
                     ret_data.append(ret)
                     idx += 1
 

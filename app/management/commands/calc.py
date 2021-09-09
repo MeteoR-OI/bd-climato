@@ -33,7 +33,7 @@ class Command(BaseCommand):
         try:
             url = "http://localhost:8000/app/svc"
             data = {"svc": service_name, "cde": command, "trace_flag": trace_flag, "params": params}
-            headers = {'content-type': 'application/json'}
+            headers = {'Content-Type': 'application/json'}
             r = requests.post(url, data=JsonPlus().dumps(data), headers=headers)
             # if r.status_code
             rj = r.json()

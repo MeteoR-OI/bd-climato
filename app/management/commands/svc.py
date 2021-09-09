@@ -64,23 +64,22 @@ class Command(BaseCommand):
             headers = {'content-type': 'application/json'}
 
             r = requests.post(url, data=JsonPlus().dumps(data), headers=headers)
-            rj = r.json()
-            if rj.__contains__('status'):
-                if rj['status'] == 'ok':
-                    if rj.__contains__('result'):
-                        for a_result in rj['result']:
-                            print(a_result)
-                    else:
-                        print('ok')
+            # rj = r.json()
+            # if rj.__contains__('status'):
+            if r.reason == 'OK':
+                if len(r.raw.data) > 0:
+                    rj = r.json()
+                    for a_result in rj['result']:
+                        print(a_result)
                 else:
-                    if rj.__contains__('errMsg'):
-                        print('Error(s):')
-                        for an_err_msg in rj['errMsg']:
-                            print(an_err_msg)
-                    else:
-                        print('Error encountered')
+                    print('ok')
             else:
-                print('Error: protocol error')
+                if r.__contains__('errMsg'):
+                    print('Error(s):')
+                    for an_err_msg in r.errMsg:
+                        print(an_err_msg)
+                else:
+                    print('Error encountered')
 
         except Exception as e:
             if e.__dict__.__len__() == 0 or 'done' not in e.__dict__:

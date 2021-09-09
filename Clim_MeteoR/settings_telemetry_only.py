@@ -27,7 +27,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'n=m9oh3l5np7o!63#ad5tgjy_r7*tqlm6l!%lzjw#^=pue0ba)'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
         'beta.meteor-oi.re',
@@ -154,49 +154,38 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'loggers': {
-        'logInfoFile': {
-            'handlers': ['logInfoFile_hdl', 'consoleCritical'],
-            'level': 'INFO'
-        },
-        'logDebugFile': {
-            'handlers': ['logDebugFile_hdl', 'consoleCritical'],
+        'log_dev': {
+            'handlers': ['console_dev', 'logFile_hdl'],
             'level': 'DEBUG'
         },
-        'logInfoConsole': {
-            'handlers': ['console'],
-            'level': 'INFO'
-        },
-        'logDebugConsole': {
-            'handlers': ['console'],
+        'log_prod': {
+            'handlers': ['console_prod', 'logFile_hdl'],
             'level': 'DEBUG'
         }
     },
     'handlers': {
-        'logInfoFile_hdl': {
+        'logFile_hdl': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': LOG_FILE_DIR + '/django.log',
             'formatter': 'file_fmt'
+            # maxBytes: 1024
+            # backupCount: 3
         },
-        'logDebugFile_hdl': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': LOG_FILE_DIR + '/django.log',
-            'formatter': 'file_fmt'
-        },
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'console_fmt'
-        },
-        'consoleCritical': {
+        'console_dev': {
             'class': 'logging.StreamHandler',
             'formatter': 'console_fmt',
-            'level': 'CRITICAL'
+            'level': 'DEBUG'
+        },
+        'console_prod': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'console_fmt',
+            'level': 'WARNING'
         }
     },
     'formatters': {
         'console_fmt': {
-            'format': '{asctime} {levelname} {module} {lineno} {message}',
+            'format': '{message}',
             'style': '{'
         },
         'file_fmt': {

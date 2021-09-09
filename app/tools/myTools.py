@@ -66,6 +66,9 @@ def CopyJson(src: json, dest: json):
     else:
         for k, v in src.items():
             _copyJson(src, dest, k, v)
+    a = 1
+    if a > 1:
+        print(a)
 
 
 def _copyJson(src: json, dest: json, k: str, v):
@@ -120,16 +123,10 @@ class LogMe:
         if hasattr(settings, "TELEMETRY") and settings.TELEMETRY is True:
             self.telemetry = True
 
-        if self.prod is True:
-            if self.debug is True:
-                self.log = logging.getLogger('logDebugFile')
-            else:
-                self.log = logging.getLogger('logInfoFile')
+        if self.prod is False or self.debug is True:
+            self.log = logging.getLogger('log_dev')
         else:
-            if self.debug is True:
-                self.log = logging.getLogger('logDebugConsole')
-            else:
-                self.log = logging.getLogger('logInfoConsole')
+            self.log = logging.getLogger('log_prod')
 
     @staticmethod
     def GetInstance():
@@ -177,14 +174,19 @@ class LogMe:
             "pyFunc": module,
             "level": level,
             "msg": self.CleanUpMessage(message),
-            "params": params,
+            # "params": params,
         }
+        # add params values
+        if params != {}:
+            for key in params:
+                log_j[key] = params[key]
 
         # add traceID
         if my_span is not None and my_span.get_span_context().trace_id is not None:
-            log_j["trace_id"] = format(int(my_span.get_span_context().trace_id), 'x')
+            log_j["traceID"] = format(int(my_span.get_span_context().trace_id), 'x')
+            log_j["spanID"] = format(int(my_span.get_span_context().span_id), 'x')
         else:
-            log_j["trace_id"] = "no_trace"
+            log_j["traceID"] = "no_trace"
 
         if hasattr(settings, "TELEMETRY") is True and settings.TELEMETRY is True:
             if return_string:
@@ -197,12 +199,16 @@ class LogMe:
             msg += ' pyLine=' + str(log_j.get("pyLine"))
             msg += ' pyFunc=' + str(log_j.get("pyFunc"))
             msg += ' msg=' + str(log_j.get("msg")) + ' '
-            if log_j.get("trace_id") != "no_trace" and log_j.get("trace_id") is not None:
-                msg += 'traceID=' + str(log_j.get("trace_id")) + ' '
-            if log_j.get("params") != {} and log_j.get("params") is not None:
-                msg += ' params=' + JsonPlus().dumps(params) + ' '
-            if return_string:
-                return msg
+            if log_j.get("traceID") != "no_trace" and log_j.get("traceID") is not None:
+                msg += 'traceID=' + str(log_j.get("trace_id"))
+            if log_j.get("spanID") != "no_trace" and log_j.get("spanID") is not None:
+                msg += 'spanID=' + str(log_j.get("trace_id"))
+            if params != {}:
+                for key in params:
+                    msg += "  " + key + "=" + str(params[key])
+
+        if return_string:
+            return msg
 
         if level == 'debug':
             self.log.debug(msg)

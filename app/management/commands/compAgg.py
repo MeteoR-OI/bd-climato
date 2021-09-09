@@ -167,7 +167,7 @@ class Command(BaseCommand):
                             break
 
                         if my_agg is None and my_tmp_agg is None:
-                            t.LogError("both aggregations can' be None!!!")
+                            t.LogError("both aggregations can't be None!!!")
                             break
 
                         if my_tmp_agg is None or str(my_agg.start_dat) < str(my_tmp_agg.start_dat):
