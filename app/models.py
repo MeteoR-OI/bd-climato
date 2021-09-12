@@ -3,7 +3,8 @@ import datetime
 from app.tools.jsonPlus import JsonPlus
 from app.tools.dateTools import str_to_date, date_to_str
 from django.core.serializers.json import DjangoJSONEncoder
-import app.tools.myTools as t
+# import app.tools.myTools as t
+from django_prometheus.models import ExportModelOperationsMixin
 
 
 class DateCharField(models.CharField):
@@ -97,7 +98,7 @@ class DateJSONField(models.JSONField):
             return ret
 
 
-class Poste(models.Model):
+class Poste(ExportModelOperationsMixin('poste'), models.Model):
     GESTION_EXTREME = (
         (0, 'Inconnu'),
         (1, 'Auto dans observation'),
@@ -143,7 +144,7 @@ class Poste(models.Model):
         db_table = "poste"
 
 
-class TypeInstrument(models.Model):
+class TypeInstrument(ExportModelOperationsMixin('type_instrument'), models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(null=False, max_length=10, verbose_name="Type de Donnees")
     model_value = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name="JsonB")
@@ -155,7 +156,7 @@ class TypeInstrument(models.Model):
         db_table = "type_instrument"
 
 
-class Exclusion(models.Model):
+class Exclusion(ExportModelOperationsMixin('exclusion'), models.Model):
     id = models.AutoField(primary_key=True)
     poste_id = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
     type_instrument = models.ForeignKey(null=False, to="TypeInstrument", on_delete=models.CASCADE)
@@ -172,7 +173,7 @@ class Exclusion(models.Model):
         db_table = "exclusion"
 
 
-class Observation(models.Model):
+class Observation(ExportModelOperationsMixin('obs'), models.Model):
     id = models.BigAutoField(primary_key=True)
     poste_id = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
     agg_start_dat = DateCharField(null=False, max_length=20, default="1900-01-01T00:00:00", verbose_name="date agregation horaire utilisée")
@@ -214,7 +215,7 @@ class TmpObservation(models.Model):
         unique_together = (("poste_id", "stop_dat"))
 
 
-class AggTodo(models.Model):
+class AggTodo(ExportModelOperationsMixin('agg_todo'), models.Model):
     id = models.AutoField(primary_key=True)
     obs_id = models.ForeignKey(null=False, to="Observation", on_delete=models.CASCADE)
     priority = models.IntegerField(null=True, default=9, verbose_name='priority, 0: one current-data, 9: multiple current-data')
@@ -244,7 +245,7 @@ class TmpAggTodo(models.Model):
         db_table = "tmp_agg_todo"
 
 
-class ExtremeTodo(models.Model):
+class ExtremeTodo(ExportModelOperationsMixin('extreme_todo'), models.Model):
     id = models.BigAutoField(primary_key=True)
     poste_id = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
     level = models.CharField(null=False, max_length=2, verbose_name="Aggregation level")
@@ -276,7 +277,7 @@ class TmpExtremeTodo(models.Model):
         db_table = "tmp_extreme_todo"
 
 
-class AggHour(models.Model):
+class AggHour(ExportModelOperationsMixin('agg_hour'), models.Model):
     id = models.AutoField(primary_key=True)
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
@@ -318,7 +319,7 @@ class TmpAggHour(models.Model):
         unique_together = (("poste_id", "start_dat"))
 
 
-class AggDay(models.Model):
+class AggDay(ExportModelOperationsMixin('agg_day'), models.Model):
     id = models.AutoField(primary_key=True)
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
@@ -360,7 +361,7 @@ class TmpAggDay(models.Model):
         unique_together = (("poste_id", "start_dat"))
 
 
-class AggMonth(models.Model):
+class AggMonth(ExportModelOperationsMixin('agg_month'), models.Model):
     id = models.AutoField(primary_key=True)
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
@@ -402,7 +403,7 @@ class TmpAggMonth(models.Model):
         unique_together = (("poste_id", "start_dat"))
 
 
-class AggYear(models.Model):
+class AggYear(ExportModelOperationsMixin('agg_year'), models.Model):
     id = models.AutoField(primary_key=True)
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
@@ -444,7 +445,7 @@ class TmpAggYear(models.Model):
         unique_together = (("poste_id", "start_dat"))
 
 
-class AggAll(models.Model):
+class AggAll(ExportModelOperationsMixin('agg_all'), models.Model):
     id = models.AutoField(primary_key=True)
     poste_id = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")

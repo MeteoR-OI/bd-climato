@@ -24,7 +24,5 @@ SvcAutoLoad.GetInstance().Start()
 SvcAggreg.GetInstance().Start()
 # SvcLoadObs.GetInstance().Start()
 
-
-app = make_wsgi_app()
-httpd = make_server('', 8000, app)
-httpd.serve_forever()
+httpd = make_server('', 8080, application)
+# httpd.serve_forever()

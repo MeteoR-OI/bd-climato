@@ -64,11 +64,9 @@ class Command(BaseCommand):
             headers = {'content-type': 'application/json'}
 
             r = requests.post(url, data=JsonPlus().dumps(data), headers=headers)
-            # rj = r.json()
-            # if rj.__contains__('status'):
-            if r.reason == 'OK':
-                if len(r.raw.data) > 0:
-                    rj = r.json()
+            rj = r.json()
+            if rj.__contains__('status'):
+                if rj['status'] == 'ok':
                     for a_result in rj['result']:
                         print(a_result)
                 else:

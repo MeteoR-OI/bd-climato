@@ -1,8 +1,10 @@
-from django.urls import path
+from django.urls import path, include
 from app.views import views
+# from django.conf import settings
+# from django.conf.urls.static import static
 
 urlpatterns = [
-    path('', views.index, name='index'),
+    path('', include('django_prometheus.urls')),
     path('svc', views.view_control_svc),
     path('poste/<int:poste_id>', views.view_poste, name='poste'),
     path('obs/<int:poste_id>', views.view_last_obs, name='poste'),
