@@ -2,13 +2,13 @@
 # This file is only a routing to the view implementation
 #
 from django.http import HttpResponse
-import json
 from app.models import Poste, Observation
 from app.views.v_agg import viewAgg
 from app.views.v_poste import view_my_poste
 from app.views.v_calc import view_my_calc
 from app.views.v_rpcSrv import viewControlSvc
 from django.views.decorators.csrf import csrf_exempt
+import json
 
 
 # views well routed

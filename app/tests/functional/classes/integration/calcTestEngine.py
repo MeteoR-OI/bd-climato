@@ -6,6 +6,7 @@ from app.classes.metier.posteMetier import PosteMetier
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.aggMeteor import AggMeteor
 from app.tools.jsonPlus import JsonPlus
+from app.tools.telemetry import Telemetry
 import os
 import app.tools.myTools as t
 
@@ -35,6 +36,7 @@ class CalcTestEngine():
                 7: load extremeFix
         """
         try:
+            self.tracer = Telemetry.Start("calculus", name);
             pid = PosteMetier.getPosteIdByMeteor('BBF015')
             if pid is None:
                 p = PosteMetier(1)
@@ -63,7 +65,7 @@ class CalcTestEngine():
                     self.calc_obs.LoadJsonFromCall([my_json], False, is_tmp=True, use_validation=False, filename='test_json')
 
                 if ((option & 2) == 2):
-                    self.calc_agg.ComputeAggreg(True)
+                    self.calc_agg._computeAggreg(True, False)
 
                 error_msg = []
                 # load list of resultset to load

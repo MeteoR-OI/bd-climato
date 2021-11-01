@@ -58,7 +58,7 @@ class AggTodoMeteor():
 
     def ReportError(self, err):
         self.status = 9
-        self.data.j_error = {"Error": err}
+        self.data.j_error = {"Error": repr(err)}
         self.save()
 
     @staticmethod

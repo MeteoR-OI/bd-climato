@@ -32,25 +32,25 @@ class AllCalculus():
         """clean_up all our tables"""
         if is_tmp is None:
             raise Exception('AllCalculus::delete_obs_agg', 'is_tmp not given')
-        my_span = {}
-        self.tracer.start_span('delete data')
-        my_span.set_attributes('isTmp', is_tmp)
-        with my_span:
-            if is_tmp is False:
-                Observation.objects.all().delete()
-                AggHour.objects.all().delete()
-                AggDay.objects.all().delete()
-                AggMonth.objects.all().delete()
-                AggYear.objects.all().delete()
-                AggAll.objects.all().delete()
-                AggTodo.objects.all().delete()
-                ExtremeTodo.objects.all().delete()
-            else:
-                TmpObservation.objects.all().delete()
-                TmpAggHour.objects.all().delete()
-                TmpAggDay.objects.all().delete()
-                TmpAggMonth.objects.all().delete()
-                TmpAggYear.objects.all().delete()
-                TmpAggAll.objects.all().delete()
-                TmpAggTodo.objects.all().delete()
-                TmpExtremeTodo.objects.all().delete()
+        # # my_span = {}
+        # my_span = self.tracer.start_span('delete data')
+        # my_span.set_attributes('isTmp', is_tmp)
+        # with my_span:
+        if is_tmp is False:
+            Observation.objects.all().delete()
+            AggHour.objects.all().delete()
+            AggDay.objects.all().delete()
+            AggMonth.objects.all().delete()
+            AggYear.objects.all().delete()
+            AggAll.objects.all().delete()
+            AggTodo.objects.all().delete()
+            ExtremeTodo.objects.all().delete()
+        else:
+            TmpObservation.objects.all().delete()
+            TmpAggHour.objects.all().delete()
+            TmpAggDay.objects.all().delete()
+            TmpAggMonth.objects.all().delete()
+            TmpAggYear.objects.all().delete()
+            TmpAggAll.objects.all().delete()
+            TmpAggTodo.objects.all().delete()
+            TmpExtremeTodo.objects.all().delete()

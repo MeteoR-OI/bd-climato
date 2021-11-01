@@ -256,6 +256,6 @@ class LogMe:
         """
             Clean up exception error message
         """
-        if msg.startswith('ConnectionError(MaxRetryError("HTTPConnectionPool('):
+        if repr(msg).startswith('ConnectionError(MaxRetryError("HTTPConnectionPool('):
             return "Connection Error, server probably not on-line or not accessible"
         return msg
