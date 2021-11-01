@@ -66,9 +66,6 @@ def CopyJson(src: json, dest: json):
     else:
         for k, v in src.items():
             _copyJson(src, dest, k, v)
-    a = 1
-    if a > 1:
-        print(a)
 
 
 def _copyJson(src: json, dest: json, k: str, v):
