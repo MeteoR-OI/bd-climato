@@ -14,11 +14,11 @@ def enable_db_access_for_all_tests(db):
 class PosteMeteorTest(TestCase):
 
     def create_poste_meteor(self):
-        return PosteMeteor(4)
+        return PosteMeteor(40)
 
     def test_poste_meteor_creation(self):
         w = self.create_poste_meteor()
-        w.data.meteor = "BBF015"
+        w.data.meteor = "BBF016"
         w.data.fuseau = 4
         w.save()
         self.assertTrue(isinstance(w, PosteMeteor))

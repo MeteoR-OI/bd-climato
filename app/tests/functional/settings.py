@@ -12,7 +12,9 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 
 import os
 
-TEST_DISCOVER_TOP_LEVEL = os.path.dirname(os.path.dirname(__file__))
+PROJECT_ROOT = os.path.realpath(os.path.dirname(__file__))
+SITE_ROOT = os.path.dirname(PROJECT_ROOT)
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -30,6 +32,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
         'beta.meteor-oi.re',
         '127.0.0.1',
+        '10.5.0.90',
         'data.meteor-oi.re',
         'localhost']
 
@@ -40,7 +43,7 @@ STATICFILES_DIRS = [
 
 INSTALLED_APPS = [
     'app',
-    'app.tests',
+    'django_prometheus',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -51,6 +54,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -58,6 +62,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
 ROOT_URLCONF = 'Clim_MeteoR.urls'
@@ -95,9 +100,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'clima_test',
         'USER': os.getenv('PGUSER', 'postgres'),
-        'PASSWORD': os.getenv('PGPASS', ''),
-        'HOST': 'localhost',
-        'PORT': '',
+        'PASSWORD': os.getenv('PGPASS', 'Funiculi'),
+        'HOST': 'localhost',                        # defined in dc-telemetry.yaml
+        'PORT': '5432',                             # defined in dc-telemetry.yaml
     }
 }
 
@@ -106,18 +111,10 @@ DATABASES = {
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 
@@ -126,14 +123,13 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'fr-fr'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Indian/Reunion'
 
 USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
-
+USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
@@ -145,5 +141,54 @@ MEDIA_ROOT = "/srv/beta_data/meteor_oi/bd_climato/bd-climato/media"
 DATA_FS_PATH = os.path.join(MEDIA_ROOT, 'data')
 
 # App settings
+AUTOLOAD_DIR = "./data/json_auto_load"          # in symc with dc-telemetry.yaml
+LOCAL_REMOTE_DIR = "./data/json_not_in_git"     # server loading file thru view
+LOCAL_DIR = './data/json_not_in_git'            # client loaded file with loadson command
 
-STATIONS_URL = "http://obs.meteor-oi.re/%s/json/daily.json"
+TELEMETRY = False                                # activate telemetry
+PROD = False
+LOG_FILE_DIR = "./data/localStorage/log"    # log storage
+
+# see comments in mytools.py(LogMe class definition)
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'loggers': {
+        'log_dev': {
+            'handlers': ['console_dev', 'logFile_hdl'],
+            'level': 'DEBUG'
+        },
+        'log_prod': {
+            'handlers': ['console_prod', 'logFile_hdl'],
+            'level': 'DEBUG'
+        }
+    },
+    'handlers': {
+        'logFile_hdl': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': LOG_FILE_DIR + '/django.log',
+            'formatter': 'file_fmt'
+        },
+        'console_dev': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'console_fmt',
+            'level': 'DEBUG'
+        },
+        'console_prod': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'console_fmt',
+            'level': 'WARNING'
+        }
+    },
+    'formatters': {
+        'console_fmt': {
+            'format': '{levelname} line:{lineno} msg:{message}',
+            'style': '{'
+        },
+        'file_fmt': {
+            'format': '{message}',
+            'style': '{'
+        }
+    }
+}
