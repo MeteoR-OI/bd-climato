@@ -166,8 +166,6 @@ class CalcObs(AllCalculus):
 
                     duration = datetime.datetime.now() - start_time
                     dur_millisec = duration.seconds * 1000
-                    if dur_millisec < 10000:
-                        dur_millisec = duration.microseconds / 1000
 
                     my_span.set_attribute("items_" + str(idx), item_processed)
                     my_span.set_attribute("timeExec_" + str(idx), dur_millisec)
@@ -176,8 +174,6 @@ class CalcObs(AllCalculus):
 
                 global_duration = datetime.datetime.now() - debut_full_process
                 dur_millisec = global_duration.seconds * 1000
-                if dur_millisec < 10000:
-                    dur_millisec = global_duration.microseconds / 1000
                 ret_data.append(
                     {
                         "total_exec": dur_millisec,

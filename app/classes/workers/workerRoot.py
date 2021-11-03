@@ -40,6 +40,7 @@ class WorkerRoot:
 
         # event to notify when a thread is exited
         self.eventKill = threading.Event()
+        self.eventKill.clear()
         self.queueRun = queue.Queue()
 
         # register and start our service

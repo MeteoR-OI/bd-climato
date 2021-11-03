@@ -24,7 +24,7 @@ class PosteMetier(PosteMeteor):
             PosteMetier.poste_events = {}
         poste_events = PosteMetier.poste_events
         if poste_events.get('p_' + str(self.data.id)) is None:
-            poste_events['p_' + str(self.data.id)] = threading.Event()
+            poste_events['p_' + str(self.data.id)] = threading.Semaphore(1)
 
     def lock(self):
         """
@@ -38,12 +38,14 @@ class PosteMetier(PosteMeteor):
             Cela doit se faire par poste, donc gerer les locks a ce niveau est la meilleure (et plus simple a coder) approche
         """
         poste_events = PosteMetier.poste_events
-        poste_events['p_' + str(self.data.id)].set()
+        if poste_events['p_' + str(self.data.id)].acquire(blocking=True, timeout=5000) is False:
+            raise Exception('poste ' + str(self.data.id) + ' locked - timeout')
 
     def unlock(self):
+        # can call multiple times unlock
         poste_events = PosteMetier.poste_events
-        if poste_events['p_' + str(self.data.id)].is_set():
-            poste_events['p_' + str(self.data.id)].clear()
+        if poste_events['p_' + str(self.data.id)]._value == 0:
+            poste_events['p_' + str(self.data.id)].release()
 
     def exclusion(self, type_intrument_id) -> json:
         """ retourne la premiere exclusion active pour le type instrument """

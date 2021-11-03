@@ -115,7 +115,7 @@ class Poste(models.Model):
         ('A', 'Global'),
     )
     # mandatory fields
-    id = models.AutoField(primary_key=True, auto_created=True)
+    id = models.AutoField(primary_key=True)
     meteor = models.CharField(null=False, max_length=10, verbose_name="Code MeteoR.OI")
     fuseau = models.SmallIntegerField(null=True, default=4, verbose_name="nombre heure entre TU et heure fuseau, default UTC+4")
 
