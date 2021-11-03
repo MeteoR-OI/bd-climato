@@ -14,7 +14,7 @@ class SvcAutoLoad(WorkerRoot):
 
     def __init__(self, is_tmp: bool = None):
         # call parent __init__
-        super(SvcAutoLoad, self).__init__(str(SvcAutoLoad), CalcObs.GetInstance().LoadJsonFromSvc, 60, ['autoload', 'auto'])
+        super(SvcAutoLoad, self).__init__(str(SvcAutoLoad), CalcObs.GetInstance().LoadJsonFromSvc, 30, ['autoload', 'auto'])
 
     @staticmethod
     def GetInstance(myClass: object = None):

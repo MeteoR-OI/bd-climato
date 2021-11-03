@@ -165,7 +165,7 @@ class CalcObs(AllCalculus):
                     ret = self._loadJsonItemInObs(json_file_data, trace_flag, is_tmp, use_validation, filename)
 
                     duration = datetime.datetime.now() - start_time
-                    dur_millisec = duration.seconds * 1000
+                    dur_millisec = round(duration.total_seconds() * 1000)
 
                     my_span.set_attribute("items_" + str(idx), item_processed)
                     my_span.set_attribute("timeExec_" + str(idx), dur_millisec)
@@ -173,7 +173,7 @@ class CalcObs(AllCalculus):
                     idx += 1
 
                 global_duration = datetime.datetime.now() - debut_full_process
-                dur_millisec = global_duration.seconds * 1000
+                dur_millisec = round(global_duration.total_seconds() * 1000)
                 ret_data.append(
                     {
                         "total_exec": dur_millisec,
@@ -299,9 +299,9 @@ class CalcObs(AllCalculus):
                 if trace_flag:
                     duration2 = datetime.datetime.now() - debut_process
                     j_trace["info"] = "idx=" + str(measure_idx)
-                    j_trace["total_exec"] = int(duration2.microseconds / 1000)
+                    j_trace["total_exec"] = int(duration2.total_seconds() * 1000)
                     j_trace["item_processed"] = json_file_data["data"].__len__()
-                    j_trace["one_exec"] = int(duration2.microseconds / 1000 / json_file_data["data"].__len__())
+                    j_trace["one_exec"] = int(duration2.total_seconds() * 1000 / json_file_data["data"].__len__())
                     # j_trace['start_dat'] = json_file_data['data'][measure_idx]['current']['start_dat']
                     j_trace["stop_dat"] = str(json_file_data["data"][measure_idx]["stop_dat"])
                     j_trace["obs data"] = JsonPlus().loads(JsonPlus().dumps(obs_meteor.data.j))
