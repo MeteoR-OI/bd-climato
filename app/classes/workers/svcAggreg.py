@@ -23,4 +23,4 @@ class SvcAggreg(WorkerRoot):
         svc_agg_instance = SvcAggreg.GetInstance()
         if svc_agg_instance.IsRunning() is False:
             svc_agg_instance.Start()
-        svc_agg_instance.RunIt(params)
+        svc_agg_instance.RunMe(params)

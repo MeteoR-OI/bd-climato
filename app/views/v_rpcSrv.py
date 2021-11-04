@@ -65,7 +65,7 @@ def ControlSvc(j_resp: dict, svc_instance, cde: SvcRequestType, params: json = {
     try:
         j_resp['status'] = 'ok'
         if (cde & SvcRequestType.Run) == SvcRequestType.Run:
-            svc_instance.RunIt(params)
+            svc_instance.RunMe(params)
             j_resp['result'].append('service ' + svc_instance.display + ' activated')
             return True
 

@@ -36,7 +36,7 @@ class CalcTestEngine():
                 7: load extremeFix
         """
         try:
-            self.tracer = Telemetry.Start("calculus", name);
+            self.tracer = Telemetry.Start("calculus", name)
             pid = PosteMetier.getPosteIdByMeteor('BBF015')
             if pid is None:
                 p = PosteMetier(1)
@@ -62,7 +62,15 @@ class CalcTestEngine():
                 self.calc.delete_obs_agg(True)
 
                 if ((option & 1) == 1):
-                    self.calc_obs.LoadJsonFromCall([my_json], False, is_tmp=True, use_validation=False, filename='test_json')
+                    my_params = {"param": {
+                        "json": my_json,
+                        "trace_flag": False,
+                        "delete": False,
+                        "is_tmp": True,
+                        "validation": False,
+                        "filename": 'test_json',
+                    }}
+                    self.calc_obs.LoadJsonFromSvc(my_params)
 
                 if ((option & 2) == 2):
                     self.calc_agg._computeAggreg(True, False)

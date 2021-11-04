@@ -5,6 +5,7 @@ from app.classes.workers.svcAggreg import SvcAggreg
 from app.classes.typeInstruments.allTtypes import AllTypeInstruments
 from app.tools.jsonPlus import JsonPlus
 from app.tools.jsonValidator import checkJson
+from app.tools.refManager import RefManager
 import app.tools.myTools as t
 from app.tools.telemetry import Telemetry
 from django.db import transaction
@@ -45,6 +46,7 @@ class CalcObs(AllCalculus):
     def LoadJsonFromSvc(self, data: json):
         """
         common params:
+                "json: json_data pre loaded
                 "delete": delete_flag,
                 "is_tmp": is_tmp,
                 "validation": use_validation
@@ -56,10 +58,20 @@ class CalcObs(AllCalculus):
         when called from autoLoad
                 "base_dir": my_json,
         """
+        self.stopRequested = False
         if data is None or data.get("param") is None or data["param"] == {}:
             t.LogError("wrong data")
+            return
         params = data["param"]
-        trace_flag = False
+
+        if params.get("StopMe") is True:
+            self.stopRequested = True
+            return
+
+        if RefManager.GetInstance().GetRef("loadObs_trace_flag") is None:
+            trace_flag = False
+        else:
+            trace_flag = RefManager.GetInstance().GetRef("loadObs_trace_flag")
         if params.get("trace_flag") is not None:
             trace_flag = params["trace_flag"]
 
@@ -83,7 +95,19 @@ class CalcObs(AllCalculus):
         isError = IsErrorClass()
         for j_data in self._getJsonData(params, isError):
             try:
-                func_ret = self.LoadJsonFromCall(j_data["j"], trace_flag, False, is_tmp, use_validation, j_data["f"])
+                if CalcObs.lock.acquire(True, 500) is False:
+                    t.logWarning("lock time-out !")
+                    return
+                try:
+                    if delete_flag:
+                        self.delete_obs_agg(is_tmp)
+                    func_ret = self._loadJsonArrayInObs(j_data["j"], trace_flag, is_tmp, use_validation, params.get('filename'))
+                # except Exception as inst:
+                #     t.LogCritical(inst)
+                #     raise inst
+                finally:
+                    CalcObs.lock.release()
+
                 ret.append(func_ret[0])
 
             except Exception:
@@ -92,33 +116,6 @@ class CalcObs(AllCalculus):
         # activate the computation of aggregations
         SvcAggreg.runMe({"is_tmp": is_tmp, "trace_flag": trace_flag})
         return ret
-
-        # except Exception as inst:
-        #     t.LogCritical(inst)
-        #     raise inst
-
-    def LoadJsonFromCall(
-        self,
-        json_data_array: json,
-        trace_flag: bool = False,
-        delete_flag: bool = False,
-        is_tmp: bool = None,
-        use_validation: bool = False,
-        filename: str = "???",
-    ):
-        if CalcObs.lock.acquire(True, 500) is False:
-            t.logWarning("lock time-out !")
-            return
-        try:
-            if delete_flag:
-                self.delete_obs_agg(is_tmp)
-            ret = self._loadJsonArrayInObs(json_data_array, trace_flag, is_tmp, use_validation, filename)
-            return ret
-        # except Exception as inst:
-        #     t.LogCritical(inst)
-        #     raise inst
-        finally:
-            CalcObs.lock.release()
 
     # ----------------
     # private methods
@@ -358,6 +355,8 @@ class CalcObs(AllCalculus):
                                 files.append({"p": dirpath, "f": filename})
 
             for aFileSpec in files:
+                if self.stopRequested is True:
+                    continue
                 if aFileSpec["f"].endswith(".json"):
                     try:
                         # load our json file

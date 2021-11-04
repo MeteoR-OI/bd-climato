@@ -23,10 +23,16 @@ class CalcAggreg(AllCalculus):
 
     def ComputAggregFromSvc(self, data: json):
         """entry point from worker"""
+        self.stopRequested = False
 
         if data is None or data.get("param") is None or data["param"] == {}:
             t.LogError("wrong data")
         params = data["param"]
+
+        if params.get("StopMe") is True:
+            self.stopRequested = True
+            return
+
         trace_flag = False
         if params.get("trace_flag") is not None:
             trace_flag = params["trace_flag"]
@@ -42,9 +48,6 @@ class CalcAggreg(AllCalculus):
         except Exception as inst:
             t.LogCritical(inst)
 
-    def ComputeAggregCall(self, is_tmp: bool = False, trace_flag: bool = False):
-        self._computeAggreg(is_tmp, trace_flag)
-
     def _computeAggreg(self, is_tmp_called: bool, trace_flag: bool):
         """
         _computeAggreg
@@ -53,12 +56,11 @@ class CalcAggreg(AllCalculus):
 
         send the delta values to all aggregations related to our measure
         """
-        while True:
+        while self.stopRequested is False:
             is_tmp = is_tmp_called
             a_todo = AggTodoMeteor.popOne(is_tmp)
             if a_todo is None:
-                is_tmp = not is_tmp
-                a_todo = AggTodoMeteor.popOne(is_tmp)
+                a_todo = AggTodoMeteor.popOne(not is_tmp)
                 if a_todo is None:
                     # no more data to update, return to sleep
                     return
@@ -78,10 +80,10 @@ class CalcAggreg(AllCalculus):
         """
         time_start = datetime.datetime.now()
         all_instr = AllTypeInstruments()
-        if RefManager.GetInstance().GetRef("svcAggreg_trace_flag") is None:
+        if RefManager.GetInstance().GetRef("calcAggreg_trace_flag") is None:
             trace_flag = False
         else:
-            trace_flag = RefManager.GetInstance().GetRef("svcAggreg_trace_flag")
+            trace_flag = RefManager.GetInstance().GetRef("calcAggreg_trace_flag")
 
         span_name = "Calc agg"
         if is_tmp is True:
