@@ -58,16 +58,20 @@ class CalcObs(AllCalculus):
         when called from autoLoad
                 "base_dir": my_json,
         """
+
+        # Load params
         self.stopRequested = False
         if data is None or data.get("param") is None or data["param"] == {}:
             t.LogError("wrong data")
             return
         params = data["param"]
 
+        # stop request
         if params.get("StopMe") is True:
             self.stopRequested = True
             return
 
+        # load parameters (global trace, then params.trace_flag)
         if RefManager.GetInstance().GetRef("loadObs_trace_flag") is None:
             trace_flag = False
         else:
@@ -75,8 +79,7 @@ class CalcObs(AllCalculus):
         if params.get("trace_flag") is not None:
             trace_flag = params["trace_flag"]
 
-        # try:
-        # load our parameters
+        # load other parameters
         is_tmp = delete_flag = use_validation = False
         ret = []
         if params.get("is_tmp") is not None:
@@ -91,7 +94,6 @@ class CalcObs(AllCalculus):
             self.delete_obs_agg(is_tmp)
 
         # load the content of files on the server
-        # getJsonData create a new span
         isError = IsErrorClass()
         for j_data in self._getJsonData(params, isError):
             try:
@@ -99,19 +101,15 @@ class CalcObs(AllCalculus):
                     t.logWarning("lock time-out !")
                     return
                 try:
-                    if delete_flag:
-                        self.delete_obs_agg(is_tmp)
-                    func_ret = self._loadJsonArrayInObs(j_data["j"], trace_flag, is_tmp, use_validation, params.get('filename'))
-                # except Exception as inst:
-                #     t.LogCritical(inst)
-                #     raise inst
+                    func_ret = self._loadJsonArrayInObs(j_data["j"], trace_flag, is_tmp, use_validation, j_data.get("f"))
                 finally:
                     CalcObs.lock.release()
 
                 ret.append(func_ret[0])
 
-            except Exception:
+            except Exception as inst:
                 isError.set(True)
+                t.LogCritical(inst)
 
         # activate the computation of aggregations
         SvcAggreg.runMe({"is_tmp": is_tmp, "trace_flag": trace_flag})
@@ -150,38 +148,42 @@ class CalcObs(AllCalculus):
                     raise Exception("Meteor: " + meteor + ", filenme: " + filename + str(check_result))
 
                 while idx < json_data_array.__len__():
-                    start_time = datetime.datetime.now()
-                    json_file_data = json_data_array[idx]
-                    if idx == 0:
-                        my_span.set_attribute("meteor", meteor)
-                        my_span.set_attribute("filename", filename)
+                    try:
+                        # start_time = datetime.datetime.now()
+                        json_file_data = json_data_array[idx]
+                        if idx == 0:
+                            my_span.set_attribute("meteor", meteor)
+                            my_span.set_attribute("filename", filename)
 
-                    item_processed = json_file_data["data"].__len__()
-                    all_item_processed += item_processed
+                        item_processed = json_file_data["data"].__len__()
+                        all_item_processed += item_processed
 
-                    ret = self._loadJsonItemInObs(json_file_data, trace_flag, is_tmp, use_validation, filename)
+                        self._loadJsonItemInObs(json_file_data, trace_flag, is_tmp, use_validation, filename)
 
-                    duration = datetime.datetime.now() - start_time
-                    dur_millisec = round(duration.total_seconds() * 1000)
+                        # duration = datetime.datetime.now() - start_time
+                        # dur_millisec = round(duration.total_seconds() * 1000)
 
-                    my_span.set_attribute("items_" + str(idx), item_processed)
-                    my_span.set_attribute("timeExec_" + str(idx), dur_millisec)
-                    ret_data.append(ret)
-                    idx += 1
+                        # my_span.set_attribute("items_" + str(idx), item_processed)
+                        # my_span.set_attribute("timeExec_" + str(idx), dur_millisec)
+                        # ret_data.append(ret)
+
+                    finally:
+                        idx += 1
 
                 global_duration = datetime.datetime.now() - debut_full_process
                 dur_millisec = round(global_duration.total_seconds() * 1000)
+                one_exec = round(dur_millisec / all_item_processed)
                 ret_data.append(
                     {
                         "total_exec": dur_millisec,
                         "item_processed": all_item_processed,
-                        "one_exec": dur_millisec / item_processed,
+                        "one_exec": one_exec,
                     }
                 )
                 t.logInfo(
                     "Json file loaded",
                     my_span,
-                    {"filename": filename, "timeExec": dur_millisec, "items": all_item_processed, "meteor": meteor},
+                    {"filename": filename, "timeExec": dur_millisec, "avgItemExec": one_exec, "items": all_item_processed, "meteor": meteor},
                 )
 
             except Exception as exc:
@@ -207,10 +209,9 @@ class CalcObs(AllCalculus):
         calulus v2, load json in the obs & agg_toto tables
         """
         all_instr = AllTypeInstruments()
-        ret = []
 
         measure_idx = 0
-        debut_process = datetime.datetime.now()
+        # debut_process = datetime.datetime.now()
         my_span = self.tracer.get_current_or_new_span("Load Obs", trace_flag)
 
         while measure_idx < json_file_data["data"].__len__():
@@ -253,9 +254,7 @@ class CalcObs(AllCalculus):
 
                 # load duration and stop_dat if not already loaded
                 if (obs_meteor.data.duration == 0 and json_file_data["data"][measure_idx].get("current") is not None):
-                    obs_meteor.data.duration = json_file_data["data"][measure_idx][
-                        "current"
-                    ]["duration"]
+                    obs_meteor.data.duration = json_file_data["data"][measure_idx]["current"]["duration"]
 
                 delta_values = {"maxminFix": [], "duration": m_duration}
 
@@ -291,29 +290,26 @@ class CalcObs(AllCalculus):
                 if obs_meteor.data.id is not None:
                     a_todo.save()
 
-                j_trace = {}
+                # j_trace = {}
 
-                if trace_flag:
-                    duration2 = datetime.datetime.now() - debut_process
-                    j_trace["info"] = "idx=" + str(measure_idx)
-                    j_trace["total_exec"] = int(duration2.total_seconds() * 1000)
-                    j_trace["item_processed"] = json_file_data["data"].__len__()
-                    j_trace["one_exec"] = int(duration2.total_seconds() * 1000 / json_file_data["data"].__len__())
-                    # j_trace['start_dat'] = json_file_data['data'][measure_idx]['current']['start_dat']
-                    j_trace["stop_dat"] = str(json_file_data["data"][measure_idx]["stop_dat"])
-                    j_trace["obs data"] = JsonPlus().loads(JsonPlus().dumps(obs_meteor.data.j))
-                    j_trace["obs aggregations"] = JsonPlus().loads(JsonPlus().dumps(obs_meteor.data.j_agg))
-                    j_trace["agg_todo dv"] = (JsonPlus().loads(JsonPlus().dumps(a_todo.data.j_dv)) if not (a_todo.data.id is None) else "{}")
+                # if trace_flag:
+                #     duration2 = datetime.datetime.now() - debut_process
+                #     j_trace["info"] = "idx=" + str(measure_idx)
+                #     j_trace["total_exec"] = int(duration2.total_seconds() * 1000)
+                #     j_trace["item_processed"] = json_file_data["data"].__len__()
+                #     j_trace["one_exec"] = int(duration2.total_seconds() * 1000 / json_file_data["data"].__len__())
+                #     # j_trace['start_dat'] = json_file_data['data'][measure_idx]['current']['start_dat']
+                #     j_trace["stop_dat"] = str(json_file_data["data"][measure_idx]["stop_dat"])
+                #     j_trace["obs data"] = JsonPlus().loads(JsonPlus().dumps(obs_meteor.data.j))
+                #     j_trace["obs aggregations"] = JsonPlus().loads(JsonPlus().dumps(obs_meteor.data.j_agg))
+                #     j_trace["agg_todo dv"] = (JsonPlus().loads(JsonPlus().dumps(a_todo.data.j_dv)) if not (a_todo.data.id is None) else "{}")
                     # t.LogDebug("json item loaded", my_span, {'idx': measure_idx, 'time_exec': j_trace["total_exec"], 'items': j_trace["item_processed"], "stop_dat": j_trace["stop_dat"]})
-
-                if j_trace != {}:
-                    ret.append(j_trace)
 
             finally:
                 measure_idx += 1
                 poste_metier.unlock()
 
-        return ret
+        return
 
     def _getJsonData(self, params: json, isError: IsErrorClass):
         """

@@ -1,13 +1,13 @@
 from app.models import Poste
-import datetime
-import pytest
-import app.tools.myTools as t
+
+# import pytest
+# import app.tools.myTools as t
 
 
-@pytest.fixture(autouse=True)
-def enable_db_access_for_all_tests(db):
-    # t.logInfo('fixture posteMeteor::enable_db_access_for_all_tests called')
-    pass
+# @pytest.fixture(autouse=True)
+# def enable_db_access_for_all_tests(db):
+#     # t.logInfo('fixture posteMeteor::enable_db_access_for_all_tests called')
+#     pass
 
 
 class PosteMeteor:
@@ -20,7 +20,7 @@ class PosteMeteor:
         p2=PosteMeteor(1, my_date) -> recupere le poste id = 1 et exclusions a la date de my_date
     """
 
-    def __init__(self, poste_id: int, date_histo: datetime = datetime.datetime.now(datetime.timezone.utc)):
+    def __init__(self, poste_id: int):
         """ load our instance from db, load exclusions at date_histo """
         if Poste.objects.filter(id=poste_id).exists():
             self.data = Poste.objects.get(id=poste_id)
@@ -37,14 +37,6 @@ class PosteMeteor:
     def save(self):
         """ save Poste """
         self.data.save()
-
-    def cas_gestion_extreme(self):
-        """ in future we will get the information from values in db """
-        return self.data.cas_gestion_extreme
-
-    def agg_min_extreme(self):
-        """ in future we will get the information from values in db """
-        return self.data.agg_min_extreme
 
     def __str__(self):
         """print myself"""

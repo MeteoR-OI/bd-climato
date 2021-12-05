@@ -12,36 +12,41 @@ import datetime
 
 
 class CalcAggreg(AllCalculus):
-    """
-    CalcAggreg
-
-    Handle all the update of our aggregation, after a change in observation table
-    """
+    """ Aggregate data from new inserted observation rows """
 
     def __init__(self):
         self.tracer = Telemetry.Start("calculus", __name__)
 
     def ComputAggregFromSvc(self, data: json):
-        """entry point from worker"""
+        """entry point called from worker"""
         self.stopRequested = False
 
+        # load params
         if data is None or data.get("param") is None or data["param"] == {}:
             t.LogError("wrong data")
         params = data["param"]
 
+        # Stop request
         if params.get("StopMe") is True:
             self.stopRequested = True
             return
 
-        trace_flag = False
+        # load parameters (global trace, then params.trace_flag)
+        if RefManager.GetInstance().GetRef("calcAgg_trace_flag") is None:
+            trace_flag = False
+        else:
+            trace_flag = RefManager.GetInstance().GetRef("calcAgg_trace_flag")
         if params.get("trace_flag") is not None:
             trace_flag = params["trace_flag"]
+
+        # load other params
+        is_tmp = False
+        ret = []
+        if params.get("is_tmp") is not None:
+            is_tmp = params["is_tmp"]
+
+        # run now
         try:
-            # load our parameters
-            is_tmp = False
-            ret = []
-            if params.get("is_tmp") is not None:
-                is_tmp = params["is_tmp"]
             ret = self._computeAggreg(is_tmp, trace_flag)
             return ret
 
@@ -49,15 +54,11 @@ class CalcAggreg(AllCalculus):
             t.LogCritical(inst)
 
     def _computeAggreg(self, is_tmp_called: bool, trace_flag: bool):
-        """
-        _computeAggreg
+        """ _computeAggreg function """
 
-        called  by the daemon service
-
-        send the delta values to all aggregations related to our measure
-        """
         while self.stopRequested is False:
             is_tmp = is_tmp_called
+            # get first aggTodo
             a_todo = AggTodoMeteor.popOne(is_tmp)
             if a_todo is None:
                 a_todo = AggTodoMeteor.popOne(not is_tmp)
@@ -73,11 +74,8 @@ class CalcAggreg(AllCalculus):
 
     @transaction.atomic
     def __processTodo(self, a_todo, is_tmp: bool = False):
-        """
-        __processTodo
+        """ Aggregate data from an agg_todo """
 
-        Process an agg_todo
-        """
         time_start = datetime.datetime.now()
         all_instr = AllTypeInstruments()
         if RefManager.GetInstance().GetRef("calcAggreg_trace_flag") is None:
@@ -88,31 +86,31 @@ class CalcAggreg(AllCalculus):
         span_name = "Calc agg"
         if is_tmp is True:
             span_name += "_tmp"
+
         with self.tracer.start_as_current_span(span_name, trace_flag) as my_span:
-            my_span.set_attribute("obsId", a_todo.data.obs_id_id)
-            my_span.set_attribute("stopDat", str(a_todo.data.obs_id.stop_dat))
-            my_span.set_attribute("meteor", a_todo.data.obs_id.poste_id.meteor)
+            my_span.set_attribute("obsId", a_todo.data.obs_id)
+            my_span.set_attribute("stopDat", str(a_todo.data.obs.stop_dat))
+            my_span.set_attribute("meteor", a_todo.data.obs.poste.meteor)
             my_span.set_attribute("isTmp", is_tmp)
-            # retrieve data we will need
-            span_load_data = self.tracer.start_span("load Aggreg", trace_flag)
-            m_stop_dat = a_todo.data.obs_id.stop_dat
-            a_start_dat = a_todo.data.obs_id.agg_start_dat
-            poste_metier = PosteMetier(a_todo.data.obs_id.poste_id_id, a_start_dat)
+
+            # retrieve posteMetier and needed aggregations
+            span_load_data = self.tracer.start_span("cache needed aggregations", trace_flag)
+            m_stop_dat = a_todo.data.obs.stop_dat
+            a_start_dat = a_todo.data.obs.agg_start_dat
+            poste_metier = PosteMetier(a_todo.data.obs.poste_id, a_start_dat)
             poste_metier.lock()
-            aggregations = poste_metier.aggregations(m_stop_dat, True, is_tmp)
+            aggregations = poste_metier.aggregations(a_todo.data.obs_id, m_stop_dat, True, is_tmp)
             span_load_data.set_attribute("items", aggregations.__len__())
             span_load_data.end()
+
             try:
                 idx_delta_value = -1
-                for an_agg in aggregations:
-                    # mark all aggregation as clean. only dirty aggregation will be saved
-                    an_agg.dirty = False
 
                 for delta_values in a_todo.data.j_dv:
                     idx_delta_value += 1
 
                     for an_agg in aggregations:
-                        # add duration in all new aggregations
+                        # add duration in main aggregations (the one with no deca...)
                         an_agg.add_duration(delta_values["duration"])
 
                     for anAgg in getAggLevels(is_tmp):
@@ -129,12 +127,10 @@ class CalcAggreg(AllCalculus):
                             for an_intrument in all_instr.get_all_instruments():
                                 # for all measures
                                 for my_measure in an_intrument["object"].get_all_measures():
-                                    if my_measure['target_key'] == 'rain_rate':
-                                        my_measure['target_key'] = 'rain_rate'
                                     # load the needed aggregation for this measure
                                     agg_decas = self.load_aggregations_in_array(my_measure, anAgg, aggregations, m_stop_dat)
 
-                                    m_agg_j = self.get_agg_magg(anAgg, a_todo.data.obs_id.j_agg)
+                                    m_agg_j = self.get_agg_magg(anAgg, a_todo.data.obs.j_agg)
 
                                     if b_insert_start_dat:
                                         b_insert_start_dat = False
@@ -143,8 +139,6 @@ class CalcAggreg(AllCalculus):
                                     # find the calculus object for my_mesure
                                     for a_calculus in self.all_calculus:
                                         if a_calculus["agg"] == my_measure["agg"]:
-                                            # if my_measure.get('target_key') == 'out_temp_omm':
-                                            #     print('out_temp_omm')
                                             if a_calculus["calc_agg"] is not None:
                                                 # load data in our aggregation
                                                 a_calculus["calc_agg"].loadDVDataInAggregation(my_measure, m_stop_dat, agg_decas[0], m_agg_j, delta_values, dv_next, trace_flag)
@@ -159,8 +153,7 @@ class CalcAggreg(AllCalculus):
                 # save our aggregations for this delta_values
                 with self.tracer.start_span("saveData", trace_flag):
                     for an_agg in aggregations:
-                        if an_agg.dirty is True:
-                            an_agg.save()
+                        an_agg.save()
 
                     # a_todo.data.status = 999
                     # a_todo.save()
@@ -173,9 +166,9 @@ class CalcAggreg(AllCalculus):
                         "Aggregation computed",
                         my_span,
                         {
-                            "obsId": a_todo.data.obs_id_id,
-                            "meteor": a_todo.data.obs_id.poste_id.meteor,
-                            "queueLength": a_todo.count(),
+                            "obsId": a_todo.data.obs_id,
+                            "meteor": a_todo.data.obs.poste.meteor,
+                            "queueLength": AggTodoMeteor.count(),
                             "timeExec": dur_millisec,
                         },
                     )

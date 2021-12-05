@@ -34,7 +34,6 @@ class AggCompute():
         for maxmin_suffix in ['_max', '_min']:
             idx_maxmin += 1
             agg_j = agg_decas[idx_maxmin].data.j
-            agg_decas[idx_maxmin].dirty = True
 
             maxmin_key = maxmin_suffix.split('_')[1]
 
@@ -175,13 +174,13 @@ class AggCompute():
             "key": target_key,
             "level": agg_deca.agg_niveau,
             "maxmin": maxmin_key,
-            "poste_id": agg_deca.data.poste_id_id,
+            "poste_id": agg_deca.data.poste_id,
             "start_dat": agg_deca.data.start_dat,
             "valeur": agg_deca.data.j[target_key + '_' + maxmin_key],
         }
         delta_values['maxminFix'].append(max_min_fix)
         # write an extreme_todo record
-        e_todo = ExtremeTodoMeteor(agg_deca.data.poste_id_id, agg_deca.agg_niveau, agg_deca.data.start_dat, maxmin_key)
+        e_todo = ExtremeTodoMeteor(agg_deca.data.poste_id, agg_deca.agg_niveau, agg_deca.data.start_dat, maxmin_key)
         e_todo.data.j_invalid = max_min_fix
         e_todo.save()
 

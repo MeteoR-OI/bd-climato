@@ -20,6 +20,8 @@ class PosteMetier(PosteMeteor):
         """ load our instance from db, load exclusions at date_histo """
         super().__init__(poste_id)
         self.exclus = ExcluMeteor.getAllForAPoste(self.data.id, start_date)
+
+        # create a global Semaphore unique for this posteId
         if hasattr(PosteMetier, 'poste_events') is False:
             PosteMetier.poste_events = {}
         poste_events = PosteMetier.poste_events
@@ -55,9 +57,10 @@ class PosteMetier(PosteMeteor):
         return None
 
     def getAllForAPoste(self, start_dat: datetime = datetime.datetime.now(datetime.timezone.utc)) -> json:
+        # can be different from self.exclus if the start_date are not the same
         return ExcluMeteor.getAllForAPoste(self.data.id, start_dat)
 
-    def aggregations(self, start_date_utc: datetime, is_measure_date: bool = False, is_tmp: bool = None) -> json:
+    def aggregations(self, obs_id: int, start_date_utc: datetime, is_measure_date: bool = False, is_tmp: bool = None) -> json:
         """
             get_agg
 
@@ -92,7 +95,7 @@ class PosteMetier(PosteMeteor):
                         already_loaded = True
                         break
                 if already_loaded is False:
-                    ret.append(AggMeteor(self.data.id, agg_niveau, tmp_dt, False, b_need_to_sum_duration))
+                    ret.append(AggMeteor(self.data.id, obs_id, agg_niveau, tmp_dt, False, b_need_to_sum_duration))
         return ret
 
     def observation(self, my_stop_date_utc: datetime, is_tmp: bool = None) -> ObsMeteor:

@@ -31,8 +31,8 @@ class ExcluMeteor():
     def __init__(self, poste_id: int, type_instrument_id: int):
         """Init a new ExcluMeteor object"""
 
-        if Exclusion.objects.filter(poste_id_id=poste_id).filter(type_instrument=type_instrument_id).exists():
-            self.data = Exclusion.objects.filter(poste_id_id=poste_id).filter(type_instrument=type_instrument_id).first()
+        if Exclusion.objects.filter(poste_id=poste_id).filter(type_instrument=type_instrument_id).exists():
+            self.data = Exclusion.objects.filter(poste_id=poste_id).filter(type_instrument=type_instrument_id).first()
         else:
             self.data = Exclusion(poste_id=poste_id, type_instrument=type_instrument_id)
 
@@ -41,7 +41,7 @@ class ExcluMeteor():
         poste_id: int,
         measure_start_dat: datetime = datetime.datetime.now(datetime.timezone.utc),
     ) -> json:
-        tmp_exlus = Exclusion.objects.filter(poste_id_id=poste_id).filter(start_dat__gte=measure_start_dat).filter(stop_dat__lte=measure_start_dat).order_by('poste_id', 'start_dat').values()
+        tmp_exlus = Exclusion.objects.filter(poste_id=poste_id).filter(start_dat__gte=measure_start_dat).filter(stop_dat__lte=measure_start_dat).order_by('poste_id', 'start_dat').values()
         # we only get the first in date for each type_intrument
         ret = []
         for an_exclu in tmp_exlus:
@@ -60,4 +60,4 @@ class ExcluMeteor():
 
     def __str__(self):
         """print myself"""
-        return "ExcluMeteor id: " + str(self.data.id) + ", poste_id: " + str(self.data.poste_id.id) + ", typeInstrument: " + str(self.data.type_instrument.id)
+        return "ExcluMeteor id: " + str(self.data.id) + ", poste_id: " + str(self.data.poste_id) + ", typeInstrument: " + str(self.data.type_instrument.id)

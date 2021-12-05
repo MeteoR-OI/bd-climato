@@ -103,8 +103,6 @@ class AggSumCompute(AggCompute):
         if has_data is False:
             return
 
-        agg_deca.dirty = True
-
         addJson(agg_j, target_key + agg_suffix, tmp_sum - tmp_sum_old)
         addJson(agg_j, target_key + '_duration', tmp_duration - tmp_duration_old)
 

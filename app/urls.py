@@ -4,7 +4,7 @@ from app.views import views
 # from django.conf.urls.static import static
 
 urlpatterns = [
-    path('', include('django_prometheus.urls')),
+    # path('', include('django_prometheus.urls')),
     path('svc', views.view_control_svc),
     path('poste/<int:poste_id>', views.view_poste, name='poste'),
     path('obs/<int:poste_id>', views.view_last_obs, name='poste'),

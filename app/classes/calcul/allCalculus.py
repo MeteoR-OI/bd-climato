@@ -1,5 +1,5 @@
-from app.models import Observation, AggHour, AggDay, AggMonth, AggYear, AggAll, AggTodo, ExtremeTodo
-from app.models import TmpObservation, TmpAggHour, TmpAggDay, TmpAggMonth, TmpAggYear, TmpAggAll, TmpAggTodo, TmpExtremeTodo
+from app.models import Observation, AggHour, AggDay, AggMonth, AggYear, AggAll, AggTodo, ExtremeTodo, AggHisto
+from app.models import TmpObservation, TmpAggHour, TmpAggDay, TmpAggMonth, TmpAggYear, TmpAggAll, TmpAggTodo, TmpExtremeTodo, TmpAggHisto
 from app.classes.calcul.observation.processJsonDataAvg import ProcessJsonDataAvg
 from app.classes.calcul.observation.processJsonDataAvgOmm import ProcessJsonDataAvgOmm
 from app.classes.calcul.observation.processJsonDataRate import ProcessJsonDataRate
@@ -32,11 +32,9 @@ class AllCalculus():
         """clean_up all our tables"""
         if is_tmp is None:
             raise Exception('AllCalculus::delete_obs_agg', 'is_tmp not given')
-        # # my_span = {}
-        # my_span = self.tracer.start_span('delete data')
-        # my_span.set_attributes('isTmp', is_tmp)
-        # with my_span:
+
         if is_tmp is False:
+            AggHisto.objects.all().delete()
             Observation.objects.all().delete()
             AggHour.objects.all().delete()
             AggDay.objects.all().delete()
@@ -46,6 +44,7 @@ class AllCalculus():
             AggTodo.objects.all().delete()
             ExtremeTodo.objects.all().delete()
         else:
+            TmpAggHisto.objects.all().delete()
             TmpObservation.objects.all().delete()
             TmpAggHour.objects.all().delete()
             TmpAggDay.objects.all().delete()

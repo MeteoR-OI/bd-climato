@@ -110,12 +110,12 @@ class Command(BaseCommand):
                     agg_obj = AggMeteor.GetAggObj(level)
 
                     all_agg = (
-                        agg_obj.objects.filter(poste_id_id=poste_id)
+                        agg_obj.objects.filter(poste_id=poste_id)
                         .order_by("start_dat")
                         .all()
                     )
                     all_tmp_agg = (
-                        tmp_agg_obj.objects.filter(poste_id_id=poste_id)
+                        tmp_agg_obj.objects.filter(poste_id=poste_id)
                         .order_by("start_dat")
                         .all()
                     )

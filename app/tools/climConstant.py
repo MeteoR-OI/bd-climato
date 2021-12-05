@@ -25,8 +25,3 @@ class SvcRequestType(Constants):
     Run = 16
     TraceOn = 32
     TraceOff = 64
-
-
-class ComputationParam(Constants):
-    # parameter for calculus module
-    AddHourToMeasureInAggHour = 1

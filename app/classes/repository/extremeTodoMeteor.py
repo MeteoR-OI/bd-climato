@@ -21,9 +21,9 @@ class ExtremeTodoMeteor():
         """Init a new ExtremeTodoMeteor object"""
 
         if agg_niveau.__len__() > 1:
-            self.data = TmpExtremeTodo(poste_id_id=poste_id, level=agg_niveau, start_dat=start_dat, invalid_type=invalid_type, j_invalid={})
+            self.data = TmpExtremeTodo(poste_id=poste_id, level=agg_niveau, start_dat=start_dat, invalid_type=invalid_type, j_invalid={})
         else:
-            self.data = ExtremeTodo(poste_id_id=poste_id, level=agg_niveau, start_dat=start_dat, invalid_type=invalid_type, j_invalid={})
+            self.data = ExtremeTodo(poste_id=poste_id, level=agg_niveau, start_dat=start_dat, invalid_type=invalid_type, j_invalid={})
 
     def save(self):
         """ save or delete our ExtremeTodo """

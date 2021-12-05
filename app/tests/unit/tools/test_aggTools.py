@@ -1,6 +1,5 @@
 import datetime
 from app.tools.aggTools import addJson, calcAggDate
-from app.tools.climConstant import ComputationParam
 from app.tools.dateTools import str_to_date
 import pytest
 
@@ -26,7 +25,6 @@ def test_addJson():
 @pytest.mark.unit
 def test_calcRealAggHourDate():
     # check that our constants matchs our computation made in Excel
-    assert ComputationParam.AddHourToMeasureInAggHour == 1
 
     results = [
         {'t': 5,   'h': '2020-12-31 22:00:00+04:00', 'd': '2020-12-31 00:00:00+04:00', 'm': '2020-12-01 00:00:00+04:00', 'y': '2020-01-01 00:00:00+04:00'},

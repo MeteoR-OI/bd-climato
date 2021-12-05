@@ -352,7 +352,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select poste.meteor, count(agg_todo.*) as queue from agg_todo join obs on agg_todo.obs_id_id = obs.id join poste on obs.poste_id_id = poste.id group by 1;\n",
+          "rawSql": "select poste.meteor, count(agg_todo.*) as queue from agg_todo join obs on agg_todo.obs_id = obs.id join poste on obs.poste_id = poste.id group by 1;\n",
           "refId": "A",
           "select": [
             [
