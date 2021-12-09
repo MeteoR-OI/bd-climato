@@ -180,15 +180,15 @@ class Exclusion(models.Model):
 class Observation(models.Model):
     id = models.BigAutoField(primary_key=True)
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
-    agg_start_dat = DateCharField(null=False, max_length=20, default="1900-01-01T00:00:00", verbose_name="date agregation horaire utilisée")
-    stop_dat = DateCharField(null=False, max_length=20, verbose_name="stop date, date de la mesure")
-    duration = models.IntegerField(null=False, verbose_name="duration in minutes", default=0)
+    agg_start_dat = DateCharField(null=False, max_length=20, default="1900-01-01T00:00:00", verbose_name="date début période")
+    stop_dat = DateCharField(null=False, max_length=20, verbose_name="date de fin de période")
+    duration = models.IntegerField(null=False, verbose_name="durée période", default=0)
 
     qa_modifications = models.IntegerField(null=False, default=0, verbose_name='qa_modifications')
     qa_incidents = models.IntegerField(null=False, default=0, verbose_name='qa_incidents')
     qa_check_done = models.BooleanField(null=False, default=False, verbose_name='qa_check_done')
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
-    j_agg = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name='mesures Json')
+    j_agg = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name='données pré-agrégées')
 
     def __str__(self):
         return "Observation id: " + str(self.id) + ", poste: " + str(self.poste) + ", de " + str(self.stop_dat - datetime.timedelta(minutes=self.duration)) + " a: " + str(self.stop_dat)
@@ -500,12 +500,12 @@ class TmpAggAll(models.Model):
 
 class AggHisto(models.Model):
     id = models.AutoField(primary_key=True)
-    obs_id = models.IntegerField(null=False, default=0, verbose_name="Last obs which update this record")
-    agg_id = models.IntegerField(null=False, default=0, verbose_name="Aggregation_id which update this record")
-    agg_level = models.CharField(null=False, max_length=2, verbose_name="Aggregation level")
-    delta_duration = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
+    obs_id = models.IntegerField(null=False, default=0, verbose_name="Obs_id")
+    agg_id = models.IntegerField(null=False, default=0, verbose_name="Agg_id")
+    agg_level = models.CharField(null=False, max_length=2, verbose_name="level")
+    delta_duration = models.IntegerField(null=False, verbose_name="Delta durées")
 
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Delta agrégation")
 
     def __str__(self):
         return "AggHisto id: " + str(self.id) + ", obs: " + str(self.obs_id) + ", Aggreg: " + str(self.agg_id) + ", level: " + self.agg_level
@@ -520,12 +520,12 @@ class AggHisto(models.Model):
 
 class TmpAggHisto(models.Model):
     id = models.AutoField(primary_key=True)
-    obs_id = models.IntegerField(null=False, default=0, verbose_name="Last obs which update this record")
-    agg_id = models.IntegerField(null=False, default=0, verbose_name="Aggregation_id which update this record")
-    agg_level = models.CharField(null=False, max_length=2, verbose_name="Aggregation level")
-    delta_duration = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
+    obs_id = models.IntegerField(null=False, default=0, verbose_name="Observation source")
+    agg_id = models.IntegerField(null=False, default=0, verbose_name="Aggregation_id updated")
+    agg_level = models.CharField(null=False, max_length=2, verbose_name="level")
+    delta_duration = models.IntegerField(null=False, verbose_name="Delta des durées")
 
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Delta agrégation")
 
     def __str__(self):
         return "TmpAggHisto id: " + str(self.id) + ", obs: " + str(self.obs_id) + ", Aggreg: " + str(self.agg_id) + ", level: " + self.agg_level
