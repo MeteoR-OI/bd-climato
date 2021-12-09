@@ -39,7 +39,7 @@ class AggMeteor():
         if agg_object.objects.filter(poste_id=poste_id).filter(start_dat=my_start_date).exists():
             self.data = agg_object.objects.filter(poste_id=poste_id).filter(start_dat=my_start_date).first()
         else:
-            self.data = agg_object(poste_id=poste_id, obs_id=obs_id, start_dat=my_start_date, duration_sum=0, duration_max=0, j={})
+            self.data = agg_object(poste_id=poste_id, start_dat=my_start_date, duration_sum=0, duration_max=0, j={})
             self.data.duration_max = getAggDuration(agg_niveau, my_start_date)
 
         # histo data only on hourly/daily agregations
@@ -126,6 +126,15 @@ class AggMeteor():
     #         return 'xxxxx'
     #     else:
     #         return lvl_mapping[my_level]
+
+    def getLevelCode(self):
+        return self.agg_niveau
+
+    def getLevel(self):
+        lvl_mapping = {'H': 'hour', 'D': 'day', 'M': 'month', 'Y': 'year', 'A': 'all'}
+        my_level = self.agg_niveau[0]
+        if lvl_mapping.get(my_level) is None:
+            return 'xxxxx'
 
     def __str__(self):
         """print myself"""
