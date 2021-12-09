@@ -350,6 +350,7 @@ class CalcObs(AllCalculus):
                             if str(filename).endswith('.json') and str(dirpath).endswith('/done') is False and str(dirpath).endswith('/failed') is False:
                                 files.append({"p": dirpath, "f": filename})
 
+            files = sorted(files, key=lambda k: k['f'], reverse=False)
             for aFileSpec in files:
                 if self.stopRequested is True:
                     continue

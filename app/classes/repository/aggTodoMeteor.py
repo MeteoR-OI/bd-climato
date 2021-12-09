@@ -35,9 +35,12 @@ class AggTodoMeteor():
             self.data.delete()
 
     @staticmethod
-    def count(is_tmp: bool):
-        return getAggTodoObject(is_tmp).objects.count()
-
+    def count(is_tmp: bool = None):
+        if is_tmp is not None:
+            return getAggTodoObject(is_tmp).objects.count()
+        count_all = getAggTodoObject(True).objects.count()
+        return getAggTodoObject(False).objects.count() + count_all
+    
     def ReportError(self, err):
         self.status = 9
         self.data.j_error = {"Error": repr(err)}

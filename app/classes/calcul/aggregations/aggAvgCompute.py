@@ -128,7 +128,7 @@ class AggAvgCompute(AggCompute):
         else:
             agg_j[target_key + '_avg'] = tmp_s_new / tmp_duration_new
             # Add omm values in agg_hour
-            if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm) and str(agg_deca.getLevel()[0]).lower() == 'h':
+            if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm) and str(agg_deca.getLevel()).lower()[0] == 'h':
                 agg_j[target_key] = tmp_s_new / tmp_duration_new
 
         if isFlagged(my_measure['special'], MeasureProcessingBitMask.OnlyAggregateInHour) is True:
