@@ -21,6 +21,8 @@
   - [b. Création de la base de données locale vide](#b-création-de-la-base-de-données-locale-vide)
 - [6. Activer le setting local](#6-activer-le-setting-local)
 - [7.	**Lancer VS Code sur le projet**](#7lancer-vs-code-sur-le-projet)
+- [8, Code coverage](#8-code-coverage)
+- [9. Ajout d'un bouton pour declencher le code cov](#9-ajout-dun-bouton-pour-declencher-le-code-cov)
 
 <!-- /code_chunk_output -->
 
@@ -161,7 +163,7 @@ Tapez les commandes suivantes dans un terminal:
 ```shell
 psql -U postgres    # Vous allez etre dans le prompt de psql
 
-create database bd_climato;
+CREATE DATABASE bd_climato;
 \q                  # retour sur le prompt du terminal
 exit
 ```
@@ -223,3 +225,27 @@ Pour ajouter Django comme commande du debugger, il faut ajouter les lignes suiva
     ]
 }
 ```
+# 8, Code coverage
+Mes tests me chargent pas dans le test explorer de python.
+J'ai installe **l'extension Python Test Explorer** for Visual Studio Code
+
+Pour avoir la visualisation du code coverage dans vs code, il faut installer l'extension:
+  **coverage-gutters**. J'ai prefere la version 2.60, downloadé par 89K personnes
+
+On doit pouvoir faire une tache vs code pour automatiser tout cela.
+pour le moment je passe en mode commande pour mettre a jour le code coverage:
+
+``` shell
+  coverage run -m pytest tests
+  coverage xml
+```
+
+pour generer les pages html dans le repertoire htmlcov (non envoye sur git):
+``` shell
+  coverage html
+  open htmlcov/index.html
+````
+
+# 9. Ajout d'un bouton pour declencher le code cov
+Installer l extension **VsCode Action Buttons**
+Un bouton Jaune **CodeCov** permettant de lancer la commande de code coverage va apparaitre dans la barre de status (en bas)

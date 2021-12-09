@@ -1,0 +1,75 @@
+# config file version
+apiVersion: 1
+
+deleteDatasources:
+  - name: loki
+  - name: prometheus
+  - name: jaeger
+  - name: postgres
+
+datasources:
+- name: loki
+  type: loki
+  uid: loki
+  # uid: my_loki
+  access: proxy
+  url: http://10.5.0.20:3100
+  basicAuth: false
+  isDefault: true
+  version: 1
+  editable: false
+  jsonData:
+    maxLines: 1000
+    derivedFields:
+    - datasourceUid: jaeger
+      matcherRegex: "trace_id\": \"(\\w+)"
+      name: trace_id
+      # only '${__value.raw}' open in grafana window
+      url: '$${__value.raw}'
+    - name: trace_id
+      matcherRegex: "trace_id\": \"(\\w+)"
+      # open jaeger in another window
+      url: 'http://localhost:16686/trace/$${__value.raw}'
+
+- name: jaeger
+  uid: jaeger
+  type: jaeger
+  url: http://10.5.0.60:16686
+  basicAuth: false
+  isDefault: false
+  version: 1
+  editable: false
+  access: proxy
+  # jsonData:
+  #   maxLines: 1000
+  #   derivedFields:
+  #     - datasourceUid: my_loki
+  #       matcherRegex: "trace_id=(\\w+)"
+  #       name: TraceID
+  #       url: "$${__value.raw}"
+
+- name: prometheus
+  type: prometheus
+  uid: prometheus
+  access: proxy
+  url: http://10.5.0.10:9090
+  isDefault: false
+  version: 1
+  editable: false
+  basicAuth: false
+
+- name: postgres
+  type: postgres
+  url: host.docker.internal:5432
+  database: climatest
+  user: postgres
+  secureJsonData:
+    password: "Funiculi"
+  jsonData:
+    sslmode: "disable" # disable/require/verify-ca/verify-full
+    maxOpenConns: 0         # Grafana v5.4+
+    maxIdleConns: 2         # Grafana v5.4+
+    connMaxLifetime: 14400  # Grafana v5.4+
+    postgresVersion: 1000 # 903=9.3, 904=9.4, 905=9.5, 906=9.6, 1000=10
+    timescaledb: false
+  

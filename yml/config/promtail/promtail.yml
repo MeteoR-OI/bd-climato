@@ -1,0 +1,42 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /promtail/positions.yaml
+
+client:
+  url: http://10.5.0.20:3100/loki/api/v1/push
+  batchwait: 1s
+  batchsize: 51200
+  backoff_config:
+    min_period: 500ms
+    max_period: 1m
+    max_retries: 60
+
+scrape_configs:
+  - job_name: system
+    static_configs:
+    - targets:
+      - localhost
+      labels:
+        job: syslogs
+        __path__: /home/django/loghost/system.log
+
+  - job_name: django_log
+    static_configs:
+    - targets:
+      - localhost
+      labels:
+        job: django_debug
+        __path__: /home/django/log/django.log
+    pipeline_stages:
+    - json:
+        expressions:
+          ts: ts
+          level: level
+          py_file: py_file
+          py_line: py_line
+          trace_id: trace_id
+          msg: msg
+          params: params

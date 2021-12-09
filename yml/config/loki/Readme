@@ -1,0 +1,2 @@
+on mac, data files are on /tmp/loki, not in ./data/localStorage
+

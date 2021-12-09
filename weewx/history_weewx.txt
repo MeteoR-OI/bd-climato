@@ -1,0 +1,332 @@
+    1  echo $STATION_ID_LOWERC
+    2  echo $SHELL
+    3  echo $STATION_ID
+    4  echo $STATION_ID_LOWERC
+    5  ll
+    6  vi ~/.bashrc 
+    7  ll
+    8  cd
+    9  ll
+   10  mkdir scripts
+   11  ll
+   12  cd scripts/
+   13  ls
+   14  vi rasp04_send_ssh_key.sh
+   15  vi /etc/environment 
+   16  chmod +x rasp04_send_ssh_key.sh 
+   17  cd
+   18  ll
+   19  cd ~/scripts
+   20  ll
+   21  vi rasp04_send_ssh_key.sh 
+   22  mariadb -u root -p
+   23  mariadb -u root
+   24  mariadb -u root -p
+   25  mariadb -u root
+   26  sudo mariadb -u root
+   27  ssh-keygen -t rsa
+   28  cat ~/.ssh/id_rsa.pub
+   29  cd ~/scripts && ./rasp04_send_ssh_key.sh
+   30  cat cd ~/scripts && ./rasp04_send_ssh_key.sh
+   31  ct ./rasp04_send_ssh_key.sh
+   32  cat ./rasp04_send_ssh_key.sh
+   33  cat /srv/$WEEWX_USER/.ssh/id_rsa.pub | ssh $STATION_ID_LOWERC@ftp.meteor-oi.re "cat - >> /srv/data/meteor/stations/$STATION_ID/.ssh/authorized_keys"
+   34  ssh ndlp1520@ftp.meteor-oi.re
+   35  sudo su
+   36  cd
+   37  ls
+   38  cd /srv/weewx/virtualenv && source bin/activate
+   39  cd ..
+   40  ls
+   41  wget https://github.com/mhoareau/fuzzy-archer/archive/v2.24-meteoroi-10.tar-gz
+   42  wget https://github.com/mhoareau/fuzzy-archer/archive/v2.24-meteoroi-10.tar.gz
+   43  root/bin/wee_extension --help
+   44  root/bin/wee_extension --install=v2.24-meteoroi-10.tar.gz --config=root/weewx.conf
+   45  ls
+   46  cd root/
+   47  ls
+   48  vi weewx.conf
+   49  cd /srv/weewx/virtualenv && source bin/activate
+   50  cd ..
+   51  ls
+   52  root/bin/wee_device --help
+   53  root/bin/wee_device --set-interval=5
+   54  root/bin/wee_device --clear-memory
+   55  root/bin/wee_device --set-latitude=-21.250449
+   56  root/bin/wee_device --set-longitude=55.584731
+   57  root/bin/wee_device --set-altitude=4986.877
+   58  root/bin/wee_device --set-altitude=4987
+   59  root/bin/wee_device --help
+   60  root/bin/wee_device 
+   61  root/bin/wee_device --set-altitude=4987
+   62  cd /srv/weewx/virtualenv && source bin/activate
+   63  cd ..
+   64  ls
+   65  root/bin/wee_device --help
+   66  root/bin/wee_device --start
+   67  ls
+   68  ll
+   69  cd
+   70  cd /srv/weewx/virtualenv && source bin/activate
+   71  cd ..
+   72  ls
+   73  root/bin/wee_device --info
+   74  root/bin/wee_device --help
+   75  root/bin/wee_device --set-bucket=1
+   76  root/bin/wee_device --set-rain-year-start=1
+   77  root/bin/wee_device --set-dst=OFF
+   78  root/bin/wee_device --set-tz-offset=0400
+   79  root/bin/wee_device --info
+   80  cd /srv/weewx/virtualenv && source bin/activate
+   81  cd ..
+   82  ls
+   83  root/bin/wee_device --info
+   84  root/bin/wee_device --help
+   85  root/bin/wee_device --set-restransmit=OFF
+   86  root/bin/wee_device --set-retransmit=OFF
+   87  root/bin/wee_device --help
+   88  root/bin/wee_device --set-transmitter-type=2,0
+   89  root/bin/wee_device --info
+   90  root/bin/wee_device --help
+   91  root/bin/wee_device --set-transmitter-type=1,10
+   92  root/bin/wee_device --set-transmitter-type=2,0
+   93  root/bin/wee_device --set-transmitter-type=3,4
+   94  root/bin/wee_device --info
+   95  root/bin/wee_device --set-transmitter-type=2,0
+   96  root/bin/wee_device --info
+   97  root/bin/wee_device --help
+   98  root/bin/wee_device --set-transmitter-type=1,10
+   99  root/bin/wee_device --set-transmitter-type=2,0
+  100  root/bin/wee_device --info
+  101  ssh-keygen -t rsa
+  102  cat ~/.ssh/id_rsa.pub
+  103  cd ~/scripts && ./rasp04_send_ssh_key.sh
+  104  cd ~/scripts && cat ./rasp04_send_ssh_key.sh
+  105  echo $WEEWX_USER 
+  106  echo $STATION_ID
+  107  cat /srv/$WEEWX_USER/.ssh/id_rsa.pub | ssh $STATION_ID_LOWERC@ftp.meteor-oi.re "cat - >> /srv/data/meteor/stations/$STATION_ID/.ssh/authorized_keys"
+  108  cd
+  109  cd root/
+  110  bin/weewxd --version
+  111  cd
+  112  ll
+  113  mkdir upgrade
+  114  wget http://www.weewx.com/downloads/weewx-3.8.2.tar.gz
+  115  cd /srv/weewx/virtualenv && source bin/activate
+  116  cd ..
+  117  ls
+  118  cd upgrade/
+  119  ll
+  120  mv ../weewx-3.8.2.tar.gz ./
+  121  ll
+  122  tar -xzvf weewx-3.8.2.tar.gz 
+  123  ll
+  124  cd weewx-3.8.2/
+  125  ./setup.py build
+  126  pwd
+  127  vi setup.
+  128  vi setup.cfg 
+  129  ./setup.py install
+  130  cd ..
+  131  cd root/
+  132  ll
+  133  ll bin/user/
+  134  vi weewx.conf
+  135  cd
+  136  cd root/
+  137  vi weewx.conf
+  138  cd
+  139  cd root/
+  140  vi skins/Bootstrap/skin.conf 
+  141  cd
+  142  cd root/
+  143  vi skins/Bootstrap/skin.conf 
+  144  vi skins/Bootstrap/stats.html.tmpl 
+  145  cd
+  146  cd root/skins/Bootstrap/
+  147  ll
+  148  rm gauges.html.tmpl
+  149  ll
+  150  rm news.html.tmpl 
+  151  ll
+  152  ls
+  153  ./rasp04_send_ssh_key.sh 
+  154  vi rasp04_send_ssh_key.sh 
+  155  ./rasp04_send_ssh_key.sh 
+  156  vi rasp04_send_ssh_key.sh 
+  157  ./rasp04_send_ssh_key.sh 
+  158  vi rasp04_send_ssh_key.sh 
+  159  ./rasp04_send_ssh_key.sh 
+  160  vi rasp04_send_ssh_key.sh 
+  161  ./rasp04_send_ssh_key.sh 
+  162  cd /srv/weewx/virtualenv && source bin/activate
+  163  cd ..
+  164  ls
+  165  cd root/
+  166  bin/wee_reports 
+  167  vi weewx.conf
+  168  bin/wee_reports 
+  169  vi weewx.conf
+  170  rm -rf public_html/*
+  171  bin/wee_reports 
+  172  cd /home/meteor/weewx-3.9.1/
+  173  cd /srv/weewx/virtualenv && source bin/activate
+  174  cd -
+  175  ./setup.py install
+  176  cd -
+  177  cd ..
+  178  cd root/
+  179  ll
+  180  diff weewx.conf weewx.conf.20190609151214
+  181  bin/wee_reports 
+  182  cd skins/Bootstrap/
+  183  ll
+  184  vi skin.conf 
+  185  bin/wee_reports 
+  186  cd  -
+  187  bin/wee_reports 
+  188  rm -rf public_html/*
+  189  bin/wee_reports 
+  190  ls -ali
+  191  bin/wee_reports 
+  192  diff weewx.conf weewx.conf.20190609151214
+  193  diff weewx.conf weewx.conf.tpl 
+  194  bin/wee_reports 
+  195  ll
+  196  ll skins/Bootstrap/
+  197  ll skins/Bootstrap/json/
+  198  pwd
+  199  cd /srv/weewx/virtualenv && source bin/activate
+  200  cd ../root/
+  201  vi weewx.conf
+  202  rm -rf public_html/*
+  203  bin/wee_reports 
+  204  cd /srv/weewx/virtualenv && source bin/activate
+  205  bin/wee_reports 
+  206  cd /srv/weewx/virtualenv && source bin/activate && cd ~/root
+  207  bin/wee_reports 
+  208  less /home/meteor/meteoroi_scripts/station.json 
+  209  ll
+  210  rm -rf weewx.conf.20171126230935 
+  211  rm -rf weewx.conf.20180506212345 
+  212  rm -rf weewx.conf.20190202154759 
+  213  rm -rf weewx.conf.201903*
+  214  rm -rf weewx.conf.20191004222508 
+  215  ll
+  216  rm weewx.conf.tpl
+  217  ll
+  218  ll skins/Bootstrap/skin.conf*
+  219  ll skins/Bootstrap/
+  220  rm skins/Bootstrap/skin.conf.20190614194*
+  221  rm skins/Bootstrap/skin.conf.20191004193130 
+  222  ll skins/Bootstrap/
+  223  ll skins/Images/skin.conf*
+  224  bin/wee_reports 
+  225  rm -rf public_html/*
+  226  bin/wee_reports 
+  227  rm -rf public_html/*
+  228  ls
+  229  ll weewx.conf*
+  230  rm weewx.conf.2019100422*
+  231  ll weewx.conf*
+  232  ll skins/Images/*
+  233  rm -rf skins/Images/skin.conf.2019100422*
+  234  rm -rf skins/Bootstrap/skin.conf.2019100422*
+  235  ll skins/Bootstrap/
+  236  cd /srv/weewx/virtualenv && source bin/activate && cd /home/meteor/weewx-3.9.2
+  237  ./setup.py install
+  238  cd /srv/weewx/virtualenv && source bin/activate && cd ~/root
+  239  pip --help
+  240  pip help
+  241  pip freeze
+  242  python --version
+  243  ls
+  244  cd ..
+  245  ls
+  246  cd virtualenv/
+  247  ls
+  248  virtualenv -p /usr/bin/python2.7 .
+  249  ls
+  250  cd /srv/weewx/virtualenv && source bin/activate && cd ~/root
+  251  pip help
+  252  pip list --help
+  253  pip list --outdated
+  254  cd /srv/weewx/virtualenv && source bin/activate && cd ~/root
+  255  pip install -U mysqldb
+  256  pip remove mysqldb
+  257  pip delete mysqldb
+  258  pip remove mysqldb
+  259  pip help
+  260  pip uninstall mysqldb
+  261  pip install -U mysqldb
+  262  pip install -U pythonmysqldb
+  263  pip install -U python-mysqldb
+  264  pip install -U MySQL-python
+  265  apt-cache search libmysql
+  266  cd /srv/weewx/virtualenv && source bin/activate && cd ~/root
+  267  pip uninstall MySQL-python
+  268  pip install MySQL-python
+  269  cd /srv/weewx/virtualenv && source bin/activate && cd ~/root
+  270  pip install MySQL-python
+  271  sudo apt-get install libmariadbclient-dev libmariadb-dev
+  272  cd /srv/weewx/virtualenv && source bin/activate && cd ~/root
+  273  pip install MySQL-python
+  274  cd /srv/weewx/virtualenv && source bin/activate && cd ~/root
+  275  pip install MySQL-python
+  276  cd /srv/weewx/virtualenv && source bin/activate && cd ~/root
+  277  python --version
+  278  python7 --version
+  279  python2.7 --version
+  280  cd /srv/weewx/virtualenv && source bin/activate && cd ~/root
+  281  pip install -U mysqldb-python
+  282  pip install -U mysql-python
+  283  cd /srv/weewx/virtualenv && source bin/activate && cd ~/root
+  284  root/bin/wee_device --clear-memory
+  285  bin/wee_device --clear-memory
+  286  cd /srv/weewx/virtualenv && source bin/activate && cd ~/root
+  287  vi weewx.conf
+  288  cd ..
+  289  cd /srv/weewx/virtualenv && source bin/activate && cd ~/root
+  290  ls
+  291  ./clone_data.sh 
+  292  vi ./clone_data.sh 
+  293  ./clone_data.sh 
+  294  vi ./clone_data.sh 
+  295  ./clone_data.sh 
+  296  vi ./clone_data.sh 
+  297  echo $STATION_ID_LOWERC 
+  298  vi ./clone_data.sh 
+  299  echo $STATION_ID_LOWERC 
+  300  ./clone_data.sh 
+  301  vi ./clone_data.sh 
+  302  ./clone_data.sh 
+  303  vi ./clone_data.sh 
+  304  echo $STATION_ID_LOWERC 
+  305  vi ./clone_data.sh 
+  306  vi backup.sh 
+  307  vi ./clone_data.sh 
+  308  . ./clone_data.sh 
+  309  cd /srv/weewx/virtualenv && source bin/activate && cd ~/root
+  310  ll
+  311  ./clone_data.sh 
+  312  clear
+  313  vi ./clone_data.sh 
+  314  ./clone_data.sh 
+  315  vi ./clone_data.sh 
+  316  ./clone_data.sh 
+  317  cat ~/.bashrc 
+  318  cat /etc/environment
+  319  cat /etc/bash.bashrc
+  320  vi ./clone_data.sh 
+  321  cat /etc/bash.bashrc
+  322  ./clone_data.sh 
+  323  vi ./clone_data.sh 
+  324  ./clone_data.sh 
+  325  vi ./clone_data.sh 
+  326  man tr
+  327  vi ./clone_data.sh 
+  328  ssh-keygen -t rsa -N ''
+  329  cat ~/.ssh/id_rsa.pub
+  330  cd ~/scripts && ./rasp04_send_ssh_key.sh
+  331  history
+  332  history > history_weewx.txt

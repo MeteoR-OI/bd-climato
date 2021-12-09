@@ -1,0 +1,28 @@
+[{
+  "meteor" : "MTG320",
+  "version":2,
+  "info" : {
+     },
+  "data":
+  [
+      {
+        "stop_dat":"2021-04-30T02:00:00",
+        "current": {
+          "out_temp_max":25.555555,
+          "duration": 5
+        }
+      }, {
+        "stop_dat":"2021-04-30T03:00:00",
+        "aggregations": [{
+          "level": "H",
+          "out_temp_omm_max":25.555555
+        }]
+      }, {
+        "stop_dat":"2021-04-30T04:00:00",
+        "validation": [{
+          "level": "H",
+          "out_temp_omm_min":25.555555
+        }]
+      }
+ ]
+}]

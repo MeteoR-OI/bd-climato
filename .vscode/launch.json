@@ -5,10 +5,20 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Django",
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Django-local",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/manage.py",
+            "autoReload": {
+                "enable": true
+            },
             "args": [
                 "runserver"
             ],
@@ -16,6 +26,68 @@
                 "DJANGO_SETTINGS_MODULE": "Clim_MeteoR.settings",
             },
             "django": true
+        },
+        {
+            "name": "Django-telemetry",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "autoReload": {
+                "enable": true
+            },
+            "args": [
+                "runserver",
+                "--settings",
+                "Clim_MeteoR.settings_telemetry_only"
+            ],
+            "env": {
+                "DJANGO_SETTINGS_MODULE": "Clim_MeteoR.settings_telemetry_only"
+            },
+            "django": true
+        },
+        {
+            "name": "loadJson",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "loadJson",
+                "obs.2021-05-24.json",
+                "--tmp",
+                "--validation"
+            ]
+        },
+        {
+            "name": "svc",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "svc",
+                "--list",
+                "--trace"
+            ]
+        },
+        {
+            "name": "calc",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                // "${fileBasenameNoExtension}"
+                "calc",
+                "--tmp",
+            ]
+        },        {
+            "name": "compAgg",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "args": [
+                "compAgg",
+                "2",
+                "--day",
+            ]
         }
     ]
 }

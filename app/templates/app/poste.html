@@ -1,0 +1,30 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Accueil{% endblock %}
+
+{% load static %}
+{% get_media_prefix as MEDIA_PREFIX %}
+
+{% block content %}
+    <h1>Accueil - MétéoR OI</h1>
+
+    <h2>Info Station</h2>
+
+{% if poste_data %}
+    meteor: {{ poste_data.data.meteor }} <p>
+    meteofr: {{ poste_data.data.meteofr }} <p>
+    fuseau: {{poste_data.data.fuseau }} <p>
+    {% if poste_data.exclus %}
+        <ul>
+        {% for an_exclu in poste_data.exclus %}
+            <li>{{an_exclu.type_instrumen}}: {{an_exclu.value}}</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        No Exclusions<p>
+    {% endif %}
+{% else %}
+    <p>No data are available.</p>
+{% endif %}
+
+{% endblock %}

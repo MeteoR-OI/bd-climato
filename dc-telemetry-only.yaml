@@ -1,0 +1,142 @@
+version: "3.7"
+
+networks:
+  vpcbr:
+    name: vpcbr
+    driver: bridge
+    ipam:
+     config: # here, we define our ip space
+       - subnet: 10.5.0.0/16
+         gateway: 10.5.0.1
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./data/localStorage/prometheus:/prometheus
+      - ./yml/config/prometheus:/etc/prometheus
+      - ./data/localStorage/log/prometheus:/var/log
+    ports:
+        - 9090:9090
+    restart: on-failure
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.10
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    ports:
+      - 3100:3100
+    restart: on-failure
+    volumes:
+      - ./yml/config/loki:/etc/loki
+      - ./data/localStorage/docker/loki:/var/log
+    command: -config.file=/etc/loki/loki.yml
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.20
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://10.5.0.20:3100/loki/api/v1/push"
+    ports:
+      - 3000:3000
+    volumes:
+      - ./yml/config/grafana/dashboards:/etc/grafana/dashboards/
+      - ./yml/config/grafana/provisioning:/etc/grafana/provisioning/
+      - ./yml/config/grafana/plugins:/var/lib/grafana/plugins
+      - ./data/localStorage/grafana:/var/lib/grafana
+      - ./data/localStorage/docker/grafana:/var/log/grafana
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    restart: on-failure
+    depends_on:
+      - loki
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.30
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    restart: on-failure
+    volumes:
+      - ./data/localStorage/promtail:/promtail
+      - ./yml/config/promtail:/etc/promtail
+      - ./data/localStorage/log:/home/django/log
+      - /var/log:/home/django/loghost
+      - ./data/localStorage/docker/promtail:/var/log
+    command: -config.file=/etc/promtail/promtail.yml
+    depends_on:
+      - loki
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.40
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    volumes:
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/machine-id:/etc/machine-id:ro
+      - /var/lib/dbus/machine-id:/var/lib/dbus/machine-id:ro
+      - /var/log/cadvisor:/var/log
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_BASIC_ENABLED: "false"
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/dashboards/loki.json
+    ports:
+      - 8080:8080
+    restart: on-failure
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.50
+
+  node-exporter:
+    command: --path.rootfs=/host
+    container_name: node-exporter
+    image: prom/node-exporter
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.100
+    pid: host
+    ports:
+    - published: 9100
+      target: 9100
+    restart: always
+    volumes:
+    - /:/host:ro
+
+  jaeger:
+    image: jaegertracing/all-in-one
+    container_name: jaeger
+    restart: on-failure
+    volumes:
+      - /var/log/jaeger:/var/log
+    ports:
+      - 5775:5775/udp
+      - 5778:5778
+      - 6831:6831/udp
+      - 6832:6832/udp
+      - 9411:9411
+      - 14250:14250
+      - 14268:14268
+      - 16686:16686
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.60
