@@ -5,9 +5,9 @@ from app.models import TmpObservation, TmpAggHour, TmpAggDay, TmpAggMonth, TmpAg
 def isTmpLevel(agg_level: str) -> bool:
     """get the aggregation depending on the level"""
     if agg_level in ["H", "D", "M", "Y", "A"]:
-        return True
-    if agg_level in ["HT", "DT", "MT", "YT", "AT"]:
         return False
+    if agg_level in ["HT", "DT", "MT", "YT", "AT"]:
+        return True
 
     raise Exception("Invalid aggregation level: " + agg_level)
 
