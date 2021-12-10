@@ -1,5 +1,5 @@
 from django.contrib import admin
-from app.models import DateJSONField
+from app.models import DateJSONField, Poste
 from django_json_widget.widgets import JSONEditorWidget
 from django.utils.html import format_html
 from app.admins.yearMonthFiltering import MonthListFilter, YearListFilter
@@ -25,8 +25,8 @@ class ObservationAdmin(admin.ModelAdmin):
     }
 
     list_display = (
-        'poste',
         'stop_dat',
+        'show_clickage_poste_id',
         'view_aggregations'
     )
     fields = (
@@ -40,6 +40,13 @@ class ObservationAdmin(admin.ModelAdmin):
     search_fields = ('stop_dat',)
     list_per_page = 20
 
+    def show_clickage_poste_id(self, obj):
+        post = Poste.objects.filter(id=obj.poste_id).first()
+        if post is None:
+            return 'n/a'
+        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/poste/" + str(obj.poste_id) + "/change/", str(obj.poste_id))
+    show_clickage_poste_id.short_description = "poste"
+
     def view_aggregations(self, obj):
-        return format_html('<a href="{}">Details {}</a>', "https://google.com", obj.id)
+        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/agghistobyobs/?q=" + str(obj.id), 'Aggs')
     view_aggregations.short_description = "Agg"

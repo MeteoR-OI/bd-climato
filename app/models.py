@@ -148,8 +148,8 @@ class Poste(models.Model):
 # class TypeInstrument(ExportModelOperationsMixin('type_instrument'), models.Model):
 class TypeInstrument(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(null=False, max_length=10, verbose_name="Type de Donnees")
-    model_value = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name="JsonB")
+    name = models.CharField(null=False, max_length=10, verbose_name="Type Instrument")
+    model_value = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name="Model Json")
 
     def __str__(self):
         return "type_instrument id: " + str(self.id) + ", name: " + self.name
@@ -163,11 +163,10 @@ class Exclusion(models.Model):
     id = models.AutoField(primary_key=True)
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
     type_instrument = models.ForeignKey(null=False, to="TypeInstrument", on_delete=models.CASCADE)
-    start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
     start_dat = DateCharField(null=False, max_length=20, default="1900-01-01T00:00:00", verbose_name="start date")
     stop_dat = DateCharField(null=False, max_length=20, default="2100-12-31T23:59:59", verbose_name="stop date")
-    value = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name="JsonB")
+    value = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name="Exclusion")
 
     def __str__(self):
         return "exclusion id: " + str(self.id) + ", poste: " + str(self.poste) + ", on " + str(self.type_instrument)
