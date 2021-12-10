@@ -289,13 +289,13 @@ class AggHour(models.Model):
     poste = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
-    duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
-    duration_max = models.IntegerField(null=False, verbose_name="Max des durations des donnees de cette agregation", default=0)
+    duration_sum = models.IntegerField(null=False, verbose_name="Durées agrégées", default=0)
+    duration_max = models.IntegerField(null=False, verbose_name="Durée max", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
 
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Agrégations")
 
     def __str__(self):
         return "AggHour id: " + str(self.id) + ", poste: " + str(self.poste) + ", start_dat: " + str(self.start_dat) + ' for an hour'
@@ -310,13 +310,13 @@ class TmpAggHour(models.Model):
     poste = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
-    duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
-    duration_max = models.IntegerField(null=False, verbose_name="Max des durations des donnees de cette agregation", default=0)
+    duration_sum = models.IntegerField(null=False, verbose_name="Durées agrégées", default=0)
+    duration_max = models.IntegerField(null=False, verbose_name="Durée max", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
 
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Agrégations")
 
     def __str__(self):
         return "TmpAggHour id: " + str(self.id) + ", poste: " + str(self.poste) + ", start_dat: " + str(self.start_dat) + ' for an hour'
@@ -332,13 +332,13 @@ class AggDay(models.Model):
     poste = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
-    duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
-    duration_max = models.IntegerField(null=False, verbose_name="Max des durations des donnees de cette agregation", default=0)
+    duration_sum = models.IntegerField(null=False, verbose_name="Durées agrégées", default=0)
+    duration_max = models.IntegerField(null=False, verbose_name="Durée max", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
 
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Agrégations")
 
     def __str__(self):
         return "AggDay id: " + str(self.id) + ", poste: " + str(self.poste) + ", start_dat: " + str(self.start_dat) + ' for a day'
@@ -353,13 +353,13 @@ class TmpAggDay(models.Model):
     poste = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
-    duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
-    duration_max = models.IntegerField(null=False, verbose_name="Max des durations des donnees de cette agregation", default=0)
+    duration_sum = models.IntegerField(null=False, verbose_name="Durées agrégées", default=0)
+    duration_max = models.IntegerField(null=False, verbose_name="Durée max", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
 
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Agrégations")
 
     def __str__(self):
         return "TmpAggDay id: " + str(self.id) + ", poste: " + str(self.poste) + ", start_dat: " + str(self.start_dat) + ' for a day'
@@ -375,13 +375,13 @@ class AggMonth(models.Model):
     poste = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
-    duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
-    duration_max = models.IntegerField(null=False, verbose_name="Max des durations des donnees de cette agregation", default=0)
+    duration_sum = models.IntegerField(null=False, verbose_name="Durées agrégées", default=0)
+    duration_max = models.IntegerField(null=False, verbose_name="Durée max", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
 
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Agrégations")
 
     def __str__(self):
         return "AggMonth id: " + str(self.id) + ", poste: " + str(self.poste) + ", start_dat: " + str(self.start_dat) + ' for a month'
@@ -396,13 +396,13 @@ class TmpAggMonth(models.Model):
     poste = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
-    duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
-    duration_max = models.IntegerField(null=False, verbose_name="Max des durations des donnees de cette agregation", default=0)
+    duration_sum = models.IntegerField(null=False, verbose_name="Durées agrégées", default=0)
+    duration_max = models.IntegerField(null=False, verbose_name="Durée max", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
 
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Agrégations")
 
     def __str__(self):
         return "TmpAggMonth id: " + str(self.id) + ", poste: " + str(self.poste) + ", start_dat: " + str(self.start_dat) + ' for a month'
@@ -418,13 +418,13 @@ class AggYear(models.Model):
     poste = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
-    duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
-    duration_max = models.IntegerField(null=False, verbose_name="Max des durations des donnees de cette agregation", default=0)
+    duration_sum = models.IntegerField(null=False, verbose_name="Durées agrégées", default=0)
+    duration_max = models.IntegerField(null=False, verbose_name="Durée max", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
 
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Agrégations")
 
     def __str__(self):
         return "AggYear id: " + str(self.id) + ", poste: " + str(self.poste) + ", start_dat: " + str(self.start_dat) + ' for a year'
@@ -439,13 +439,13 @@ class TmpAggYear(models.Model):
     poste = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
-    duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
-    duration_max = models.IntegerField(null=False, verbose_name="Max des durations des donnees de cette agregation", default=0)
+    duration_sum = models.IntegerField(null=False, verbose_name="Durées agrégées", default=0)
+    duration_max = models.IntegerField(null=False, verbose_name="Durée max", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
 
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Agrégations")
 
     def __str__(self):
         return "TmpAggYear id: " + str(self.id) + ", poste: " + str(self.poste) + ", start_dat: " + str(self.start_dat) + ' for a year'
@@ -461,13 +461,13 @@ class AggAll(models.Model):
     poste = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
-    duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
-    duration_max = models.IntegerField(null=False, verbose_name="Max des durations des donnees de cette agregation", default=0)
+    duration_sum = models.IntegerField(null=False, verbose_name="Durées agrégées", default=0)
+    duration_max = models.IntegerField(null=False, verbose_name="Durée max", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
 
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Agrégations")
 
     def __str__(self):
         return "AggAll id: " + str(self.id) + ", poste: " + str(self.poste) + " for ever"
@@ -482,13 +482,13 @@ class TmpAggAll(models.Model):
     poste = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
 
-    duration_sum = models.IntegerField(null=False, verbose_name="Somme des durations des donnees de cette agregation", default=0)
-    duration_max = models.IntegerField(null=False, verbose_name="Max des durations des donnees de cette agregation", default=0)
+    duration_sum = models.IntegerField(null=False, verbose_name="Durées agrégées", default=0)
+    duration_max = models.IntegerField(null=False, verbose_name="Durée max", default=0)
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
 
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Agrégations")
 
     def __str__(self):
         return "TmpAggAll id: " + str(self.id) + ", poste: " + str(self.poste) + " for ever"
