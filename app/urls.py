@@ -7,6 +7,7 @@ urlpatterns = [
     # path('', include('django_prometheus.urls')),
     path('api/stationlist', views.viewStationList, name='list station'),
     path('api/stationdata/<str:station>', views.viewStationData, name='ViewData'),
+    path('api/stationdata', views.view_all_station_data, name='ViewAllData'),
     path('svc', views.view_control_svc),
     path('poste/<int:poste_id>', views.view_poste, name='poste'),
     path('obs/<int:poste_id>', views.view_last_obs, name='poste'),

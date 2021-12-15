@@ -20,7 +20,29 @@ def view_stations_list(request):
         return HttpResponse(inst)
 
 
-def view_stations_data(request, station: str = None):
+def view_all_station_data(request):
+    big_json = []
+    try:
+        all_postes = Poste.objects.all()
+        for one_poste in all_postes:
+            data_poste = get_data_for_one_station(one_poste.meteor)
+            big_json.append(data_poste)
+        return HttpResponse(json.dumps(big_json), content_type="application/json")
+
+    except Exception as inst:
+        return HttpResponse(inst)
+
+
+def view_one_station_data(request, station: str = None):
+    try:
+        ret_json = get_data_for_one_station(station)
+        return HttpResponse(json.dumps(ret_json), content_type="application/json")
+
+    except Exception as inst:
+        return HttpResponse(inst)
+
+
+def get_data_for_one_station(station: str = None):
     try:
         if station is None:
             return HttpResponseBadRequest("no station given")
@@ -29,6 +51,17 @@ def view_stations_data(request, station: str = None):
         if mon_poste is None:
             return HttpResponseBadRequest("station " + station + " not found")
         agg_hour = AggHour.objects.filter(~Q(duration_sum=0), poste_id=mon_poste_id).order_by('-start_dat').first()
+        if agg_hour is None:
+            return {
+                "station": mon_poste[0],
+                "data": {
+                    "hour": {},
+                    "day":  {},
+                    "month":  {},
+                    "year":  {},
+                    "all":  {},
+                }
+            }
         agg_day = AggDay.objects.filter(poste_id=mon_poste_id).order_by('-start_dat').first()
         agg_month = AggMonth.objects.filter(poste_id=mon_poste_id).order_by('-start_dat').first()
         agg_year = AggYear.objects.filter(poste_id=mon_poste_id).order_by('-start_dat').first()
@@ -73,7 +106,7 @@ def view_stations_data(request, station: str = None):
                 },
             }
         }
-        return HttpResponse(json.dumps(ret_json), content_type="application/json")
+        return ret_json
 
     except Exception as inst:
         return HttpResponse(inst)
