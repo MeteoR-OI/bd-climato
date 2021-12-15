@@ -1,4 +1,5 @@
 from django.http import HttpResponse
+from django.db.models import Q
 import json
 from app.models import Poste, AggHour, AggDay, AggMonth, AggYear, AggAll, TmpAggHour, TmpAggDay, TmpAggMonth, TmpAggYear, TmpAggAll
 from app.tools.jsonPlus import JsonPlus
@@ -85,34 +86,34 @@ def viewLastAgg(request, agg_niveau, poste_id, str_keys: str = '*', nb_items: in
     p = Poste.objects.get(id=poste_id)
     result = {'poste_id': p.id, 'meteor': p.meteor, 'level': agg_niveau, 'aggregations': []}
     if agg_niveau == "H":
-        ah = AggHour.objects.filter(poste_id=poste_id).order_by('-start_dat')[:nb_items][::-1]
+        ah = AggHour.objects.filter(~Q(duration_sum=0), poste_id=poste_id).order_by('-start_dat')[:nb_items][::-1]
         display_data_all(result, ah, keys)
     elif agg_niveau == "D":
-        ah = AggDay.objects.filter(poste_id=poste_id).order_by('-start_dat')[:nb_items][::-1]
+        ah = AggDay.objects.filter(~Q(duration_sum=0), poste_id=poste_id).order_by('-start_dat')[:nb_items][::-1]
         display_data_all(result, ah, keys)
     elif agg_niveau == "M":
-        ah = AggMonth.objects.filter(poste_id=poste_id).order_by('-start_dat')[:nb_items][::-1]
+        ah = AggMonth.objects.filter(~Q(duration_sum=0), poste_id=poste_id).order_by('-start_dat')[:nb_items][::-1]
         display_data_all(result, ah, keys)
     elif agg_niveau == "Y":
-        ah = AggYear.objects.filter(poste_id=poste_id).order_by('-start_dat')[:nb_items][::-1]
+        ah = AggYear.objects.filter(~Q(duration_sum=0), poste_id=poste_id).order_by('-start_dat')[:nb_items][::-1]
         display_data_all(result, ah, keys)
     elif agg_niveau == "A":
-        ah = AggAll.objects.filter(poste_id=poste_id)[:nb_items][::-1]
+        ah = AggAll.objects.filter(~Q(duration_sum=0), poste_id=poste_id)[:nb_items][::-1]
         display_data_all(result, ah, keys)
     elif agg_niveau == "HT":
-        ah = TmpAggHour.objects.filter(poste_id=poste_id).order_by('-start_dat')[:nb_items][::-1]
+        ah = TmpAggHour.objects.filter(~Q(duration_sum=0), poste_id=poste_id).order_by('-start_dat')[:nb_items][::-1]
         display_data_all(result, ah, keys)
     elif agg_niveau == "DT":
-        ah = TmpAggDay.objects.filter(poste_id=poste_id).order_by('-start_dat')[:nb_items][::-1]
+        ah = TmpAggDay.objects.filter(~Q(duration_sum=0), poste_id=poste_id).order_by('-start_dat')[:nb_items][::-1]
         display_data_all(result, ah, keys)
     elif agg_niveau == "MT":
-        ah = TmpAggMonth.objects.filter(poste_id=poste_id).order_by('-start_dat')[:nb_items][::-1]
+        ah = TmpAggMonth.objects.filter(~Q(duration_sum=0), poste_id=poste_id).order_by('-start_dat')[:nb_items][::-1]
         display_data_all(result, ah, keys)
     elif agg_niveau == "YT":
-        ah = TmpAggYear.objects.filter(poste_id=poste_id).order_by('-start_dat')[:nb_items][::-1]
+        ah = TmpAggYear.objects.filter(~Q(duration_sum=0), poste_id=poste_id).order_by('-start_dat')[:nb_items][::-1]
         display_data_all(result, ah, keys)
     elif agg_niveau == "AT":
-        ah = TmpAggAll.objects.filter(poste_id=poste_id)[:nb_items][::-1]
+        ah = TmpAggAll.objects.filter(~Q(duration_sum=0), poste_id=poste_id)[:nb_items][::-1]
         display_data_all(result, ah, keys)
     else:
         result['aggregations'].appent({'info': ' ** Aggregation Level Error: ' + str(agg_niveau)})
@@ -131,31 +132,31 @@ def viewAgg(request, agg_niveau, poste_id, str_keys: str = '*', start_dt: str = 
     p = Poste.objects.get(id=poste_id)
     result = {'poste_id': p.id, 'meteor': p.meteor, 'level': agg_niveau, 'aggregations': []}
     if agg_niveau == "H":
-        ah = AggHour.objects.filter(poste_id=poste_id).filter(start_dat__gte=start_dat).filter(start_dat__lte=end_date).order_by("start_dat").all()
+        ah = AggHour.objects.filter(poste_id=poste_id).filter(start_dat__gte=start_dat, start_dat__lte=end_date).order_by("start_dat").all()
         display_data_all(result, ah, keys)
     elif agg_niveau == "D":
-        ah = AggDay.objects.filter(poste_id=poste_id).filter(start_dat__gte=start_dat).filter(start_dat__lte=end_date).order_by("start_dat").all()
+        ah = AggDay.objects.filter(poste_id=poste_id).filter(start_dat__gte=start_dat, start_dat__lte=end_date).order_by("start_dat").all()
         display_data_all(result, ah, keys)
     elif agg_niveau == "M":
-        ah = AggMonth.objects.filter(poste_id=poste_id).filter(start_dat__gte=start_dat).filter(start_dat__lte=end_date).order_by("start_dat").all()
+        ah = AggMonth.objects.filter(poste_id=poste_id).filter(start_dat__gte=start_dat, start_dat__lte=end_date).order_by("start_dat").all()
         display_data_all(result, ah, keys)
     elif agg_niveau == "Y":
-        ah = AggYear.objects.filter(poste_id=poste_id).filter(start_dat__gte=start_dat).filter(start_dat__lte=end_date).order_by("start_dat").all()
+        ah = AggYear.objects.filter(poste_id=poste_id).filter(start_dat__gte=start_dat, start_dat__lte=end_date).order_by("start_dat").all()
         display_data_all(result, ah, keys)
     elif agg_niveau == "A":
         ah = (AggAll.objects.filter(poste_id=poste_id).first(), )
         display_data_all(result, ah, keys)
     elif agg_niveau == "HT":
-        ah = TmpAggHour.objects.filter(poste_id=poste_id).filter(start_dat__gte=start_dat).filter(start_dat__lte=end_date).order_by("start_dat").all()
+        ah = TmpAggHour.objects.filter(poste_id=poste_id).filter(start_dat__gte=start_dat, start_dat__lte=end_date).order_by("start_dat").all()
         display_data_all(result, ah, keys)
     elif agg_niveau == "DT":
-        ah = TmpAggDay.objects.filter(poste_id=poste_id).filter(start_dat__gte=start_dat).filter(start_dat__lte=end_date).order_by("start_dat").all()
+        ah = TmpAggDay.objects.filter(poste_id=poste_id).filter(start_dat__gte=start_dat, start_dat__lte=end_date).order_by("start_dat").all()
         display_data_all(result, ah, keys)
     elif agg_niveau == "MT":
-        ah = TmpAggMonth.objects.filter(poste_id=poste_id).filter(start_dat__gte=start_dat).filter(start_dat__lte=end_date).order_by("start_dat").all()
+        ah = TmpAggMonth.objects.filter(poste_id=poste_id).filter(start_dat__gte=start_dat, start_dat__lte=end_date).order_by("start_dat").all()
         display_data_all(result, ah, keys)
     elif agg_niveau == "YT":
-        ah = TmpAggYear.objects.filter(poste_id=poste_id).filter(start_dat__gte=start_dat).filter(start_dat__lte=end_date).order_by("start_dat").all()
+        ah = TmpAggYear.objects.filter(poste_id=poste_id).filter(start_dat__gte=start_dat, start_dat__lte=end_date).order_by("start_dat").all()
         display_data_all(result, ah, keys)
     elif agg_niveau == "AT":
         ah = (TmpAggAll.objects.filter(poste_id=poste_id).first(), )

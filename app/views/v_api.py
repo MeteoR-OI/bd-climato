@@ -2,17 +2,19 @@
 # This file is only a routing to the view implementation
 #
 from django.http import HttpResponse, HttpResponseBadRequest
+from django.core import serializers
+from django.http.response import JsonResponse
+from django.db.models import Q
 from app.tools.jsonPlus import JsonPlus
-# from django.conf import settings
-# import os
-station_list = ["BBF015", "MTG320"]
+import json
+from app.models import Poste, AggHour, AggDay, AggMonth, AggYear, AggAll
 
 
 def view_stations_list(request):
     try:
-        ret_json = station_list
-        ret = JsonPlus().dumps(ret_json)
-        return HttpResponse(ret)
+        ret = serializers.serialize("json", Poste.objects.all())
+        retJson = JsonResponse(ret, safe=False)
+        return HttpResponse(retJson, content_type="application/json")
 
     except Exception as inst:
         return HttpResponse(inst)
@@ -20,58 +22,58 @@ def view_stations_list(request):
 
 def view_stations_data(request, station: str = None):
     try:
-        if station is None or station not in station_list:
+        if station is None:
             return HttpResponseBadRequest("no station given")
+        mon_poste = Poste.objects.filter(meteor=station).values('id', 'meteor', 'fuseau', 'meteofr', 'owner', 'phone', 'email', 'address', 'zip', 'city', 'country', 'latitude', 'longitude')
+        mon_poste_id = mon_poste[0]['id']
+        if mon_poste is None:
+            return HttpResponseBadRequest("station " + station + " not found")
+        agg_hour = AggHour.objects.filter(~Q(duration_sum=0), poste_id=mon_poste_id).order_by('-start_dat').first()
+        agg_day = AggDay.objects.filter(poste_id=mon_poste_id).order_by('-start_dat').first()
+        agg_month = AggMonth.objects.filter(poste_id=mon_poste_id).order_by('-start_dat').first()
+        agg_year = AggYear.objects.filter(poste_id=mon_poste_id).order_by('-start_dat').first()
+        agg_all = AggAll.objects.filter(poste_id=mon_poste_id).order_by('-start_dat').first()
         ret_json = {
-            "station": {
-                "name": station,
-                "info": "blabla",
-            },
+            "station": mon_poste[0],
             "data": {
                 "hour": {
-                    "stop_dat": "2021-12-06 14:00+04:00",
-                    "out_temp": 18,
-                    "out_temp_max": 18,
-                    "out_temp_max_time": "2021-12-06 12:37:53+04:00",
-                    "out_temp_min": 15,
-                    "out_temp_min_time": "2021-12-06 02:12:44+04:00",
+                    "start_dat": str(agg_hour.start_dat),
+                    "duration_sum": agg_hour.duration_sum,
+                    "duration_max": agg_hour.duration_max,
+                    "data": json.loads(JsonPlus().dumps(agg_hour.j)),
                 },
+                # JsonPlus.dumps(AggHour.objects.filter(poste_id=mon_poste_id).order_by('-start_dat').first()),
+                # "day": JsonPlus.dumps(AggDay.objects.filter(poste_id=mon_poste_id).order_by('-start_dat').first()),
                 "day": {
-                    "stop_dat": "2021-12-06 14:00+04:00",
-                    "out_temp": 18,
-                    "out_temp_max": 18,
-                    "out_temp_max_time": "2021-12-06 12:37:53+04:00",
-                    "out_temp_min": 15,
-                    "out_temp_min_time": "2021-12-06 02:12:44+04:00",
+                    "start_dat": str(agg_day.start_dat),
+                    "duration_sum": agg_day.duration_sum,
+                    "duration_max": agg_day.duration_max,
+                    "data": json.loads(JsonPlus().dumps(agg_day.j)),
                 },
+                # "month": JsonPlus.dumps(AggMonth.objects.filter(poste_id=mon_poste_id).order_by('-start_dat').first()),
+                # "year": JsonPlus.dumps(AggYear.objects.filter(poste_id=mon_poste_id).order_by('-start_dat').first()),
                 "month": {
-                    "stop_dat": "2021-12-06 14:00+04:00",
-                    "out_temp": 18,
-                    "out_temp_max": 18,
-                    "out_temp_max_time": "2021-12-06 12:37:53+04:00",
-                    "out_temp_min": 15,
-                    "out_temp_min_time": "2021-12-06 02:12:44+04:00",
+                    "start_dat": str(agg_month.start_dat),
+                    "duration_sum": agg_month.duration_sum,
+                    "duration_max": agg_month.duration_max,
+                    "data": json.loads(JsonPlus().dumps(agg_month.j)),
                 },
+                # "all": JsonPlus.dumps(AggAll.objects.filter(poste_id=mon_poste_id).order_by('-start_dat').first()),
                 "year": {
-                    "stop_dat": "2021-12-06 14:00+04:00",
-                    "out_temp": 18,
-                    "out_temp_max": 18,
-                    "out_temp_max_time": "2021-12-06 12:37:53+04:00",
-                    "out_temp_min": 15,
-                    "out_temp_min_time": "2021-12-06 02:12:44+04:00",
+                    "start_dat": str(agg_year.start_dat),
+                    "duration_sum": agg_year.duration_sum,
+                    "duration_max": agg_year.duration_max,
+                    "data": json.loads(JsonPlus().dumps(agg_year.j)),
                 },
                 "all": {
-                    "stop_dat": "2021-12-06 14:00+04:00",
-                    "out_temp": 18,
-                    "out_temp_max": 18,
-                    "out_temp_max_time": "2021-12-06 12:37:53+04:00",
-                    "out_temp_min": 15,
-                    "out_temp_min_time": "2021-12-06 02:12:44+04:00",
+                    "start_dat": str(agg_all.start_dat),
+                    "duration_sum": agg_all.duration_sum,
+                    "duration_max": agg_all.duration_max,
+                    "data": json.loads(JsonPlus().dumps(agg_all.j)),
                 },
             }
         }
-        ret = JsonPlus().dumps(ret_json)
-        return HttpResponse(ret)
+        return HttpResponse(json.dumps(ret_json), content_type="application/json")
 
     except Exception as inst:
         return HttpResponse(inst)
