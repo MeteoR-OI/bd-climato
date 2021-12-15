@@ -1,0 +1,51 @@
+list stations
+[{
+    station: {
+        meteor,
+        ...
+    },
+}]
+
+global view (all/one station)
+[{
+    station: {
+        meteor,
+        ...
+    },
+    hour: {
+        start_dat
+        duration_sum
+        j
+    },
+    day: {
+        start_dat
+        duration_sum
+        j
+    },
+    month: {
+        start_dat
+        duration_sum
+        j
+    },
+    year: {
+        start_dat
+        duration_sum
+        j
+    },
+    all: {
+        start_dat
+        duration_sum
+        j
+    },
+]
+
+detailled view for a stations
+
+{
+    station:
+    {   meteor,
+        ...,
+    },
+ ???
+
+ 
