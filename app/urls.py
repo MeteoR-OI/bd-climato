@@ -18,8 +18,8 @@ urlpatterns = [
     path('agg/<str:period>/<int:poste_id>/<str:keys>/last', views.view_last_agg),
     path('agg/<str:period>/<int:poste_id>/<str:keys>/<str:start_dt>/<str:end_dt>', views.view_agg),
     path('agg/<str:period>/<int:poste_id>/<str:keys>/<str:start_dt>', views.view_agg),
-    path('agg/<str:period>/<int:poste_id>/<str:keys>', views.view_agg),
-    path('agg/<str:period>/<int:poste_id>', views.view_agg),
+    path('agg/<str:period>/<int:poste_id>/<str:keys>', views.view_last_agg),
+    path('agg/<str:period>/<int:poste_id>', views.view_last_agg),
     path('calc/<str:file_name>', views.views_calc),
     path('recalc/<str:file_name>', views.views_recalc),
 ]
