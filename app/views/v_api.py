@@ -42,7 +42,7 @@ def view_one_station_data(request, station: str = None):
         return HttpResponse(inst)
 
 
-def get_data_for_one_station(station: str = None):
+def get_data_for_one_station(station: str):
     try:
         if station is None:
             return HttpResponseBadRequest("no station given")

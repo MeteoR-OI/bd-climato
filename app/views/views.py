@@ -2,14 +2,13 @@
 # This file is only a routing to the view implementation
 #
 from django.http import HttpResponse
-from app.models import Poste, Observation
 from app.views.v_agg import viewAgg, viewLastAgg
 from app.views.v_poste import view_my_poste
 from app.views.v_calc import view_my_calc
 from app.views.v_rpcSrv import viewControlSvc
 from app.views.v_api import view_stations_list, view_one_station_data, view_all_station_data
+from app.views.v_obs import view_obs_data
 from django.views.decorators.csrf import csrf_exempt
-import json
 
 
 # views well routed
@@ -27,6 +26,8 @@ def viewStationList(request):
 
 
 def viewStationData(request, station: str = None):
+    if station is None:
+        return view_all_station_data(request)
     return view_one_station_data(request, station)
 
 
@@ -50,8 +51,5 @@ def views_recalc(request, file_name: str):
     return view_my_calc(request, file_name, True)
 
 
-def view_last_obs(request, poste_id):
-    p = Poste.objects.get(id=poste_id)
-    o = Observation.objects.filter(poste_id=poste_id).order_by("dat").last()
-    data_details = {'poste_id': p.id, 'meteor': p.meteor, 'dat': str(o.dat), 'rain': str(o.j['rain'])}
-    return HttpResponse(json.dumps(data_details))
+def view_obs(request, poste_id, str_keys: str = '*', start_dt: str = None, end_dt: str = None):
+    return view_obs_data(request, poste_id, str_keys, start_dt, end_dt)
