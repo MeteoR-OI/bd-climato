@@ -3,7 +3,6 @@
 #
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.core import serializers
-from django.http.response import JsonResponse
 from django.db.models import Q
 from app.tools.jsonPlus import JsonPlus
 import json
@@ -12,9 +11,11 @@ from app.models import Poste, AggHour, AggDay, AggMonth, AggYear, AggAll
 
 def view_stations_list(request):
     try:
-        ret = serializers.serialize("json", Poste.objects.all())
-        retJson = JsonResponse(ret, safe=False)
-        return HttpResponse(retJson, content_type="application/json")
+        tmp_json = JsonPlus().loads(serializers.serialize("json", Poste.objects.all()))
+        retJson = []
+        for one_json in tmp_json:
+            retJson.append(one_json['fields'])
+        return HttpResponse(JsonPlus().dumps(retJson), content_type="application/json")
 
     except Exception as inst:
         return HttpResponse(inst)
@@ -42,7 +43,7 @@ def view_one_station_data(request, station: str = None):
         return HttpResponse(inst)
 
 
-def get_data_for_one_station(station: str = None):
+def get_data_for_one_station(station: str):
     try:
         if station is None:
             return HttpResponseBadRequest("no station given")

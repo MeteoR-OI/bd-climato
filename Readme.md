@@ -15,7 +15,8 @@
 - [5. Problemes courants](#5-problemes-courants)
 - [6. Demarrer avec GIT](#6-demarrer-avec-git)
 - [7. Telemetry](#7-telemetry)
-- [8. Notes Generales](#8-notes-generales)
+- [8. API](#8-api)
+- [9. Notes Generales](#9-notes-generales)
 
 <!-- /code_chunk_output -->
 
@@ -50,5 +51,7 @@ Le schema de la base de donnees va etre profondement revu...
 # 7. Telemetry
 [Telemetry](doc/telemetry.md)
 
-# 8. Notes Generales
+# 8. API
+[Api](doc/api/apiDoc.md)
+# 9. Notes Generales
 [Notes](doc/globalNotes.md)

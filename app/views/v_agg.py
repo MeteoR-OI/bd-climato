@@ -55,24 +55,25 @@ import dateutil
 #     return viewLastAgg(request, "A", poste_id, keys, nb_items)
 
 
-def load_agg_info(agg_result: list, j: json, keys: list):
+def load_agg_info(agg_result: json, j: json, keys: list):
     if j.items().__len__() == 0:
         return "...... *** NO DATA ***"
     for key, value in j.items():
         if key == 'dv':
             continue
         if keys[0] == '*':
-            agg_result.append({'key': key, 'value': value})
+            agg_result[key] = value
             continue
         for onekey in keys:
             if key.startswith(onekey):
-                agg_result.append({'key': key, 'value': value})
+                agg_result[key] = value
                 continue
 
 
 def display_data_all(result: json, ah_all: list, keys: list):
     for one_agg in ah_all:
-        one_result = {'id': one_agg.id, 'start_dat': one_agg.start_dat, 'keys': []}
+        duration_percent = (one_agg.duration_sum / one_agg.duration_max) * 100
+        one_result = {'id': one_agg.id, 'start_dat': one_agg.start_dat, 'duration_sum': one_agg.duration_sum, 'duration %': duration_percent, 'keys': {}}
         load_agg_info(one_result['keys'], one_agg.j, keys)
         result['aggregations'].append(one_result)
 
