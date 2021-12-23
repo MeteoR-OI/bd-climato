@@ -596,8 +596,8 @@ class StdArchive(StdService):
         if self.record_augmentation and self.old_accumulator \
                 and event.record['dateTime'] == self.old_accumulator.timespan.stop:
             self.old_accumulator.augmentRecord(event.record)
-            # ajout QUETELARD
-            #print('INFO accummulees integrees dans RECORD')
+            # added by QUETELARD
+            #print('INFO accumulees integrees dans RECORD')
             #obs = self.old_accumulator
             #for obs_type in obs.keys():
             #print('maxSolarRad:', vars(obs['maxSolarRad']))
@@ -639,7 +639,7 @@ class StdArchive(StdService):
             for record in generator(lastgood_ts):
                 self.engine.dispatchEvent(weewx.Event(weewx.NEW_ARCHIVE_RECORD,
                                                       record=record,
-                                                      accumulator=self.old_accumulator, # ajout QUETELARD
+                                                      accumulator=self.old_accumulator, # added by QUETELARD
                                                       origin='hardware'))
                 
                 # QUETELARD
@@ -773,7 +773,7 @@ class StdReport(StdService):
     def new_archive_record(self, event):
         """Cache the archive record to pass to the report thread."""
         self.record = event.record
-       # QUETELARD 
+       # added by QUETELARD 
         self.accumulator = event.accumulator
         #print('STdReport',vars(event))
     
@@ -800,7 +800,7 @@ class StdReport(StdService):
             self.thread = weewx.reportengine.StdReportEngine(self.config_dict,
                                                              self.engine.stn_info,
                                                              self.record,
-                                                             self.accumulator, # QUETELARD
+                                                             self.accumulator, # added by QUETELARD
                                                              first_run=not self.launch_time)
             self.thread.start()
             self.launch_time = time.time()
