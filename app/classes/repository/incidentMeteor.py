@@ -26,7 +26,7 @@ class IncidentMeteor():
             self.data = Incident(dat=datetime.data.today(), source="??", level="??", reason="??", j={}, active=False)
 
     @staticmethod
-    def new(self, source: str, level: str, reason: str, j: json):
+    def new(source: str, level: str, reason: str, j: json):
         """Init a new IncidentMeteor object"""
         my_incident = Incident()
         my_incident.data.source = source
@@ -34,7 +34,7 @@ class IncidentMeteor():
         my_incident.data.reason = reason
         my_incident.data.j = j
         my_incident.data.active = True
-        self.save()
+        my_incident.save()
 
     def save(self):
         """ save or delete our ExtremeTodo """

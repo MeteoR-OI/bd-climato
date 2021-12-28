@@ -1,6 +1,7 @@
 from app.classes.calcul.allCalculus import AllCalculus
 from app.classes.metier.posteMetier import PosteMetier
 from app.classes.repository.aggTodoMeteor import AggTodoMeteor
+from app.classes.repository.incidentMeteor import IncidentMeteor
 from app.classes.typeInstruments.allTtypes import AllTypeInstruments
 from app.tools.refManager import RefManager
 from app.tools.aggTools import calcAggDate, getAggLevels
@@ -68,7 +69,18 @@ class CalcAggreg(AllCalculus):
 
             try:
                 self.__processTodo(a_todo, is_tmp)
+
             except Exception as exc:
+                if is_tmp is False:
+                    IncidentMeteor.new(
+                        "calc_agg",
+                        "Exception",
+                        str(exc),
+                        {
+                            'meteor': a_todo.data.obs.poste.meteor,
+                            'obs_id': a_todo.data.obs_id,
+                            'stopDat': str(a_todo.data.obs.stop_dat),
+                        })
                 a_todo.ReportError(exc)
                 a_todo.save()
 
@@ -104,51 +116,46 @@ class CalcAggreg(AllCalculus):
             span_load_data.end()
 
             try:
-                idx_delta_value = -1
+                delta_values = a_todo.data.j_dv
 
-                for delta_values in a_todo.data.j_dv:
-                    idx_delta_value += 1
+                for an_agg in aggregations:
+                    # add duration in main aggregations (the one with no deca...)
+                    an_agg.add_duration(delta_values["duration"])
 
-                    for an_agg in aggregations:
-                        # add duration in main aggregations (the one with no deca...)
-                        an_agg.add_duration(delta_values["duration"])
+                for anAgg in getAggLevels(is_tmp):
+                    with self.tracer.start_span("level " + anAgg, trace_flag) as span_lvl:
+                        b_insert_start_dat = True
+                        # adjust start date, depending on the aggregation level
 
-                    for anAgg in getAggLevels(is_tmp):
-                        with self.tracer.start_span("level " + anAgg, trace_flag) as span_lvl:
-                            b_insert_start_dat = True
-                            if idx_delta_value > 0:
-                                span_lvl.set_attribute("deltaValueIdx", idx_delta_value)
-                            # adjust start date, depending on the aggregation level
+                        # dv_next is the delta_values for next level
+                        dv_next = {"maxminFix": []}
 
-                            # dv_next is the delta_values for next level
-                            dv_next = {"maxminFix": []}
+                        # for all type_instruments
+                        for an_intrument in all_instr.get_all_instruments():
+                            # for all measures
+                            for my_measure in an_intrument["object"].get_all_measures():
+                                # load the needed aggregation for this measure
+                                agg_decas = self.load_aggregations_in_array(my_measure, anAgg, aggregations, m_stop_dat)
 
-                            # for all type_instruments
-                            for an_intrument in all_instr.get_all_instruments():
-                                # for all measures
-                                for my_measure in an_intrument["object"].get_all_measures():
-                                    # load the needed aggregation for this measure
-                                    agg_decas = self.load_aggregations_in_array(my_measure, anAgg, aggregations, m_stop_dat)
+                                m_agg_j = self.get_agg_magg(anAgg, a_todo.data.j_agg)
 
-                                    m_agg_j = self.get_agg_magg(anAgg, a_todo.data.obs.j_agg)
+                                if b_insert_start_dat:
+                                    b_insert_start_dat = False
+                                    span_lvl.set_attribute("startDat", str(agg_decas[0].data.start_dat))
 
-                                    if b_insert_start_dat:
-                                        b_insert_start_dat = False
-                                        span_lvl.set_attribute("startDat", str(agg_decas[0].data.start_dat))
+                                # find the calculus object for my_mesure
+                                for a_calculus in self.all_calculus:
+                                    if a_calculus["agg"] == my_measure["agg"]:
+                                        if a_calculus["calc_agg"] is not None:
+                                            # load data in our aggregation
+                                            a_calculus["calc_agg"].loadDVDataInAggregation(my_measure, m_stop_dat, agg_decas[0], m_agg_j, delta_values, dv_next, trace_flag)
 
-                                    # find the calculus object for my_mesure
-                                    for a_calculus in self.all_calculus:
-                                        if a_calculus["agg"] == my_measure["agg"]:
-                                            if a_calculus["calc_agg"] is not None:
-                                                # load data in our aggregation
-                                                a_calculus["calc_agg"].loadDVDataInAggregation(my_measure, m_stop_dat, agg_decas[0], m_agg_j, delta_values, dv_next, trace_flag)
+                                            # get our extreme values
+                                            a_calculus["calc_agg"].loadDVMaxMinInAggregation(my_measure, m_stop_dat, agg_decas, m_agg_j, delta_values, dv_next, trace_flag)
+                                        break
 
-                                                # get our extreme values
-                                                a_calculus["calc_agg"].loadDVMaxMinInAggregation(my_measure, m_stop_dat, agg_decas, m_agg_j, delta_values, dv_next, trace_flag)
-                                            break
-
-                            # loop to the next AggLevel
-                            delta_values = dv_next
+                        # loop to the next AggLevel
+                        delta_values = dv_next
 
                 # save our aggregations for this delta_values
                 with self.tracer.start_span("saveData", trace_flag):

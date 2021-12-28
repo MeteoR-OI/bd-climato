@@ -17,22 +17,15 @@ class AggTodoMeteor():
         self.is_tmp = is_tmp
         if myModelObj.objects.filter(obs_id=obs_id).exists():
             self.data = myModelObj.objects.filter(obs_id=obs_id).first()
-            self.exist_in_db = True
         else:
-            self.data = myModelObj(obs_id=obs_id, priority=9, j_dv=[])
-            self.exist_in_db = False
+            self.data = myModelObj(obs_id=obs_id, priority=9, j_dv={}, j_agg={})
 
     def save(self):
         """ save or delete our AggTodo """
-        if self.data.j_error.__len__() > 0 or self.data.j_dv.__len__() > 0:
-            self.data.save()
-        else:
-            if self.exist_in_db:
-                self.data.delete()
+        self.data.save()
 
     def delete(self):
-        if self.exist_in_db:
-            self.data.delete()
+        self.data.delete()
 
     @staticmethod
     def count(is_tmp: bool = None):
@@ -40,7 +33,7 @@ class AggTodoMeteor():
             return getAggTodoObject(is_tmp).objects.count()
         count_all = getAggTodoObject(True).objects.count()
         return getAggTodoObject(False).objects.count() + count_all
-    
+
     def ReportError(self, err):
         self.status = 9
         self.data.j_error = {"Error": repr(err)}

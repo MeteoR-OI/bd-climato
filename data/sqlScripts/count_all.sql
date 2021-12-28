@@ -36,4 +36,5 @@ WHERE table_schema NOT IN ('pg_catalog', 'information_schema')
     AND table_type='BASE TABLE'
     AND table_name like '%obs'
      OR (table_name like '%agg_%' and table_name <> 'pg_aggregate')
+     OR (table_name='incident')
 ORDER by 1;

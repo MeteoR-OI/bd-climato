@@ -1,6 +1,7 @@
 from app.classes.calcul.allCalculus import AllCalculus
 from app.classes.metier.posteMetier import PosteMetier
 from app.classes.repository.aggTodoMeteor import AggTodoMeteor
+from app.classes.repository.incidentMeteor import IncidentMeteor
 from app.classes.workers.svcAggreg import SvcAggreg
 from app.classes.typeInstruments.allTtypes import AllTypeInstruments
 from app.tools.jsonPlus import JsonPlus
@@ -47,7 +48,7 @@ class CalcObs(AllCalculus):
         """
         common params:
                 "json: json_data pre loaded
-                "delete": delete_flag,
+                "delete": delete_histo_data_flag,
                 "is_tmp": is_tmp,
                 "validation": use_validation
         when called from command line:
@@ -80,17 +81,17 @@ class CalcObs(AllCalculus):
             trace_flag = params["trace_flag"]
 
         # load other parameters
-        is_tmp = delete_flag = use_validation = False
+        is_tmp = delete_histo_data_flag = use_validation = False
         ret = []
         if params.get("is_tmp") is not None:
             is_tmp = params["is_tmp"]
         if params.get("delete") is not None:
-            delete_flag = params["delete"]
+            delete_histo_data_flag = params["delete"]
         if params.get("validation") is not None:
             use_validation = params["validation"]
 
         # delete is not part of the transaction
-        if delete_flag:
+        if delete_histo_data_flag:
             self.delete_obs_agg(is_tmp)
 
         # load the content of files on the server
@@ -140,13 +141,25 @@ class CalcObs(AllCalculus):
         meteor = "???"
 
         with self.tracer.start_as_current_span("Load Obs", trace_flag) as my_span:
+            # check data validity in a try/catch protection
             try:
                 # validate our json
                 meteor = str(json_data_array[0].get("meteor"))
                 check_result = checkJson(json_data_array)
-                if check_result is not None:
-                    raise Exception("Meteor: " + meteor + ", filenme: " + filename + str(check_result))
 
+            except Exception as exc:
+                if is_tmp is False:
+                    IncidentMeteor.new("check_data", "Exception", str(exc), {})
+                my_span.record_exception(exc)
+                raise exc
+
+            if check_result is not None:
+                if is_tmp is False:
+                    IncidentMeteor.new("check_data", "Error", "invalid data", {'meteor': meteor, 'filename': filename, 'check': check_result})
+                raise Exception("Meteor: " + meteor + ", filenme: " + filename + str(check_result))
+
+            # now load our data in obs table
+            try:
                 while idx < json_data_array.__len__():
                     try:
                         # start_time = datetime.datetime.now()
@@ -187,6 +200,8 @@ class CalcObs(AllCalculus):
                 )
 
             except Exception as exc:
+                if is_tmp is False:
+                    IncidentMeteor.new("load obs", "Exception", str(exc), {})
                 my_span.record_exception(exc)
                 raise exc
 
@@ -234,6 +249,12 @@ class CalcObs(AllCalculus):
                 poste_metier.lock()
                 obs_meteor = poste_metier.observation(m_stop_date_agg_start_date, is_tmp)
                 if (obs_meteor.data.id is not None and json_file_data["data"][measure_idx].__contains__("update_me") is False):
+                    if is_tmp is False:
+                        IncidentMeteor.new(
+                            "load_obs",
+                            "info",
+                            "skipping data already loaded",
+                            {'meteor': poste_metier.data.meteor, 'filename': filename, 'idx': measure_idx, 'stop_dat': str(m_stop_date_agg_start_date)})
                     t.logInfo(
                         "file: " + filename + " skipping data[" + str(measure_idx) + "], stop_dat: " + str(m_stop_date_agg_start_date) + " already loaded",
                         my_span,
@@ -245,6 +266,12 @@ class CalcObs(AllCalculus):
                     if (json_file_data["data"][measure_idx].get("validation") is not None):
                         m_agg_j = json_file_data["data"][measure_idx]["validation"]
                     if m_agg_j.__len__() == 0:
+                        if is_tmp is False:
+                            IncidentMeteor.new(
+                                "load_obs",
+                                "info",
+                                "no data in Json",
+                                {'meteor': poste_metier.data.meteor, 'filename': filename, 'idx': measure_idx, 'stop_dat': str(m_stop_date_agg_start_date)})
                         t.logInfo("skipping data[" + str(measure_idx) + "], no data in JSON !!! stop_dat: " + str(m_stop_date_agg_start_date), my_span)
                         continue
                 else:
@@ -284,26 +311,12 @@ class CalcObs(AllCalculus):
                 my_span.set_attribute("obsId_" + str(measure_idx), obs_meteor.data.id)
 
                 a_todo = AggTodoMeteor(obs_meteor.data.id, is_tmp)
-                a_todo.data.j_dv.append(delta_values)
+                a_todo.data.j_dv = delta_values
+                a_todo.data.j_agg = obs_meteor.data.j_agg
                 if measure_idx < json_file_data["data"].__len__() <= 1:
                     a_todo.data.priority = 0
-                if obs_meteor.data.id is not None:
-                    a_todo.save()
 
-                # j_trace = {}
-
-                # if trace_flag:
-                #     duration2 = datetime.datetime.now() - debut_process
-                #     j_trace["info"] = "idx=" + str(measure_idx)
-                #     j_trace["total_exec"] = int(duration2.total_seconds() * 1000)
-                #     j_trace["item_processed"] = json_file_data["data"].__len__()
-                #     j_trace["one_exec"] = int(duration2.total_seconds() * 1000 / json_file_data["data"].__len__())
-                #     # j_trace['start_dat'] = json_file_data['data'][measure_idx]['current']['start_dat']
-                #     j_trace["stop_dat"] = str(json_file_data["data"][measure_idx]["stop_dat"])
-                #     j_trace["obs data"] = JsonPlus().loads(JsonPlus().dumps(obs_meteor.data.j))
-                #     j_trace["obs aggregations"] = JsonPlus().loads(JsonPlus().dumps(obs_meteor.data.j_agg))
-                #     j_trace["agg_todo dv"] = (JsonPlus().loads(JsonPlus().dumps(a_todo.data.j_dv)) if not (a_todo.data.id is None) else "{}")
-                    # t.LogDebug("json item loaded", my_span, {'idx': measure_idx, 'time_exec': j_trace["total_exec"], 'items': j_trace["item_processed"], "stop_dat": j_trace["stop_dat"]})
+                a_todo.save()
 
             finally:
                 measure_idx += 1
@@ -372,11 +385,6 @@ class CalcObs(AllCalculus):
                             if not os.path.exists(aFileSpec["p"] + '/done'):
                                 os.makedirs(aFileSpec["p"] + '/done')
                             os.rename(aFileSpec["p"] + "/" + aFileSpec["f"], aFileSpec["p"] + "/done/" + aFileSpec["f"])
-                            # t.logInfo(
-                            #     "json file loaded",
-                            #     load_span,
-                            #     {"filename": aFile, "dest": baseDir + "/done/" + aFile},
-                            # )
                         else:
                             t.logInfo(
                                 "file moved to fail directory",
