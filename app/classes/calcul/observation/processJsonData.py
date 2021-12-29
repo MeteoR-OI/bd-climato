@@ -40,8 +40,6 @@ class ProcessJsonData():
         #     return
 
         my_values = {}
-        if target_key == "rain_rate":
-            target_key = "rain_rate"
 
         self.loadValuesFromCurrent(my_measure, json_file_data, measure_idx, src_key, target_key, exclusion, my_values, obs_meteor.data.stop_dat, trace_flag)
 

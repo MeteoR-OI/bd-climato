@@ -107,7 +107,7 @@ class WorkerRoot:
             for a_worker in WorkerRoot.wrks:
                 if a_worker['name'] == self.name:
                     try:
-                        if a_worker['run'] is True:
+                        if a_worker['threadRunning'] is True:
                             # just return if the task already running
                             return
                         self.killFlag = False
@@ -116,15 +116,15 @@ class WorkerRoot:
                         if self.GetTraceFlag() is True:
                             t.logInfo('svc thread started', None, {"svc": self.display, "status": "started"})
                         thread.start()
-                        a_worker['run'] = True
+                        a_worker['threadRunning'] = True
                         # force the thread to run once
-                        time.sleep(1)
+                        time.sleep(20)
                         self.queueRun.put({})
                         self.eventRunMe.set()
                         return
 
                     except Exception as exc:
-                        a_worker['run'] = False
+                        a_worker['threadRunning'] = False
                         t.logError('Start ' + self.display + ": Exception", None, {"exception": str(exc)})
                         raise exc
 
@@ -138,7 +138,7 @@ class WorkerRoot:
         for a_worker in WorkerRoot.wrks:
             if a_worker['name'] == self.name:
                 try:
-                    if a_worker['run'] is False:
+                    if a_worker['threadRunning'] is False:
                         raise Exception('workers::Stop', self.display + ' already stopped')
 
                     # Stop this worker first
@@ -161,7 +161,7 @@ class WorkerRoot:
 
                 finally:
                     with WorkerRoot.wrks_lock:
-                        a_worker['run'] = False
+                        a_worker['threadRunning'] = False
 
     # Check thread list to check if service is running
     def IsRunning(self) -> bool:
@@ -169,7 +169,7 @@ class WorkerRoot:
             WorkerRoot.wrks_lock.acquire()
             for a_worker in WorkerRoot.wrks:
                 if a_worker['name'] == self.name:
-                    return a_worker['run']
+                    return a_worker['threadRunning']
             t.LogError('Service ' + self.display + " not found", None, {})
 
         finally:
@@ -182,7 +182,7 @@ class WorkerRoot:
             if a_worker['name'] == name:
                 t.logError('task ' + self.display + name + ' already registered')
         WorkerRoot.wrks_lock.acquire()
-        WorkerRoot.wrks.append({"name": name, "fct": fct, 'run': False, 'killMe': threading.Event()})
+        WorkerRoot.wrks.append({"name": name, "fct": fct, 'threadRunning': False, 'run': False, 'killMe': threading.Event()})
         WorkerRoot.wrks_lock.release()
 
     # Start the service, and call the service function every frequency
@@ -223,10 +223,17 @@ class WorkerRoot:
 
                         # call the service handler
                         try:
-                            a_worker['fct'](call_params)
+                            if a_worker['run'] is False:
+                                try:
+                                    a_worker['run'] = True
+                                    a_worker['fct'](call_params)
+                                finally:
+                                    a_worker['run'] = False
+
                         except Exception as exc:
                             with self.tracer.start_as_current_span(self.display, trace_flag) as my_span:
                                 my_span.record_exception(exc)
+                            a_worker['run'] = False
 
                     self.eventRunMe.clear()
 
@@ -236,5 +243,5 @@ class WorkerRoot:
 
         finally:
             WorkerRoot.wrks_lock.acquire()
-            a_worker['run'] = False
+            a_worker['threadRunning'] = False
             WorkerRoot.wrks_lock.release()

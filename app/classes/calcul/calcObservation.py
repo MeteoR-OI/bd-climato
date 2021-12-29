@@ -171,7 +171,7 @@ class CalcObs(AllCalculus):
                         item_processed = json_file_data["data"].__len__()
                         all_item_processed += item_processed
 
-                        self._loadJsonItemInObs(json_file_data, trace_flag, is_tmp, use_validation, filename)
+                        self._loadJsonItemInObs(json_file_data, trace_flag, is_tmp, use_validation, filename, idx)
 
                         # duration = datetime.datetime.now() - start_time
                         # dur_millisec = round(duration.total_seconds() * 1000)
@@ -217,6 +217,7 @@ class CalcObs(AllCalculus):
         is_tmp: bool = False,
         use_validation: bool = False,
         filename: str = '???',
+        outside_idx: int = 0,
     ) -> json:
         """
         processJson
@@ -254,14 +255,14 @@ class CalcObs(AllCalculus):
                             "load_obs",
                             "info",
                             "skipping data already loaded",
-                            {'meteor': poste_metier.data.meteor, 'filename': filename, 'idx': measure_idx, 'stop_dat': str(m_stop_date_agg_start_date)})
+                            {'meteor': poste_metier.data.meteor, 'filename': filename, 'out_idx': str(outside_idx), 'idx': measure_idx, 'stop_dat': str(m_stop_date_agg_start_date)})
                     t.logInfo(
-                        "file: " + filename + " skipping data[" + str(measure_idx) + "], stop_dat: " + str(m_stop_date_agg_start_date) + " already loaded",
+                        "file: " + filename + " skipping data[" + str(outside_idx) + '/' + str(measure_idx) + "], stop_dat: " + str(m_stop_date_agg_start_date) + " already loaded",
                         my_span,
                     )
                     continue
                 # load aggregations data in obs_meteor.data.j_agg
-                m_agg_j = []
+                m_agg_j = {}
                 if use_validation is True:
                     if (json_file_data["data"][measure_idx].get("validation") is not None):
                         m_agg_j = json_file_data["data"][measure_idx]["validation"]
@@ -271,8 +272,8 @@ class CalcObs(AllCalculus):
                                 "load_obs",
                                 "info",
                                 "no data in Json",
-                                {'meteor': poste_metier.data.meteor, 'filename': filename, 'idx': measure_idx, 'stop_dat': str(m_stop_date_agg_start_date)})
-                        t.logInfo("skipping data[" + str(measure_idx) + "], no data in JSON !!! stop_dat: " + str(m_stop_date_agg_start_date), my_span)
+                                {'meteor': poste_metier.data.meteor, 'filename': filename, 'out_idx': str(outside_idx), 'idx': measure_idx, 'stop_dat': str(m_stop_date_agg_start_date)})
+                        t.logInfo("skipping data[" + str(outside_idx) + '/' + str(measure_idx) + "], no data in JSON !!! stop_dat: " + str(m_stop_date_agg_start_date), my_span)
                         continue
                 else:
                     if json_file_data["data"][measure_idx].__contains__("aggregations"):

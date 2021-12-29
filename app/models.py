@@ -541,8 +541,8 @@ class TmpAggHisto(models.Model):
 
 
 class Incident(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    dat = DateCharField(null=False, max_length=20, verbose_name="start date de l incident'")
+    id = models.AutoField(primary_key=True)
+    dat = DateCharField(null=False, max_length=30, verbose_name="start date de l incident'")
     source = models.CharField(null=False, max_length=20, verbose_name='source')
     level = models.CharField(null=False, max_length=20, verbose_name='level')
     reason = models.TextField(null=False, verbose_name='reason')
