@@ -4,6 +4,7 @@ from app.classes.repository.aggMeteor import AggMeteor
 from app.classes.repository.posteMeteor import PosteMeteor
 import app.tools.myTools as t
 from app.tools.jsonPlus import JsonPlus
+from app.tools.modelTools import getAggTable
 import sys
 import datetime
 
@@ -106,8 +107,8 @@ class Command(BaseCommand):
                 if disp_level == "*" or disp_level == level:
                     self.display("Poste " + p.data.meteor + " level: " + disp_level)
 
-                    tmp_agg_obj = AggMeteor.GetAggObj(level + "T")
-                    agg_obj = AggMeteor.GetAggObj(level)
+                    tmp_agg_obj = getAggTable(level + "T")
+                    agg_obj = getAggTable(level)
 
                     all_agg = (
                         agg_obj.objects.filter(poste_id=poste_id)
