@@ -1,5 +1,6 @@
 from django.db import models
 import datetime
+
 from app.tools.jsonPlus import JsonPlus
 from app.tools.dateTools import str_to_date, date_to_str
 from django.core.serializers.json import DjangoJSONEncoder
@@ -225,6 +226,7 @@ class AggTodo(models.Model):
     priority = models.IntegerField(null=True, default=9, verbose_name='priority, 0: one current-data, 9: multiple current-data')
     status = models.IntegerField(null=False, default=0, verbose_name='status, 0: wait, 9: error, 99: processed')
     j_dv = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='default_values coming from obs processing')
+    j_agg = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='default_values coming from obs processing')
     j_error = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='error reporting')
 
     def __str__(self):
@@ -240,6 +242,7 @@ class TmpAggTodo(models.Model):
     priority = models.IntegerField(null=True, default=9, verbose_name='priority, 0: one current-data, 9: multiple current-data')
     status = models.IntegerField(null=False, default=0, verbose_name='status, 0: wait, 9: error, 99: processed')
     j_dv = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='default_values coming from obs processing')
+    j_agg = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='default_values coming from obs processing')
     j_error = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='error reporting')
 
     def __str__(self):
@@ -535,3 +538,19 @@ class TmpAggHisto(models.Model):
             models.Index(fields=('agg_level', 'agg_id')),
             models.Index(fields=('obs_id', 'agg_level', 'agg_id')),
         ]
+
+
+class Incident(models.Model):
+    id = models.AutoField(primary_key=True)
+    dat = DateCharField(null=False, max_length=30, verbose_name="start date de l incident'")
+    source = models.CharField(null=False, max_length=20, verbose_name='source')
+    level = models.CharField(null=False, max_length=20, verbose_name='level')
+    reason = models.TextField(null=False, verbose_name='reason')
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Details")
+    active = models.BooleanField(default=True, verbose_name='active')
+
+    def __str__(self):
+        return "Incident id: " + str(self.id) + ", date: " + str(self.dat) + ", Source: " + str(self.source) + ", Reason: " + str(self.reason)
+
+    class Meta:
+        db_table = "incident"

@@ -2,7 +2,10 @@
 from app.tools.modelTools import getAggHistoTableWithBool, getObservationTable
 from django.db import connection
 import datetime
+import json
 from app.tools.aggTools import calcAggDate
+from app.classes.repository.incidentMeteor import IncidentMeteor
+from app.classes.repository.aggTodoMeteor import AggTodoMeteor
 
 
 class ObsMeteor():
@@ -38,7 +41,53 @@ class ObsMeteor():
         # delete cascade linked agg_histo rows
         agg_histo_table = getAggHistoTableWithBool(self.is_tmp)
         agg_histo_table.objects.filter(obs_id=self.data.id).delete()
+
+        # generate a todo with negative values
+        a_todo = AggTodoMeteor(self.data.id, self.is_tmp)
+        delta_values = self.__reverse_delta_values(self.data.j_dv, self.data.id)
+        a_todo.data.j_dv = delta_values
+        a_todo.data.j_agg = self.data.j_agg
+        a_todo.data.priority = 0
+        a_todo.save()
+
+        # delete the obs
         self.data.delete()
+
+    def __reverse_delta_values(self, delta_values: json, obs_id: int):
+        # reverse delta_values to delete an obs
+        inverse_values = {}
+        for a_kv in delta_values.items():
+            if str(a_kv[0]).endswith('_s') or str(a_kv[0]).endswith('_sum') or str(a_kv[0]).endswith('duration'):
+                inverse_values[a_kv[0]] = a_kv[1] * -1
+                continue
+            if str(a_kv[0]).endswith('_min'):
+                inverse_values['maxminFix'].append({
+                    'ope': 'remove',
+                    'type': 'min',
+                    'value': a_kv[1],
+                    'date': delta_values[str(a_kv[0]) + '_time'],
+                })
+                continue
+            if str(a_kv[0]).endswith('_max'):
+                inverse_values['maxminFix'].append({
+                    'ope': 'remove',
+                    'type': 'max',
+                    'value': a_kv[1],
+                    'date': delta_values[str(a_kv[0]) + '_time'],
+                })
+                continue
+            if str(a_kv[0]).endswith('_time'):
+                continue
+            IncidentMeteor.new(
+                'obs delete',
+                'info',
+                'key ' + str(a_kv[0]) + ' not processed',
+                {
+                    'value': str(a_kv[1]),
+                    'obs_id': obs_id,
+                })
+
+        return inverse_values
 
     def count(self, poste_id: int = None, stop_dat_mask: str = '', is_tmp: bool = None) -> int:
         # return count of aggregations

@@ -6,6 +6,7 @@ delete from agg_day;
 delete from agg_month;
 delete from agg_year;
 delete from agg_all;
+delete from incident;
 
 delete from tmp_agg_todo;
 delete from tmp_agg_histo;
