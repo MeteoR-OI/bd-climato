@@ -110,9 +110,9 @@ LOW#slurp
 #set $datetime_obs -= timedelta(minutes=$d.minute % $amin, seconds=$d.second, microseconds=$d.microsecond)
 #if $start == 0 ## on traite le probleme des obs non rondes au redemarrage
 #set $diff = time.mktime($datetime_obs.timetuple()) - time.mktime($datetime_obs_prev.timetuple())
-#if $diff > $current.interval.raw * 60
+#if $diff > $amin * 60
 #set $datetime_obs -= timedelta(minutes=$amin)
-#end if ## fin $diff > 300
+#end if ## fin $diff > $amin*60
 #end if ## fin $start = 0 probleme des obs non rondes au redemarrage
 #set $datetime_obs_start = format($datetime_obs - timedelta(minutes=$amin),"%Y-%m-%dT%H:%M:%S")
 #set $datetime_obs_stop = format($datetime_obs,"%Y-%m-%dT%H:%M:%S")
