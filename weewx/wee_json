@@ -55,9 +55,9 @@ def main():
 
     start_d, stop_d = _parse_dates(options)
     if stop_d is None:
-        print "Generating json file from %s to current time" % timestamp_to_string(start_d)
+        print "Generating file arch.json from %s to current time" % timestamp_to_string(start_d)
     else:
-        print "Generating from %s to %s" % (timestamp_to_string(start_d), timestamp_to_string(stop_d))
+        print "Generating file arch.json from %s to %s" % (timestamp_to_string(start_d), timestamp_to_string(stop_d))
         
     # Look for the debug flag. If set, ask for extra logging
     weewx.debug = int(config_dict.get('debug', 0))
