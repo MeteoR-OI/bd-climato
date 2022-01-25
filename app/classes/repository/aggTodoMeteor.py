@@ -1,4 +1,4 @@
-from app.models import AggTodo, TmpAggTodo
+from app.models import AggTodo, TmpAggTodo, Observation
 from app.tools.modelTools import getAggTodoObject
 from django.db import transaction
 
@@ -10,15 +10,15 @@ class AggTodoMeteor():
         obj.data -> datarow
     """
 
-    def __init__(self, obs_id: int, is_tmp: bool = None):
+    def __init__(self, id: int, is_tmp: bool = None):
         """Init a new AggTodoMeteor object"""
 
         myModelObj = getAggTodoObject(is_tmp)
         self.is_tmp = is_tmp
-        if myModelObj.objects.filter(obs_id=obs_id).exists():
-            self.data = myModelObj.objects.filter(obs_id=obs_id).first()
+        if myModelObj.objects.filter(id=id).exists():
+            self.data = myModelObj.objects.filter(id=id).first()
         else:
-            self.data = myModelObj(obs_id=obs_id, priority=9, j_dv={}, j_agg={})
+            self.data = myModelObj(id=id, priority=9, j_dv=[], j_agg=[])
 
     def save(self):
         """ save or delete our AggTodo """
@@ -48,9 +48,10 @@ class AggTodoMeteor():
         a_todo = myModelObj.objects.filter(status=0).order_by("priority", "id").select_for_update(skip_locked=True).first()
         a_todo.status = 1
         a_todo.save()
-        agg_todo = AggTodoMeteor(a_todo.obs_id, is_tmp)
+        agg_todo = AggTodoMeteor(a_todo.id, is_tmp)
+        agg_todo.obs = Observation.objects.filter(id=a_todo.id).first()
         return agg_todo
 
     def __str__(self):
         """print myself"""
-        return "AggTodo id: " + str(self.data.id) + ", obs: " + str(self.data.obs_id) + ", poste: " + str(self.data.obs_id.poste_id) + ", on " + str(self.data.obs_id.stop_dat)
+        return "AggTodo id: " + str(self.data.id) + ", obs: " + str(self.data.id)

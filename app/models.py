@@ -118,11 +118,11 @@ class Poste(models.Model):
     # mandatory fields
     id = models.AutoField(primary_key=True)
     meteor = models.CharField(null=False, max_length=10, verbose_name="Code MeteoR.OI")
-    fuseau = models.SmallIntegerField(null=True, default=4, verbose_name="nombre heure entre TU et heure fuseau, default UTC+4")
-
-    # optional fields
-    meteofr = models.CharField(null=True, default='', max_length=10, verbose_name="Code Meteo France")
     lock_calculus = models.SmallIntegerField(null=True, default=0, verbose_name="internal field used to lock the calculus on one poste")
+
+    # optional fields - will be used
+    fuseau = models.SmallIntegerField(null=True, default=4, verbose_name="nombre heure entre TU et heure fuseau, default UTC+4")
+    meteofr = models.CharField(null=True, default='', max_length=10, verbose_name="Code Meteo France")
 
     # la suite n'est pas utilise par climato - a revoir pour pages html...
     title = models.CharField(null=True, max_length=50, default="", verbose_name="Nom clair de la station")
@@ -183,12 +183,15 @@ class Observation(models.Model):
     agg_start_dat = DateCharField(null=False, max_length=20, default="1900-01-01T00:00:00", verbose_name="date début période")
     stop_dat = DateCharField(null=False, max_length=20, verbose_name="date de fin de période")
     duration = models.IntegerField(null=False, verbose_name="durée période", default=0)
+    filename = models.CharField(default='???', max_length=100, null=False, verbose_name='filename used to load data')
 
     qa_modifications = models.IntegerField(null=False, default=0, verbose_name='qa_modifications')
     qa_incidents = models.IntegerField(null=False, default=0, verbose_name='qa_incidents')
     qa_check_done = models.BooleanField(null=False, default=False, verbose_name='qa_check_done')
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name='mesures Json')
+    ''' Array of measure data. Usually only one element. Has to be an array '''
     j_agg = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name='données pré-agrégées')
+    ''' Array of data coming from aggregations key, for future used during agg_xxx updates '''
 
     def __str__(self):
         return "Observation id: " + str(self.id) + ", poste: " + str(self.poste) + ", de " + str(self.stop_dat - datetime.timedelta(minutes=self.duration)) + " a: " + str(self.stop_dat)
@@ -221,13 +224,17 @@ class TmpObservation(models.Model):
 
 # class AggTodo(ExportModelOperationsMixin('agg_todo'), models.Model):
 class AggTodo(models.Model):
-    id = models.AutoField(primary_key=True)
-    obs = models.ForeignKey(null=False, to="Observation", on_delete=models.CASCADE)
+    id = models.IntegerField(primary_key=True)
+    # obs = models.ForeignKey(null=False, to="Observation", on_delete=models.CASCADE)
     priority = models.IntegerField(null=True, default=9, verbose_name='priority, 0: one current-data, 9: multiple current-data')
     status = models.IntegerField(null=False, default=0, verbose_name='status, 0: wait, 9: error, 99: processed')
+    ''' status: processed only used during dev, not in production '''
     j_dv = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='default_values coming from obs processing')
+    ''' j_dv: Array of delta_values to apply to all aggregations. in case of error j_dv is the only source of data... '''
     j_agg = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='default_values coming from obs processing')
+    ''' j_agg: Array of data coming from the aggregations key. same index as j_dv '''
     j_error = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='error reporting')
+    ''' j_error: error information '''
 
     def __str__(self):
         return "AggTodo id: " + str(self.id) + ", obs: " + str(self.obs) + ", priority: " + str(self.priority)
@@ -260,7 +267,7 @@ class ExtremeTodo(models.Model):
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date de l agregation'")
     invalid_type = models.CharField(null=False, max_length=3, verbose_name="Type Invalidation (max or min)")
     status = models.IntegerField(null=False, default=0, verbose_name='status, 0: wait, 9: error, 99: processed')
-    j_invalid = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+    j_recompute = DateJSONField(encoder=DjangoJSONEncoder, null=False)
 
     def __str__(self):
         return "ExtremeTodo id: " + str(self.id) + ", level: " + self.level + ", start_dat: " + str(self.start_dat) + ", type: " + str.invalid_type

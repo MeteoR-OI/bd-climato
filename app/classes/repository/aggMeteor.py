@@ -63,7 +63,7 @@ class AggMeteor():
         if self.j_ori != {}:
             for k in self.j_ori.keys():
                 if self.data.j.get(k) is None:
-                    delta_j[k] = self.j.get(k)
+                    delta_j[k] = self.data.j.get(k)
                     dirty_found = True
 
         if self.data.duration_sum != self.duration_ori:
@@ -138,4 +138,4 @@ class AggMeteor():
 
     def __str__(self):
         """print myself"""
-        return "AggMeteor id: " + str(self.data.id) + ", poste_id: " + str(self.data.poste_id) + ", date: " + str(self.data.dat) + ", level: " + self.agg_niveau
+        return "AggMeteor id: " + str(self.data.id) + ", poste_id: " + str(self.data.poste_id) + ", date: " + str(self.data.start_dat) + ", level: " + self.agg_niveau

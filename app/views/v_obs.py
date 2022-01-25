@@ -35,8 +35,8 @@ def view_obs_data(request, poste_id, str_keys: str, start_dt: str, end_dt: str):
 
 
 def load_agg_info(agg_result: json, pre_agg: json, j: json, j_agg: list, keys: list):
-    if j.__len__() > 0:
-        for key, value in j.items():
+    if j[0].__len__() > 0:
+        for key, value in j[0].items():
             if key == 'dv':
                 continue
             if keys[0] == '*':
@@ -47,7 +47,7 @@ def load_agg_info(agg_result: json, pre_agg: json, j: json, j_agg: list, keys: l
                     agg_result[key] = value
                     continue
 
-    for a_jagg in j_agg:
+    for a_jagg in j_agg[0]:
         if a_jagg.__len__() > 0:
             tmp_agg = {}
             for key, value in a_jagg.items():

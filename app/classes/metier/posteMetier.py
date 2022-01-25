@@ -74,7 +74,6 @@ class PosteMetier(PosteMeteor):
         ti_all = AllTypeInstruments()
         for an_instru in ti_all.get_all_instruments():
             for a_measure in an_instru['object'].measures:
-
                 for deca_type in ['hour_deca', 'deca_max', 'deca_min']:
                     hour_deca = int(a_measure[deca_type])
                     if hour_deca not in needed_dates:

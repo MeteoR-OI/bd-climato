@@ -1,9 +1,9 @@
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.tools.climConstant import MeasureProcessingBitMask
-from app.tools.aggTools import isFlagged
-from app.tools.aggTools import loadFromExclu, calcAggDate
+from app.tools.aggTools import isFlagged, loadFromExclu, updateWindData
+from app.tools.dateTools import is_in_rounded_hour
 import json
-import datetime
+# import datetime
 
 
 class ProcessJsonData():
@@ -16,123 +16,61 @@ class ProcessJsonData():
 
     """
 
-    def loadInObs(self, poste_metier, my_measure: json, json_file_data: json, measure_idx: int, m_agg_j: json, obs_meteor: ObsMeteor, delta_values: json, trace_flag: bool = False):
-        """
-            processObservation
-
-            load json data in Observation table
-
-            load max/min
-
-            return the delta_values to be added in all aggregations
-
-            some methods are implemented here, some in the inherited class
-        """
-
-        # load field if defined in json
-        src_key = my_measure['src_key']
-        target_key = my_measure['target_key']
-
-        # get exclusion, and return if value is nullified
-        exclusion = poste_metier.exclusion(my_measure['type_i'])
-        # to check later...
-        # if shouldNullify(exclusion, src_key) is True:
-        #     return
-
-        my_values = {}
-
-        self.loadValuesFromCurrent(my_measure, json_file_data, measure_idx, src_key, target_key, exclusion, my_values, obs_meteor.data.stop_dat, trace_flag)
-
-        if my_values.__len__() == 0 and m_agg_j.__len__() == 0:
-            return
+    def loadJsonInObs(
+            self,
+            poste_metier,
+            obs_meteor: ObsMeteor,
+            my_measure: json,
+            json_file_data: json,
+            json_data_idx: int,
+            trace_flag: bool = False):
+        """ loadJsonInObs: load Json values in obs table """
 
         if (isFlagged(my_measure['special'], MeasureProcessingBitMask.NotAllowedInCurrent) is True):
             return
 
-        # load Json data in dv
+        # load local variables
+        src_key = my_measure['src_key']
+        target_key = my_measure['target_key']
 
-        # update duration & agg_start_dat in obs if needed
-        if obs_meteor.data.duration == 0 and my_values.__len__() > 1:
-            tmp_duration = delta_values.get(target_key + '_du')
-            obs_meteor.data.duration = tmp_duration
-            # compute our agg_h.start_dat for faster retrieval of observation for a given agg_h.start_dat
-            obs_meteor.data.agg_start_dat = calcAggDate('H', obs_meteor.data.stop_dat, tmp_duration, True)
+        obs_values = obs_meteor.data.j[obs_meteor.data.j.__len__() - 1]
+        match my_measure['agg']:
+            case 'avg' | 'avgomm' | 'rate' | 'rateomm':
+                key_suffix = '_avg'
+            case 'sum' | 'sumomm':
+                key_suffix = '_sum'
+            case 'no':
+                key_suffix = ''
+            case _:
+                raise Exception("unknown agg field in measure: " + json.dumps(my_measure))
 
-            # double check that the duration are compatible
-            if obs_meteor.data.duration != tmp_duration:
-                raise Exception('loadObsDatarow', 'incompatible durations -> in table obs: ' + str(obs_meteor.data.duration) + ', in json: ' + str(tmp_duration))
+        # get exclusion, and return if value is nullified
+        exclusion = poste_metier.exclusion(my_measure['type_i'])
+        # todo later...
+        # if shouldNullify(exclusion, src_key) is True:
+        #     return
 
-        # load data from dv to obs
-        self.loadDataInObs(my_measure, obs_meteor, target_key, delta_values, my_values, trace_flag)
-
-        # check maxmin that need to be regenated later
-        self.checkMaxMinToRegenerate(my_measure, obs_meteor, target_key, delta_values, my_values, trace_flag)
-
-        # load Max/Min in obs, and in dv
-        self.loadMaxMinInObs(my_measure, obs_meteor, target_key, delta_values, my_values, trace_flag)
-        return
-
-    # ----------------------------------------------------------
-    # private or methods common to multiple inherited instances
-    # ----------------------------------------------------------
-    def loadValuesFromCurrent(
-        self,
-        my_measure: json,
-        json_file_data: json,
-        measure_idx: int,
-        src_key: str,
-        target_key: str,
-        exclusion: json,
-        my_values: json,
-        trace_flag: bool,
-    ):
-        if my_measure.__contains__('xyz') is False:
-            # just to satisfy our parser... Will always fail
-            raise Exception('loadDataInDV', 'should be in virtual func')
-
-    def _loadValuesFromCurrent(
-        self,
-        my_measure: json,
-        json_file_data: json,
-        measure_idx: int,
-        src_key: str,
-        target_key: str,
-        exclusion: json,
-        my_values: json,
-        key_suffix: str,
-        stop_dat: datetime,
-        trace_flag: bool,
-    ):
-        """
-            Load ou values in delta_value for value passing to loadDataInObs, and loadMaxMinInObsInObservation
-        """
         # b_exclu = True -> load data from exclusion, False -> normal processing
-        if src_key == 'rain_rate':
-            b_exclu = loadFromExclu(exclusion, src_key)
-
         b_exclu = loadFromExclu(exclusion, src_key)
 
-        my_value_instant = my_value_avg = None
-        my_value_dir = None
+        # get data_src
+        data_src = exclusion if b_exclu is True else json_file_data['data'][json_data_idx].get('current')
+        if data_src is None:
+            return
 
-        if my_measure['target_key'] == 'barometer':
-            measure_type = 3
+        # load aggregated/instantaneous values
+        my_value_inst = my_value_agg = my_value_dir = None
+        b_load_inst = b_load_agg = True
 
-        measure_type = 3
         if my_measure.__contains__('measureType'):
             if my_measure['measureType'] == 'avg':
-                measure_type = 1
+                b_load_inst = False
             elif my_measure['measureType'] == 'inst':
-                measure_type = 2
+                b_load_agg = False
             elif my_measure['measureType'] != 'both':
-                raise Exception('processJsonDataAvg::loadDataInObs', 'invalid measureType: ' + my_measure['measureType'] + ' for ' + src_key)
+                raise Exception('processJsonDataAvg::loadDeltaValues', 'invalid measureType: ' + my_measure['measureType'] + ' for ' + src_key)
 
-        if b_exclu is False:
-            # load our data from the measure (json)
-            data_src = json_file_data['data'][measure_idx].get('current')
-        else:
-            data_src = exclusion
-
+        # lookup in json data for src_keys, and all syno
         all_src_keys = [my_measure['src_key']]
         if my_measure.get('syno') is not None:
             for a_syno in my_measure['syno']:
@@ -141,152 +79,149 @@ class ProcessJsonData():
         for a_srckey in all_src_keys:
             if value_found:
                 continue
-            if data_src is not None:
-                if data_src.__contains__(a_srckey) and (measure_type & 2) == 2:
-                    my_value_instant = self.get_json_value(data_src, a_srckey, [], True)
-                    value_found = True
-                if data_src.__contains__(a_srckey + key_suffix) and (measure_type & 1) == 1:
-                    my_value_avg = self.get_json_value(data_src, a_srckey + key_suffix, [], True)
-                    value_found = True
-                if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                    if data_src.__contains__(a_srckey + '_dir'):
-                        my_value_dir = data_src[a_srckey + '_dir']
-                    elif data_src.__contains__(a_srckey + key_suffix + '_dir'):
-                        my_value_dir = data_src[a_srckey + '_dir']
 
-        # init value instantaneout and avg
-        # measure_type         I      1      I      2      I      3
-        # measure_avg (ma)     I ma, then mi I     None    I ma, then mi
-        # measure_instant (mi) I     None    I mi, then ma I mi, then ma
+            # load instant value if allowed and if found
+            if b_load_inst is True and data_src.__contains__(a_srckey):
+                my_value_inst = data_src[a_srckey]
+                value_found = True
+                if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)) and data_src.get(a_srckey + '_dir') is not None:
+                    my_value_dir = data_src[a_srckey + '_dir']
+            # load pre-aggregated value if allowed and if found
+            if b_load_agg and data_src.__contains__(a_srckey + key_suffix):
+                my_value_agg = data_src[a_srckey + key_suffix]
+                value_found = True
+                if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)) and data_src.get(a_srckey + key_suffix + '_dir') is not None:
+                    my_value_dir = data_src[a_srckey + key_suffix + '_dir']
+                elif (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)) and data_src.get(a_srckey + '_dir') is not None:
+                    my_value_dir = data_src[a_srckey + '_dir']
 
-        if measure_type == 1:
-            if my_value_avg is None:
-                my_value_avg = my_value_instant
-            if measure_type == 1:
-                my_value_instant = None
-        if measure_type == 2:
-            if my_value_instant is None:
-                my_value_instant = my_value_avg
-            if measure_type == 2:
-                my_value_avg = None
-        if measure_type == 3:
-            if my_value_avg is None:
-                my_value_avg = my_value_instant
-            if my_value_instant is None:
-                my_value_instant = my_value_avg
+        # init value instantaneous and avg (aggregated)
+        # measure_type         I  Aggregated I Instantaneous I     Both
+        # ---------------------I-------------I---------------I--------------
+        # measure_avg (ma)     I ma, then mi I      None     I ma, then mi
+        # measure_instant (mi) I     None    I  mi, then ma  I mi, then ma
+        # ---------------------I-------------I---------------I--------------
 
-        if my_value_avg is not None:
-            my_values[target_key + '_a'] = my_value_avg
-        if my_value_instant is not None:
-            my_values[target_key + '_i'] = my_value_instant
-        if my_value_dir is not None:
-            my_values[target_key + '_di'] = my_value_dir
-        tmp_duration = int(json_file_data['data'][measure_idx]['current']['duration'])
-        if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsOmm):
-            tmp_duration = 60
-        if tmp_duration != 0:
-            my_values[target_key + '_du'] = tmp_duration
+        if b_load_agg is True:
+            if my_value_agg is None:
+                my_value_agg = my_value_inst
+            if b_load_inst is False:
+                my_value_inst = None
+        if b_load_inst is True:
+            if my_value_inst is None:
+                my_value_inst = my_value_agg
+            if b_load_agg is False:
+                my_value_agg = None
+
+        tmp_duration = int(json_file_data['data'][json_data_idx]['current']['duration'])
+
+        if tmp_duration != 0 and (my_value_agg is not None or my_value_inst is not None):
+            match my_measure['agg']:
+                case 'avg' | 'rate':
+                    obs_values[target_key + '_s'] = my_value_agg * tmp_duration
+                    obs_values[target_key + '_d'] = tmp_duration
+                    if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
+                        updateWindData(obs_values, target_key, my_value_dir)
+                case 'sum':
+                    obs_values[target_key + '_s'] = my_value_agg
+                    obs_values[target_key + '_d'] = tmp_duration
+                case 'avgomm' | 'rateomm':
+                    if is_in_rounded_hour(obs_meteor.data.stop_dat, tmp_duration):
+                        tmp_duration = 60
+                        if data_src.get(src_key + '_omm') is not None:
+                            obs_values[target_key + '_s'] = data_src[src_key + '_omm'] * tmp_duration
+                            obs_values[target_key + '_d'] = tmp_duration
+                        else:
+                            obs_values[target_key + '_s'] = my_value_inst * tmp_duration
+                            obs_values[target_key + '_d'] = tmp_duration
+                        if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
+                            updateWindData(obs_values, target_key + '', my_value_dir)
+                case 'sumomm':
+                    if data_src.get(src_key + '_omm') is not None:
+                        obs_values[target_key + '_s'] = data_src[src_key + '_omm']
+                        obs_values[target_key + '_d'] = tmp_duration
+                    else:
+                        obs_values[target_key + '_s'] = my_value_inst
+                        obs_values[target_key + '_d'] = tmp_duration
+                case 'no':
+                    pass
+                case _:
+                    raise Exception("unknown agg field in measure: " + json.dumps(my_measure))
 
         # load max/min from json
         for maxmin_key in ['max', 'min']:
             if my_measure.__contains__(maxmin_key) is True and my_measure[maxmin_key] is True:
                 maxmin_suffix = '_' + maxmin_key
-                if data_src is not None and data_src.get(src_key + maxmin_suffix) is not None:
-                    my_values[target_key + maxmin_suffix] = data_src[src_key + maxmin_suffix]
-                    my_values[target_key + maxmin_suffix + '_time'] = data_src[src_key + maxmin_suffix + '_time']
+                if data_src.get(src_key + maxmin_suffix) is not None:
+                    obs_values[target_key + maxmin_suffix] = data_src[src_key + maxmin_suffix]
+                    obs_values[target_key + maxmin_suffix + '_time'] = data_src[src_key + maxmin_suffix + '_time']
                     if maxmin_key == 'max' and (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                        if data_src is not None and data_src.get(src_key + maxmin_suffix + '_dir') is not None:
-                            my_values[target_key + maxmin_suffix + '_dir'] = data_src[src_key + maxmin_suffix + '_dir']
+                        if data_src.get(src_key + maxmin_suffix + '_dir') is not None:
+                            obs_values[target_key + maxmin_suffix + '_dir'] = data_src[src_key + maxmin_suffix + '_dir']
                 else:
-                    if my_value_avg is not None or my_value_instant is not None:
-                        my_values[target_key + maxmin_suffix] = my_value_instant if my_value_instant is not None else my_value_avg
-                        if data_src is not None and data_src.get(src_key + maxmin_suffix + "_time") is not None:
-                            my_values[target_key + maxmin_suffix + '_time'] = data_src[src_key + maxmin_suffix + '_time']
-                        else:
-                            my_values[target_key + maxmin_suffix + '_time'] = stop_dat
+                    if my_value_agg is not None or my_value_inst is not None:
+                        obs_values[target_key + maxmin_suffix] = my_value_inst if my_value_inst is not None else my_value_agg
+                        obs_values[target_key + maxmin_suffix + '_time'] = str(obs_meteor.data.stop_dat)
+                        if maxmin_key == 'max' and (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
+                            if my_value_dir is not None:
+                                obs_values[target_key + maxmin_suffix + '_dir'] = my_value_dir
+        return
 
-    def loadDataInObs(
+    def loadDeltaValues(
         self,
         my_measure: json,
         obs_meteor: ObsMeteor,
-        target_key: str,
+        data_idx: int,
         delta_values: json,
+        remove_data: bool,
         trace_flag: bool,
     ):
-        if my_measure.__contains__('xyz') is False:
-            # just to satisfy our parser... Will always fail
-            raise Exception('loadDataInDV', 'should be in virtual func')
-
-    def checkMaxMinToRegenerate(
-        self,
-        my_measure: json,
-        obs_meteor: ObsMeteor,
-        target_key: str,
-        delta_values: json,
-        my_values: json,
-        tracing_flag: bool = False,
-    ):
-        obs_j = obs_meteor.data.j
-
-        for maxmin_suffix in ['_max', '_min']:
-            if obs_j.get(target_key + maxmin_suffix) is not None:
-                my_old_maxmin_value = obs_j[target_key + maxmin_suffix]
-                my_values[target_key + '_check' + maxmin_suffix] = my_old_maxmin_value
-
-    def loadMaxMinInObs(
-        self,
-        my_measure: json,
-        obs_meteor: ObsMeteor,
-        target_key: str,
-        delta_values: json,
-        my_values: json,
-        trace_flag: bool = False,
-    ):
         """
-            loadMaxMinInObsInObservation
+            loadDeltaValues
 
-            load in obs max/min value if present
-            update delta_values
-
-            calculus v2
+            build delta_values array from obs.j
+            delta_values is used to propagate measures in all aggregation levels
+            Code will be similar to build delta_values from agg_xxx.j
         """
-        obs_j = obs_meteor.data.j
+        obs_j = obs_meteor.data.j[data_idx]
+        target_key = my_measure['target_key']
 
-        b_is_max = True
+        my_value_sum = obs_j.get(target_key + '_s')
+        if my_value_sum is not None:
+            delta_values[target_key + '_s'] = my_value_sum if remove_data is False else my_value_sum * -1
+        my_value_duration = obs_j.get(target_key + '_d')
+        if my_value_duration is not None:
+            delta_values[target_key + '_d'] = my_value_duration if remove_data is False else my_value_duration * -1
+
+        if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind):
+            my_value_dir = obs_j.get(target_key + '_dir')
+            if my_value_dir is not None:
+                if remove_data is False:
+                    delta_values[target_key + '_dir_nb'] = 1
+                    delta_values[target_key + '_dir_sin'] = obs_j.get(target_key + '_dir_sin')
+                    delta_values[target_key + '_dir_cos'] = obs_j.get(target_key + '_dir_cos')
+                else:
+                    delta_values[target_key + '_dir_nb'] = -1
+                    delta_values[target_key + '_dir_sin'] = obs_j.get(target_key + '_dir_sin') * -1
+                    delta_values[target_key + '_dir_cos'] = obs_j.get(target_key + '_dir_cos') * -1
+
         for maxmin_key in ['max', 'min']:
-            # is max or min needed for this measure
-            maxmin_suffix = '_' + maxmin_key
-            # if target_key == "rain_rate":
-            #     target_key = "rain_rate"
             if my_measure.__contains__(maxmin_key) is True and my_measure[maxmin_key] is True:
-                # propagate the check request
-                if my_values.get(target_key + '_check' + maxmin_suffix) is not None:
-                    obs_j[target_key + '_check' + maxmin_suffix] = my_values[target_key + '_check' + maxmin_suffix]
-
-                if my_values.get(target_key + maxmin_suffix) is not None:
-                    my_maxmin_value = my_values[target_key + maxmin_suffix]
-                    my_maxmin_date = my_values[target_key + maxmin_suffix + '_time']
-                    obs_j[target_key + maxmin_suffix] = my_maxmin_value
-                    obs_j[target_key + maxmin_suffix + '_time'] = my_maxmin_date
-                    delta_values[target_key + maxmin_suffix] = my_maxmin_value
-                    delta_values[target_key + maxmin_suffix + '_time'] = my_maxmin_date
-                    if my_values.get(target_key + maxmin_suffix + '_dir') is not None:
-                        my_wind_dir = my_values[target_key + maxmin_suffix + '_dir']
-                        obs_j[target_key + maxmin_suffix + '_dir'] = my_wind_dir
-                        delta_values[target_key + maxmin_suffix + '_dir'] = my_wind_dir
-
-            b_is_max = not(b_is_max)
-
-    def get_json_value(self, j: json, key: str, suffix_list: list, key_preffix_first: bool):
-        key_list = []
-        if key_preffix_first is not None and key_preffix_first is False:
-            key_list.append(key)
-        for a_suffix in suffix_list:
-            key_list.append(a_suffix)
-        if key_preffix_first is not None and key_preffix_first is True:
-            key_list.append(key)
-
-        for a_key in key_list:
-            if j.get(a_key) is not None:
-                return j[a_key]
-        return None
+                maxmin_suffix = '_' + maxmin_key
+                if obs_j.get(target_key + maxmin_suffix) is not None:
+                    if remove_data is False:
+                        delta_values[target_key + maxmin_suffix] = obs_j[target_key + maxmin_suffix]
+                        delta_values[target_key + maxmin_suffix + '_time'] = obs_j[target_key + maxmin_suffix + '_time']
+                        if maxmin_key == 'max' and (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
+                            if obs_j.get(target_key + maxmin_suffix + '_dir') is not None:
+                                delta_values[target_key + maxmin_suffix + '_dir'] = obs_j[target_key + maxmin_suffix + '_dir']
+                    else:
+                        delta_values['maxminFix'].append({
+                            'key': target_key,
+                            'ope': 'd',
+                            'type': maxmin_suffix,
+                            'value': obs_j[target_key + maxmin_suffix],
+                            'date': obs_j[target_key + maxmin_suffix + '_time'],
+                            'dir': obs_j.get(target_key + maxmin_suffix + '_dir'),
+                        })
+        return

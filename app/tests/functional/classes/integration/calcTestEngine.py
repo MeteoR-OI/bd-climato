@@ -1,7 +1,6 @@
 from app.tools.aggTools import calcAggDate
-from app.classes.calcul.calcObservation import CalcObs
-from app.classes.calcul.allCalculus import AllCalculus
-from app.classes.calcul.calcAggreg import CalcAggreg
+# from app.classes.calcul.calcObservation import CalcObs
+# from app.classes.calcul.calcAggreg import CalcAggreg
 from app.classes.metier.posteMetier import PosteMetier
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.aggMeteor import AggMeteor
@@ -13,9 +12,9 @@ import app.tools.myTools as t
 
 class CalcTestEngine():
     def __init__(self, *args, **kwargs):
-        self.calc = AllCalculus()
-        self.calc_obs = CalcObs.GetInstance()
-        self.calc_agg = CalcAggreg()
+        # self.calc = AllCalculus()
+        # self.calc_obs = CalcObs.GetInstance()
+        # self.calc_agg = CalcAggreg()
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         file_name = os.path.join(base_dir, '../fixtures/calculus_test_suite.json')
         texte = ''
@@ -58,14 +57,13 @@ class CalcTestEngine():
                     """)
                 j_data = a_test['data']
                 my_json['data'] = j_data
-                # remove any existing data
-                self.calc.delete_obs_agg(True)
+                # # remove any existing data
+                # self.calc.delete_obs_agg(True)
 
                 if ((option & 1) == 1):
                     my_params = {"param": {
                         "json": my_json,
                         "trace_flag": False,
-                        "delete": False,
                         "is_tmp": True,
                         "validation": False,
                         "filename": 'test_json',

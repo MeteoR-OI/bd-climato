@@ -1,6 +1,7 @@
 import datetime
 import dateutil.parser
 import sys
+from app.tools.aggTools import calcAggDate
 
 
 def date_to_str(my_date: datetime.datetime) -> str:
@@ -67,3 +68,25 @@ def str_to_date(dt_str: str) -> datetime.datetime:
             }
             e.done = True
         raise e
+
+
+def is_in_rounded_hour(stop_dat: datetime.datetime, duration: int) -> bool:
+    stop_dt_utc = fixUtcDate(stop_dat)
+
+    start_dat = fixUtcDate(stop_dt_utc - datetime.timedelta(minutes=duration))
+    rounded_dat = fixUtcDate(calcAggDate('H', stop_dt_utc, 0, False))
+    # print('start_dat  : ' + str(start_dat))
+    # print('stop_dat   : ' + str(stop_dt_utc))
+    # print('rounded_dat: ' + str(rounded_dat))
+    if stop_dt_utc.minute == 00 and stop_dt_utc.second < 2:
+        # print('mn and sec rounded')
+        return True
+    if rounded_dat > start_dat and rounded_dat < stop_dt_utc:
+        # print('rounded inside period')
+        return True
+    return False
+
+
+def fixUtcDate(my_date: datetime) -> datetime:
+    tmp_dt1 = my_date.isoformat().replace("+00:00", "+04:00")
+    return dateutil.parser.parse(tmp_dt1)

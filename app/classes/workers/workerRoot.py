@@ -118,7 +118,7 @@ class WorkerRoot:
                         thread.start()
                         a_worker['threadRunning'] = True
                         # force the thread to run once
-                        time.sleep(20)
+                        time.sleep(1)
                         self.queueRun.put({})
                         self.eventRunMe.set()
                         return
@@ -207,10 +207,12 @@ class WorkerRoot:
 
                     # Loop on queue messages
                     call_params = {"param": {}}
-                    while self.queueRun.empty() is False:
+                    one_run = False
+                    while self.queueRun.empty() is False or one_run is False:
 
                         # get our param
-                        call_params["param"] = self.queueRun.get(False)
+                        if self.queueRun.empty() is False:
+                            call_params["param"] = self.queueRun.get(False)
                         if call_params['param'].get('trace_flag') is not None:
                             trace_flag = call_params['param']['trace_flag']
                             self.SetTraceFlag(trace_flag)
@@ -234,6 +236,8 @@ class WorkerRoot:
                             with self.tracer.start_as_current_span(self.display, trace_flag) as my_span:
                                 my_span.record_exception(exc)
                             a_worker['run'] = False
+                        finally:
+                            one_run = True
 
                     self.eventRunMe.clear()
 

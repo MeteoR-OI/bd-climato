@@ -92,7 +92,6 @@ class Command(BaseCommand):
 
                 params = {
                     "json": my_json,
-                    "delete": delete_flag,
                     "is_tmp": is_tmp,
                     "validation": use_validation
                 }

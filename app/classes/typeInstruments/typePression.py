@@ -11,6 +11,6 @@ class TypePression(RootTypeInstrument):
         self.measures = [
             {'type_i': 3, 'src_key': 'barometer', 'agg': 'avg'},
             {'type_i': 3, 'src_key': 'barometer', 'agg': 'avgomm'},
-            {'type_i': 3, 'src_key': 'pressure', 'agg': 'no'},
+            {'type_i': 3, 'src_key': 'pressure', 'measureType': 'inst', 'agg': 'no'},
         ]
         super().__init__()

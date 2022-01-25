@@ -28,13 +28,12 @@ class ObsMeteor():
             self.data = myObsObj.objects.filter(poste_id=poste_id).filter(stop_dat=stop_dt_utc).first()
         else:
             agg_start_dat = calcAggDate('H', stop_dt_utc, 0, True)
-            self.data = myObsObj(poste_id=poste_id, stop_dat=stop_dt_utc, duration=0, agg_start_dat=agg_start_dat, j={}, j_agg={})
+            self.data = myObsObj(poste_id=poste_id, stop_dat=stop_dt_utc, duration=0, agg_start_dat=agg_start_dat, j=[], j_agg=[], filename='???')
 
     def save(self):
         """ save Poste and Exclusions """
         # we only save if there is some data
-        if self.data.j != {} or self.data.j_agg != {}:
-            # self.data.agg_start_dat = calcAggDate('H', self.data.stop_dat, 0, True)
+        if self.data.j.__len__() > 0 or self.data.j_agg.__len__() > 0:
             self.data.save()
 
     def delete(self):

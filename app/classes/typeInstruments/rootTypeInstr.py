@@ -97,6 +97,8 @@ class RootTypeInstrument:
                 if a_measure.get('target_key') is None:
                     a_measure['target_key'] = a_measure['src_key']
 
+            # default deca_max/min to hour_deca
+            # default target_key to src_key
             for default_param in [('deca_max', a_measure['hour_deca']), ('deca_min', a_measure['hour_deca']), ('target_key', a_measure['src_key'])]:
                 if a_measure.get(default_param[0]) is None:
                     a_measure[default_param[0]] = default_param[1]

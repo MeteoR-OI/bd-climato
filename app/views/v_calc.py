@@ -29,7 +29,6 @@ def _viewLoadJson(file_name: str, delete_flag: bool, trace_flag: bool, is_tmp: b
         local_dir = settings.LOCAL_REMOTE_DIR
     data = {
         "params": {
-            "delete": delete_flag,
             "is_tmp": is_tmp,
             "validation": use_validation,
             "trace_flag": trace_flag,
