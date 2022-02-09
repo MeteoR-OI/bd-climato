@@ -225,12 +225,12 @@ LOW#slurp
        #end if
        #if $obs.radiation.has_data  
        #if $final_obs  
-       $CleCal("radiation_min",$currentagg.radiation.min.raw,0.001)
+       $CleCal("radiation_min",$currentagg.radiation.min.raw,0.0001)
        $CleDat("radiation_min_time",$currentagg.radiation.mintime.raw)
        #if $currentagg.radiation.sum.raw is not None and $currentagg.radiation.count.raw is not None 
        $CleCal("radiation",($currentagg.radiation.sum.raw/$currentagg.radiation.count.raw),$amin*0.006)
        #end if
-       $CleCal("radiation_max",$currentagg.radiation.max.raw,0.001)
+       $CleCal("radiation_max",$currentagg.radiation.max.raw,0.0001)
        $CleDat("radiation_max_time",$currentagg.radiation.maxtime.raw)
        #else
        #if $obs.radiation.raw is not None 

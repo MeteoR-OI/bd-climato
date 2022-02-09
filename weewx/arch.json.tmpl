@@ -532,11 +532,11 @@ LOW#slurp
        $CleCal("etp_duration",$day($days_ago=$delta_d).ET.count.raw,$amin)       
 #end if
 #if $day($days_ago=$delta_d).radiation.has_data
-       $CleCal("radiation_max",$day($days_ago=$delta_d).radiation.max.raw,0.001)
+       $CleCal("radiation_max",$day($days_ago=$delta_d).radiation.max.raw,0.0001)
        $CleDat("radiation_max_time",$day($days_ago=$delta_d).radiation.maxtime.raw)
-       $CleCal("radiation_avg",$day($days_ago=$delta_d).radiation.avg.raw,0.001)
+       $CleCal("radiation_avg",$day($days_ago=$delta_d).radiation.avg.raw,0.0001)
        $CleCal("radiation_sum",$day($days_ago=$delta_d).radiation.sum.raw,$amin*0.006)
-       $CleCal("radiation_min",$day($days_ago=$delta_d).radiation.min.raw,0.001)
+       $CleCal("radiation_min",$day($days_ago=$delta_d).radiation.min.raw,0.0001)
        $CleDat("radiation_min_time",$day($days_ago=$delta_d).radiation.mintime.raw)
        $CleCal("radiation_duration",$day($days_ago=$delta_d).radiation.count.raw,$amin)
 #end if
@@ -653,11 +653,11 @@ LOW#slurp
        $CleCal("etp_duration",$month($months_ago=$delta_m).ET.count.raw,$amin)      
 #end if
 #if $month($months_ago=$delta_m).radiation.has_data
-       $CleCal("radiation_max",$month($months_ago=$delta_m).radiation.max.raw,0.001)
+       $CleCal("radiation_max",$month($months_ago=$delta_m).radiation.max.raw,0.0001)
        $CleDat("radiation_max_time",$month($months_ago=$delta_m).radiation.maxtime.raw)
-       $CleCal("radiation_avg",$month($months_ago=$delta_m).radiation.avg.raw,0.001)
+       $CleCal("radiation_avg",$month($months_ago=$delta_m).radiation.avg.raw,0.0001)
        $CleCal("radiation_sum",$month($months_ago=$delta_m).radiation.sum.raw,$amin*0.006)
-       $CleCal("radiation_min",$month($months_ago=$delta_m).radiation.min.raw,0.001)
+       $CleCal("radiation_min",$month($months_ago=$delta_m).radiation.min.raw,0.0001)
        $CleDat("radiation_min_time",$month($months_ago=$delta_m).radiation.mintime.raw)
        $CleCal("radiation_duration",$month($months_ago=$delta_m).radiation.count.raw,$amin)
 #end if
@@ -774,11 +774,11 @@ LOW#slurp
        $CleCal("etp_duration",$year($years_ago=$delta_y).ET.count.raw,$amin)      
 #end if
 #if $year($years_ago=$delta_y).radiation.has_data
-       $CleCal("radiation_max",$year($years_ago=$delta_y).radiation.max.raw,0.001)
+       $CleCal("radiation_max",$year($years_ago=$delta_y).radiation.max.raw,0.0001)
        $CleDat("radiation_max_time",$year($years_ago=$delta_y).radiation.maxtime.raw)
-       $CleCal("radiation_avg",$year($years_ago=$delta_y).radiation.avg.raw,0.001)
+       $CleCal("radiation_avg",$year($years_ago=$delta_y).radiation.avg.raw,0.0001)
        $CleCal("radiation_sum",$year($years_ago=$delta_y).radiation.sum.raw,$amin*0.006)
-       $CleCal("radiation_min",$year($years_ago=$delta_y).radiation.min.raw,0.001)
+       $CleCal("radiation_min",$year($years_ago=$delta_y).radiation.min.raw,0.0001)
        $CleDat("radiation_min_time",$year($years_ago=$delta_y).radiation.mintime.raw)
        $CleCal("radiation_duration",$year($years_ago=$delta_y).radiation.count.raw,$amin)
 #end if
