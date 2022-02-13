@@ -16,6 +16,7 @@
 - [9. Aggrégation de niveau supérieur (tables: agg_day, agg_month, agg_year, agg_all)](#9-aggrégation-de-niveau-supérieur-tables-agg_day-agg_month-agg_year-agg_all)
 - [10. Historique Aggrégation (table: agg_histo)](#10-historique-aggrégation-table-agg_histo)
 - [11. Incident (table: incident)](#11-incident-table-incident)
+- [12. Creation de la base de données](#12-creation-de-la-base-de-données)
 
 <!-- /code_chunk_output -->
 
@@ -182,4 +183,18 @@ level:
 reason:
 j: json data
 active: defaut True, mis à False quand l'incident a ete corrigé
+```
+
+# 12. Creation de la base de données
+Dans psql, supprimer la base si elle existe.
+Executer le script suivant:
+
+```
+psql -U postgres
+   -> create database climatest;
+   \q
+python manage.py migrate
+python manage.py createsuperuser
+   -> mettre un mot de passe (outil d'admin)
+psql -d climatest < data/appInit.sql
 ```
