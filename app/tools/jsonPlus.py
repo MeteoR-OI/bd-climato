@@ -45,6 +45,8 @@ class JsonPlus():
             json data in a string field
         """
         try:
+            if (len(json_str) == 0):
+                return {}
             return json.loads(json_str, object_hook=self.customDecoder)
         except Exception as e:
             if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
