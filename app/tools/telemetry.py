@@ -134,7 +134,7 @@ class SpanMok:
         record_exception
             add an exception in the Span
         """
-        t.LogCritical(exc, self)
+        t.LogCritical(exc)
         return
 
     def set_attribute(self, k: str, v):
