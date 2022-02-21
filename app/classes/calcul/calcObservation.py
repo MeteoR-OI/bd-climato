@@ -363,6 +363,8 @@ class CalcObs():
             if params.get("json") is not None:
                 # load our json data
                 my_json = params["json"]
+                if 'dict' in str(type(my_json)):
+                    my_json = [my_json]
                 filename = "???"
                 if params.get("filename") is not None:
                     filename = params["filename"]
@@ -407,6 +409,8 @@ class CalcObs():
                             for aligne in lignes:
                                 texte += str(aligne)
                         my_json = JsonPlus().loads(texte)
+                        if 'dict' in str(type(my_json)):
+                            my_json = [my_json]
 
                         # load_span.set_attribute("filename", aFile)
                         yield {"f": aFileSpec["f"], "j": my_json}
