@@ -58,9 +58,6 @@ Example:
 from __future__ import absolute_import
 
 import datetime
-## added by QUETELARD
-import shutil, sys
-## end added
 import json
 import logging
 import os.path
@@ -348,14 +345,6 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
                 with open(tmpname, mode='wb') as fd:
                     fd.write(byte_string)
                 os.rename(tmpname, _fullname)
-                # QUETELARD
-                if _filename[0:3] == 'obs':
-                    _fullname_compil = os.path.join(dest_dir, 'compil.json')
-                    fc = open(_fullname_compil, 'a')
-                    f  = open(_fullname, 'r')
-                    shutil.copyfileobj(f, fc)
-                    fc.close()
-                    f.close()                
 
             except Exception as e:
                 # We would like to get better feedback when there are cheetah
