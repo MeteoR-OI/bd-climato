@@ -12,6 +12,6 @@ class TypeSolar(RootTypeInstrument):
         self.measures = [
             {'type_i': 6, 'src_key': 'uv_indice', 'agg': 'no', 'min': False},
             {'type_i': 6, 'src_key': 'radiation', 'target_key': 'radiation', 'agg': 'sum', 'min': False, 'max': False},
-            {'type_i': 6, 'src_key': 'etp',       'agg': 'sum', 'min': False, 'max': False, 'special': MeasureProcessingBitMask.NotAllowedInCurrent}
+            {'type_i': 6, 'src_key': 'etp',       'agg': 'sum', 'min': False, 'max': False}
         ]
         super().__init__()

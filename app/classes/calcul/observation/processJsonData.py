@@ -33,6 +33,9 @@ class ProcessJsonData():
         src_key = my_measure['src_key']
         target_key = my_measure['target_key']
 
+        if ('barometer' in src_key):
+            src_key = src_key
+
         obs_values = obs_meteor.data.j[obs_meteor.data.j.__len__() - 1]
         match my_measure['agg']:
             case 'avg' | 'avgomm' | 'rate' | 'rateomm':
