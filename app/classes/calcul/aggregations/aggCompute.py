@@ -84,12 +84,16 @@ class AggCompute():
             has_measure = True
             measure_s = m_agg_j.get(target_key + '_s')
             measure_d = m_agg_j.get(target_key + '_d')
+            if measure_d is None:
+                measure_d = m_agg_j.get('default_duration')
 
         # get the agregated value, and recompute the _d/_s delta needed
         elif m_agg_j.get(target_key + m_suffix) is not None:
             has_measure = True
             measure_aggregated = m_agg_j.get(target_key + m_suffix)
             measure_d = tmp_duration - old_measure_d
+            if measure_d is None:
+                measure_d = m_agg_j.get('default_duration')
             if isSum is True:
                 measure_s = measure_aggregated - old_measure_s
             else:

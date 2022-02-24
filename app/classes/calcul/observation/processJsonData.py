@@ -135,7 +135,11 @@ class ProcessJsonData():
                             obs_values[target_key + '_s'] = data_src[src_key + '_omm'] * tmp_duration
                             obs_values[target_key + '_d'] = tmp_duration
                         else:
-                            obs_values[target_key + '_s'] = my_value_inst * tmp_duration
+                            if b_load_inst is True:
+                                obs_values[target_key + '_s'] = my_value_inst * tmp_duration
+                            else:
+                                # for wind10 which use an aggregted value for the omm
+                                obs_values[target_key + '_s'] = my_value_agg * tmp_duration
                             obs_values[target_key + '_d'] = tmp_duration
                         if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
                             updateWindData(obs_values, target_key + '', my_value_dir)

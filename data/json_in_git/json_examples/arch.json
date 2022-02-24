@@ -106,7 +106,6 @@
        "rain_min_time":"2020-12-31T00:00:04",  
        "rain_min":0.0,
        "rain_omm_sum":0.20000000005,
-       "rain_omm_d": 1440,
        "rain_omm_d":1440.0,
        "rain_rate_avg":0.0111111111026,
        "rain_rate_d":1440.0,

@@ -1,5 +1,6 @@
 from app.classes.repository.posteMeteor import PosteMeteor
 from app.classes.repository.incidentMeteor import IncidentMeteor
+from app.tools.aggTools import calcAggDate, getAggDuration
 import datetime
 import json
 import sys
@@ -210,6 +211,10 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str, stop_dat_list: list) -> st
                         and lvl != "A"
                     ):
                         return (lvl + " is invalid level in data[" + str(idx) + "].aggregations[" + str(idx2) + "]")
+
+                    # store a default duration from the full agregation duration
+                    my_start_date = calcAggDate(lvl[0], tmp_stop_dat, 0, True)
+                    a_aggreg['default_duration'] = getAggDuration(lvl[0], my_start_date)
 
                     for key in a_aggreg.__iter__():
                         # rename _sum into _s
