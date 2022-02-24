@@ -1,4 +1,5 @@
 from app.classes.repository.posteMeteor import PosteMeteor
+from app.classes.repository.incidentMeteor import IncidentMeteor
 import datetime
 import json
 import sys
@@ -26,8 +27,19 @@ def checkJson(j_arr: json, meteor: str = "???", filename: str = "???") -> str:
             j = j_arr[idx]
             ret = _checkJsonOneItem(j, pid, j_arr[0]["meteor"], stop_dat_list)
             if ret is not None:
+                IncidentMeteor.new(
+                    "json_validator",
+                    "error",
+                    ret,
+                    {
+                        'meteor': meteor,
+                        'filename': filename,
+                    })
+
                 return "Error in item " + str(idx) + ": " + ret
             idx += 1
+        return None
+
     except Exception as e:
         if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
             exception_type, exception_object, exception_traceback = sys.exc_info()
@@ -63,26 +75,24 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str, stop_dat_list: list) -> st
         while idx < j["data"].__len__():
             new_val = {}
             new_val_agg = {}
-            new_val_val = {}
             a_current = j["data"][idx].get("current")
             tmp_stop_dat = j["data"][idx].get("stop_dat")
 
-            if a_current is None:
-                if (
-                    j["data"][idx].__contains__("aggregations") is False
-                    and j["data"][idx].__contains__("validation") is False
-                ):
-                    return (
-                        "no current/aggregations/validation key in j.data[" + str(idx) + "]"
-                    )
+            if a_current is None or len(a_current) <= 1:
+                # no current make aggregations mandatoty
+                if (j["data"][idx].__contains__("aggregations") is False):
+                    return "no current/aggregations/validation key in j.data[" + str(idx) + "]"
             else:
-                # check current key
+                # check current clause
+
+                # check duration key
                 if a_current.__contains__("duration") is False:
                     return "no duration in j.data[" + str(idx) + "].current"
                 measure_duration = a_current["duration"]
 
                 tmp_stop_dat = None
                 if j["data"][idx].__contains__("stop_dat") is False:
+                    # add a computed stop_dat if not present
                     if j["data"][idx].__contains__("start_dat") is False:
                         return "no start and stop_dat in j.data[" + str(idx) + "].current"
                     measure_duration = datetime.timedelta(minutes=int(a_current["duration"]))
@@ -96,11 +106,13 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str, stop_dat_list: list) -> st
                 else:
                     tmp_stop_dat = j["data"][idx]["stop_dat"]
 
+                # check stop_dat unicity (could be period overlap, but will use too much cpu..)
                 if str(tmp_stop_dat) in stop_dat_list:
                     return "stop_dat: " + str(tmp_stop_dat) + " present twice"
                 stop_dat_list.append(str(tmp_stop_dat))
 
                 if j["data"][idx].__contains__("start_dat") is False:
+                    # add a computed start_dat if not present
                     measure_duration = datetime.timedelta(minutes=int(a_current["duration"]))
                     new_val = {
                         "k": "start_dat",
@@ -109,8 +121,15 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str, stop_dat_list: list) -> st
                     }
                     val_to_add.append(new_val)
 
+                # we need a stop_dat
+                if tmp_stop_dat is None:
+                    return "no stop_dat, and no way to compute it"
+
+                # loop in all keys
                 for key in a_current.__iter__():
                     if str(key).endswith("_max") or str(key).endswith("_min"):
+
+                        # replace xxxtime into xxx_time
                         if a_current.__contains__(key + "time") is True and a_current.__contains__(key + "_time") is False:
                             a_current[key + "_time"] = a_current[key + "time"]
                             new_val = {
@@ -121,6 +140,7 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str, stop_dat_list: list) -> st
                             }
                             val_to_add.append(new_val)
 
+                        # add a time entry if not present
                         if a_current.__contains__(key + "_time") is False:
                             new_val = {
                                 "k": key + "_time",
@@ -129,6 +149,8 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str, stop_dat_list: list) -> st
                                 "k2": "current",
                             }
                             val_to_add.append(new_val)
+
+                    # change xxx_sum into xxx_s
                     if str(key).endswith("_sum"):
                         new_val = {
                             "k": str(key).replace("_sum", "_s"),
@@ -138,9 +160,20 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str, stop_dat_list: list) -> st
                         }
                         val_to_add.append(new_val)
 
-                    if (str(key).endswith("_s") and a_current.__contains__(key[:-4] + "_duration") is False):
+                    # change xx_duration into xxx_d
+                    if str(key).endswith("_duration"):
                         new_val = {
-                            "k": key[:-4] + "_duration",
+                            "k": str(key).replace("_duration", "_d"),
+                            "v": a_current[key],
+                            "idx": idx,
+                            "k2": "current",
+                        }
+                        val_to_add.append(new_val)
+
+                    # replace xx_duration by xx_d
+                    if (str(key).endswith("_s") and a_current.__contains__(key[:-4] + "_d") is False):
+                        new_val = {
+                            "k": key[:-4] + "_d",
                             "v": measure_duration,
                             "idx": idx,
                             "k2": "current",
@@ -149,24 +182,25 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str, stop_dat_list: list) -> st
 
                 # old specification...
                 if j["data"][idx]["current"].__contains__("aggregations"):
-                    return "aggregations is under the key current, should be at same level"
+                    return "aggregations is under the key current, should be at same level like current"
 
-            if tmp_stop_dat is None:
-                return "no stop_dat, and no way to compute it"
-
+            # aggregations check
             all_aggreg = j["data"][idx].get("aggregations")
             if all_aggreg is not None:
+
+                # in pre-aggregated value load -> only one item in aggregations
+                if a_current is None or len(a_current) <= 1:
+                    if all_aggreg.__len__() > 1:
+                        return "aggregations with no current values, can only have one item"
+
                 idx2 = 0
                 while idx2 < all_aggreg.__len__():
                     a_aggreg = j["data"][idx]["aggregations"][idx2]
+
+                    # level needed
                     if a_aggreg.__contains__("level") is False:
-                        return (
-                            "no level in data["
-                            + str(idx)
-                            + "].aggregations["
-                            + str(idx2)
-                            + "]"
-                        )
+                        return ("no level in data[" + str(idx) + "].aggregations[" + str(idx2) + "]")
+
                     lvl = a_aggreg["level"]
                     if (
                         lvl != "H"
@@ -175,15 +209,10 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str, stop_dat_list: list) -> st
                         and lvl != "Y"
                         and lvl != "A"
                     ):
-                        return (
-                            lvl
-                            + " is invalid level in data["
-                            + str(idx)
-                            + "].aggregations["
-                            + str(idx2)
-                            + "]"
-                        )
+                        return (lvl + " is invalid level in data[" + str(idx) + "].aggregations[" + str(idx2) + "]")
+
                     for key in a_aggreg.__iter__():
+                        # rename _sum into _s
                         if str(key).endswith("_sum") and str(key).endswith("_s") is False:
                             new_val_agg = {
                                 "k": str(key).replace("_sum", "_s"),
@@ -194,86 +223,20 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str, stop_dat_list: list) -> st
                             val_to_add_agg.append(new_val_agg)
 
                         if str(key).endswith("_max") or str(key).endswith("_min"):
-                            if all_aggreg.__contains__(key + "_time") is False:
-                                new_val_agg = {
-                                    "k": key + "_time",
-                                    "v": j["data"][idx]["stop_dat"],
-                                    "idx": idx,
-                                    "idx2": idx2,
-                                }
-                                val_to_add_agg.append(new_val_agg)
-                    idx2 += 1
 
-            all_validations = j["data"][idx].get("validation")
-            if all_validations is not None:
-                idx2 = 0
-                while idx2 < all_validations.__len__():
-                    a_aggreg = j["data"][idx]["validation"][idx2]
+                            # a xxx_time is required with xxx_max/xxx_min values
+                            if a_aggreg.__contains__(key + "_time") is False:
+                                return "max/min for " + key + " does not have a " + key + "_time key"
 
-                    if a_aggreg.__contains__("level") is False:
-                        return (
-                            "no level in data["
-                            + str(idx)
-                            + "].validation["
-                            + str(idx2)
-                            + "]"
-                        )
-                    lvl = a_aggreg["level"]
-                    if (
-                        lvl != "H"
-                        and lvl != "D"
-                        and lvl != "M"
-                        and lvl != "Y"
-                        and lvl != "A"
-                    ):
-                        return (
-                            lvl
-                            + " is invalid level in data["
-                            + str(idx)
-                            + "].validation["
-                            + str(idx2)
-                            + "]"
-                        )
-                    for key in all_validations[idx2].__iter__():
-                        # if str(key) == 'out_temp_omm_min':
-                        #     key = 'out_temp_omm_min'
-                        if str(key).endswith("time") and str(key).endswith("_time") is False:
-                            new_val_val = {
-                                "k": str(key).replace("time", "_time"),
-                                "v": all_validations[idx2][key],
-                                "idx2": idx2,
-                                "idx": idx,
-                            }
-                            val_to_add_val.append(new_val_val)
+                        if str(key).endswith("_s"):
+                            # a sum value need to have a duration
+                            if a_aggreg.__contains__(str(key).replace("_s", "_d")) is False:
+                                return key + " does not have a duration: " + str(key).replace("_s", "_d")
 
-                        # fix XX_sum -> XX_s
-                        if str(key).endswith("_sum") and str(key).endswith("_s") is False:
-                            new_val_val = {
-                                "k": str(key).replace("_sum", "_s"),
-                                "v": all_validations[idx2][key],
-                                "idx2": idx2,
-                                "idx": idx,
-                            }
-                            val_to_add_val.append(new_val_val)
-
-                        if str(key).endswith("_max") or str(key).endswith("_min"):
-                            if all_validations[idx2].__contains__(key + "time") is True and all_validations[idx2].__contains__(key + "_time") is False:
-                                new_val_val = {
-                                    "k": key + '_time',
-                                    "v": all_validations[idx2][key],
-                                    "idx2": idx2,
-                                    "idx": idx,
-                                }
-                                val_to_add_val.append(new_val_val)
-
-                            if all_validations[idx2].__contains__(key + "_time") is False:
-                                new_val_val = {
-                                    "k": key + "_time",
-                                    "v": j["data"][idx]["stop_dat"],
-                                    "idx2": idx2,
-                                    "idx": idx,
-                                }
-                                val_to_add_val.append(new_val_val)
+                        if str(key).endswith("_avg"):
+                            # an avg value needs a duration value
+                            if a_aggreg.__contains__(str(key).replace("_avg", "_d")) is False:
+                                return key + " does not have a duration: " + str(key).replace("_avg", "_d")
 
                     idx2 += 1
             idx += 1
@@ -293,7 +256,10 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str, stop_dat_list: list) -> st
         for my_val in val_to_add_val:
             my_validation = j["data"][my_val["idx"]]["validation"]
             my_validation[my_val["idx2"]][my_val["k"]] = my_val["v"]
+
+        # check ok
         return None
+
     except Exception as e:
         if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
             exception_type, exception_object, exception_traceback = sys.exc_info()

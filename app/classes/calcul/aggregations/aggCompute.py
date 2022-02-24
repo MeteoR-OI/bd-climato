@@ -44,6 +44,9 @@ class AggCompute():
         # init default
         target_key = my_measure['target_key']
 
+        if target_key == 'rain_omm':
+            target_key = 'rain_omm'
+
         agg_main_j = agg_decas[0].data.j
         agg_level = agg_decas[0].getLevelCode()
         m_suffix, isSum = self.get_suffix(my_measure)
@@ -76,6 +79,8 @@ class AggCompute():
         measure_s = 0 if has_measure is False else delta_values.get(target_key + '_s')
 
         if m_agg_j.get(target_key + '_s') is not None:
+            if old_measure_d != 0:
+                raise Exception('cannot have a value in <aggregations>, with exisitng data in the aggregation row. key = ' + target_key)
             has_measure = True
             measure_s = m_agg_j.get(target_key + '_s')
             measure_d = m_agg_j.get(target_key + '_d')
@@ -129,8 +134,17 @@ class AggCompute():
                 cur_value = agg_maxmin_j[target_key + maxmin_suffix]
                 cur_time = agg_maxmin_j[target_key + maxmin_suffix + '_time']
 
+            # # if extreme has to be calculated
+            # if delete_measure is False and my_measure.__contains__(maxmin_key) and my_measure[maxmin_key] is True:
+            #     # load delta_values
+            #     if delta_values.get(target_key + maxmin_suffix) is not None:
+            #         new_value = delta_values[target_key + maxmin_suffix]
+            #         new_time = delta_values[target_key + maxmin_suffix + '_time']
+            #         if delta_values.get(target_key + maxmin_suffix + '_dir') is not None:
+            #             new_dir = delta_values[target_key + maxmin_suffix + '_dir']
+
             # if extreme has to be calculated
-            if delete_measure is False and my_measure.__contains__(maxmin_key) and my_measure[maxmin_key] is True:
+            if delete_measure is True and my_measure[maxmin_key] is True:
                 # load delta_values
                 if delta_values.get(target_key + maxmin_suffix) is not None:
                     new_value = delta_values[target_key + maxmin_suffix]

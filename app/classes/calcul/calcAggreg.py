@@ -122,9 +122,29 @@ class CalcAggreg():
                 while idx_dv < a_todo.data.j_dv.__len__():
                     delta_values = a_todo.data.j_dv[idx_dv]
 
-                    for an_agg in aggregations:
-                        # add duration in main aggregations (the one with no deca...)
-                        an_agg.add_duration(delta_values["duration"])
+                    tmp_duration = delta_values["duration"]
+
+                    if tmp_duration != 0:
+                        # we are loading <current> values
+                        for an_agg in aggregations:
+                            # add duration in main aggregations (the one with no deca...)
+                            new_dursum = an_agg.add_duration(tmp_duration)
+                            if new_dursum > 0:
+                                span_load_data.set_attribute('duration_agg' + an_agg.agg_niveau + '_' + str(an_agg.data.start_dat), new_dursum)
+                    else:
+                        # we are loading aggregated values
+                        mini_duration = self.get_first_agg_level(a_todo.obs.j_agg[idx_dv])
+                        for an_agg in aggregations:
+                            if tmp_duration > 0:
+                                new_dursum = an_agg.add_duration(tmp_duration)
+                                if new_dursum > 0:
+                                    span_load_data.set_attribute('duration_agg' + an_agg.agg_niveau + '_' + str(an_agg.data.start_dat), new_dursum)
+                            else:
+                                if self.is_this_level(mini_duration, an_agg.agg_niveau):
+                                    new_dursum = an_agg.set_duration_max()
+                                    if new_dursum > 0:
+                                        span_load_data.set_attribute('duration_agg' + an_agg.agg_niveau + '_' + str(an_agg.data.start_dat), new_dursum)
+                                        tmp_duration = new_dursum
 
                     for anAgg in getAggLevels(is_tmp):
                         with self.tracer.start_span("level " + anAgg, trace_flag) as span_lvl:
@@ -245,3 +265,16 @@ class CalcAggreg():
                 ):
                     t.CopyJson(a_j_agg, m_agg_j)
         return m_agg_j
+
+    def is_this_level(self, mini_level, agg_level: str):
+        """
+        is_this_level
+        """
+        # get aggregation values in measures
+        return mini_level == agg_level
+
+    def get_first_agg_level(self, j_agg0):
+        # get firt level in "aggregations" for pre-agregated load process
+        if len(j_agg0) == 0:
+            return '?'
+        return j_agg0[0]['level']

@@ -92,9 +92,22 @@ class AggMeteor():
             self.duration_ori = self.data.duration_sum
 
     def add_duration(self, duration: int):
+        # used when we are adding elementary values, or values pre-agregated coming from a lower level
         if self.b_need_to_sum_duration is True:
             self.data.duration_sum += duration
             self.b_need_to_sum_duration = False
+            if self.data.duration_sum > self.data.duration_max:
+                raise Exception('agg: ' + str(self.data.id) + ', level: ' + self.agg_niveau + ' -> duration exceed max')
+            return self.data.duration_sum
+        return 0
+
+    def set_duration_max(self):
+        # used when we are adding pre-aggregated values only
+        if self.data.duration_sum > 0:
+            raise Exception('agg: ' + str(self.data.id) + ', level: ' + self.agg_niveau + ' already have lower level data!')
+        self.data.duration_sum = self.data.duration_max
+        self.b_need_to_sum_duration = False
+        return self.data.duration_sum
 
     def count(self, niveau_agg: str, poste_id: int = None, start_dat_mask: str = '') -> int:
         # return count of aggregations

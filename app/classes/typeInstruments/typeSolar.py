@@ -1,5 +1,5 @@
 from app.classes.typeInstruments.rootTypeInstr import RootTypeInstrument
-from app.tools.climConstant import MeasureProcessingBitMask
+# from app.tools.climConstant import MeasureProcessingBitMask
 
 
 class TypeSolar(RootTypeInstrument):

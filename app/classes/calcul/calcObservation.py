@@ -242,7 +242,8 @@ class CalcObs():
                     if one_data_item.__contains__("force_replace") is True:
                         # basic asumption
                         if obs_meteor.data.j_agg.__len__() != 1 or obs_meteor.data.j.__len__() != 1:
-                            raise Exception('Non-processed change in obs, id = ' + str(obs_meteor.data.id))
+                            raise Exception('Non-processed changes in obs, id = ' + str(obs_meteor.data.id))
+
                     else:
                         if is_tmp is False:
                             IncidentMeteor.new(
@@ -265,7 +266,7 @@ class CalcObs():
                     raise Exception('loadObsDatarow', 'incompatible durations -> in table obs: ' + str(obs_meteor.data.duration) + ', in json: ' + str(m_duration))
 
                 # load agregations from data file
-                m_agg_j = {}
+                m_agg_j = []
                 if use_validation is True:
                     if (one_data_item.get("validation") is not None):
                         m_agg_j = one_data_item["validation"]
@@ -303,7 +304,7 @@ class CalcObs():
                 if obs_meteor.data.j.__len__() > 1:
                     # duration have to match in order to delete obs data
                     if obs_meteor.data.duration != m_duration:
-                        raise Exception('Obs: ' + str(obs_meteor.data.id + ' cannot delete as duration does not match: ' + str(m_duration) + '/' + str(obs_meteor.data.duration)))
+                        raise Exception('Obs: ' + str(obs_meteor.data.id + ' cannot remove old values as duration does not match: ' + str(m_duration) + '/' + str(obs_meteor.data.duration)))
                     delta_values = {'duration': m_duration * -1, 'maxminFix': []}
                     for an_intrument in all_instr.get_all_instruments():
                         # for all measures
