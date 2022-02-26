@@ -14,6 +14,7 @@ import queue
 import json
 from app.tools.refManager import RefManager
 from app.tools.telemetry import Telemetry
+from app.classes.repository.incidentMeteor import IncidentMeteor
 import app.tools.myTools as t
 
 
@@ -33,11 +34,14 @@ class WorkerRoot:
         try:
             self.display = str(name).replace("<class 'app.classes.workers.", "")
             self.display = self.display.split('.')[0]
+            t.logInfo('worker ' + name + ' new instance')
         except Exception:
             self.display = name
 
         # check globally that only one instance was created for the name
         if self.ref_mgr.IncrementRef(name + '_count') > 0:
+            IncidentMeteor().new('worker ' + name, 'CRITICAL', 'Multiple instance')
+            t.LogError('multiple instances of ' + name)
             raise Exception(name, 'Multiple instances called')
 
         self.tracer = Telemetry.Start('svc ' + self.display, __name__)

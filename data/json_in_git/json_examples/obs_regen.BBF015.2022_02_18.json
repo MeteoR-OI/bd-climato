@@ -1,0 +1,48 @@
+[
+   {
+     "meteor": "BBF015",
+     "info": {
+        "version": 2,
+        "regen_level": "C"
+     },
+     "data": [
+        {
+          "start_dat": "2022-02-18T00:00:00",
+          "stop_dat": "2022-02-18T00:05:00",
+
+          "current": {
+            "duration": 5,
+
+            "barometer_avg": 1008.3047501,
+            "barometer_max_time": "2022-02-18T00:02:02",
+            "barometer_max": 1008.36480205,
+            "barometer_min_time": "2022-02-18T00:04:33",
+            "barometer_min": 1008.22934652,
+            "barometer": 1008.22934652
+          }
+        },
+        {
+          "start_dat": "2022-02-18T00:05:00",
+          "stop_dat": "2022-02-18T00:10:00",
+
+          "current": {
+            "duration": 5,
+
+            "barometer_avg": 1008.3047501,
+            "barometer_max_time": "2022-02-18T00:06:26",
+            "barometer_max": 1008.36480205,
+            "barometer_min_time": "2022-02-18T00:08:45",
+            "barometer_min": 1008.22934652,
+            "barometer": 1008.22934652
+          }
+        }
+      ],
+      "extremes":
+      {
+        "barometer_max_time": "2022-02-18T18:33:26",
+        "barometer_max": 1008.36480205,
+        "barometer_min_time": "2022-02-18T00:07:23",
+        "barometer_min": 1007.22934652
+      }
+   }
+ ]

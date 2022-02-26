@@ -1,6 +1,5 @@
 from app.classes.repository.posteMeteor import PosteMeteor
 from app.classes.repository.incidentMeteor import IncidentMeteor
-from app.tools.aggTools import calcAggDate, getAggDuration
 import datetime
 import json
 import sys
@@ -62,7 +61,7 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str, stop_dat_list: list) -> st
     try:
         idx = 0
         val_to_add = []
-        val_to_add_agg = []
+        val_to_add_xtreme = []
         val_to_add_val = []
 
         j["poste_id"] = pid
@@ -185,66 +184,66 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str, stop_dat_list: list) -> st
                 if j["data"][idx]["current"].__contains__("aggregations"):
                     return "aggregations is under the key current, should be at same level like current"
 
-            # aggregations check
-            all_aggreg = j["data"][idx].get("aggregations")
-            if all_aggreg is not None:
+            # OLD delete
+            all_old_aggreg = j["data"][idx].get("aggregations")
+            bRemoveOldAggregations = False
+            if all_old_aggreg is not None:
 
                 # in pre-aggregated value load -> only one item in aggregations
-                if a_current is None or len(a_current) <= 1:
-                    if all_aggreg.__len__() > 1:
-                        return "aggregations with no current values, can only have one item"
+                if len(a_current) <= 1:
+                    if all_old_aggreg.__len__() > 1:
+                        return "data/aggregations can only have one item"
 
                 idx2 = 0
-                while idx2 < all_aggreg.__len__():
+                while idx2 < all_old_aggreg.__len__():
                     a_aggreg = j["data"][idx]["aggregations"][idx2]
 
                     # level needed
                     if a_aggreg.__contains__("level") is False:
                         return ("no level in data[" + str(idx) + "].aggregations[" + str(idx2) + "]")
 
-                    lvl = a_aggreg["level"]
-                    if (
-                        lvl != "H"
-                        and lvl != "D"
-                        and lvl != "M"
-                        and lvl != "Y"
-                        and lvl != "A"
-                    ):
-                        return (lvl + " is invalid level in data[" + str(idx) + "].aggregations[" + str(idx2) + "]")
-
-                    # store a default duration from the full agregation duration
-                    my_start_date = calcAggDate(lvl[0], tmp_stop_dat, 0, True)
-                    a_aggreg['default_duration'] = getAggDuration(lvl[0], my_start_date)
+                    # lvl = a_aggreg["level"]
+                    # if lvl != "D":
+                    #     return (lvl + " is invalid level in data[" + str(idx) + "].aggregations[" + str(idx2) + "]")
 
                     for key in a_aggreg.__iter__():
-                        # rename _sum into _s
-                        if str(key).endswith("_sum") and str(key).endswith("_s") is False:
-                            new_val_agg = {
-                                "k": str(key).replace("_sum", "_s"),
+                        if str(key).startswith("etp_"):
+                            # etp that was in current[idx]/aggregations -> moved to current[idx]
+                            new_val = {
+                                "k": "etp_s",
                                 "v": a_aggreg[key],
                                 "idx": idx,
-                                "idx2": idx2,
+                                "k2": "current",
                             }
-                            val_to_add_agg.append(new_val_agg)
+                            val_to_add.append(new_val)
 
-                        if str(key).endswith("_max") or str(key).endswith("_min"):
-
-                            # a xxx_time is required with xxx_max/xxx_min values
-                            if a_aggreg.__contains__(key + "_time") is False:
-                                return "max/min for " + key + " does not have a " + key + "_time key"
-
-                        if str(key).endswith("_s"):
-                            # a sum value need to have a duration
-                            if a_aggreg.__contains__(str(key).replace("_s", "_d")) is False:
-                                return key + " does not have a duration: " + str(key).replace("_s", "_d")
-
-                        if str(key).endswith("_avg"):
-                            # an avg value needs a duration value
-                            if a_aggreg.__contains__(str(key).replace("_avg", "_d")) is False:
-                                return key + " does not have a duration: " + str(key).replace("_avg", "_d")
-
+                            new_val = {
+                                "k": "etp_d",
+                                "v": 60,
+                                "idx": idx,
+                                "k2": "current",
+                            }
+                            val_to_add.append(new_val)
+                            bRemoveOldAggregations = True
                     idx2 += 1
             idx += 1
+
+        # extremes check
+        an_extreme = j.get("extremes")
+        if an_extreme is not None:
+            for key in an_extreme.__iter__():
+                # rename _sum into _s
+                if str(key).endswith("_sum") and str(key).endswith("_s") is False:
+                    new_val_agg = {
+                        "k": str(key).replace("_sum", "_s"),
+                        "v": an_extreme[key],
+                    }
+                    val_to_add_xtreme.append(new_val_agg)
+
+                if str(key).endswith("_max") or str(key).endswith("_min"):
+                    # a xxx_time is required with xxx_max/xxx_min values
+                    if an_extreme.__contains__(key + "_time") is False:
+                        return "max/min for " + key + " does not have a " + key + "_time key"
 
         # add missing key/value
         for my_val in val_to_add:
@@ -254,9 +253,12 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str, stop_dat_list: list) -> st
             else:
                 my_data[my_val["k2"]][my_val["k"]] = my_val["v"]
 
-        for my_val in val_to_add_agg:
-            my_aggregations = j["data"][my_val["idx"]]["aggregations"]
-            my_aggregations[my_val["idx2"]][my_val["k"]] = my_val["v"]
+        if bRemoveOldAggregations is True:
+            j["data"][idx - 1]["aggregations"] = []
+
+        for my_val in val_to_add_xtreme:
+            my_aggregations = j["extremes"]
+            my_aggregations[my_val["k"]] = my_val["v"]
 
         for my_val in val_to_add_val:
             my_validation = j["data"][my_val["idx"]]["validation"]

@@ -116,7 +116,13 @@ class ProcessJsonData():
             if b_load_agg is False:
                 my_value_agg = None
 
-        tmp_duration = int(json_file_data['data'][json_data_idx]['current']['duration'])
+        tmp_duration = 0
+        if data_src.get(target_key + '_d') is not None:
+            # Overload if specified in the data_src json
+            tmp_duration = data_src[target_key + '_d']
+        else:
+            # Use the data duration
+            tmp_duration = int(json_file_data['data'][json_data_idx]['current']['duration'])
 
         if tmp_duration != 0 and (my_value_agg is not None or my_value_inst is not None):
             match my_measure['agg']:
