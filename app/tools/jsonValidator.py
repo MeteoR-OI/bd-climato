@@ -1,11 +1,10 @@
-from app.classes.repository.posteMeteor import PosteMeteor
-from app.classes.repository.incidentMeteor import IncidentMeteor
+from app.tools.aggTools import getAggDuration
 import datetime
+import dateutil
 import json
-import sys
 
 
-def checkJson(j_arr: json, meteor: str = "???", filename: str = "???") -> str:
+def checkJson(j_arr: json, pid: int = -1, filename: str = "???") -> str:
     """
     checkJson
         Check Json integrity
@@ -13,272 +12,231 @@ def checkJson(j_arr: json, meteor: str = "???", filename: str = "???") -> str:
     Parameter:
         Json data
     """
-    try:
-        if j_arr[0].__contains__("meteor") is False or j_arr[0]["meteor"].__len__() == 0:
-            return "missing or invalid code meteor"
+    ret = None
+    stop_dat_list = []
+    idx = 0
+    meteor = j_arr[idx]["meteor"]
 
-        pid = PosteMeteor.getPosteIdByMeteor(j_arr[0]["meteor"])
-        if pid is None:
-            return "code meteor inconnu: " + j_arr[0]["meteor"]
+    while idx < j_arr.__len__() and ret is None:
+        j = j_arr[idx]
 
-        stop_dat_list = []
-        idx = 0
-        while idx < j_arr.__len__():
-            j = j_arr[idx]
-            ret = _checkJsonOneItem(j, pid, j_arr[0]["meteor"], stop_dat_list)
-            if ret is not None:
-                IncidentMeteor.new(
-                    "json_validator",
-                    "error",
-                    ret,
-                    {
-                        'meteor': meteor,
-                        'filename': filename,
-                    })
+        ret = _checkJsonOneItem(j, pid, meteor, stop_dat_list)
 
-                return "Error in item " + str(idx) + ": " + ret
-            idx += 1
-        return None
-
-    except Exception as e:
-        if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
-            exception_type, exception_object, exception_traceback = sys.exc_info()
-            exception_info = e.__repr__()
-            filename = exception_traceback.tb_frame.f_code.co_filename
-            funcname = exception_traceback.tb_frame.f_code.co_name
-            line_number = exception_traceback.tb_lineno
-            e.info = {
-                "i": str(exception_info),
-                "n": funcname,
-                "f": filename,
-                "l": line_number,
-            }
-            e.done = True
-        raise e
+        if ret is not None:
+            return "file: " + filename + ", item " + str(idx) + " error =>" + ret
+        idx += 1
+    return None
 
 
 def _checkJsonOneItem(j: json, pid: int, meteor: str, stop_dat_list: list) -> str:
-    try:
-        idx = 0
-        val_to_add = []
-        val_to_add_xtreme = []
-        val_to_add_val = []
+    idx = 0
+    valeurs_to_add = []
+    extremes_to_add = []
+    new_val = {}
+    new_val_xtreme = {}
+    stop_dat_list = []
+    start_dat_list = []
 
-        j["poste_id"] = pid
+    # add this key used in app
+    j["poste_id"] = pid
 
-        if j.__contains__("meteor") is False or j["meteor"].__len__() == 0:
-            return "missing or invalid code meteor"
+    # check meteor code
+    if j.__contains__("meteor") is False or j["meteor"].__len__() == 0:
+        return "missing or invalid code meteor"
 
-        if j["meteor"] != meteor:
-            return "different code meteor: " + meteor + "/" + j["meteor"]
+    if j["meteor"] != meteor:
+        return "different code meteor: " + meteor + "/" + j["meteor"]
 
-        while idx < j["data"].__len__():
-            new_val = {}
-            new_val_agg = {}
-            a_current = j["data"][idx].get("current")
-            tmp_stop_dat = j["data"][idx].get("stop_dat")
+    # check info
+    if j.get("info") is None:
+        return "no info key"
+    j_info = j["info"]
+    if j.get("info") is None or j_info["version"] != 1:
+        return "unsupported version number: " + str(j_info.get("version"))
 
-            if a_current is None or len(a_current) <= 1:
-                # no current make aggregations mandatoty
-                if (j["data"][idx].__contains__("aggregations") is False):
-                    return "no current/aggregations/validation key in j.data[" + str(idx) + "]"
+    json_type = j_info.get("json_type")
+    if str(json_type) not in ["O", "C", "H", "D", "M", "Y", "A"]:
+        return "invalid json_type: " + str(json_type)
+
+    # check data, loop for each item
+    while idx < j["data"].__len__():
+        a_data_item = j["data"][idx]
+
+        # check dates
+        if json_type in ["O", "C"]:
+            if a_data_item.get("stop_dat") is None:
+                return "missing stop_dat !"
+
+            tmp_stop_dat = a_data_item.get("stop_dat")
+            if str(tmp_stop_dat) in stop_dat_list:
+                return "stop_dat: " + str(tmp_stop_dat) + " present twice"
+            stop_dat_list.append(str(tmp_stop_dat))
+
+            if a_data_item.get("start_dat") is not None:
+                return "remove start_dat for json_type " + json_type
+
+            if a_data_item.get("duration") is None:
+                return "missing duration"
+            # measure_duration = a_data_item.get("duration")
+        else:
+            if a_data_item.get("start_dat") is None:
+                return "missing start_dat !"
+
+            if a_data_item.get("stop_dat") is not None:
+                return "remove stop_dat for json_type " + json_type
+
+            tmp_start_dat = a_data_item.get("start_dat")
+            if str(tmp_start_dat) in start_dat_list:
+                return "start_dat: " + str(tmp_start_dat) + " present twice"
+            start_dat_list.append(str(tmp_start_dat))
+
+            if a_data_item.get("duration") is not None:
+                return "remove duration for json_type " + json_type
+
+            agg_duration = getAggDuration(json_type, datetime.datetime(tmp_start_dat))
+
+        if a_data_item.get("current") is not None:
+            return "remove current key"
+
+        if a_data_item.get("valeurs") is None:
+            return "missing valeurs"
+        j_valeurs = a_data_item.get("valeurs")
+
+        # loop in all keys
+        for key in j_valeurs.__iter__():
+            j_value = j_valeurs.get(key)
+            if json_type in ["O", "C"]:
+                # check obs data
+                if str(key).endswith("_max") or str(key).endswith("_min"):
+                    # add a time entry if not present
+                    if j_valeurs.__contains__(key + "_time") is False:
+                        new_val = {
+                            "k": key + "_time",
+                            "v": tmp_stop_dat,
+                            "idx": idx,
+                            "k2": "valeurs",
+                        }
+                        valeurs_to_add.append(new_val)
+                    else:
+                        try:
+                            dateutil.parser.parse(j_value)
+                        except Exception:
+                            return "Invalid date format for key " + key + " => " + str(j_value)
+                    if isinstance(j_valeurs[key], float) is False:
+                        return "key " + key + " should be a float. current value: " + str(j_valeurs[key]) + ", type: " + str(type(j_valeurs[key]))
+
+                # change xxx_sum into xxx_s
+                if str(key).endswith("_sum"):
+                    new_val = {
+                        "k": str(key).replace("_sum", "_s"),
+                        "v": j_valeurs[key],
+                        "idx": idx,
+                        "k2": "valeurs",
+                    }
+                    valeurs_to_add.append(new_val)
+
+                # change xx_duration into xxx_d
+                if str(key).endswith("_duration"):
+                    new_val = {
+                        "k": str(key).replace("_duration", "_d"),
+                        "v": j_valeurs[key],
+                        "idx": idx,
+                        "k2": "valeurs",
+                    }
+                    valeurs_to_add.append(new_val)
+                    if isinstance(j_valeurs[key], int) is False:
+                        return "key " + key + " should be an integer. Current value: " + str(j_valeurs[key]) + ", type: " + str(type(j_valeurs[key]))
+
             else:
-                # check current clause
+                # check pre_aggregated data
+                if str(key).endswith("_max") or str(key).endswith("_min"):
+                    if j_valeurs.__contains__(key + "_time") is False:
+                        return "key: " + key + " have no key " + key + "_time"
 
-                # check duration key
-                if a_current.__contains__("duration") is False:
-                    return "no duration in j.data[" + str(idx) + "].current"
-                measure_duration = a_current["duration"]
-
-                tmp_stop_dat = None
-                if j["data"][idx].__contains__("stop_dat") is False:
-                    # add a computed stop_dat if not present
-                    if j["data"][idx].__contains__("start_dat") is False:
-                        return "no start and stop_dat in j.data[" + str(idx) + "].current"
-                    measure_duration = datetime.timedelta(minutes=int(a_current["duration"]))
+                # check that xxx_s has a xxx_d
+                if str(key).endswith("_s") and j_valeurs.get(str(key).replace("_s", "_d")) is None:
                     new_val = {
-                        "k": "stop_dat",
-                        "v": j["data"][idx]["start_dat"] + measure_duration,
+                        "k": str(key).replace("_s", "_d"),
+                        "v": agg_duration,
                         "idx": idx,
+                        "k2": "valeurs",
                     }
-                    val_to_add.append(new_val)
-                    tmp_stop_dat = new_val["stop_dat"]
-                else:
-                    tmp_stop_dat = j["data"][idx]["stop_dat"]
+                    valeurs_to_add.append(new_val)
+                    if isinstance(j_valeurs[key], float) is False and isinstance(j_valeurs[key], int) is False:
+                        return "key " + key + " should be a float or an integer. Current value: " + str(j_valeurs[key]) + ", type: " + str(type(j_valeurs[key]))
 
-                # check stop_dat unicity (could be period overlap, but will use too much cpu..)
-                if str(tmp_stop_dat) in stop_dat_list:
-                    return "stop_dat: " + str(tmp_stop_dat) + " present twice"
-                stop_dat_list.append(str(tmp_stop_dat))
-
-                if j["data"][idx].__contains__("start_dat") is False:
-                    # add a computed start_dat if not present
-                    measure_duration = datetime.timedelta(minutes=int(a_current["duration"]))
+                # check that xxx_avg has a xxx_d
+                if str(key).endswith("_avg") and j_valeurs.get(str(key).replace("_avg", "_d")) is None:
                     new_val = {
-                        "k": "start_dat",
-                        "v": j["data"][idx]["stop_dat"],
+                        "k": str(key).replace("_avg", "_d"),
+                        "v": agg_duration,
                         "idx": idx,
+                        "k2": "valeurs",
                     }
-                    val_to_add.append(new_val)
+                    valeurs_to_add.append(new_val)
+                    if isinstance(j_valeurs[key], float) is False and isinstance(j_valeurs[key], int) is False:
+                        return "key " + key + " should be a float or an integer. Current value: " + str(j_valeurs[key]) + ", type: " + str(type(j_valeurs[key]))
 
-                # we need a stop_dat
-                if tmp_stop_dat is None:
-                    return "no stop_dat, and no way to compute it"
+            # for all json_type
+            if str(key).endswith("_s") or str(key).endswith("_avg") or str(key).endswith("_max") or str(key).endswith("_min"):
+                if isinstance(j_valeurs[key], float) is False and isinstance(j_valeurs[key], int) is False:
+                    return "key " + key + " should be a float or an integer. Current value: " + str(j_valeurs[key]) + ", type: " + str(type(j_valeurs[key]))
 
-                # loop in all keys
-                for key in a_current.__iter__():
-                    if str(key).endswith("_max") or str(key).endswith("_min"):
+            # check date format
+            if key.endswith("_time"):
+                try:
+                    dateutil.parser.parse(j_value)
+                except Exception:
+                    return "Invalid date format for key " + key + " => " + str(j_value)
 
-                        # replace xxxtime into xxx_time
-                        if a_current.__contains__(key + "time") is True and a_current.__contains__(key + "_time") is False:
-                            a_current[key + "_time"] = a_current[key + "time"]
-                            new_val = {
-                                "k": key + "_time",
-                                "v": a_current[key + "time"],
-                                "idx": idx,
-                                "k2": "current",
-                            }
-                            val_to_add.append(new_val)
+    # extremes check
+    an_extreme = j.get("extremes")
+    if an_extreme is not None:
+        if an_extreme.get("level"):
+            return "extreme should have a level key"
 
-                        # add a time entry if not present
-                        if a_current.__contains__(key + "_time") is False:
-                            new_val = {
-                                "k": key + "_time",
-                                "v": j["data"][idx]["stop_dat"],
-                                "idx": idx,
-                                "k2": "current",
-                            }
-                            val_to_add.append(new_val)
+        if an_extreme["level"] != "D":
+            return "only level=D supported in this version"
 
-                    # change xxx_sum into xxx_s
-                    if str(key).endswith("_sum"):
-                        new_val = {
-                            "k": str(key).replace("_sum", "_s"),
-                            "v": a_current[key],
-                            "idx": idx,
-                            "k2": "current",
-                        }
-                        val_to_add.append(new_val)
+        for key in an_extreme.__iter__():
 
-                    # change xx_duration into xxx_d
-                    if str(key).endswith("_duration"):
-                        new_val = {
-                            "k": str(key).replace("_duration", "_d"),
-                            "v": a_current[key],
-                            "idx": idx,
-                            "k2": "current",
-                        }
-                        val_to_add.append(new_val)
-
-                    # replace xx_duration by xx_d
-                    if (str(key).endswith("_s") and a_current.__contains__(key[:-4] + "_d") is False):
-                        new_val = {
-                            "k": key[:-4] + "_d",
-                            "v": measure_duration,
-                            "idx": idx,
-                            "k2": "current",
-                        }
-                        val_to_add.append(new_val)
-
-                # old specification...
-                if j["data"][idx]["current"].__contains__("aggregations"):
-                    return "aggregations is under the key current, should be at same level like current"
-
-            # OLD delete
-            all_old_aggreg = j["data"][idx].get("aggregations")
-            bRemoveOldAggregations = False
-            if all_old_aggreg is not None:
-
-                # in pre-aggregated value load -> only one item in aggregations
-                if len(a_current) <= 1:
-                    if all_old_aggreg.__len__() > 1:
-                        return "data/aggregations can only have one item"
-
-                idx2 = 0
-                while idx2 < all_old_aggreg.__len__():
-                    a_aggreg = j["data"][idx]["aggregations"][idx2]
-
-                    # level needed
-                    if a_aggreg.__contains__("level") is False:
-                        return ("no level in data[" + str(idx) + "].aggregations[" + str(idx2) + "]")
-
-                    # lvl = a_aggreg["level"]
-                    # if lvl != "D":
-                    #     return (lvl + " is invalid level in data[" + str(idx) + "].aggregations[" + str(idx2) + "]")
-
-                    for key in a_aggreg.__iter__():
-                        if str(key).startswith("etp_"):
-                            # etp that was in current[idx]/aggregations -> moved to current[idx]
-                            new_val = {
-                                "k": "etp_s",
-                                "v": a_aggreg[key],
-                                "idx": idx,
-                                "k2": "current",
-                            }
-                            val_to_add.append(new_val)
-
-                            new_val = {
-                                "k": "etp_d",
-                                "v": 60,
-                                "idx": idx,
-                                "k2": "current",
-                            }
-                            val_to_add.append(new_val)
-                            bRemoveOldAggregations = True
-                    idx2 += 1
-            idx += 1
-
-        # extremes check
-        an_extreme = j.get("extremes")
-        if an_extreme is not None:
-            for key in an_extreme.__iter__():
-                # rename _sum into _s
-                if str(key).endswith("_sum") and str(key).endswith("_s") is False:
-                    new_val_agg = {
+            # rename _sum into _s
+            if str(key).endswith("_sum"):
+                if str(key).endswith("_s") is False:
+                    new_val_xtreme = {
                         "k": str(key).replace("_sum", "_s"),
                         "v": an_extreme[key],
                     }
-                    val_to_add_xtreme.append(new_val_agg)
+                    extremes_to_add.append(new_val_xtreme)
 
-                if str(key).endswith("_max") or str(key).endswith("_min"):
-                    # a xxx_time is required with xxx_max/xxx_min values
-                    if an_extreme.__contains__(key + "_time") is False:
-                        return "max/min for " + key + " does not have a " + key + "_time key"
+            # a xxx_time is required with xxx_max/xxx_min values
+            if str(key).endswith("_max") or str(key).endswith("_min"):
+                if an_extreme.__contains__(key + "_time") is False:
+                    return "max/min for " + key + " does not have a " + key + "_time key"
 
-        # add missing key/value
-        for my_val in val_to_add:
-            my_data = j["data"][my_val["idx"]]
-            if my_val.get("k2") is None:
-                my_data[my_val["k"]] = my_val["v"]
-            else:
-                my_data[my_val["k2"]][my_val["k"]] = my_val["v"]
+            # check number format
+            if str(key).endswith("_s") or str(key).endswith("_avg") or str(key).endswith("_max") or str(key).endswith("_min"):
+                if isinstance(j_valeurs[key], float) is False and isinstance(j_valeurs[key], int) is False:
+                    return "key " + key + " should be a float or an integer. Current value: " + str(j_valeurs[key]) + ", type: " + str(type(j_valeurs[key]))
 
-        if bRemoveOldAggregations is True:
-            j["data"][idx - 1]["aggregations"] = []
+            # check date format
+            if key.endswith("_time"):
+                try:
+                    dateutil.parser.parse(j_value)
+                except Exception:
+                    return "Invalid date format for key " + key + " => " + str(j_value)
 
-        for my_val in val_to_add_xtreme:
-            my_aggregations = j["extremes"]
-            my_aggregations[my_val["k"]] = my_val["v"]
+    # add missing key/value
+    for my_val in valeurs_to_add:
+        my_data = j["data"][my_val["idx"]]
+        if my_val.get("k2") is None:
+            my_data[my_val["k"]] = my_val["v"]
+        else:
+            my_data[my_val["k2"]][my_val["k"]] = my_val["v"]
 
-        for my_val in val_to_add_val:
-            my_validation = j["data"][my_val["idx"]]["validation"]
-            my_validation[my_val["idx2"]][my_val["k"]] = my_val["v"]
+    for my_val in extremes_to_add:
+        my_aggregations = j["extremes"]
+        my_aggregations[my_val["k"]] = my_val["v"]
 
-        # check ok
-        return None
-
-    except Exception as e:
-        if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
-            exception_type, exception_object, exception_traceback = sys.exc_info()
-            exception_info = e.__repr__()
-            filename = exception_traceback.tb_frame.f_code.co_filename
-            funcname = exception_traceback.tb_frame.f_code.co_name
-            line_number = exception_traceback.tb_lineno
-            e.info = {
-                "i": str(exception_info),
-                "n": funcname,
-                "f": filename,
-                "l": line_number,
-            }
-            e.done = True
-        raise e
+    # check ok
+    return None

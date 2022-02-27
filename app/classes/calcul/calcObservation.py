@@ -1,4 +1,5 @@
 from app.classes.calcul.observation.processJsonData import ProcessJsonData
+from app.classes.repository.posteMeteor import PosteMeteor
 from app.classes.metier.posteMetier import PosteMetier
 from app.classes.repository.aggTodoMeteor import AggTodoMeteor
 from app.classes.repository.incidentMeteor import IncidentMeteor
@@ -138,7 +139,11 @@ class CalcObs():
             try:
                 # validate our json
                 meteor = str(json_data_array[0].get("meteor"))
-                check_result = checkJson(json_data_array)
+                pid = PosteMeteor.getPosteIdByMeteor(json_data_array[0]["meteor"])
+                if pid is None:
+                    raise Exception("code meteor inconnu: " + json_data_array[0]["meteor"])
+
+                check_result = checkJson(json_data_array, pid, filename)
 
             except Exception as exc:
                 if is_tmp is False:
@@ -147,6 +152,15 @@ class CalcObs():
                 raise exc
 
             if check_result is not None:
+                IncidentMeteor.new(
+                    "json_validator",
+                    "error",
+                    check_result,
+                    {
+                        'meteor': meteor,
+                        'filename': filename,
+                    })
+
                 if is_tmp is False:
                     IncidentMeteor.new("check_data", "Error", "invalid data", {'meteor': meteor, 'filename': filename, 'check': check_result})
                 raise Exception("Meteor: " + meteor + ", filenme: " + filename + str(check_result))
