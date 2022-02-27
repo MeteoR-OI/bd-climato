@@ -2,14 +2,14 @@
    {
      "meteor": "BBF015",
      "info": {
-        "version": 2
+        "version": 2,
+        "json_type": "O"
      },
      "data": [
        {
-         "start_dat": "2022-02-18T00:00:00",
          "stop_dat": "2022-02-18T00:05:00",
 
-         "current": {
+         "valeurs": {
            "duration": 5,
 
            "barometer_avg": 1008.3047501,
