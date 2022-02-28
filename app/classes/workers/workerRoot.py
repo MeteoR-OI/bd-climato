@@ -179,6 +179,9 @@ class WorkerRoot:
         finally:
             WorkerRoot.wrks_lock.release()
 
+    def IsKilled(self):
+        return self.killFlag
+
     # private methods
     # Register in WorkerRoot.wrks (global variable)
     def __register(self, name: str, fct):
@@ -232,7 +235,7 @@ class WorkerRoot:
                             if a_worker['run'] is False:
                                 try:
                                     a_worker['run'] = True
-                                    a_worker['fct'](call_params)
+                                    a_worker['fct'](call_params, self.IsKilled)
                                 finally:
                                     a_worker['run'] = False
 

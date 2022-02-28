@@ -103,7 +103,9 @@
            "windchill_avg": 25.7644444444,
            "windchill_min_time": "2022-02-18T00:03:02",
            "windchill_min": 25.7222222222,
-           "windchill": 25.7777777778
+           "windchill": 25.7777777778,
+
+           "end_valeurs": 0
          }
        }
      ]

@@ -23,6 +23,7 @@ class ProcessJsonData():
             my_measure: json,
             json_file_data: json,
             json_data_idx: int,
+            default_duration: int,
             trace_flag: bool = False):
         """ loadJsonInObs: load Json values in obs table """
 
@@ -32,11 +33,25 @@ class ProcessJsonData():
         # load local variables
         src_key = my_measure['src_key']
         target_key = my_measure['target_key']
+        # json_type = json_file_data['info']['json_type']
+        # json_is_obs = True if json_type in ["O", "C"] else False
 
-        if ('barometer' in src_key):
-            src_key = src_key
+        # get our data_src
+        exclusion = poste_metier.exclusion(my_measure['type_i'])
+        #  loadFromExclu(exclusion, src_key) should return True, False or None (nullify this measure)
+        data_src = exclusion if loadFromExclu(exclusion, src_key) is True else json_file_data['data'][json_data_idx].get('valeurs')
+        if data_src is None:
+            return
+
+        # get measure or default duration
+        if data_src.get(target_key + '_d') is not None:
+            # Overload if specified in the data_src json
+            measure_duration = data_src[target_key + '_d']
+        else:
+            measure_duration = default_duration
 
         obs_values = obs_meteor.data.j[obs_meteor.data.j.__len__() - 1]
+
         match my_measure['agg']:
             case 'avg' | 'avgomm' | 'rate' | 'rateomm':
                 key_suffix = '_avg'
@@ -46,20 +61,6 @@ class ProcessJsonData():
                 key_suffix = ''
             case _:
                 raise Exception("unknown agg field in measure: " + json.dumps(my_measure))
-
-        # get exclusion, and return if value is nullified
-        exclusion = poste_metier.exclusion(my_measure['type_i'])
-        # todo later...
-        # if shouldNullify(exclusion, src_key) is True:
-        #     return
-
-        # b_exclu = True -> load data from exclusion, False -> normal processing
-        b_exclu = loadFromExclu(exclusion, src_key)
-
-        # get data_src
-        data_src = exclusion if b_exclu is True else json_file_data['data'][json_data_idx].get('current')
-        if data_src is None:
-            return
 
         # load aggregated/instantaneous values
         my_value_inst = my_value_agg = my_value_dir = None
@@ -116,46 +117,38 @@ class ProcessJsonData():
             if b_load_agg is False:
                 my_value_agg = None
 
-        tmp_duration = 0
-        if data_src.get(target_key + '_d') is not None:
-            # Overload if specified in the data_src json
-            tmp_duration = data_src[target_key + '_d']
-        else:
-            # Use the data duration
-            tmp_duration = int(json_file_data['data'][json_data_idx]['current']['duration'])
-
-        if tmp_duration != 0 and (my_value_agg is not None or my_value_inst is not None):
+        if measure_duration != 0 and (my_value_agg is not None or my_value_inst is not None):
             match my_measure['agg']:
                 case 'avg' | 'rate':
-                    obs_values[target_key + '_s'] = my_value_agg * tmp_duration
-                    obs_values[target_key + '_d'] = tmp_duration
+                    obs_values[target_key + '_s'] = my_value_agg * measure_duration
+                    obs_values[target_key + '_d'] = measure_duration
                     if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
                         updateWindData(obs_values, target_key, my_value_dir)
                 case 'sum':
                     obs_values[target_key + '_s'] = my_value_agg
-                    obs_values[target_key + '_d'] = tmp_duration
+                    obs_values[target_key + '_d'] = measure_duration
                 case 'avgomm' | 'rateomm':
-                    if is_in_rounded_hour(obs_meteor.data.stop_dat, tmp_duration):
-                        tmp_duration = 60
+                    if is_in_rounded_hour(obs_meteor.data.stop_dat, measure_duration):
+                        measure_duration = 60
                         if data_src.get(src_key + '_omm') is not None:
-                            obs_values[target_key + '_s'] = data_src[src_key + '_omm'] * tmp_duration
-                            obs_values[target_key + '_d'] = tmp_duration
+                            obs_values[target_key + '_s'] = data_src[src_key + '_omm'] * measure_duration
+                            obs_values[target_key + '_d'] = measure_duration
                         else:
                             if b_load_inst is True:
-                                obs_values[target_key + '_s'] = my_value_inst * tmp_duration
+                                obs_values[target_key + '_s'] = my_value_inst * measure_duration
                             else:
                                 # for wind10 which use an aggregted value for the omm
-                                obs_values[target_key + '_s'] = my_value_agg * tmp_duration
-                            obs_values[target_key + '_d'] = tmp_duration
+                                obs_values[target_key + '_s'] = my_value_agg * measure_duration
+                            obs_values[target_key + '_d'] = measure_duration
                         if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
                             updateWindData(obs_values, target_key + '', my_value_dir)
                 case 'sumomm':
                     if data_src.get(src_key + '_omm') is not None:
                         obs_values[target_key + '_s'] = data_src[src_key + '_omm']
-                        obs_values[target_key + '_d'] = tmp_duration
+                        obs_values[target_key + '_d'] = measure_duration
                     else:
                         obs_values[target_key + '_s'] = my_value_inst
-                        obs_values[target_key + '_d'] = tmp_duration
+                        obs_values[target_key + '_d'] = measure_duration
                 case 'no':
                     pass
                 case _:
@@ -178,6 +171,8 @@ class ProcessJsonData():
                         if maxmin_key == 'max' and (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
                             if my_value_dir is not None:
                                 obs_values[target_key + maxmin_suffix + '_dir'] = my_value_dir
+                # if extreme more extreme => load from extremes
+
         return
 
     def loadDeltaValues(

@@ -2,7 +2,7 @@
    {
      "meteor": "BBF015",
      "info": {
-        "version": 2,
+        "version": 1,
         "json_type": "C"
      },
      "data": [
@@ -16,7 +16,9 @@
             "barometer_max": 1008.36480205,
             "barometer_min_time": "2022-02-18T00:04:33",
             "barometer_min": 1008.22934652,
-            "barometer": 1008.22934652
+            "barometer": 1008.22934652,
+
+           "end_valeurs": 0
           }
         },
         {
@@ -30,7 +32,9 @@
             "barometer_max": 1008.36480205,
             "barometer_min_time": "2022-02-18T00:08:45",
             "barometer_min": 1008.22934652,
-            "barometer": 1008.22934652
+            "barometer": 1008.22934652,
+
+            "end_valeurs": 0
           }
         }
       ],
@@ -40,7 +44,9 @@
         "barometer_max_time": "2022-02-18T18:33:26",
         "barometer_max": 1008.36480205,
         "barometer_min_time": "2022-02-18T00:07:23",
-        "barometer_min": 1007.22934652
+        "barometer_min": 1007.22934652,
+
+        "end_extremes": 0
       }
    }
  ]

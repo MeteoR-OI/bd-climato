@@ -19,7 +19,7 @@ class CalcAggreg():
         self.tracer = Telemetry.Start("calculus", __name__)
         self.agg_compute = AggCompute()
 
-    def ComputAggregFromSvc(self, data: json):
+    def ComputAggregFromSvc(self, data: json, is_killed):
         """entry point called from worker"""
         self.stopRequested = False
 
@@ -49,16 +49,18 @@ class CalcAggreg():
 
         # run now
         try:
-            ret = self._computeAggreg(is_tmp, trace_flag)
+            ret = self.CalcAggregControler(is_tmp, trace_flag, is_killed)
             return ret
 
         except Exception as inst:
             t.LogCritical(inst)
 
-    def _computeAggreg(self, is_tmp_called: bool, trace_flag: bool):
-        """ _computeAggreg function """
+    def CalcAggregControler(self, is_tmp_called: bool, trace_flag: bool, is_killed):
+        """ CalcAggregControler function """
 
         while self.stopRequested is False:
+            if is_killed() is True:
+                return
             is_tmp = is_tmp_called
             # get first aggTodo
             a_todo = AggTodoMeteor.popOne(is_tmp)

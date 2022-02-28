@@ -22,7 +22,9 @@
                "barometer_min": 1013.30892876,
 
                "barometer_omm_avg": 1014.73403378,
-               "barometer_omm_d": 1440
+               "barometer_omm_d": 1440,
+
+               "end_valeurs": 0
             }
          },
          {
@@ -39,7 +41,9 @@
                "barometer_min": 1013.57983982,
 
                "barometer_omm_avg": 1015.31113076,
-               "barometer_omm_d": 1440
+               "barometer_omm_d": 1440,
+
+               "end_valeurs": 0
             }
          }
      ]

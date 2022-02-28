@@ -149,7 +149,7 @@ def calcAggDateNextLevel(
     niveau_agg: str,
     start_dt_utc: datetime,
     factor: float = 0,
-    is_measure_date: bool = False,
+    is_stop_dat: bool = False,
 ) -> datetime:
     """
     Return the aggregation date of the next level, None when it's done
@@ -173,7 +173,7 @@ def calcAggDateNextLevel(
             next_niveau = "AT"
         else:
             return None
-        return calcAggDate(next_niveau, start_dt_utc, factor, is_measure_date)
+        return calcAggDate(next_niveau, start_dt_utc, factor, is_stop_dat)
     except Exception as e:
         if e.__dict__.__len__() == 0 or "done" not in e.__dict__:
             exception_type, exception_object, exception_traceback = sys.exc_info()
@@ -217,7 +217,7 @@ def calcAggDate(
     niveau_agg: str,
     start_dt_utc_given: datetime,
     factor: float = 0,
-    is_measure_date: bool = False,
+    is_stop_dat: bool = False,
 ) -> datetime:
     """
     calc_agg_date
@@ -225,15 +225,15 @@ def calcAggDate(
 
     Parameters:
         niveau_agg: H, HT, D, DT, M, MT, Y, YT, A, AT
-        start_dt_utc: start date (is_measure_date = False), stop_dat (is_measure_date = True)
+        start_dt_utc: start date (is_stop_dat = False), stop_dat (is_stop_dat = True)
         factor: deca hour
-        is_measure_date: flag to determine if is is a start or a stop date
+        is_stop_dat: flag to determine if is is a start or a stop date
     """
     try:
         # start_dt_utc
         start_dt_utc = datetime.datetime(start_dt_utc_given.year, start_dt_utc_given.month, start_dt_utc_given.day, start_dt_utc_given.hour, 0, 0, 0, datetime.timezone.utc)
 
-        if is_measure_date:
+        if is_stop_dat:
             if start_dt_utc_given.minute == 0 and start_dt_utc_given.second == 0:
                 start_dt_utc = start_dt_utc - datetime.timedelta(hours=1)
             start_dt_utc = datetime.datetime(start_dt_utc.year, start_dt_utc.month, start_dt_utc.day, start_dt_utc.hour, 0, 0, 0, datetime.timezone.utc)

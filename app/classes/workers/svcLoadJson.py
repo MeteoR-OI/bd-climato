@@ -16,7 +16,7 @@ class SvcAutoLoad(WorkerRoot):
         # call parent __init__
         super(SvcAutoLoad, self).__init__(
             str(SvcAutoLoad),
-            CalcObs.GetInstance().LoadJsonFromSvc,
+            CalcObs.GetInstance().LoadJsonControler,
             30,
             ['svcAutoLoad', 'autoload', 'auto', 'obs', 'observation', 'load', 'loadjson', 'json'],
         )

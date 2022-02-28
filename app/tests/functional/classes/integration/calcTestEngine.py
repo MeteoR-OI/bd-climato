@@ -68,7 +68,7 @@ class CalcTestEngine():
                         "validation": False,
                         "filename": 'test_json',
                     }}
-                    self.calc_obs.LoadJsonFromSvc(my_params)
+                    self.calc_obs.LoadJsonControler(my_params)
 
                 if ((option & 2) == 2):
                     self.calc_agg._computeAggreg(True, False)
