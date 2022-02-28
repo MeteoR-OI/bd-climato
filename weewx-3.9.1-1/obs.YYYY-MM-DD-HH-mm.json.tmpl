@@ -125,19 +125,19 @@ LOW#slurp
 #set $final_obs = $datetime_obs == $datetime_cur
 #set $restartw  = $h_delta > 0
 #set $start = 0
-#set $aggregation_hour = 0
+## #set $aggregation_hour = 0
 #else
 #set $new_hour  = $datetime_obs.hour != $datetime_obs_prev.hour
 #set $final_obs = $datetime_obs == $datetime_cur
 #set $restartw  = $h_delta > 0
-#if $aggregation_hour == 0
+## #if $aggregation_hour == 0
       }}, ## apres 1er current on ferme proprement current precedent
-#else
+## #else
 
-      }, ## idem mais agregation hour suit
-#end if
+##      }, ## idem mais agregation hour suit
+## #end if
 #end if ## fin test premiere obs
-#set $aggregation_hour = 0
+## #set $aggregation_hour = 0
       {
        "start_dat":"$datetime_obs_start",
        "stop_dat":"$datetime_obs_stop",
@@ -254,6 +254,33 @@ LOW#slurp
        $CleVal("in_humidity_min",$currentagg.inHumidity.min.raw)
        $CleDat("in_humidity_min_time",$currentagg.inHumidity.mintime.raw)
        #end if
+#if $new_hour or $final_obs ## test change heure ou final obs
+#if $new_hour ## heure intermediaire
+#if $final_obs ## final obs
+#set $delta_h = 0
+#else
+## calcule les deltas pour agregation
+#set $delta_s = ($datetime_cur - $datetime_obs).seconds
+#set $delta_d = ($datetime_cur - $datetime_obs).days
+#set $delta_h = (($delta_d * 86400) + $delta_s) // 3600 + 1
+#end if ## fin final_obs
+##        },
+## #set $aggregation_hour = 1
+##        "aggregations":
+##        [{
+##        "level":"H",
+## traitement special pour affichage de l'etp qui n'est disponible que sur current a heure ronde
+#if $day.ET.has_data and $day.ET.sum.raw >0.0
+       $CleVal("etp_s",$hour.ET.sum.raw)
+       $CleVal("etp_d",60)
+#end if
+##        "start_dat":$datef($hour($hours_ago=$delta_h).dateTime.raw)
+#end if ## fin heure intermediaire
+## #if $aggregation_hour == 1
+##         ##si agregation hour on referme apres $hour
+##        }]#slurp
+## #end if
+#end if ## fin test change heure ou final obs
        $CleVal("rx",$obs.rxCheckPercent.raw)
        $CleVal("voltage",$obs.consBatteryVoltage.raw)
        #if $final_obs
@@ -262,36 +289,11 @@ LOW#slurp
        $CleDat("voltage_min_time",$currentagg.consBatteryVoltage.mintime.raw)
        #end if
        "duration":$duration
-#if $new_hour or $final_obs ## test change heure ou final obs
-#if $new_hour ## heure intermediaire
-#if $final_obs
-#set $delta_h = 0
-#else
-## calcule les deltas pour agregation
-#set $delta_s = ($datetime_cur - $datetime_obs).seconds
-#set $delta_d = ($datetime_cur - $datetime_obs).days
-#set $delta_h = (($delta_d * 86400) + $delta_s) // 3600 + 1
-#end if
-       },
-#set $aggregation_hour = 1
-       "aggregations":
-       [{
-       "level":"H",
-       ## traitement special pour affichage de l'etp qui n'est disponible que sur current a heure ronde
-#if $new_hour and $day.ET.has_data and $day.ET.sum.raw >0.0
-       $CleVal("etp_sum",$hour.ET.sum.raw)
-#end if
-       "start_dat":$datef($hour($hours_ago=$delta_h).dateTime.raw)
-#end if ## fin heure intermediaire
-#if $aggregation_hour == 1
-        ##si agregation hour on referme apres $hour
-       }]#slurp
-#end if
-#end if ## fin test change heure ou final obs
 #set $datetime_obs_prev = $datetime_obs ## garde en memoire obs traitee
 #end for ## fin boucle obs       
-#if $aggregation_hour == 0 and $final_obs 
-        ## si aucune agregation faut refermer current
+## #if $aggregation_hour == 0 and $final_obs
+#if $final_obs 
+        ## derniere obs faut refermer current
        }#slurp
 #end if
 

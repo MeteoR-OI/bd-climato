@@ -402,7 +402,7 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
         _filename = os.path.basename(template).replace('.tmpl', '')
 
         # If the filename contains YYYY, MM, DD or WW, then do the replacement
-        if 'YYYY' in _filename or 'MM' in _filename or 'DD' in _filename or 'WW' in _filename:
+        if 'YYYY' in _filename or 'MM' in _filename or 'DD' in _filename or 'WW' in _filename or 'HH' in _filename or 'mm' in _filename:
             # Get strings representing year, month, and day
             _yr_str = "%4d" % ref_tt[0]
             _mo_str = "%02d" % ref_tt[1]
@@ -422,6 +422,7 @@ class CheetahGenerator(weewx.reportengine.ReportGenerator):
             _filename = _filename.replace('HH', _hou_str)
             # ... and the minute added by QUETELARD
             _filename = _filename.replace('mm', _min_str)
+
         # observe any strftime format strings in the base file name
         # first obtain a datetime object from our timetuple
         ref_dt = datetime.datetime.fromtimestamp(time.mktime(ref_tt))
