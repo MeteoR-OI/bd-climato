@@ -1,0 +1,27 @@
+
+# import os
+import sys
+from app.tools.jsonValidator import checkJson
+from app.tools.jsonPlus import JsonPlus
+#  sys.argv
+if __name__ == "__main__":
+    idx = 1
+    if sys.argv.__len__() == 1:
+        sys.argv.append('data/json_in_git/json_examples/obs.BBF015.2022-02-18-00-00.json')
+    while idx < sys.argv.__len__():
+        filename = sys.argv[idx]
+
+        with open(filename, "r") as f:
+            file_content = f.readlines()
+            json_str = ''
+            for one_line in file_content:
+                json_str += str(one_line)
+
+            j_content = JsonPlus().loads(json_str)
+
+            ret = checkJson(j_content, 1, filename)
+            if ret is None:
+                print("file ok")
+            else:
+                print(ret)
+            idx += 1

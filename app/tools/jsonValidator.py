@@ -13,14 +13,13 @@ def checkJson(j_arr: json, pid: int = -1, filename: str = "???") -> str:
         Json data
     """
     ret = None
-    stop_dat_list = []
     idx = 0
     meteor = j_arr[idx]["meteor"]
 
     while idx < j_arr.__len__() and ret is None:
         j = j_arr[idx]
 
-        ret = _checkJsonOneItem(j, pid, meteor, stop_dat_list)
+        ret = _checkJsonOneItem(j, pid, meteor)
 
         if ret is not None:
             return "file: " + filename + ", item " + str(idx) + " error =>" + ret
@@ -28,7 +27,7 @@ def checkJson(j_arr: json, pid: int = -1, filename: str = "???") -> str:
     return None
 
 
-def _checkJsonOneItem(j: json, pid: int, meteor: str, stop_dat_list: list) -> str:
+def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
     idx = 0
     valeurs_to_add = []
     extremes_to_add = []
@@ -51,7 +50,7 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str, stop_dat_list: list) -> st
     if j.get("info") is None:
         return "no info key"
     j_info = j["info"]
-    if j.get("info") is None or j_info["version"] != 1:
+    if j.get("info") is None or j_info["version"] != 2:
         return "unsupported version number: " + str(j_info.get("version"))
 
     json_type = j_info.get("json_type")
@@ -119,11 +118,11 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str, stop_dat_list: list) -> st
                         valeurs_to_add.append(new_val)
                     else:
                         try:
-                            dateutil.parser.parse(j_value)
+                            dateutil.parser.parse(str(j_valeurs.get(key + '_time')))
                         except Exception:
-                            return "Invalid date format for key " + key + " => " + str(j_value)
-                    if isinstance(j_valeurs[key], float) is False:
-                        return "key " + key + " should be a float. current value: " + str(j_valeurs[key]) + ", type: " + str(type(j_valeurs[key]))
+                            return 'Invalid date format for "' + key + '": "' + str(j_value) + '"'
+                    if isinstance(j_valeurs[key], float) is False and isinstance(j_valeurs[key], int) is False:
+                        return "key " + key + " should be a float or an integer. Current value: " + str(j_valeurs[key]) + ", type: " + str(type(j_valeurs[key]))
 
                 # change xxx_sum into xxx_s
                 if str(key).endswith("_sum"):
@@ -185,9 +184,10 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str, stop_dat_list: list) -> st
             # check date format
             if key.endswith("_time"):
                 try:
-                    dateutil.parser.parse(j_value)
+                    dateutil.parser.parse(str(j_value))
                 except Exception:
-                    return "Invalid date format for key " + key + " => " + str(j_value)
+                    return 'Invalid date format for "' + key + '": "' + str(j_value) + '"'
+            idx += 1
 
     # extremes check
     an_extreme = j.get("extremes")
@@ -222,9 +222,9 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str, stop_dat_list: list) -> st
             # check date format
             if key.endswith("_time"):
                 try:
-                    dateutil.parser.parse(j_value)
+                    dateutil.parser.parse(str(j_value))
                 except Exception:
-                    return "Invalid date format for key " + key + " => " + str(j_value)
+                    return 'Invalid date format for "' + key + '": "' + str(j_value) + '"'
 
     # add missing key/value
     for my_val in valeurs_to_add:
