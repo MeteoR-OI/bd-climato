@@ -1,6 +1,5 @@
 from app.tools.aggTools import getAggDuration
-import datetime
-import dateutil
+from app.tools.dateTools import str_to_date
 import json
 
 
@@ -92,7 +91,7 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
             if a_data_item.get("duration") is not None:
                 return "remove duration for json_type " + json_type
 
-            agg_duration = getAggDuration(json_type, datetime.datetime(tmp_start_dat))
+            agg_duration = getAggDuration(json_type, str_to_date(tmp_start_dat))
 
         if a_data_item.get("current") is not None:
             return "remove current key"
@@ -118,7 +117,7 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
                         valeurs_to_add.append(new_val)
                     else:
                         try:
-                            dateutil.parser.parse(str(j_valeurs.get(key + '_time')))
+                            str_to_date(j_valeurs.get(key + '_time'))
                         except Exception:
                             return 'Invalid date format for "' + key + '": "' + str(j_value) + '"'
                     if isinstance(j_valeurs[key], float) is False and isinstance(j_valeurs[key], int) is False:
@@ -184,7 +183,7 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
             # check date format
             if key.endswith("_time"):
                 try:
-                    dateutil.parser.parse(str(j_value))
+                    str_to_date(j_value)
                 except Exception:
                     return 'Invalid date format for "' + key + '": "' + str(j_value) + '"'
             idx += 1
@@ -192,13 +191,14 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
     # extremes check
     an_extreme = j.get("extremes")
     if an_extreme is not None:
-        if an_extreme.get("level"):
+        if an_extreme.get("level") is None:
             return "extreme should have a level key"
 
         if an_extreme["level"] != "D":
             return "only level=D supported in this version"
 
         for key in an_extreme.__iter__():
+            j_value = an_extreme[key]
 
             # rename _sum into _s
             if str(key).endswith("_sum"):
@@ -222,7 +222,7 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
             # check date format
             if key.endswith("_time"):
                 try:
-                    dateutil.parser.parse(str(j_value))
+                    str_to_date(j_value)
                 except Exception:
                     return 'Invalid date format for "' + key + '": "' + str(j_value) + '"'
 

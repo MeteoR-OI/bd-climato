@@ -8,10 +8,9 @@
      "data": [
         {
           "stop_dat": "2022-02-18T00:05:00",
+          "duration": 5,
 
           "valeurs": {
-            "duration": 5,
-
             "barometer_avg": 1008.3047501,
             "barometer_max_time": "2022-02-18T00:02:02",
             "barometer_max": 1008.36480205,

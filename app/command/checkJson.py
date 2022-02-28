@@ -7,7 +7,7 @@ from app.tools.jsonPlus import JsonPlus
 if __name__ == "__main__":
     idx = 1
     if sys.argv.__len__() == 1:
-        sys.argv.append('data/json_in_git/json_examples/obs.BBF015.2022-02-18-00-00.json')
+        sys.argv.append('data/json_in_git/json_examples/obs_daily.BBF015.2022_02_01.json')
     while idx < sys.argv.__len__():
         filename = sys.argv[idx]
 
