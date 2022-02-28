@@ -49,7 +49,7 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
     if j.get("info") is None:
         return "no info key"
     j_info = j["info"]
-    if j.get("info") is None or j_info["version"] != 2:
+    if j.get("info") is None or j_info["version"] != 1:
         return "unsupported version number: " + str(j_info.get("version"))
 
     json_type = j_info.get("json_type")

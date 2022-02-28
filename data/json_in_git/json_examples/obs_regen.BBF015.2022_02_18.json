@@ -23,7 +23,7 @@
           "stop_dat": "2022-02-18T00:10:00",
 
           "valeurs": {
-            "duration": 5,
+            "duration": 1,
 
             "barometer_avg": 1008.3047501,
             "barometer_max_time": "2022-02-18T00:06:26",
