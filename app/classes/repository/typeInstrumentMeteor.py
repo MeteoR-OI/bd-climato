@@ -1,6 +1,5 @@
 from app.models import TypeInstrument
 import pytest
-import app.tools.myTools as t
 
 
 @pytest.fixture(autouse=True)

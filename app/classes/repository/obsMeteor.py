@@ -1,4 +1,5 @@
-# from app.models import AggHisto, TmpAggHisto
+# check __reverse_delta_values (j_xtreme)
+#
 from app.tools.modelTools import getAggHistoTableWithBool, getObservationTable
 from django.db import connection
 import datetime
@@ -22,13 +23,13 @@ class ObsMeteor():
     def __init__(self, poste_id: int, stop_dt_utc: datetime, is_tmp: bool = None):
         """Init a new ObsMeteor object"""
         # todo: block if my_datetime_utc > previous dat+duration
-        self.is_tmp = is_tmp
+        self.is_tmp = False
         myObsObj = getObservationTable(is_tmp)
         if myObsObj.objects.filter(poste_id=poste_id).filter(stop_dat=stop_dt_utc).exists():
             self.data = myObsObj.objects.filter(poste_id=poste_id).filter(stop_dat=stop_dt_utc).first()
         else:
             agg_start_dat = calcAggDate('H', stop_dt_utc, 0, True)
-            self.data = myObsObj(poste_id=poste_id, stop_dat=stop_dt_utc, duration=0, agg_start_dat=agg_start_dat, j=[], j_agg=[], filename='???')
+            self.data = myObsObj(poste_id=poste_id, stop_dat=stop_dt_utc, duration=0, agg_start_dat=agg_start_dat, j=[], j_agg=[], j_xtreme=[], filename='???')
 
     def save(self):
         """ save Poste and Exclusions """

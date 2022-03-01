@@ -47,7 +47,7 @@ class SpanMok:
         self.trace = trace_flag
         self.atts = []
         self.events = []
-        t.logInfo("Span: " + self.name, {"status": "starting"})
+        t.logInfo("Span: " + self.name, self, {"status": "starting"})
 
     def __enter__(self):
         """
@@ -64,12 +64,15 @@ class SpanMok:
         end of a with statement. print out data if no telemetry is used
         """
         if self.atts.__len__() > 0:
-            t.logInfo("Span: " + self.name, self.atts)
+            j_param = {}
+            for kv in self.atts:
+                j_param[kv['k']] = kv['v']
+            t.logInfo("Closing span with atts: " + self.name, self, j_param)
         for an_event in self.events:
-            t.logInfo("Span: " + self.name, an_event)
+            t.logInfo("Closing span with events: " + self.name, an_event)
             IncidentMeteor.new("Event", "info", an_event["en"], an_event["e"])
         self.events = []
-        t.logInfo("Span: " + self.name, {"status": "bye"})
+        t.logInfo("Span: " + self.name, self, {"status": "bye"})
         return
 
     def __end__(self):

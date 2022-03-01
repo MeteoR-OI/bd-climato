@@ -22,7 +22,7 @@ class ProcessJsonData():
             obs_meteor: ObsMeteor,
             my_measure: json,
             json_file_data: json,
-            json_data_idx: int,
+            json_obs_data_idx: int,
             default_duration: int,
             trace_flag: bool = False):
         """ loadJsonInObs: load Json values in obs table """
@@ -33,13 +33,11 @@ class ProcessJsonData():
         # load local variables
         src_key = my_measure['src_key']
         target_key = my_measure['target_key']
-        # json_type = json_file_data['info']['json_type']
-        # json_is_obs = True if json_type in ["O", "C"] else False
 
         # get our data_src
         exclusion = poste_metier.exclusion(my_measure['type_i'])
         #  loadFromExclu(exclusion, src_key) should return True, False or None (nullify this measure)
-        data_src = exclusion if loadFromExclu(exclusion, src_key) is True else json_file_data['data'][json_data_idx].get('valeurs')
+        data_src = exclusion if loadFromExclu(exclusion, src_key) is True else json_file_data['data'][json_obs_data_idx].get('valeurs')
         if data_src is None:
             return
 
@@ -171,7 +169,6 @@ class ProcessJsonData():
                         if maxmin_key == 'max' and (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
                             if my_value_dir is not None:
                                 obs_values[target_key + maxmin_suffix + '_dir'] = my_value_dir
-                # if extreme more extreme => load from extremes
 
         return
 
@@ -179,10 +176,12 @@ class ProcessJsonData():
         self,
         my_measure: json,
         obs_meteor: ObsMeteor,
-        data_idx: int,
+        obs_data_idx: int,
         delta_values: json,
         remove_data: bool,
         trace_flag: bool,
+        period_start: str,
+        period_end: str,
     ):
         """
             loadDeltaValues
@@ -191,7 +190,9 @@ class ProcessJsonData():
             delta_values is used to propagate measures in all aggregation levels
             Code will be similar to build delta_values from agg_xxx.j
         """
-        obs_j = obs_meteor.data.j[data_idx]
+        obs_j = obs_meteor.data.j[obs_data_idx]
+        obs_j_xtreme = obs_meteor.data.j_xtreme[obs_data_idx]
+
         target_key = my_measure['target_key']
 
         my_value_sum = obs_j.get(target_key + '_s')
@@ -216,6 +217,27 @@ class ProcessJsonData():
         for maxmin_key in ['max', 'min']:
             if my_measure.__contains__(maxmin_key) is True and my_measure[maxmin_key] is True:
                 maxmin_suffix = '_' + maxmin_key
+
+                # use extreme values if in period range
+                if obs_j_xtreme.get(target_key + maxmin_suffix) is not None:
+                    if remove_data is False:
+                        if self.is_extreme_in_range(maxmin_key, obs_j_xtreme[target_key + maxmin_suffix + '_time'], period_start, period_end) is True:
+                            delta_values[target_key + maxmin_suffix] = obs_j_xtreme[target_key + maxmin_suffix]
+                            delta_values[target_key + maxmin_suffix + '_time'] = obs_j_xtreme[target_key + maxmin_suffix + '_time']
+                            if maxmin_key == 'max' and (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
+                                if obs_j_xtreme.get(target_key + maxmin_suffix + '_dir') is not None:
+                                    delta_values[target_key + maxmin_suffix + '_dir'] = obs_j_xtreme[target_key + maxmin_suffix + '_dir']
+                            continue
+                    else:
+                        delta_values['maxminFix'].append({
+                            'key': target_key,
+                            'ope': 'd',
+                            'type': maxmin_suffix,
+                            'value': obs_j_xtreme[target_key + maxmin_suffix],
+                            'date': obs_j_xtreme[target_key + maxmin_suffix + '_time'],
+                            'dir': obs_j_xtreme.get(target_key + maxmin_suffix + '_dir'),
+                        })
+
                 if obs_j.get(target_key + maxmin_suffix) is not None:
                     if remove_data is False:
                         delta_values[target_key + maxmin_suffix] = obs_j[target_key + maxmin_suffix]
@@ -233,3 +255,9 @@ class ProcessJsonData():
                             'dir': obs_j.get(target_key + maxmin_suffix + '_dir'),
                         })
         return
+
+    def is_extreme_in_range(self, maxmin_key, str, x_dat: str, period_start: str, period_end: str):
+        """ is_extreme_in_range """
+        if x_dat > period_end or x_dat < period_start:
+            return False
+        return True

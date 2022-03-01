@@ -1,4 +1,4 @@
-from app.models import AggTodo, TmpAggTodo, Observation
+from app.models import AggTodo, Observation
 from app.tools.modelTools import getAggTodoObject
 from django.db import transaction
 
@@ -10,15 +10,13 @@ class AggTodoMeteor():
         obj.data -> datarow
     """
 
-    def __init__(self, id: int, is_tmp: bool = None):
+    def __init__(self, id: int, json_type: str):
         """Init a new AggTodoMeteor object"""
 
-        myModelObj = getAggTodoObject(is_tmp)
-        self.is_tmp = is_tmp
-        if myModelObj.objects.filter(id=id).exists():
-            self.data = myModelObj.objects.filter(id=id).first()
+        if AggTodo.objects.filter(id=id).exists():
+            self.data = AggTodo.objects.filter(id=id).first()
         else:
-            self.data = myModelObj(id=id, priority=9, j_dv=[], j_agg=[])
+            self.data = AggTodo(id=id, priority=9, json_type=json_type, j=[])
 
     def save(self):
         """ save or delete our AggTodo """
@@ -29,10 +27,7 @@ class AggTodoMeteor():
 
     @staticmethod
     def count(is_tmp: bool = None):
-        if is_tmp is not None:
-            return getAggTodoObject(is_tmp).objects.count()
-        count_all = getAggTodoObject(True).objects.count()
-        return getAggTodoObject(False).objects.count() + count_all
+        return getAggTodoObject(False).objects.count()
 
     def ReportError(self, err):
         self.status = 9
@@ -42,7 +37,8 @@ class AggTodoMeteor():
     @staticmethod
     @transaction.atomic
     def popOne(is_tmp: bool = None):
-        myModelObj = AggTodo if is_tmp is False else TmpAggTodo
+        return None
+        myModelObj = AggTodo
         if myModelObj.objects.filter(status=0).count() == 0:
             return None
         a_todo = myModelObj.objects.filter(status=0).order_by("priority", "id").select_for_update(skip_locked=True).first()

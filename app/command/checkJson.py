@@ -5,8 +5,9 @@ from app.tools.jsonPlus import JsonPlus
 if __name__ == "__main__":
 
     # uncomment to pass test filename in debug mode
-    # if sys.argv.__len__() == 1:
-    #     sys.argv.append('data/json_in_git/json_examples/obs_daily.BBF015.2022_02_01.json')
+    if sys.argv.__len__() == 1:
+        sys.argv.append('./data/json_in_git/MTG320/obs.MTG320.2022-02-28T22:25.json')
+        # data/json_in_git/json_examples/obs_daily.BBF015.2022_02_01.json')
 
     idx = 1
     while idx < sys.argv.__len__():

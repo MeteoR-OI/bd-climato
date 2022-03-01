@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.db.models import Q
 import json
-from app.models import Poste, AggHour, AggDay, AggMonth, AggYear, AggAll, TmpAggHour, TmpAggDay, TmpAggMonth, TmpAggYear, TmpAggAll
+from app.models import Poste, AggHour, AggDay, AggMonth, AggYear, AggAll
 from app.tools.jsonPlus import JsonPlus
 import dateutil
 
@@ -101,21 +101,6 @@ def viewLastAgg(request, agg_niveau, poste_id, str_keys: str = '*', nb_items: in
     elif agg_niveau == "A":
         ah = AggAll.objects.filter(~Q(duration_sum=0), poste_id=poste_id)[:nb_items][::-1]
         display_data_all(result, ah, keys)
-    elif agg_niveau == "HT":
-        ah = TmpAggHour.objects.filter(~Q(duration_sum=0), poste_id=poste_id).order_by('-start_dat')[:nb_items][::-1]
-        display_data_all(result, ah, keys)
-    elif agg_niveau == "DT":
-        ah = TmpAggDay.objects.filter(~Q(duration_sum=0), poste_id=poste_id).order_by('-start_dat')[:nb_items][::-1]
-        display_data_all(result, ah, keys)
-    elif agg_niveau == "MT":
-        ah = TmpAggMonth.objects.filter(~Q(duration_sum=0), poste_id=poste_id).order_by('-start_dat')[:nb_items][::-1]
-        display_data_all(result, ah, keys)
-    elif agg_niveau == "YT":
-        ah = TmpAggYear.objects.filter(~Q(duration_sum=0), poste_id=poste_id).order_by('-start_dat')[:nb_items][::-1]
-        display_data_all(result, ah, keys)
-    elif agg_niveau == "AT":
-        ah = TmpAggAll.objects.filter(~Q(duration_sum=0), poste_id=poste_id)[:nb_items][::-1]
-        display_data_all(result, ah, keys)
     else:
         result['aggregations'].appent({'info': ' ** Aggregation Level Error: ' + str(agg_niveau)})
     return HttpResponse(JsonPlus().dumps(result))
@@ -146,21 +131,6 @@ def viewAgg(request, agg_niveau, poste_id, str_keys: str = '*', start_dt: str = 
         display_data_all(result, ah, keys)
     elif agg_niveau == "A":
         ah = (AggAll.objects.filter(poste_id=poste_id).first(), )
-        display_data_all(result, ah, keys)
-    elif agg_niveau == "HT":
-        ah = TmpAggHour.objects.filter(poste_id=poste_id).filter(start_dat__gte=start_dat, start_dat__lte=end_date).order_by("start_dat").all()
-        display_data_all(result, ah, keys)
-    elif agg_niveau == "DT":
-        ah = TmpAggDay.objects.filter(poste_id=poste_id).filter(start_dat__gte=start_dat, start_dat__lte=end_date).order_by("start_dat").all()
-        display_data_all(result, ah, keys)
-    elif agg_niveau == "MT":
-        ah = TmpAggMonth.objects.filter(poste_id=poste_id).filter(start_dat__gte=start_dat, start_dat__lte=end_date).order_by("start_dat").all()
-        display_data_all(result, ah, keys)
-    elif agg_niveau == "YT":
-        ah = TmpAggYear.objects.filter(poste_id=poste_id).filter(start_dat__gte=start_dat, start_dat__lte=end_date).order_by("start_dat").all()
-        display_data_all(result, ah, keys)
-    elif agg_niveau == "AT":
-        ah = (TmpAggAll.objects.filter(poste_id=poste_id).first(), )
         display_data_all(result, ah, keys)
     else:
         result['aggregations'].appent({'info': ' ** Aggregation Level Error: ' + str(agg_niveau)})

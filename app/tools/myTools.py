@@ -176,6 +176,9 @@ class LogMe:
         # add params values
         if params != {}:
             for key in params:
+                # if key.get('k') is not None:
+                #     log_j[key['k']] = key['v']
+                # else:
                 log_j[key] = params[key]
 
         # add traceID

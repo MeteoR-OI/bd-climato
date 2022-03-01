@@ -1,5 +1,5 @@
 from app.tools.aggTools import calcAggDate, getAggDuration
-from app.tools.modelTools import isTmpLevel, getAggTable, getAggHistoTable, getAggTableName
+from app.tools.modelTools import getAggTable, getAggHistoTable, getAggTableName
 from django.db import connection
 import datetime
 
@@ -30,11 +30,10 @@ class AggMeteor():
             b_need_to_sum_duration: please do not add duration (for omm updates)
         """
         self.agg_niveau = agg_niveau
-        self.is_tmp = isTmpLevel(agg_niveau)
+        self.is_tmp = False     # old code to clean up later
         self.obs_id = obs_id
         self.b_need_to_sum_duration = b_need_to_sum_duration
         my_start_date = calcAggDate(agg_niveau, start_dt_agg_utc, 0, is_obs_date)
-        # my_start_date = date_to_str(my_start_date)
         agg_object = getAggTable(agg_niveau)
         if agg_object.objects.filter(poste_id=poste_id).filter(start_dat=my_start_date).exists():
             self.data = agg_object.objects.filter(poste_id=poste_id).filter(start_dat=my_start_date).first()
@@ -132,14 +131,6 @@ class AggMeteor():
             cursor.execute(sql)
             return cursor.fetchall()
 
-    # def getLevel(self):
-    #     lvl_mapping = {'H': 'hour', 'D': 'day', 'M': 'month', 'Y': 'year', 'A': 'all'}
-    #     my_level = self.agg_niveau[0]
-    #     if lvl_mapping.get(my_level) is None:
-    #         return 'xxxxx'
-    #     else:
-    #         return lvl_mapping[my_level]
-
     def getLevelCode(self):
         return self.agg_niveau
 
@@ -148,6 +139,7 @@ class AggMeteor():
         my_level = self.agg_niveau[0]
         if lvl_mapping.get(my_level) is None:
             return 'xxxxx'
+        return lvl_mapping[my_level]
 
     def __str__(self):
         """print myself"""

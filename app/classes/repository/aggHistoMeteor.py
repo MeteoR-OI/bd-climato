@@ -43,6 +43,4 @@ class AggHistoMeteor():
 
     def __str__(self):
         """print myself"""
-        if self.is_tmp is True:
-            return "AggHisto obs_id: " + str(self.data.obs_id) + ", agg_id: " + str(self.data.agg_id) + ", level: " + self.data.agg_level
-        return "TmpAggHisto obs_id: " + str(self.data.obs_id) + ", agg_id: " + str(self.data.agg_id) + ", level: " + self.data.agg_level
+        return "AggHisto obs_id: " + str(self.data.obs_id) + ", agg_id: " + str(self.data.agg_id) + ", level: " + self.data.agg_level

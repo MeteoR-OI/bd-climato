@@ -21,7 +21,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Clim_MeteoR.settings")
 application = get_wsgi_application()
 
 SvcAutoLoad.GetInstance().Start()
-SvcAggregate.GetInstance().Start()
+# SvcAggregate.GetInstance().Start()
 # SvcLoadObs.GetInstance().Start()
 
 # httpd = make_server('', 8080, application)

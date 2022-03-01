@@ -192,6 +192,8 @@ class Observation(models.Model):
     ''' Array of measure data. Usually only one element. Has to be an array '''
     j_agg = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name='données pré-agrégées')
     ''' Array of data coming from aggregations key, for future used during agg_xxx updates '''
+    j_xtreme = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name='données pré-agrégées')
+    ''' Array of data coming from aggregations key, for future used during agg_xxx updates '''
 
     def __str__(self):
         return "Observation id: " + str(self.id) + ", poste: " + str(self.poste) + ", de " + str(self.stop_dat - datetime.timedelta(minutes=self.duration)) + " a: " + str(self.stop_dat)
@@ -201,62 +203,21 @@ class Observation(models.Model):
         unique_together = (("poste", "stop_dat"))
 
 
-class TmpObservation(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    poste = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
-    agg_start_dat = DateCharField(null=False, max_length=20, default="1900-01-01T00:00:00", verbose_name="date agregation horaire utilisée")
-    stop_dat = DateCharField(null=False, max_length=20, verbose_name="stop date, date de la mesure")
-    duration = models.IntegerField(null=False, verbose_name="duration in minutes", default=0)
-
-    qa_modifications = models.IntegerField(null=False, default=0, verbose_name='qa_modifications')
-    qa_incidents = models.IntegerField(null=False, default=0, verbose_name='qa_incidents')
-    qa_check_done = models.BooleanField(null=False, default=False, verbose_name='qa_check_done')
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False)
-    j_agg = DateJSONField(encoder=DjangoJSONEncoder, null=False)
-
-    def __str__(self):
-        return "TmpObservation id: " + str(self.id) + ", poste: " + str(self.poste) + ", stop_dat: " + str(self.stop_dat)
-
-    class Meta:
-        db_table = "tmp_obs"
-        unique_together = (("poste", "stop_dat"))
-
-
 # class AggTodo(ExportModelOperationsMixin('agg_todo'), models.Model):
 class AggTodo(models.Model):
     id = models.IntegerField(primary_key=True)
     # obs = models.ForeignKey(null=False, to="Observation", on_delete=models.CASCADE)
     priority = models.IntegerField(null=True, default=9, verbose_name='priority, 0: one current-data, 9: multiple current-data')
     status = models.IntegerField(null=False, default=0, verbose_name='status, 0: wait, 9: error, 99: processed')
-    ''' status: processed only used during dev, not in production '''
-    j_dv = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='default_values coming from obs processing')
-    ''' j_dv: Array of delta_values to apply to all aggregations. in case of error j_dv is the only source of data... '''
-    j_agg = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='default_values coming from obs processing')
-    ''' j_agg: Array of data coming from the aggregations key. same index as j_dv '''
-    j_error = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='error reporting')
-    ''' j_error: error information '''
+    json_type = models.CharField(null=False, max_length=1, verbose_name='json_type')
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='default_values coming from obs processing')
+    j_error = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='error info, when status = 99')
 
     def __str__(self):
         return "AggTodo id: " + str(self.id) + ", obs: " + str(self.obs) + ", priority: " + str(self.priority)
 
     class Meta:
         db_table = "agg_todo"
-
-
-class TmpAggTodo(models.Model):
-    id = models.AutoField(primary_key=True)
-    obs = models.ForeignKey(null=False, to="TmpObservation", on_delete=models.CASCADE)
-    priority = models.IntegerField(null=True, default=9, verbose_name='priority, 0: one current-data, 9: multiple current-data')
-    status = models.IntegerField(null=False, default=0, verbose_name='status, 0: wait, 9: error, 99: processed')
-    j_dv = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='default_values coming from obs processing')
-    j_agg = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='default_values coming from obs processing')
-    j_error = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='error reporting')
-
-    def __str__(self):
-        return "Tmp_agg_todo id: " + str(self.id) + ", obs: " + str(self.obs) + ", priority: " + str(self.priority)
-
-    class Meta:
-        db_table = "tmp_agg_todo"
 
 
 # class ExtremeTodo(ExportModelOperationsMixin('extreme_todo'), models.Model):
@@ -274,22 +235,6 @@ class ExtremeTodo(models.Model):
 
     class Meta:
         db_table = "extreme_todo"
-
-
-class TmpExtremeTodo(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    poste = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
-    level = models.CharField(null=False, max_length=2, verbose_name="Aggregation level")
-    start_dat = DateCharField(null=False, max_length=20, verbose_name="start date de l agregation'")
-    invalid_type = models.CharField(null=False, max_length=3, verbose_name="Type Invalidation (max or min)")
-    status = models.IntegerField(null=False, default=0, verbose_name='status, 0: wait, 9: error, 99: processed')
-    j_invalid = DateJSONField(encoder=DjangoJSONEncoder, null=False)
-
-    def __str__(self):
-        return "ExtremeTodo id: " + str(self.id) + ", level: " + self.level + ", start_dat: " + str(self.start_dat) + ", type: " + str.invalid_type
-
-    class Meta:
-        db_table = "tmp_extreme_todo"
 
 
 # class AggHour(ExportModelOperationsMixin('agg_hour'), models.Model):
@@ -311,27 +256,6 @@ class AggHour(models.Model):
 
     class Meta:
         db_table = "agg_hour"
-        unique_together = (("poste", "start_dat"))
-
-
-class TmpAggHour(models.Model):
-    id = models.AutoField(primary_key=True)
-    poste = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
-    start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
-
-    duration_sum = models.IntegerField(null=False, verbose_name="Durées agrégées", default=0)
-    duration_max = models.IntegerField(null=False, verbose_name="Durée max", default=0)
-    qa_modifications = models.IntegerField(null=False, default=0)
-    qa_incidents = models.IntegerField(null=False, default=0)
-    qa_check_done = models.BooleanField(null=False, default=False)
-
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Agrégations")
-
-    def __str__(self):
-        return "TmpAggHour id: " + str(self.id) + ", poste: " + str(self.poste) + ", start_dat: " + str(self.start_dat) + ' for an hour'
-
-    class Meta:
-        db_table = "tmp_agg_hour"
         unique_together = (("poste", "start_dat"))
 
 
@@ -357,27 +281,6 @@ class AggDay(models.Model):
         unique_together = (("poste", "start_dat"))
 
 
-class TmpAggDay(models.Model):
-    id = models.AutoField(primary_key=True)
-    poste = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
-    start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
-
-    duration_sum = models.IntegerField(null=False, verbose_name="Durées agrégées", default=0)
-    duration_max = models.IntegerField(null=False, verbose_name="Durée max", default=0)
-    qa_modifications = models.IntegerField(null=False, default=0)
-    qa_incidents = models.IntegerField(null=False, default=0)
-    qa_check_done = models.BooleanField(null=False, default=False)
-
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Agrégations")
-
-    def __str__(self):
-        return "TmpAggDay id: " + str(self.id) + ", poste: " + str(self.poste) + ", start_dat: " + str(self.start_dat) + ' for a day'
-
-    class Meta:
-        db_table = "tmp_agg_day"
-        unique_together = (("poste", "start_dat"))
-
-
 # class AggMonth(ExportModelOperationsMixin('agg_month'), models.Model):
 class AggMonth(models.Model):
     id = models.AutoField(primary_key=True)
@@ -397,27 +300,6 @@ class AggMonth(models.Model):
 
     class Meta:
         db_table = "agg_month"
-        unique_together = (("poste", "start_dat"))
-
-
-class TmpAggMonth(models.Model):
-    id = models.AutoField(primary_key=True)
-    poste = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
-    start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
-
-    duration_sum = models.IntegerField(null=False, verbose_name="Durées agrégées", default=0)
-    duration_max = models.IntegerField(null=False, verbose_name="Durée max", default=0)
-    qa_modifications = models.IntegerField(null=False, default=0)
-    qa_incidents = models.IntegerField(null=False, default=0)
-    qa_check_done = models.BooleanField(null=False, default=False)
-
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Agrégations")
-
-    def __str__(self):
-        return "TmpAggMonth id: " + str(self.id) + ", poste: " + str(self.poste) + ", start_dat: " + str(self.start_dat) + ' for a month'
-
-    class Meta:
-        db_table = "tmp_agg_month"
         unique_together = (("poste", "start_dat"))
 
 
@@ -443,27 +325,6 @@ class AggYear(models.Model):
         unique_together = (("poste", "start_dat"))
 
 
-class TmpAggYear(models.Model):
-    id = models.AutoField(primary_key=True)
-    poste = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
-    start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
-
-    duration_sum = models.IntegerField(null=False, verbose_name="Durées agrégées", default=0)
-    duration_max = models.IntegerField(null=False, verbose_name="Durée max", default=0)
-    qa_modifications = models.IntegerField(null=False, default=0)
-    qa_incidents = models.IntegerField(null=False, default=0)
-    qa_check_done = models.BooleanField(null=False, default=False)
-
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Agrégations")
-
-    def __str__(self):
-        return "TmpAggYear id: " + str(self.id) + ", poste: " + str(self.poste) + ", start_dat: " + str(self.start_dat) + ' for a year'
-
-    class Meta:
-        db_table = "tmp_agg_year"
-        unique_together = (("poste", "start_dat"))
-
-
 # class AggAll(ExportModelOperationsMixin('agg_all'), models.Model):
 class AggAll(models.Model):
     id = models.AutoField(primary_key=True)
@@ -486,27 +347,6 @@ class AggAll(models.Model):
         unique_together = (("poste", "start_dat"))
 
 
-class TmpAggAll(models.Model):
-    id = models.AutoField(primary_key=True)
-    poste = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
-    start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
-
-    duration_sum = models.IntegerField(null=False, verbose_name="Durées agrégées", default=0)
-    duration_max = models.IntegerField(null=False, verbose_name="Durée max", default=0)
-    qa_modifications = models.IntegerField(null=False, default=0)
-    qa_incidents = models.IntegerField(null=False, default=0)
-    qa_check_done = models.BooleanField(null=False, default=False)
-
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Agrégations")
-
-    def __str__(self):
-        return "TmpAggAll id: " + str(self.id) + ", poste: " + str(self.poste) + " for ever"
-
-    class Meta:
-        db_table = "tmp_agg_all"
-        unique_together = (("poste", "start_dat"))
-
-
 class AggHisto(models.Model):
     id = models.AutoField(primary_key=True)
     obs_id = models.IntegerField(null=False, default=0, verbose_name="Obs_id")
@@ -521,26 +361,6 @@ class AggHisto(models.Model):
 
     class Meta:
         db_table = "agg_histo"
-        indexes = [
-            models.Index(fields=('agg_level', 'agg_id')),
-            models.Index(fields=('obs_id', 'agg_level', 'agg_id')),
-        ]
-
-
-class TmpAggHisto(models.Model):
-    id = models.AutoField(primary_key=True)
-    obs_id = models.IntegerField(null=False, default=0, verbose_name="Observation source")
-    agg_id = models.IntegerField(null=False, default=0, verbose_name="Aggregation_id updated")
-    agg_level = models.CharField(null=False, max_length=2, verbose_name="level")
-    delta_duration = models.IntegerField(null=False, verbose_name="Delta des durées")
-
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Delta agrégation")
-
-    def __str__(self):
-        return "TmpAggHisto id: " + str(self.id) + ", obs: " + str(self.obs_id) + ", Aggreg: " + str(self.agg_id) + ", level: " + self.agg_level
-
-    class Meta:
-        db_table = "tmp_agg_histo"
         indexes = [
             models.Index(fields=('agg_level', 'agg_id')),
             models.Index(fields=('obs_id', 'agg_level', 'agg_id')),
