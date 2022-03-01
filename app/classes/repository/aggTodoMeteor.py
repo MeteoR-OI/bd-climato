@@ -37,11 +37,9 @@ class AggTodoMeteor():
     @staticmethod
     @transaction.atomic
     def popOne(is_tmp: bool = None):
-        return None
-        myModelObj = AggTodo
-        if myModelObj.objects.filter(status=0).count() == 0:
+        if AggTodo.objects.filter(status=0).count() == 0:
             return None
-        a_todo = myModelObj.objects.filter(status=0).order_by("priority", "id").select_for_update(skip_locked=True).first()
+        a_todo = AggTodo.objects.filter(status=0).order_by("priority", "id").select_for_update(skip_locked=True).first()
         a_todo.status = 1
         a_todo.save()
         agg_todo = AggTodoMeteor(a_todo.id, is_tmp)

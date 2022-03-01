@@ -60,7 +60,7 @@ class PosteMetier(PosteMeteor):
         # can be different from self.exclus if the start_date are not the same
         return ExcluMeteor.getAllForAPoste(self.data.id, start_dat)
 
-    def aggregations(self, obs_id: int, start_date_utc: datetime, is_measure_date: bool = False, is_tmp: bool = None) -> json:
+    def aggregations(self, obs_id: int, start_date_utc: datetime, is_measure_date: bool = False, is_tmp: bool = None, json_type: str = " ") -> json:
         """
             get_agg
 
@@ -74,10 +74,12 @@ class PosteMetier(PosteMeteor):
         ti_all = AllTypeInstruments()
         for an_instru in ti_all.get_all_instruments():
             for a_measure in an_instru['object'].measures:
-                for deca_type in ['hour_deca', 'deca_max', 'deca_min']:
-                    hour_deca = int(a_measure[deca_type])
-                    if hour_deca not in needed_dates:
-                        needed_dates.append(hour_deca)
+                if json_type in ["O", "C", "H"]:
+                    # only use deca for obs, or hour agregated data
+                    for deca_type in ['hour_deca', 'deca_max', 'deca_min']:
+                        hour_deca = int(a_measure[deca_type])
+                        if hour_deca not in needed_dates:
+                            needed_dates.append(hour_deca)
 
         # now load the needed aggregations
         ret = []

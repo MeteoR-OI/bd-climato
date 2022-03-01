@@ -42,14 +42,11 @@ class CalcAggreg():
             trace_flag = params["trace_flag"]
 
         # load other params
-        is_tmp = False
         ret = []
-        if params.get("is_tmp") is not None:
-            is_tmp = params["is_tmp"]
 
         # run now
         try:
-            ret = self.CalcAggregControler(is_tmp, trace_flag, is_killed)
+            ret = self.CalcAggregControler(False, trace_flag, is_killed)
             return ret
 
         except Exception as inst:
@@ -61,31 +58,35 @@ class CalcAggreg():
         while self.stopRequested is False:
             if is_killed() is True:
                 return
-            is_tmp = is_tmp_called
+
             # get first aggTodo
-            a_todo = AggTodoMeteor.popOne(is_tmp)
+            a_todo = AggTodoMeteor.popOne(False)
             if a_todo is None:
-                a_todo = AggTodoMeteor.popOne(not is_tmp)
+                a_todo = AggTodoMeteor.popOne(True)
                 if a_todo is None:
                     # no more data to update, return to sleep
                     return
+            my_span = self.tracer.start_as_current_span("Calc agg", trace_flag)
 
             try:
-                self.__processTodo(a_todo, is_tmp)
+                self.__processTodo(a_todo, False)
 
             except Exception as exc:
-                if is_tmp is False:
-                    IncidentMeteor.new(
-                        "calc_agg",
-                        "Exception",
-                        str(exc),
-                        {
-                            'meteor': a_todo.obs.poste.meteor,
-                            'obs_id': a_todo.data.id,
-                            'stopDat': str(a_todo.obs.stop_dat),
-                        })
+                IncidentMeteor.new(
+                    "calc_agg",
+                    "Exception",
+                    str(exc),
+                    {
+                        'meteor': a_todo.obs.poste.meteor,
+                        'obs_id': a_todo.data.id,
+                        'stopDat': str(a_todo.obs.stop_dat),
+                    })
+                my_span.record_exception(exc)
                 a_todo.ReportError(exc)
                 a_todo.save()
+
+            finally:
+                my_span.end()
 
     @transaction.atomic
     def __processTodo(self, a_todo, is_tmp: bool = False):
@@ -98,114 +99,108 @@ class CalcAggreg():
         else:
             trace_flag = RefManager.GetInstance().GetRef("calcAggreg_trace_flag")
 
-        span_name = "Calc agg"
-        if is_tmp is True:
-            span_name += "_tmp"
+        json_type = a_todo.data.json_type
+        is_json_obs = True if json_type in ["O", "C"] else False
 
-        with self.tracer.start_as_current_span(span_name, trace_flag) as my_span:
-            my_span.set_attribute("obsId", a_todo.data.id)
-            my_span.set_attribute("stopDat", str(a_todo.obs.stop_dat))
-            my_span.set_attribute("meteor", a_todo.obs.poste.meteor)
-            if is_tmp is True:
-                my_span.set_attribute("isTmp", is_tmp)
+        my_span = self.tracer.start_as_current_span("Calc agg", trace_flag)
+        my_span.set_attribute("obsId", a_todo.data.id)
+        my_span.set_attribute("stopDat", str(a_todo.obs.stop_dat))
+        my_span.set_attribute("meteor", a_todo.obs.poste.meteor)
 
-            # retrieve posteMetier and needed aggregations
-            span_load_data = self.tracer.start_span("finding needed aggregations", trace_flag)
+        # retrieve posteMetier and needed aggregations
+        with self.tracer.start_span("finding needed aggregations", trace_flag) as span_load_data:
             m_stop_dat = a_todo.obs.stop_dat
             a_start_dat = a_todo.obs.agg_start_dat
             poste_metier = PosteMetier(a_todo.obs.poste_id, a_start_dat)
+
             poste_metier.lock()
-            aggregations = poste_metier.aggregations(a_todo.data.id, m_stop_dat, True, is_tmp)
+            aggregations = poste_metier.aggregations(a_todo.data.id, m_stop_dat, True, False, json_type)
             span_load_data.set_attribute("items", aggregations.__len__())
-            span_load_data.end()
 
-            try:
-                idx_dv = 0
-                while idx_dv < a_todo.data.j_dv.__len__():
-                    delta_values = a_todo.data.j_dv[idx_dv]
-
+        try:
+            idx_dv = 0
+            while idx_dv < a_todo.data.j.__len__():
+                # load dv/m_agg_j variable, add duration to the main aggregations
+                if is_json_obs is True:
+                    delta_values = a_todo.data.j[idx_dv]
+                    m_agg_j = {}
                     tmp_duration = delta_values["duration"]
-
-                    if tmp_duration != 0:
-                        # we are loading <current> values
-                        for an_agg in aggregations:
-                            # add duration in main aggregations (the one with no deca...)
-                            new_dursum = an_agg.add_duration(tmp_duration)
-                            if new_dursum > 0:
-                                span_load_data.set_attribute('duration_agg' + an_agg.agg_niveau + '_' + str(an_agg.data.start_dat), new_dursum)
-                    else:
-                        # we are loading aggregated values
-                        mini_duration = self.get_first_agg_level(a_todo.obs.j_agg[idx_dv])
-                        for an_agg in aggregations:
-                            if tmp_duration > 0:
-                                new_dursum = an_agg.add_duration(tmp_duration)
-                                if new_dursum > 0:
-                                    span_load_data.set_attribute('duration_agg' + an_agg.agg_niveau + '_' + str(an_agg.data.start_dat), new_dursum)
-                            else:
-                                if self.is_this_level(mini_duration, an_agg.agg_niveau):
-                                    new_dursum = an_agg.set_duration_max()
-                                    if new_dursum > 0:
-                                        span_load_data.set_attribute('duration_agg' + an_agg.agg_niveau + '_' + str(an_agg.data.start_dat), new_dursum)
-                                        tmp_duration = new_dursum
-
-                    for anAgg in getAggLevels(is_tmp):
-                        with self.tracer.start_span("level " + anAgg, trace_flag) as span_lvl:
-                            span_lvl.set_attribute("idx_dv", idx_dv)
-                            b_insert_start_dat = True
-                            # adjust start date, depending on the aggregation level
-
-                            # dv_next is the delta_values for next level
-                            dv_next = {"maxminFix": [], "duration": delta_values["duration"]}
-
-                            # for all type_instruments
-                            for an_intrument in all_instr.get_all_instruments():
-                                # for all measures
-                                for my_measure in an_intrument["object"].get_all_measures():
-                                    # load the needed aggregation for this measure
-                                    agg_decas = self.load_aggregations_in_array(my_measure, anAgg, aggregations, m_stop_dat)
-                                    if my_measure['agg'] == 'sumomm':
-                                        agg_decas = self.load_aggregations_in_array(my_measure, anAgg, aggregations, m_stop_dat)
-
-                                    m_agg_j = self.get_agg_magg(anAgg, a_todo.data.j_agg[idx_dv])
-
-                                    if b_insert_start_dat:
-                                        b_insert_start_dat = False
-                                        span_lvl.set_attribute("startDat", str(agg_decas[0].data.start_dat))
-
-                                    # find the calculus object for my_mesure
-                                    self.agg_compute.loadDVDataInAggregation(my_measure, agg_decas, m_agg_j, delta_values, dv_next, trace_flag)
-
-                                    # get our extreme values
-                                    # self.agg_compute.loadDVMaxMinInAggregation(my_measure, m_stop_dat, agg_decas, m_agg_j, delta_values, dv_next, trace_flag)
-
-                            # loop to the next AggLevel
-                            delta_values = dv_next
-                    idx_dv += 1
-
-                # save our aggregations for this delta_values
-                with self.tracer.start_span("saveData", trace_flag):
                     for an_agg in aggregations:
-                        an_agg.save()
+                        # add duration in main aggregations (the one with no deca...)
+                        new_dursum = an_agg.add_duration(tmp_duration)
+                        if new_dursum > 0:
+                            my_span.set_attribute('duration_agg' + an_agg.agg_niveau + '_' + str(an_agg.data.start_dat), new_dursum)
+                else:
+                    delta_values = {}
+                    m_agg_j = a_todo.data.j[idx_dv]
+                    tmp_duration = m_agg_j["duration"]
 
-                    # a_todo.data.status = 999
-                    # a_todo.save()
-                    a_todo.delete()
+                    mini_duration = m_agg_j.get['level'] if not None else '?'
+                    b_first_level_passed = False
+                    for an_agg in aggregations:
+                        if b_first_level_passed is False:
+                            b_first_level_passed = (mini_duration == an_agg.agg_niveau)
+                        if b_first_level_passed is True:
+                            an_agg.add_duration(tmp_duration)
+                            span_load_data.set_attribute('duration_agg' + an_agg.agg_niveau + '_' + str(an_agg.data.start_dat), tmp_duration)
 
-                    # we're done
-                    duration = datetime.datetime.now() - time_start
-                    dur_millisec = round(duration.total_seconds() * 1000)
-                    t.logInfo(
-                        "Aggregation computed",
-                        my_span,
-                        {
-                            "obsId": a_todo.obs.id,
-                            "meteor": a_todo.obs.poste.meteor,
-                            "queueLength": AggTodoMeteor.count(),
-                            "timeExec": dur_millisec,
-                        },
-                    )
-            finally:
-                poste_metier.unlock()
+                # loop on each level
+                for anAgg in getAggLevels(False):
+                    with self.tracer.start_span("level " + anAgg, trace_flag) as span_lvl:
+                        span_lvl.set_attribute("idx_dv", idx_dv)
+                        b_insert_start_dat = True
+                        # adjust start date, depending on the aggregation level
+
+                        # dv_next is the delta_values for next level
+                        dv_next = {"maxminFix": [], "duration": tmp_duration}
+
+                        # for all type_instruments
+                        for an_instrument in all_instr.get_all_instruments():
+                            # for all measures
+                            for my_measure in an_instrument["object"].get_all_measures():
+                                # load the needed aggregation for this measure
+                                agg_decas = self.load_aggregations_in_array(my_measure, anAgg, aggregations, m_stop_dat)
+                                if my_measure['agg'] == 'sumomm':
+                                    agg_decas = self.load_aggregations_in_array(my_measure, anAgg, aggregations, m_stop_dat)
+
+                                if b_insert_start_dat:
+                                    b_insert_start_dat = False
+                                    span_lvl.set_attribute("startDat", str(agg_decas[0].data.start_dat))
+
+                                # find the calculus object for my_mesure
+                                self.agg_compute.loadDVDataInAggregation(my_measure, agg_decas, m_agg_j, delta_values, dv_next, trace_flag)
+
+                                # get our extreme values
+                                # self.agg_compute.loadDVMaxMinInAggregation(my_measure, m_stop_dat, agg_decas, m_agg_j, delta_values, dv_next, trace_flag)
+
+                        # loop to the next AggLevel
+                        delta_values = dv_next
+                idx_dv += 1
+
+            # save our aggregations for this delta_values
+            with self.tracer.start_span("saveData", trace_flag):
+                for an_agg in aggregations:
+                    an_agg.save()
+
+                # a_todo.data.status = 999
+                # a_todo.save()
+                a_todo.delete()
+
+                # we're done
+                duration = datetime.datetime.now() - time_start
+                dur_millisec = round(duration.total_seconds() * 1000)
+                t.logInfo(
+                    "Aggregation computed",
+                    my_span,
+                    {
+                        "obsId": a_todo.obs.id,
+                        "meteor": a_todo.obs.poste.meteor,
+                        "queueLength": AggTodoMeteor.count(),
+                        "timeExec": dur_millisec,
+                    },
+                )
+        finally:
+            poste_metier.unlock()
 
     def load_aggregations_in_array(self, my_measure, anAgg: str, aggregations, m_stop_dat: datetime):
         """load array of aggregations for calculus:
@@ -267,16 +262,3 @@ class CalcAggreg():
                 ):
                     t.CopyJson(a_j_agg, m_agg_j)
         return m_agg_j
-
-    def is_this_level(self, mini_level, agg_level: str):
-        """
-        is_this_level
-        """
-        # get aggregation values in measures
-        return mini_level == agg_level
-
-    def get_first_agg_level(self, j_agg0):
-        # get firt level in "aggregations" for pre-agregated load process
-        if len(j_agg0) == 0:
-            return '?'
-        return j_agg0[0]['level']
