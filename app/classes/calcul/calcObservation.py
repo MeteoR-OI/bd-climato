@@ -210,7 +210,8 @@ class CalcObs():
                 else:
                     my_span.add_event(
                         'already loaded',
-                        {'meteor': poste_metier.data.meteor, 'filename': filename, 'out_idx': str(outside_idx), 'idx': json_data_idx, 'stop_dat': str(j_stop_dat)})
+                        {'meteor': poste_metier.data.meteor, 'filename': filename, 'data_idx': str(outside_idx), 'idx': json_data_idx, 'stop_dat': str(j_stop_dat)})
+                    json_data_idx += 1
                     continue
             else:
                 # basic asumption
@@ -407,13 +408,12 @@ class CalcObs():
 
                             os.rename(aFileSpec["p"] + "/" + aFileSpec["f"], filename_prefix + aFileSpec["f"])
                         else:
-                            t.logInfo(
-                                "file moved to fail directory",
-                                None,
-                                {"filename": aFileSpec["f"], "dest": archive_dir + "/" + meteor + "/failed/" + aFileSpec["f"]},
-                            )
-                            if not os.path.exists(archive_dir + '/failed'):
-                                os.makedirs(archive_dir + '/failed')
+                            j_info = {"filename": aFileSpec["f"], "dest": archive_dir + "/" + meteor + "/failed/" + aFileSpec["f"]}
+                            t.logInfo("file moved to fail directory", None, j_info)
+                            IncidentMeteor.new('load_obs', 'ERROR', 'file moved to failed directory', j_info)
+
+                            if not os.path.exists(archive_dir + "/" + meteor + '/failed'):
+                                os.makedirs(archive_dir + "/" + meteor + '/failed')
                             os.rename(aFileSpec["p"] + "/" + aFileSpec["f"],  archive_dir + "/" + meteor + "/failed/" + aFileSpec["f"])
 
         except Exception as exc:

@@ -47,7 +47,6 @@ class SpanMok:
         self.trace = trace_flag
         self.atts = []
         self.events = []
-        t.logInfo("Span: " + self.name, self, {"status": "starting"})
 
     def __enter__(self):
         """
@@ -61,18 +60,19 @@ class SpanMok:
         """
         __exit__
 
-        end of a with statement. print out data if no telemetry is used
+            end of a with statement. print out data if no telemetry is used only if exists events
         """
-        if self.atts.__len__() > 0:
-            j_param = {}
-            for kv in self.atts:
-                j_param[kv['k']] = kv['v']
-            t.logInfo("Closing span with atts: " + self.name, self, j_param)
-        for an_event in self.events:
-            t.logInfo("Closing span with events: " + self.name, an_event)
-            IncidentMeteor.new("Event", "info", an_event["en"], an_event["e"])
+        if self.events.__len__() > 0:
+            if self.atts.__len__() > 0:
+                j_param = {}
+                for kv in self.atts:
+                    j_param[kv['k']] = kv['v']
+                t.logInfo("Closing span with atts: " + self.name, self, j_param)
+            for an_event in self.events:
+                t.logInfo("Closing span with event: " + an_event["en"] + ' => ' + json.dumps(an_event["e"]))
+                IncidentMeteor.new("Event", "info", an_event["en"], an_event["e"])
+        self.atts = []
         self.events = []
-        t.logInfo("Span: " + self.name, self, {"status": "bye"})
         return
 
     def __end__(self):
@@ -97,7 +97,7 @@ class SpanMok:
         record_exception
             add an exception in the Span
         """
-        t.LogCritical(exc, None, {"Span: " + self.name})
+        t.LogCritical(exc, None, {"Span: ": self.name})
         return
 
     def set_attribute(self, k: str, v):

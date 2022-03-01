@@ -213,7 +213,7 @@ class ProcessJsonData():
                     delta_values[target_key + '_dir_nb'] = -1
                     delta_values[target_key + '_dir_sin'] = obs_j.get(target_key + '_dir_sin') * -1
                     delta_values[target_key + '_dir_cos'] = obs_j.get(target_key + '_dir_cos') * -1
-
+        
         for maxmin_key in ['max', 'min']:
             if my_measure.__contains__(maxmin_key) is True and my_measure[maxmin_key] is True:
                 maxmin_suffix = '_' + maxmin_key
