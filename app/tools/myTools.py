@@ -107,7 +107,7 @@ def get_trace_info(exc, nb_levels: int = 3):
     stack = traceback.extract_stack()[:-3] + traceback.extract_tb(exc.__traceback__)  # add limit=??
     pretty = traceback.format_list(stack)
     stack = []
-    idx_stack = stack.__len__()
+    idx_stack = pretty.__len__()
     idx_level = nb_levels
     while idx_level > 0 and idx_stack > 0:
         idx_level -= 1

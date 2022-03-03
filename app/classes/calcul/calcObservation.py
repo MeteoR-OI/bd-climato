@@ -95,7 +95,7 @@ class CalcObs():
 
                 except Exception as exc:
                     isError.set(True)
-                    t.LogException(exc, my_span, {'filename': j_fileInfo.get("f")}, True)
+                    t.logException(exc, my_span, {'filename': j_fileInfo.get("f")})
 
                 finally:
                     CalcObs.lock.release()

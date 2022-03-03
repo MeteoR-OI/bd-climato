@@ -73,15 +73,14 @@ class CalcAggreg():
                 self.__processTodo(a_todo, trace_flag)
 
             except Exception as exc:
-                a_todo.data.j_error = t.LogException(
+                a_todo.data.j_error = t.logException(
                     exc,
                     my_span,
                     {
                         'meteor': a_todo.obs.poste.meteor,
                         'obs_id': a_todo.data.id,
                         'stopDat': str(a_todo.obs.stop_dat),
-                    },
-                    True)
+                    })
                 a_todo.save()
 
             finally:
