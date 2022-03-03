@@ -1,5 +1,5 @@
 # Line number should match in lines 10, 20, 30
-from app.tools.myTools import CopyJson, logCritical, logInfo, logdebug
+from app.tools.myTools import CopyJson, logCritical, logInfo
 import pytest
 
 
@@ -18,15 +18,6 @@ def test_logInfo():
     assert log_e['msg'] == 'my message'
     assert log_e['loc'] == "test_logInfo::17"
     assert log_e['level'] == 'info'
-    assert log_e["a"] == 1
-
-
-@pytest.mark.unit
-def test_logdebug():
-    log_e = logdebug("my message", None, {"a": 1}, True)
-    assert log_e['msg'] == 'my message'
-    assert log_e['loc'] == "test_logdebug::26"
-    assert log_e['level'] == 'trace'
     assert log_e["a"] == 1
 
 

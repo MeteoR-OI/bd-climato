@@ -197,13 +197,13 @@ class WorkerRoot:
         trace_flag = self.GetTraceFlag()
         try:
             if trace_flag is True:
-                t.logdebug('task ' + self.display + " running", None, {})
+                t.logInfo('task ' + self.display + " running", None, {})
 
             while True:
                 try:
                     trace_flag = self.GetTraceFlag()
                     if trace_flag is True:
-                        t.logdebug('task ' + self.display + " waiting now", None, {"frequency": self.frequency})
+                        t.logInfo('task ' + self.display + " waiting now", None, {"frequency": self.frequency})
 
                     # wait our frequency
                     self.eventRunMe.wait(self.frequency)
@@ -223,7 +223,7 @@ class WorkerRoot:
                         if call_params['param'].get('trace_flag') is not None:
                             trace_flag = call_params['param']['trace_flag']
                             self.SetTraceFlag(trace_flag)
-                            t.logdebug('task ' + self.display + " Run " + self.display, None)
+                            t.logInfo('task ' + self.display + " Run " + self.display, None)
 
                         # old bug...
                         if call_params['param'] is None or call_params == []:
