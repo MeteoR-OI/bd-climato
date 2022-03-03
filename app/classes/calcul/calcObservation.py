@@ -64,7 +64,7 @@ class CalcObs():
         # Load params
         self.stopRequested = False
         if data is None or data.get("param") is None or data["param"] == {}:
-            t.LogError("wrong data")
+            t.logError("LoadJsonControler", "wrong data")
             return
         params = data["param"]
 
@@ -83,29 +83,23 @@ class CalcObs():
 
         # load the content of files on the server
         isError = IsErrorClass()
-        for j_data in self._getJsonData(params, isError):
-            try:
-                if CalcObs.lock.acquire(True, 500) is False:
-                    t.logWarning("LoadJsonControler lock time-out !")
-                    return
+        for j_fileInfo in self._getJsonFileNameAndData(params, isError):
+            if CalcObs.lock.acquire(True, 500) is False:
+                t.logwarning("LoadJsonControler", "LoadJsonControler lock time-out !")
+                return
 
-                with self.tracer.start_as_current_span("Load Obs", trace_flag) as my_span:
-                    try:
-                        self.loadJsonArrayTransaction(j_data["j"], trace_flag, j_data.get("f"))
+            with self.tracer.start_as_current_span("Load Obs") as my_span:
+                try:
+                    my_span.set_attribute('filename', j_fileInfo["f"])
+                    self.loadJsonArrayTransaction(j_fileInfo["j"], trace_flag, j_fileInfo.get("f"))
 
-                    except Exception as exc:
-                        isError.set(True)
-                        IncidentMeteor.new("load obs", "Exception", str(exc), {})
-                        my_span.record_exception(exc)
+                except Exception as exc:
+                    isError.set(True)
+                    t.LogException(exc, my_span, {'filename': j_fileInfo.get("f")}, True)
 
-                    finally:
-                        CalcObs.lock.release()
-                        #  or ??self.tracer.end_span() ??
-                        my_span.end()
-
-            except Exception as inst:
-                isError.set(True)
-                t.LogCritical(inst)
+                finally:
+                    CalcObs.lock.release()
+                    my_span.end()
 
         # activate the computation of aggregations
         SvcAggregate.runMe({"trace_flag": trace_flag})
@@ -121,10 +115,10 @@ class CalcObs():
         """
         debut_full_process = datetime.datetime.now()
         item_processed = 0
-        idx = 0
+        idx_item = 0
         meteor = "???"
 
-        with self.tracer.get_current_or_new_span() as my_span:
+        with self.tracer.get_current_span() as my_span:
 
             # validate our json
             meteor = str(json_data_array[0].get("meteor"))
@@ -137,17 +131,19 @@ class CalcObs():
                 raise Exception("Invalid Json file: " + filename + ": " + check_result)
 
             # now load our data in obs table
-            while idx < json_data_array.__len__():
-                json_file_data = json_data_array[idx]
+            while idx_item < json_data_array.__len__():
+                with self.tracer.start_span("Item_" + str(idx_item)):
+                    json_item_data = json_data_array[idx_item]
 
-                if idx == 0:
-                    my_span.set_attribute("meteor", meteor)
-                    my_span.set_attribute("filename", filename)
+                    if idx_item == 0:
+                        # set attributes in parent spam
+                        my_span.set_attribute("meteor", meteor)
+                        my_span.set_attribute("filename", filename)
 
-                self.loadJsonInObs(json_file_data, trace_flag, filename, idx)
+                    self.loadOneJsonItemInObs(json_item_data, trace_flag, filename, idx_item)
 
-                item_processed += json_file_data["data"].__len__()
-                idx += 1
+                    item_processed += json_item_data["data"].__len__()
+                    idx_item += 1
 
             global_duration = datetime.datetime.now() - debut_full_process
             dur_millisec = round(global_duration.total_seconds() * 1000)
@@ -160,139 +156,113 @@ class CalcObs():
         return
 
     # switch to the right function
-    def loadJsonInObs(self, json_file_data: json, trace_flag: bool = False, filename: str = '???', outside_idx: int = 0):
+    def loadOneJsonItemInObs(self, json_item_data: json, trace_flag: bool = False, filename: str = '???', outside_idx: int = 0):
         all_instr = AllTypeInstruments()
+        my_current_span = self.tracer.get_current_span()
 
         json_data_idx = 0
-        json_type = json_file_data['info']['json_type']
+        json_type = json_item_data['info']['json_type']
         json_is_obs = True if json_type in ["O", "C"] else False
-        # json_version = json_file_data['info']['version']
-
-        # debut_process = datetime.datetime.now()
-        my_span = self.tracer.get_current_or_new_span("Load Obs", trace_flag)
 
         # load extremes from data file
-        j_xtreme = json_file_data.get("extremes") if None else {}
+        j_xtreme = json_item_data.get("extremes") if None else {}
 
-        while json_data_idx < json_file_data["data"].__len__():
-            one_data_item = json_file_data["data"][json_data_idx]
+        while json_data_idx < json_item_data["data"].__len__():
+            one_data_item = json_item_data["data"][json_data_idx]
+            try:
+                # prepare obs_meteor
+                j_start_dat, j_stop_dat, j_duration = self.get_timing_info(one_data_item, json_type, json_is_obs)
+                poste_metier = PosteMetier(json_item_data["poste_id"], j_start_dat)
+                poste_metier.lock()
 
-            if json_is_obs is True:
-                j_stop_dat = one_data_item["stop_dat"]
-                j_duration = one_data_item["duration"]
-                j_start_dat = j_stop_dat - datetime.timedelta(minutes=j_duration)
-            else:
-                j_start_dat = one_data_item["start_dat"]
-                j_start_dat = calcAggDate(json_type, j_start_dat, 0, False)
-                j_duration = getAggDuration(json_type, j_start_dat)
-                j_stop_dat = j_start_dat + datetime.timedelta(minutes=j_duration)
+                if json_data_idx == 0:
+                    my_current_span.set_attribute("posteId", poste_metier.data.id)
+                    my_current_span.set_attribute("stop_dat", str(j_stop_dat))
+                    my_current_span.set_attribute("json_type", json_type)
 
-            ###################
-            # Load data in obs
-            ###################
-            poste_metier = PosteMetier(json_file_data["poste_id"], j_start_dat)
-            poste_metier.lock()
+                obs_meteor = poste_metier.observation(j_stop_dat)
+                obs_meteor.data.filename = filename
+                obs_meteor.data.j.append({})
+                obs_meteor.data.j_agg.append({})
+                obs_meteor.data.j_xtreme.append(j_xtreme)
 
-            if json_data_idx == 0:
-                my_span.set_attribute("posteId", poste_metier.data.id)
-                my_span.set_attribute("stop_dat", str(j_stop_dat))
-                my_span.set_attribute("json_type", json_type)
-
-            obs_meteor = poste_metier.observation(j_stop_dat)
-            obs_meteor.data.filename = filename
-
-            if obs_meteor.data.id is not None:
-                # obs_meteor already exist
-                if one_data_item.__contains__("force_replace") is True:
+                if obs_meteor.data.id is not None:
+                    if one_data_item.__contains__("force_replace") is True:
+                        # basic asumption - probably not needed...
+                        if obs_meteor.data.j_agg.__len__() != 1 or obs_meteor.data.j.__len__() != 1 or obs_meteor.data.j_xtreme.__len__() != 1:
+                            raise Exception('Json array not processed in obs, retry later, or fix it. obs id = ' + str(obs_meteor.data.id))
+                    else:
+                        t.logInfo(
+                                'already loaded', my_current_span,
+                                {'meteor': poste_metier.data.meteor, 'filename': filename, 'data_idx': str(outside_idx), 'idx': json_data_idx, 'stop_dat': str(j_stop_dat)})
+                        continue
+                else:
                     # basic asumption
                     if obs_meteor.data.j_agg.__len__() != 1 or obs_meteor.data.j.__len__() != 1 or obs_meteor.data.j_xtreme.__len__() != 1:
-                        raise Exception('Json array not processed in obs, retry later, or fix it. obs id = ' + str(obs_meteor.data.id))
-                else:
-                    my_span.add_event(
-                        'already loaded',
-                        {'meteor': poste_metier.data.meteor, 'filename': filename, 'data_idx': str(outside_idx), 'idx': json_data_idx, 'stop_dat': str(j_stop_dat)})
-                    json_data_idx += 1
-                    continue
-            else:
-                # basic asumption
-                if obs_meteor.data.j_agg.__len__() != 0 or obs_meteor.data.j.__len__() != 0 or obs_meteor.data.j_xtreme.__len__() != 0:
-                    raise Exception('Invalid new obs_meteor structure')
+                        raise Exception(
+                            'Invalid new obs_meteor structure-' +
+                            str(obs_meteor.data.j_agg.__len__()) + '/' + str(obs_meteor.data.j.__len__()) + '/' + str(obs_meteor.data.j_xtreme.__len__()))
+                    obs_meteor.data.duration = j_duration
+
+                # load json values in obs
+                self.load_obs_data_j(all_instr, one_data_item, j_duration, json_is_obs, poste_metier, obs_meteor)
+
+                # prepare agg_Todo
+                a_todo = AggTodoMeteor(obs_meteor.data.id, json_type)
+
+                #  update agg_todo with obs.j data
+                self.load_agg_todo(all_instr, a_todo, obs_meteor, json_is_obs, j_start_dat, j_stop_dat, j_duration, json_type)
+
                 obs_meteor.data.duration = j_duration
+                obs_meteor.data.json_type = json_type
+                obs_meteor.save()
+                a_todo.data.id = obs_meteor.data.id
+                my_current_span.set_attribute("data_" + str(json_data_idx), obs_meteor.data.id)
+                a_todo.save()
 
-            # push new item in j/j_agg/j_xtreme
-            obs_meteor.data.j.append({})
-            obs_meteor.data.j_agg.append({})
-            obs_meteor.data.j_xtreme.append(j_xtreme)
+            finally:
+                json_data_idx += 1
+                poste_metier.unlock()
 
-            # load values in obs_meteor.j[obs_data_idx] for all type_instruments
+        return
+
+    def load_obs_data_j(self, all_instr, one_data_item, j_duration, json_is_obs, poste_metier, obs_meteor):
+        if json_is_obs is True:
+            # load each value if json_is_obs
+            obs_meteor.data.j[obs_meteor.data.j.__len__() - 1]['duration'] = j_duration
+
+            # need to normalize data given
+            for an_intrument in all_instr.get_all_instruments():
+                # for all measures
+                for my_measure in an_intrument["object"].get_all_measures():
+                    self.processJsonData.loadOneMeasureInObs(
+                        poste_metier,
+                        obs_meteor,
+                        my_measure,
+                        one_data_item,
+                        j_duration,
+                        json_is_obs,
+                    )
+        else:
+            # data should have the same syntax as the data used in agg_xxx.j
+            obs_meteor.data.j_agg[obs_meteor.data.j_agg.__len__() - 1] = one_data_item['valeurs']
+            obs_meteor.data.j_agg[obs_meteor.data.j_agg.__len__() - 1]['duration'] = j_duration
+
+    def load_agg_todo(self, all_instr, a_todo, obs_meteor, json_is_obs, j_start_dat, j_stop_dat, j_duration, json_type):
+        idx_obs_data_j = obs_meteor.data.j.__len__() - 1
+        while idx_obs_data_j >= 0:
+            # in delete mode: data.j[0] => data to remove, data.j[1] => data to add
+            # in normal mode (add only) data.j[0] => data to add
+            mode_delete = False if obs_meteor.data.j.__len__() <= 1 else True
+
             if json_is_obs is True:
-                obs_meteor.data.j[obs_meteor.data.j.__len__() - 1]['duration'] = j_duration
-
-                # need to normalize data given
-                for an_intrument in all_instr.get_all_instruments():
-                    # for all measures
-                    for my_measure in an_intrument["object"].get_all_measures():
-                        self.processJsonData.loadJsonInObs(
-                            poste_metier,
-                            obs_meteor,
-                            my_measure,
-                            json_file_data,
-                            json_data_idx,
-                            j_duration,
-                            trace_flag,
-                        )
-            else:
-                # data should have the same syntax as the data used in agg_xxx.j
-                obs_meteor.data.j_agg[obs_meteor.data.j_agg.__len__() - 1] = json_file_data[json_data_idx]['valeurs']
-                obs_meteor.data.j_agg[obs_meteor.data.j_agg.__len__() - 1]['duration'] = j_duration
-            obs_meteor.save()
-
-            ################
-            # load agg_todo
-            ################
-            a_todo = AggTodoMeteor(obs_meteor.data.id, json_type)
-
-            if obs_meteor.data.j.__len__() > 1:
-                # generate delta_values to remove from all the upper aggregation levels (obs is lowest level)
-                if json_is_obs is True:
-                    if obs_meteor.data.j_agg[0].__len__() > 0:
-                        raise Exception('cannot replace agregated data by measure data')
-
-                    delta_values = {'duration': obs_meteor.data.j[0]['duration'] * -1, 'maxminFix': []}
-                    # we need to remove the original data kept in obs_meteor.data.j[0]
-                    for an_intrument in all_instr.get_all_instruments():
-                        # for all measures
-                        for my_measure in an_intrument["object"].get_all_measures():
-                            self.processJsonData.loadDeltaValues(
-                                my_measure,
-                                obs_meteor,
-                                0,
-                                delta_values,
-                                True,
-                                trace_flag,
-                                j_start_dat,
-                                j_stop_dat,
-                            )
+                # measures coming from weeWX
+                if mode_delete is True:
+                    delta_values = {'duration': obs_meteor.data.duration * -1, 'maxminFix': []}
                 else:
-                    if obs_meteor.data.j[1].__len__() > 0:
-                        raise Exception("cannot replace measure data with agregated data")
+                    delta_values = {'duration': j_duration, 'maxminFix': []}
 
-                    # we need to remove the old aggregated data
-                    delta_values = obs_meteor.data.j_agg[0]
-                    delta_values['duration'] = obs_meteor.data.j_agg[0]['duration'] * -1
-                    delta_values['maxminFix'] = []
-
-                delta_values['json_type'] = json_type
-                a_todo.data.j.append(delta_values)
-
-                # remove first element in obs, just keep the last (good) data
-                del obs_meteor.data.j[0]
-                del obs_meteor.data.j_agg[0]
-                del obs_meteor.data.j_xtreme[0]
-
-            # generate delta_values to propagate into the upper aggregation levels (obs is lowest level)
-            if json_is_obs is True:
-                delta_values = {'duration': j_duration, 'maxminFix': []}
+                # we need to remove the original data kept in obs_meteor.data.j[0]
                 for an_intrument in all_instr.get_all_instruments():
                     # for all measures
                     for my_measure in an_intrument["object"].get_all_measures():
@@ -301,31 +271,42 @@ class CalcObs():
                             obs_meteor,
                             0,
                             delta_values,
-                            False,
-                            trace_flag,
+                            mode_delete,
                             j_start_dat,
                             j_stop_dat,
                         )
             else:
+                # we need to remove the old aggregated data
                 delta_values = obs_meteor.data.j_agg[0]
-                delta_values['duration'] = j_duration
+                delta_values['duration'] = j_duration if mode_delete is False else obs_meteor.data.duration * -1
                 delta_values['maxminFix'] = []
+                raise Exception('code not done yet')
 
+            delta_values['json_type'] = json_type
             a_todo.data.j.append(delta_values)
 
-            if json_data_idx < json_file_data["data"].__len__() <= 1:
-                a_todo.data.priority = 0
+            # remove first element in obs, just keep the data to add
+            if mode_delete is True:
+                del obs_meteor.data.j[0]
+                del obs_meteor.data.j_agg[0]
+                del obs_meteor.data.j_xtreme[0]
 
-            obs_meteor.save()
-            my_span.set_attribute("obsId_" + str(json_data_idx), obs_meteor.data.id)
-            a_todo.save()
+            idx_obs_data_j -= 1
 
-            json_data_idx += 1
-            poste_metier.unlock()
+    def get_timing_info(self, one_data_item: json, json_type, json_is_obs: bool):
+        if json_is_obs is True:
+            j_stop_dat = one_data_item["stop_dat"]
+            j_duration = one_data_item["duration"]
+            j_start_dat = j_stop_dat - datetime.timedelta(minutes=j_duration)
+        else:
+            j_start_dat = one_data_item["start_dat"]
+            j_start_dat = calcAggDate(json_type, j_start_dat, 0, False)
+            j_duration = getAggDuration(json_type, j_start_dat)
+            j_stop_dat = j_start_dat + datetime.timedelta(minutes=j_duration)
 
-        return
+        return j_start_dat, j_stop_dat, j_duration
 
-    def _getJsonData(self, params: json, isError: IsErrorClass):
+    def _getJsonFileNameAndData(self, params: json, isError: IsErrorClass):
         """
             yield filename, file_content
         """
@@ -367,55 +348,48 @@ class CalcObs():
                         files.append({"p": base_dir, "f": filename})
 
             files = sorted(files, key=lambda k: k['f'], reverse=False)
-            for aFileSpec in files:
+            for file_spec in files:
                 if self.stopRequested is True:
                     continue
-                if aFileSpec["f"].endswith(".json"):
+                if file_spec["f"].endswith(".json"):
+                    # load our json file
+                    texte = ""
+
+                    with open(file_spec["p"] + '/' + file_spec["f"], "r") as f:
+                        lignes = f.readlines()
+                        for aligne in lignes:
+                            texte += str(aligne)
+                    my_json = JsonPlus().loads(texte)
+                    if 'dict' in str(type(my_json)):
+                        my_json = [my_json]
+
+                    # load_span.set_attribute("filename", aFile)
+                    yield {"f": file_spec["f"], "j": my_json}
+
+                    str_annee = 'inconnu'
+                    str_mois = 'inconnu'
                     try:
-                        # load our json file
-                        texte = ""
+                        str_annee = str(file_spec['f']).split(".")[2].split("-")[0]
+                        str_mois = str(file_spec['f']).split(".")[2].split("-")[1]
+                    except Exception:
+                        pass
+                    meteor = str(file_spec['f']).split(".")[1]
 
-                        with open(aFileSpec["p"] + '/' + aFileSpec["f"], "r") as f:
-                            lignes = f.readlines()
-                            for aligne in lignes:
-                                texte += str(aligne)
-                        my_json = JsonPlus().loads(texte)
-                        if 'dict' in str(type(my_json)):
-                            my_json = [my_json]
+                    if isError.get() is False:
+                        filename_prefix = archive_dir + "/" + meteor + "/" + str_annee + "/" + str_mois + "/"
+                        if not os.path.exists(filename_prefix):
+                            os.makedirs(filename_prefix)
 
-                        # load_span.set_attribute("filename", aFile)
-                        yield {"f": aFileSpec["f"], "j": my_json}
+                        os.rename(file_spec["p"] + "/" + file_spec["f"], filename_prefix + file_spec["f"])
+                    else:
+                        j_info = {"filename": file_spec["f"], "dest": archive_dir + "/" + meteor + "/failed/" + file_spec["f"]}
+                        t.logInfo("file moved to fail directory", None, j_info)
+                        IncidentMeteor.new('_getJsonFileNameAndData', 'ERROR', 'file moved to failed directory', j_info)
 
-                    except Exception as exc:
-                        isError.set(True)
-                        t.LogCritical(exc)
-                        raise exc
-
-                    finally:
-                        str_annee = 'inconnu'
-                        str_mois = 'inconnu'
-                        try:
-                            str_annee = str(aFileSpec['f']).split(".")[2].split("-")[0]
-                            str_mois = str(aFileSpec['f']).split(".")[2].split("-")[1]
-                        except Exception:
-                            pass
-                        meteor = str(aFileSpec['f']).split(".")[1]
-
-                        if isError.get() is False:
-                            filename_prefix = archive_dir + "/" + meteor + "/" + str_annee + "/" + str_mois + "/"
-                            if not os.path.exists(filename_prefix):
-                                os.makedirs(filename_prefix)
-
-                            os.rename(aFileSpec["p"] + "/" + aFileSpec["f"], filename_prefix + aFileSpec["f"])
-                        else:
-                            j_info = {"filename": aFileSpec["f"], "dest": archive_dir + "/" + meteor + "/failed/" + aFileSpec["f"]}
-                            t.logInfo("file moved to fail directory", None, j_info)
-                            IncidentMeteor.new('load_obs', 'ERROR', 'file moved to failed directory', j_info)
-
-                            if not os.path.exists(archive_dir + "/" + meteor + '/failed'):
-                                os.makedirs(archive_dir + "/" + meteor + '/failed')
-                            os.rename(aFileSpec["p"] + "/" + aFileSpec["f"],  archive_dir + "/" + meteor + "/failed/" + aFileSpec["f"])
+                        if not os.path.exists(archive_dir + "/" + meteor + '/failed'):
+                            os.makedirs(archive_dir + "/" + meteor + '/failed')
+                        os.rename(file_spec["p"] + "/" + file_spec["f"],  archive_dir + "/" + meteor + "/failed/" + file_spec["f"])
 
         except Exception as exc:
-            t.LogCritical(exc)
+            t.logCritical(exc)
             raise exc

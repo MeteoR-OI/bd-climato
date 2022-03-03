@@ -88,7 +88,7 @@ class Command(BaseCommand):
                     "l": line_number,
                 }
                 e.done = True
-            errMsg = t.LogCritical(e, None, {}, True)
+            errMsg = t.logCritical(e, None, {}, True)
             print(errMsg)
             exit(0)
 

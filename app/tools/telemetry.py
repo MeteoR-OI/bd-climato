@@ -15,6 +15,7 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.trace.propagation import get_current_span
 from opentelemetry.trace.span import INVALID_SPAN, Span
 import app.tools.myTools as t
+import time
 import json
 
 
@@ -23,7 +24,11 @@ class ContextMok:
     ContextMok
         Mok class to simulate context class when no telemetry is used
     """
-    trace_id = None
+    trace_id = 0
+    span_id = 0
+
+    def __init__(self):
+        self.trace_id = time.time()
 
 
 class SpanMok:
@@ -33,7 +38,7 @@ class SpanMok:
     """
     ctx = ContextMok()
 
-    def __init__(self, name: str = "???", trace_flag: bool = None):
+    def __init__(self, name: str = "???"):
         """
             __init__
 
@@ -44,7 +49,6 @@ class SpanMok:
         if hasattr(settings, "TELEMETRY") is True and settings.TELEMETRY is True:
             raise Exception("SpanMok", "Calling Mok while telemetry is active")
         self.name = name
-        self.trace = trace_flag
         self.atts = []
         self.events = []
 
@@ -54,6 +58,7 @@ class SpanMok:
 
         start of a with statement support
         """
+        self.ctx.span_id = time.time()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -73,6 +78,7 @@ class SpanMok:
                 IncidentMeteor.new("Event", "info", an_event["en"], an_event["e"])
         self.atts = []
         self.events = []
+        self.ctx.span_id = 0
         return
 
     def __end__(self):
@@ -97,7 +103,6 @@ class SpanMok:
         record_exception
             add an exception in the Span
         """
-        t.LogCritical(exc, None, {"Span: ": self.name})
         return
 
     def set_attribute(self, k: str, v):
@@ -157,7 +162,6 @@ class TracerTriage:
     def end_span(self):
         self.clean_future_attribute()
         self.current_span = None
-        self.trace = False
         return
 
     def load_future_attributes_in_span(self, my_span):
@@ -200,16 +204,30 @@ class TracerTriage:
         """
         if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
             if self.current_span is None:
-                self.current_span = self.start_as_current_span(name, trace_flag)
+                self.current_span = self.start_as_current_span(name)
             return self.current_span
         else:
             tmp_span = get_current_span()
             if tmp_span == INVALID_SPAN:
-                tmp_span = self.start_as_current_span(name, trace_flag)
+                tmp_span = self.start_as_current_span(name)
                 tmp_span = get_current_span()
             return tmp_span
 
-    def start_as_current_span(self, span_name: str, trace_flag: bool = None) -> Span:
+    def get_current_span(self):
+        """
+        get_current_or_new_span
+            Get current span if one is active, or start a new one
+
+        Parameter:
+            name: span name (only used if a new span is started)
+            trace_flag(only used if a new span is started)
+        """
+        if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
+            return self.current_span
+        else:
+            return get_current_span()
+
+    def start_as_current_span(self, span_name: str) -> Span:
         """
         start_as_current_span
             start a new Span
@@ -219,17 +237,14 @@ class TracerTriage:
             trace_flag
         """
         if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
-            self.current_span = SpanMok(span_name, trace_flag)
-            self.trace = trace_flag
-            if trace_flag is None:
-                print("   ** trace_flag is None")
+            self.current_span = SpanMok(span_name)
             return self.current_span
         else:
             my_span = self.real_tracer.start_as_current_span(span_name)
             self.current_span = get_current_span()
             return my_span
 
-    def start_span(self, span_name: str, trace_flag: bool = None) -> Span:
+    def start_span(self, span_name: str) -> Span:
         """
         start_span
             start a sub span of the current span
@@ -239,10 +254,7 @@ class TracerTriage:
             trace_flag
         """
         if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
-            self.current_span = SpanMok(span_name, trace_flag)
-            self.trace = trace_flag
-            if trace_flag is None:
-                print("   ** trace_flag is None")
+            self.current_span = SpanMok(span_name)
             return self.current_span
         else:
             self.current_span = self.real_tracer.start_span(span_name)

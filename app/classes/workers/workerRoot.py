@@ -41,7 +41,7 @@ class WorkerRoot:
         # check globally that only one instance was created for the name
         if self.ref_mgr.IncrementRef(name + '_count') > 0:
             IncidentMeteor().new('worker ' + name, 'CRITICAL', 'Multiple instance')
-            t.LogError('multiple instances of ' + name)
+            t.logError('multiple instances of ' + name)
             raise Exception(name, 'Multiple instances called')
 
         self.tracer = Telemetry.Start('svc ' + self.display, __name__)
@@ -154,8 +154,8 @@ class WorkerRoot:
                     try:
                         a_worker['fct']({"param": {"StopMe": True}})
                     except Exception as exc:
-                        with self.tracer.start_as_current_span(self.display, True) as my_span:
-                            my_span.record_exception(exc)
+                        with self.tracer.start_as_current_span(self.display) as my_span:
+                            t.logException(exc, my_span)
                     #  Bye
                     return
 
@@ -174,7 +174,7 @@ class WorkerRoot:
             for a_worker in WorkerRoot.wrks:
                 if a_worker['name'] == self.name:
                     return a_worker['threadRunning']
-            t.LogError('Service ' + self.display + " not found", None, {})
+            t.logError('Service ' + self.display + " not found", None, {})
 
         finally:
             WorkerRoot.wrks_lock.release()
@@ -197,13 +197,13 @@ class WorkerRoot:
         trace_flag = self.GetTraceFlag()
         try:
             if trace_flag is True:
-                t.LogDebug('task ' + self.display + " running", None, {})
+                t.logdebug('task ' + self.display + " running", None, {})
 
             while True:
                 try:
                     trace_flag = self.GetTraceFlag()
                     if trace_flag is True:
-                        t.LogDebug('task ' + self.display + " waiting now", None, {"frequency": self.frequency})
+                        t.logdebug('task ' + self.display + " waiting now", None, {"frequency": self.frequency})
 
                     # wait our frequency
                     self.eventRunMe.wait(self.frequency)
@@ -223,7 +223,7 @@ class WorkerRoot:
                         if call_params['param'].get('trace_flag') is not None:
                             trace_flag = call_params['param']['trace_flag']
                             self.SetTraceFlag(trace_flag)
-                            t.LogDebug('task ' + self.display + " Run " + self.display, None)
+                            t.logdebug('task ' + self.display + " Run " + self.display, None)
 
                         # old bug...
                         if call_params['param'] is None or call_params == []:
@@ -240,8 +240,8 @@ class WorkerRoot:
                                     a_worker['run'] = False
 
                         except Exception as exc:
-                            with self.tracer.start_as_current_span(self.display, trace_flag) as my_span:
-                                my_span.record_exception(exc)
+                            with self.tracer.start_as_current_span(self.display) as my_span:
+                                t.logException(exc, my_span)
                             a_worker['run'] = False
                         finally:
                             one_run = True
@@ -249,8 +249,8 @@ class WorkerRoot:
                     self.eventRunMe.clear()
 
                 except Exception as exc:
-                    with self.tracer.start_as_current_span(self.display, trace_flag) as my_span:
-                        my_span.record_exception(exc)
+                    with self.tracer.start_as_current_span(self.display) as my_span:
+                        t.logException(exc, my_span)
 
         finally:
             WorkerRoot.wrks_lock.acquire()

@@ -12,7 +12,7 @@ class SvcAggregate(WorkerRoot):
 
     def __init__(self, is_tmp: bool = None):
         # call parent __init__
-        super(SvcAggregate, self).__init__(str(SvcAggregate), CalcAggreg().ComputAggregFromSvc, 120, ['agg', 'aggreg', 'agreg', 'agregation', 'aggregation', 'agregate', 'aggregate'])
+        super(SvcAggregate, self).__init__(str(SvcAggregate), CalcAggreg().ComputeAggregFromSvc, 120, ['agg', 'aggreg', 'agreg', 'agregation', 'aggregation', 'agregate', 'aggregate'])
 
     @staticmethod
     def GetInstance(myClass: object = None):

@@ -1,8 +1,7 @@
 from app.classes.repository.aggMeteor import AggMeteor
 from app.classes.repository.extremeTodoMeteor import ExtremeTodoMeteor
-from app.classes.repository.incidentMeteor import IncidentMeteor
 from app.tools.climConstant import MeasureProcessingBitMask
-from app.tools.aggTools import isFlagged, delKey, getAggDuration, getMeanAngle
+from app.tools.aggTools import isFlagged, delKey, getMeanAngle
 import json
 
 
@@ -17,7 +16,6 @@ class AggCompute():
         self,
         my_measure: json,
         agg_decas: AggMeteor,
-        m_agg_j: json,
         delta_values: json,
         dv_next: json,
         trace_flag: bool = False,
@@ -30,9 +28,8 @@ class AggCompute():
             parameters:
                 my_measure: measure definition
                 agg_decas[0]: aggregation row
-                m_agg_j: aggregations clause in json file, for this aggregation
-                delta_values: json for delta values to include in this aggregation
-                dv_next: delta_values that will be used for next level
+                delta_values: values to include in this aggregation
+                dv_next: delta_values that will have to be propagated into next level
                 trace_flag
         """
         # exit if only hour agregation
@@ -44,119 +41,68 @@ class AggCompute():
         # init default
         target_key = my_measure['target_key']
 
-        if target_key == 'rain_omm':
-            target_key = 'rain_omm'
-
         agg_main_j = agg_decas[0].data.j
-        agg_level = agg_decas[0].getLevelCode()
+        # agg_level = agg_decas[0].getLevelCode()
         m_suffix, isSum = self.get_suffix(my_measure)
-        delete_measure = False
-
-        if delta_values.get('duration') is None:
-            tmp_duration = getAggDuration(agg_level[0], agg_decas[0].data.start_dat)
-        else:
-            tmp_duration = float(delta_values["duration"])
-
-        # ------------------------------------------------------------------
-        # get our measure data
-        # 1 from dv[target_key + '_s'] and dv[target_key + '_d']
-        # 2 from m_agg_j[target_key_s] and m_agg_j[target_key_d]
-        # 3 from m_agg_j[target_key_avg/_sum/_rate] and compute _s/_d new values
-        # last non null win
-        # ------------------------------------------------------------------
 
         # get current values from aggregation row
         old_measure_s = 0 if agg_main_j.get(target_key + '_s') is None else agg_main_j[target_key + '_s']
         old_measure_d = 0 if agg_main_j.get(target_key + '_d') is None else agg_main_j[target_key + '_d']
+        if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind) is True:
+            old_wind_dir_nb = old_wind_dir_cos = old_wind_dir_sin = 0
+            if agg_main_j.get(target_key + '_dir_nb') is not None:
+                old_wind_dir_nb = agg_main_j[target_key + '_dir_nb']
+                old_wind_dir_sin = agg_main_j[target_key + '_dir_sin']
+                old_wind_dir_cos = agg_main_j[target_key + '_dir_cos']
 
         # get our M_s/M_d from our delta_values
-        if delta_values.get(target_key + '_d') is None:
-            has_measure = False
-            measure_d = 0
-        else:
-            has_measure = True
+        if delta_values.get(target_key + '_d') is not None:
             measure_d = delta_values[target_key + '_d']
-        measure_s = 0 if has_measure is False else delta_values.get(target_key + '_s')
+            measure_s = delta_values[target_key + '_s']
+            if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind) is True:
+                measure_wind_dir_nb = measure_wind_dir_cos = measure_wind_dir_sin = 0
+                if delta_values.get(target_key + '_dir_nb') is not None:
+                    measure_wind_dir_nb = delta_values[target_key + '_dir_nb']
+                    measure_wind_dir_sin = delta_values[target_key + '_dir_sin']
+                    measure_wind_dir_cos = delta_values[target_key + '_dir_cos']
 
-        if m_agg_j.get(target_key + '_s') is not None:
-            if old_measure_d != 0:
-                raise Exception('cannot have a value in <aggregations>, with exisitng data in the aggregation row. key = ' + target_key)
-            has_measure = True
-            measure_s = m_agg_j.get(target_key + '_s')
-            measure_d = m_agg_j.get(target_key + '_d')
-            if measure_d is None:
-                measure_d = m_agg_j.get('default_duration')
-
-        # get the agregated value, and recompute the _d/_s delta needed
-        elif m_agg_j.get(target_key + m_suffix) is not None:
-            has_measure = True
-            measure_aggregated = m_agg_j.get(target_key + m_suffix)
-            measure_d = tmp_duration - old_measure_d
-            if measure_d is None:
-                measure_d = m_agg_j.get('default_duration')
-            if isSum is True:
-                measure_s = measure_aggregated - old_measure_s
-            else:
-                measure_s = (measure_aggregated * tmp_duration) - old_measure_s
-
-        if has_measure is True:
+            # do we need to remove the measure ?
             if (measure_d + old_measure_d) == 0:
                 # no duration, delete all keys
                 delKey(agg_main_j, target_key + '_s')
                 delKey(agg_main_j, target_key + '_d')
                 delKey(agg_main_j, target_key + '_avg')
-                delete_measure = True
+                delKey(agg_main_j, target_key + '_dir')
+                delKey(agg_main_j, target_key + '_dir_nb')
+                delKey(agg_main_j, target_key + '_dir_sin')
+                delKey(agg_main_j, target_key + '_dir_cos')
             else:
                 agg_main_j[target_key + '_s'] = measure_s + old_measure_s
                 agg_main_j[target_key + '_d'] = measure_d + old_measure_d
                 if isSum is False:
                     agg_main_j[target_key + m_suffix] = measure_s / measure_d
+                if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind) is True:
+                    agg_main_j[target_key + '_dir_nb'] = old_wind_dir_nb + measure_wind_dir_nb
+                    agg_main_j[target_key + '_dir_sin'] = old_wind_dir_sin + measure_wind_dir_sin
+                    agg_main_j[target_key + '_dir_cos'] = old_wind_dir_cos + measure_wind_dir_cos
+                    agg_main_j[target_key + '_dir'] = getMeanAngle(agg_main_j[target_key + '_dir_nb'], agg_main_j[target_key + '_dir_sin'], agg_main_j[target_key + '_dir_cos'])
+
             # update my_dv_next for next level
             my_dv_next[target_key + '_s'] = measure_s
             my_dv_next[target_key + '_d'] = measure_d
+            if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind) is True:
+                my_dv_next[target_key + '_dir_nb'] = measure_wind_dir_nb
+                my_dv_next[target_key + '_dir_sin'] = measure_wind_dir_sin
+                my_dv_next[target_key + '_dir_cos'] = measure_wind_dir_cos
 
-        # ------------------------------------------------------------------
         # get our max/min data
-        # 1 from dv[target_key + '_max'], _min
-        #   including delete_measur
-        # 2 from m_agg_j[target_key + '_max], _min
-        # if need to recompute -> call add_new_maxmin_fix
-        # ------------------------------------------------------------------
-
-        idx_maxmin = 0
+        idx_maxmin_in_agg_decas = 0
         for maxmin_key in ['max', 'min']:
             maxmin_suffix = '_' + maxmin_key
-            idx_maxmin += 1
-            agg_maxmin_j = agg_decas[idx_maxmin].data.j
 
-            # var default value
-            new_value = new_time = new_dir = None
-            cur_value = cur_time = None     # cur_dir not needed
-
-            # load current values if exist
-            if agg_maxmin_j.get(target_key + maxmin_suffix) is not None:
-                cur_value = agg_maxmin_j[target_key + maxmin_suffix]
-                cur_time = agg_maxmin_j[target_key + maxmin_suffix + '_time']
-
-            # # if extreme has to be calculated
-            # if delete_measure is False and my_measure.__contains__(maxmin_key) and my_measure[maxmin_key] is True:
-            #     # load delta_values
-            #     if delta_values.get(target_key + maxmin_suffix) is not None:
-            #         new_value = delta_values[target_key + maxmin_suffix]
-            #         new_time = delta_values[target_key + maxmin_suffix + '_time']
-            #         if delta_values.get(target_key + maxmin_suffix + '_dir') is not None:
-            #             new_dir = delta_values[target_key + maxmin_suffix + '_dir']
-
-            # if extreme has to be calculated
-            if delete_measure is False and my_measure[maxmin_key] is True:
-                # load delta_values
-                if delta_values.get(target_key + maxmin_suffix) is not None:
-                    new_value = delta_values[target_key + maxmin_suffix]
-                    new_time = delta_values[target_key + maxmin_suffix + '_time']
-                    if delta_values.get(target_key + maxmin_suffix + '_dir') is not None:
-                        new_dir = delta_values[target_key + maxmin_suffix + '_dir']
-
-                # load forced aggregated values
+            # get the right aggregation for the max/min
+            idx_maxmin_in_agg_decas += 1
+            agg_maxmin_j = agg_decas[idx_maxmin_in_agg_decas].data.j
 
             # get value to challenge in delete situation
             challenge_value = challenge_time = challenge_dir = None
@@ -165,76 +111,58 @@ class AggCompute():
                     if maxmin_fix['key'] == target_key and maxmin_fix['type'] == maxmin_key:
                         challenge_value = maxmin_fix['value']
                         challenge_time = maxmin_fix['date']
-                        challenge_dir = maxmin_fix['dir']
+                        challenge_dir = maxmin_fix.get('dir')
 
-            if m_agg_j.get(target_key + maxmin_suffix) is not None:
-                if cur_value is None:
-                    IncidentMeteor.new(
-                        'aggCompute',
-                        'W',
-                        'Impossible to use an aggregated value when obs values exist',
-                        {
-                            "key": target_key,
-                            "maxmin": maxmin_key,
-                            "level": agg_decas[0].agg_niveau,
-                            "poste_id": agg_decas[0].data.poste_id,
-                            "start_dat": agg_decas[0].data.start_dat,
-                            "valeur_cur": cur_value,
-                            "valeur_agg": challenge_value,
-                            "date_cur": cur_time,
-                            "date_agg": challenge_time,
-                        })
-                    action = 's'
-                else:
-                    new_value = m_agg_j[target_key + maxmin_suffix]
-                    new_time = m_agg_j[target_key + maxmin_suffix + '_time']
-                    if m_agg_j.get(target_key + maxmin_suffix + '_dir') is not None:
-                        new_dir = m_agg_j[target_key + maxmin_suffix + '_dir']
-            action = self.get_extreme_action(maxmin_key, cur_value, cur_time, new_value, new_time, challenge_value, challenge_time)
+            # decide how to handle maxmin values
+            action = self.get_extreme_action(
+                maxmin_key,
+                agg_maxmin_j.get(target_key + maxmin_suffix),
+                agg_maxmin_j.get(target_key + maxmin_suffix + '_time'),
+                delta_values.get(target_key + maxmin_suffix),
+                delta_values.get(target_key + maxmin_suffix + '_time'),
+                challenge_value,
+                challenge_time,
+            )
 
             match (action):
                 case 'n':
-                    agg_maxmin_j[target_key + maxmin_suffix] = new_value
-                    my_dv_next[target_key + maxmin_suffix] = new_value
-                    agg_maxmin_j[target_key + maxmin_suffix + '_time'] = new_time
-                    my_dv_next[target_key + maxmin_suffix + '_time'] = new_time
+                    # update with new values
+                    agg_maxmin_j[target_key + maxmin_suffix] = delta_values.get(target_key + maxmin_suffix)
+                    my_dv_next[target_key + maxmin_suffix] = delta_values.get(target_key + maxmin_suffix)
+                    agg_maxmin_j[target_key + maxmin_suffix + '_time'] = delta_values.get(target_key + maxmin_suffix + '_time')
+                    my_dv_next[target_key + maxmin_suffix + '_time'] = delta_values.get(target_key + maxmin_suffix + '_time')
                     if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                        if new_dir is not None:
-                            agg_maxmin_j[target_key + maxmin_suffix + '_dir'] = new_dir
-                            my_dv_next[target_key + maxmin_suffix + '_dir'] = new_dir
+                        if delta_values.get(target_key + maxmin_suffix + '_dir') is not None:
+                            agg_maxmin_j[target_key + maxmin_suffix + '_dir'] = delta_values.get(target_key + maxmin_suffix + '_dir')
+                            my_dv_next[target_key + maxmin_suffix + '_dir'] = delta_values.get(target_key + maxmin_suffix + '_dir')
+
                 case 'c':
+                    # update with challenge data
                     agg_maxmin_j[target_key + maxmin_suffix] = challenge_value
                     my_dv_next[target_key + maxmin_suffix] = challenge_value
                     agg_maxmin_j[target_key + maxmin_suffix + '_time'] = challenge_time
                     my_dv_next[target_key + maxmin_suffix + '_time'] = challenge_time
-                    # propagate fix request to next level
-                    my_dv_next.maxminFix.append({
-                        'key': target_key,
-                        'ope': 'd',
-                        'type': maxmin_suffix,
-                        'value': challenge_value,
-                        'date': challenge_time,
-                        'dir': challenge_dir,
-                    })
-                    if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                        if challenge_dir is not None:
-                            agg_maxmin_j[target_key + maxmin_suffix + '_dir'] = challenge_dir
-                            my_dv_next[target_key + maxmin_suffix + '_dir'] = challenge_dir
+                    if (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)) and challenge_dir is not None:
+                        agg_maxmin_j[target_key + maxmin_suffix + '_dir'] = challenge_dir
+                        my_dv_next[target_key + maxmin_suffix + '_dir'] = challenge_dir
 
                 case 's':
+                    # skip - keep current values or None
                     pass
 
                 case 'd':
-                    # delete extreme data for this key
+                    # delete extreme data
                     delKey(agg_maxmin_j, target_key + maxmin_suffix)
                     delKey(agg_maxmin_j, target_key + maxmin_suffix + '_tine')
                     delKey(agg_maxmin_j, target_key + maxmin_suffix + '_dir')
+
+                    # add a challenge entry for the next level
                     my_dv_next['maxminFix'].append({
                         'key': target_key,
                         'ope': 'd',
                         'type': maxmin_suffix,
-                        'value': cur_value,
-                        'date': cur_time,
+                        'value': agg_maxmin_j.get(target_key + maxmin_suffix),
+                        'date': agg_maxmin_j.get(target_key + maxmin_suffix + '_time'),
                         'dir': agg_maxmin_j[target_key + maxmin_suffix + '_dir']
                     })
 
@@ -243,50 +171,6 @@ class AggCompute():
 
                 case 'e':
                     raise Exception('Invalid data: key: ' + target_key + ' action returned an error')
-
-        # ------------------------------------------------------------------
-        # get our wind data
-        # 1 from dv[target_key + '_dir_nb'], _sin, _cos  delta values !
-        # 2 from m_agg_j[target_key + '_dir_nb], _sin, _cos absolute values !
-        # last win
-        # ------------------------------------------------------------------
-        dv_wind_nb = dv_wind_sin = dv_wind_cos = 0
-        has_wind_measure = False
-        if isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind) is True:
-            agg_wind_nb = agg_wind_sin = agg_wind_cos = 0
-            if agg_main_j.get(target_key + '_dir_nb') is not None:
-                has_wind_measure = True
-                agg_wind_nb = agg_main_j[target_key + '_dir_nb']
-                agg_wind_sin = agg_main_j[target_key + '_dir_sin']
-                agg_wind_cos = agg_main_j[target_key + '_dir_cos']
-
-            if delta_values.get(target_key + '_dir_nb') is not None:
-                has_wind_measure = True
-                dv_wind_nb = delta_values[target_key + '_dir_nb']
-                dv_wind_sin = delta_values[target_key + '_dir_sin']
-                dv_wind_cos = delta_values[target_key + '_dir_cos']
-
-            if m_agg_j.get(target_key + '_dir_nb') is not None:
-                has_wind_measure = True
-                dv_wind_nb = dv_wind_nb - m_agg_j[target_key + '_dir_nb']
-                dv_wind_sin = dv_wind_sin - m_agg_j[target_key + '_dir_sin']
-                dv_wind_cos = dv_wind_cos - m_agg_j[target_key + '_dir_cos']
-
-            if has_wind_measure is True:
-                my_dv_next[target_key + '_dir_nb'] = dv_wind_nb
-                my_dv_next[target_key + '_dir_sin'] = dv_wind_sin
-                my_dv_next[target_key + '_dir_cos'] = dv_wind_cos
-
-                if (dv_wind_nb + agg_wind_nb) == 0:
-                    delKey(agg_main_j, target_key + '_dir')
-                    delKey(agg_main_j, target_key + '_dir_nb')
-                    delKey(agg_main_j, target_key + '_dir_sin')
-                    delKey(agg_main_j, target_key + '_dir_cos')
-                else:
-                    agg_main_j[target_key + '_dir_nb'] = dv_wind_nb + agg_wind_nb
-                    agg_main_j[target_key + '_dir_sin'] = dv_wind_sin + agg_wind_sin
-                    agg_main_j[target_key + '_dir_cos'] = dv_wind_cos + agg_wind_cos
-                    agg_main_j[target_key + '_dir'] = getMeanAngle(agg_main_j[target_key + '_dir_nb'], agg_main_j[target_key + '_dir_sin'], agg_main_j[target_key + '_dir_cos'])
 
     def add_new_recompute(self, target_key: str, maxmin_key: str, agg_deca: AggMeteor, valeur: float, ttime: str, dir: str):
         max_min_fix = {
@@ -303,20 +187,6 @@ class AggCompute():
         e_todo = ExtremeTodoMeteor(agg_deca.data.poste_id, agg_deca.agg_niveau, agg_deca.data.start_dat, maxmin_key)
         e_todo.data.j_recompute = max_min_fix
         e_todo.save()
-
-    def get_json_value(self, j: json, key: str, suffix_list: list, key_preffix_first: bool):
-        key_list = []
-        if key_preffix_first is not None and key_preffix_first is False:
-            key_list.append(key)
-        for a_suffix in suffix_list:
-            key_list.append(key + a_suffix)
-        if key_preffix_first is not None and key_preffix_first is True:
-            key_list.append(key)
-
-        for a_key in key_list:
-            if j.get(a_key) is not None:
-                return j[a_key]
-        return None
 
     def get_extreme_action(self, maxmin_key: str, cur_value: float, cur_time: str, new_value: float, new_time: str, chal_value: float, chal_time: str):
         """
