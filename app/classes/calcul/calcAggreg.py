@@ -182,9 +182,9 @@ class CalcAggreg():
                 for an_agg in aggregations:
                     an_agg.save()
 
-                # a_todo.data.status = 999
-                # a_todo.save()
-                a_todo.delete()
+                a_todo.data.status = 999
+                a_todo.save()
+                # a_todo.delete()
 
                 # we're done
                 duration = datetime.datetime.now() - time_start

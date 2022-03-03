@@ -213,46 +213,48 @@ class ProcessJsonData():
                     delta_values[target_key + '_dir_nb'] = -1
                     delta_values[target_key + '_dir_sin'] = obs_j.get(target_key + '_dir_sin') * -1
                     delta_values[target_key + '_dir_cos'] = obs_j.get(target_key + '_dir_cos') * -1
-        
+
         for maxmin_key in ['max', 'min']:
             if my_measure.__contains__(maxmin_key) is True and my_measure[maxmin_key] is True:
                 maxmin_suffix = '_' + maxmin_key
+                new_maxmin_val = new_maxmin_time = new_maxmin_dir = None
 
-                # use extreme values if in period range
+                # get data from obj.j colum
+                if obs_j.get(target_key + maxmin_suffix) is not None:
+                    new_maxmin_val = obs_j[target_key + maxmin_suffix]
+                    new_maxmin_time = obs_j[target_key + maxmin_suffix + '_time']
+                    if maxmin_key == 'max' and (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
+                        if obs_j.get(target_key + maxmin_suffix + '_dir') is not None:
+                            new_maxmin_dir = obs_j[target_key + maxmin_suffix + '_dir']
+
                 if obs_j_xtreme.get(target_key + maxmin_suffix) is not None:
-                    if remove_data is False:
-                        if self.is_extreme_in_range(maxmin_key, obs_j_xtreme[target_key + maxmin_suffix + '_time'], period_start, period_end) is True:
-                            delta_values[target_key + maxmin_suffix] = obs_j_xtreme[target_key + maxmin_suffix]
-                            delta_values[target_key + maxmin_suffix + '_time'] = obs_j_xtreme[target_key + maxmin_suffix + '_time']
+                    tmp_maxmin_val = obs_j_xtreme[target_key + maxmin_suffix]
+                    tmp_maxmin_time = obs_j_xtreme[target_key + maxmin_suffix + '_time']
+                    if self.is_extreme_in_range(maxmin_key, tmp_maxmin_time, period_start, period_end) is True:
+                        if ((new_maxmin_val is None) or
+                                (maxmin_suffix == 'max' and tmp_maxmin_val > new_maxmin_val) or
+                                (maxmin_suffix == 'min' and tmp_maxmin_val < new_maxmin_val)):
+                            new_maxmin_val = tmp_maxmin_val
+                            new_maxmin_time = tmp_maxmin_time
                             if maxmin_key == 'max' and (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
                                 if obs_j_xtreme.get(target_key + maxmin_suffix + '_dir') is not None:
-                                    delta_values[target_key + maxmin_suffix + '_dir'] = obs_j_xtreme[target_key + maxmin_suffix + '_dir']
-                            continue
-                    else:
-                        delta_values['maxminFix'].append({
-                            'key': target_key,
-                            'ope': 'd',
-                            'type': maxmin_suffix,
-                            'value': obs_j_xtreme[target_key + maxmin_suffix],
-                            'date': obs_j_xtreme[target_key + maxmin_suffix + '_time'],
-                            'dir': obs_j_xtreme.get(target_key + maxmin_suffix + '_dir'),
-                        })
+                                    new_maxmin_dir = obs_j_xtreme[target_key + maxmin_suffix + '_dir']
 
-                if obs_j.get(target_key + maxmin_suffix) is not None:
+                if new_maxmin_val is not None:
                     if remove_data is False:
-                        delta_values[target_key + maxmin_suffix] = obs_j[target_key + maxmin_suffix]
-                        delta_values[target_key + maxmin_suffix + '_time'] = obs_j[target_key + maxmin_suffix + '_time']
-                        if maxmin_key == 'max' and (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)):
-                            if obs_j.get(target_key + maxmin_suffix + '_dir') is not None:
-                                delta_values[target_key + maxmin_suffix + '_dir'] = obs_j[target_key + maxmin_suffix + '_dir']
+                        delta_values[target_key + maxmin_suffix] = new_maxmin_val
+                        delta_values[target_key + maxmin_suffix + '_time'] = new_maxmin_time
+                        if maxmin_key == 'max' and (isFlagged(my_measure['special'], MeasureProcessingBitMask.MeasureIsWind)) and new_maxmin_dir is not None:
+                            delta_values[target_key + maxmin_suffix + '_dir'] = new_maxmin_dir
+                        continue
                     else:
                         delta_values['maxminFix'].append({
                             'key': target_key,
                             'ope': 'd',
                             'type': maxmin_suffix,
-                            'value': obs_j[target_key + maxmin_suffix],
-                            'date': obs_j[target_key + maxmin_suffix + '_time'],
-                            'dir': obs_j.get(target_key + maxmin_suffix + '_dir'),
+                            'value': new_maxmin_val,
+                            'date': new_maxmin_time,
+                            'dir': new_maxmin_dir,
                         })
         return
 

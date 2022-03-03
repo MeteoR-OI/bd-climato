@@ -148,7 +148,7 @@ class AggCompute():
             #             new_dir = delta_values[target_key + maxmin_suffix + '_dir']
 
             # if extreme has to be calculated
-            if delete_measure is True and my_measure[maxmin_key] is True:
+            if delete_measure is False and my_measure[maxmin_key] is True:
                 # load delta_values
                 if delta_values.get(target_key + maxmin_suffix) is not None:
                     new_value = delta_values[target_key + maxmin_suffix]
