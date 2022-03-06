@@ -117,33 +117,32 @@ class CalcObs():
         item_processed = 0
         idx_item = 0
         meteor = "???"
+        my_span = self.tracer.get_current_span()
 
-        with self.tracer.get_current_span() as my_span:
+        # validate our json
+        meteor = str(json_data_array[0].get("meteor"))
+        pid = PosteMeteor.getPosteIdByMeteor(json_data_array[0]["meteor"])
+        if pid is None:
+            raise Exception("code meteor inconnu: " + json_data_array[0]["meteor"])
 
-            # validate our json
-            meteor = str(json_data_array[0].get("meteor"))
-            pid = PosteMeteor.getPosteIdByMeteor(json_data_array[0]["meteor"])
-            if pid is None:
-                raise Exception("code meteor inconnu: " + json_data_array[0]["meteor"])
+        check_result = checkJson(json_data_array, pid, filename)
+        if check_result is not None:
+            raise Exception("Invalid Json file: " + filename + ": " + check_result)
 
-            check_result = checkJson(json_data_array, pid, filename)
-            if check_result is not None:
-                raise Exception("Invalid Json file: " + filename + ": " + check_result)
+        # now load our data in obs table
+        while idx_item < json_data_array.__len__():
+            with self.tracer.start_as_current_span("Item_" + str(idx_item)):
+                json_item_data = json_data_array[idx_item]
 
-            # now load our data in obs table
-            while idx_item < json_data_array.__len__():
-                with self.tracer.start_span("Item_" + str(idx_item)):
-                    json_item_data = json_data_array[idx_item]
+                if idx_item == 0:
+                    # set attributes in parent spam
+                    my_span.set_attribute("meteor", meteor)
+                    my_span.set_attribute("filename", filename)
 
-                    if idx_item == 0:
-                        # set attributes in parent spam
-                        my_span.set_attribute("meteor", meteor)
-                        my_span.set_attribute("filename", filename)
+                self.loadOneJsonItemInObs(json_item_data, trace_flag, filename, idx_item)
 
-                    self.loadOneJsonItemInObs(json_item_data, trace_flag, filename, idx_item)
-
-                    item_processed += json_item_data["data"].__len__()
-                    idx_item += 1
+                item_processed += json_item_data["data"].__len__()
+                idx_item += 1
 
             global_duration = datetime.datetime.now() - debut_full_process
             dur_millisec = round(global_duration.total_seconds() * 1000)
@@ -183,13 +182,12 @@ class CalcObs():
                 obs_meteor = poste_metier.observation(j_stop_dat)
                 obs_meteor.data.filename = filename
                 obs_meteor.data.j.append({})
-                obs_meteor.data.j_agg.append({})
                 obs_meteor.data.j_xtreme.append(j_xtreme)
 
                 if obs_meteor.data.id is not None:
                     if one_data_item.__contains__("force_replace") is True:
                         # basic asumption - probably not needed...
-                        if obs_meteor.data.j_agg.__len__() != 1 or obs_meteor.data.j.__len__() != 1 or obs_meteor.data.j_xtreme.__len__() != 1:
+                        if obs_meteor.data.j.__len__() != 1 or obs_meteor.data.j_xtreme.__len__() != 1:
                             raise Exception('Json array not processed in obs, retry later, or fix it. obs id = ' + str(obs_meteor.data.id))
                     else:
                         t.logInfo(
@@ -198,10 +196,10 @@ class CalcObs():
                         continue
                 else:
                     # basic asumption
-                    if obs_meteor.data.j_agg.__len__() != 1 or obs_meteor.data.j.__len__() != 1 or obs_meteor.data.j_xtreme.__len__() != 1:
+                    if obs_meteor.data.j.__len__() != 1 or obs_meteor.data.j_xtreme.__len__() != 1:
                         raise Exception(
                             'Invalid new obs_meteor structure-' +
-                            str(obs_meteor.data.j_agg.__len__()) + '/' + str(obs_meteor.data.j.__len__()) + '/' + str(obs_meteor.data.j_xtreme.__len__()))
+                            str(obs_meteor.data.j.__len__()) + '/' + str(obs_meteor.data.j_xtreme.__len__()))
                     obs_meteor.data.duration = j_duration
 
                 # load json values in obs
@@ -245,8 +243,8 @@ class CalcObs():
                     )
         else:
             # data should have the same syntax as the data used in agg_xxx.j
-            obs_meteor.data.j_agg[obs_meteor.data.j_agg.__len__() - 1] = one_data_item['valeurs']
-            obs_meteor.data.j_agg[obs_meteor.data.j_agg.__len__() - 1]['duration'] = j_duration
+            obs_meteor.data.j[obs_meteor.data.j.__len__() - 1] = one_data_item['valeurs']
+            obs_meteor.data.j[obs_meteor.data.j.__len__() - 1]['duration'] = j_duration
 
     def load_agg_todo(self, all_instr, a_todo, obs_meteor, json_is_obs, j_start_dat, j_stop_dat, j_duration, json_type):
         idx_obs_data_j = obs_meteor.data.j.__len__() - 1
@@ -277,10 +275,9 @@ class CalcObs():
                         )
             else:
                 # we need to remove the old aggregated data
-                delta_values = obs_meteor.data.j_agg[0]
+                delta_values = obs_meteor.data.j[0]
                 delta_values['duration'] = j_duration if mode_delete is False else obs_meteor.data.duration * -1
                 delta_values['maxminFix'] = []
-                raise Exception('code not done yet')
 
             delta_values['json_type'] = json_type
             a_todo.data.j.append(delta_values)
@@ -288,7 +285,6 @@ class CalcObs():
             # remove first element in obs, just keep the data to add
             if mode_delete is True:
                 del obs_meteor.data.j[0]
-                del obs_meteor.data.j_agg[0]
                 del obs_meteor.data.j_xtreme[0]
 
             idx_obs_data_j -= 1
@@ -384,7 +380,7 @@ class CalcObs():
                     else:
                         j_info = {"filename": file_spec["f"], "dest": archive_dir + "/" + meteor + "/failed/" + file_spec["f"]}
                         t.logInfo("file moved to fail directory", None, j_info)
-                        IncidentMeteor.new('_getJsonFileNameAndData', 'ERROR', 'file moved to failed directory', j_info)
+                        IncidentMeteor.new('_getJsonFileNameAndData', 'error', 'file moved to failed directory', j_info)
 
                         if not os.path.exists(archive_dir + "/" + meteor + '/failed'):
                             os.makedirs(archive_dir + "/" + meteor + '/failed')

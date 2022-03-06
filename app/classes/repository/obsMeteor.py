@@ -1,6 +1,6 @@
 # check __reverse_delta_values (j_xtreme)
 #
-from app.tools.modelTools import getAggHistoTableWithBool, getObservationTable
+from app.models import Observation, AggHisto
 from django.db import connection
 import datetime
 import json
@@ -20,33 +20,37 @@ class ObsMeteor():
 
     """
 
-    def __init__(self, poste_id: int, stop_dt_utc: datetime, is_tmp: bool = None):
+    def __init__(self, poste_id: int, stop_dt_utc: datetime, json_type: str = "?"):
         """Init a new ObsMeteor object"""
         # todo: block if my_datetime_utc > previous dat+duration
         self.is_tmp = False
-        myObsObj = getObservationTable(is_tmp)
-        if myObsObj.objects.filter(poste_id=poste_id).filter(stop_dat=stop_dt_utc).exists():
-            self.data = myObsObj.objects.filter(poste_id=poste_id).filter(stop_dat=stop_dt_utc).first()
+        if Observation.objects.filter(poste_id=poste_id).filter(stop_dat=stop_dt_utc).exists():
+            self.data = Observation.objects.filter(poste_id=poste_id).filter(stop_dat=stop_dt_utc).first()
         else:
             agg_start_dat = calcAggDate('H', stop_dt_utc, 0, True)
-            self.data = myObsObj(poste_id=poste_id, stop_dat=stop_dt_utc, duration=0, agg_start_dat=agg_start_dat, j=[], j_agg=[], j_xtreme=[], filename='???')
+            self.data = Observation(poste_id=poste_id, stop_dat=stop_dt_utc, duration=0, agg_start_dat=agg_start_dat, j=[], j_xtreme=[], filename='???')
+            if json_type != "?":
+                self.data.json_type = json_type
 
     def save(self):
         """ save Poste and Exclusions """
         # we only save if there is some data
-        if self.data.j.__len__() > 0 or self.data.j_agg.__len__() > 0:
+        if self.data.j[0].get('json_type') is not None:
+            self.data.json_type = self.data.j[0]['json_type']
+        if self.data.json_type not in ["O", "C", "H", "D", "M", "Y", "A"]:
+            raise Exception('wrong json_type')
+        if self.data.j.__len__() > 0 or self.data.j_xtreme.__len__() > 0:
             self.data.save()
 
     def delete(self):
         # delete cascade linked agg_histo rows
-        agg_histo_table = getAggHistoTableWithBool(self.is_tmp)
-        agg_histo_table.objects.filter(obs_id=self.data.id).delete()
+        AggHisto.objects.filter(obs_id=self.data.id).delete()
 
         # generate a todo with negative values
         a_todo = AggTodoMeteor(self.data.id, self.is_tmp)
         delta_values = self.__reverse_delta_values(self.data.j_dv, self.data.id)
         a_todo.data.j_dv = delta_values
-        a_todo.data.j_agg = self.data.j_agg
+        a_todo.data.j_xtreme = self.data.j_xtreme
         a_todo.data.priority = 0
         a_todo.save()
 
@@ -80,7 +84,7 @@ class ObsMeteor():
                 continue
             IncidentMeteor.new(
                 'obs delete',
-                'info',
+                'error',
                 'key ' + str(a_kv[0]) + ' not processed',
                 {
                     'value': str(a_kv[1]),
@@ -97,20 +101,17 @@ class ObsMeteor():
         return myObsObj.objects.filter(poste_id=poste_id).filter(stop_dat__contains=stop_dat_mask).count()
 
     def getAggUpdates(self, field_name: str = None):
-        agg_histo_table_name = 'agg_histo'
-        if self.is_tmp is True:
-            agg_histo_table_name = 'tmp_agg_histo'
         if field_name is None:
             sql = '''
                 select h.id as id, h.obs_id as obsId, o.stop_dat as stopDate, h.agg_id as aggId, h.agg_level as aggLevel, h.delta_duration as duration, h.j as j
-                from ''' + agg_histo_table_name + ''' h join obs o
+                from agg_histo h join obs o
                     on.id = h.obs_id
                 where obs_id = " + str(self.data.id)
             '''
         else:
             sql = '''
                 select id, obs_id, agg_id, agg_level, delta_duration, j['" + field_name + "']"
-                from " + agg_histo_table_name + " where obs_id = " + str(self.data.id) + " and j['" + field_name + "'] is not null
+                from agg_histo where obs_id = " + str(self.data.id) + " and j['" + field_name + "'] is not null
             '''
         with connection.cursor() as cursor:
             cursor.execute(sql)

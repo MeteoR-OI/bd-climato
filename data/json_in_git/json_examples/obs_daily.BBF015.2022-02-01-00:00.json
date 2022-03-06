@@ -12,7 +12,6 @@
             "start_dat": "2021-01-01T00:05:00",
             "valeurs":
             {
-               "barometer_avg": 1014.7125161,
                "barometer_s": 1461186.02319,
                "barometer_d": 1440,
 
@@ -21,7 +20,7 @@
                "barometer_min_time": "2021-01-01T22:54:03",
                "barometer_min": 1013.30892876,
 
-               "barometer_omm_avg": 1014.73403378,
+               "barometer_omm_s": 1461217.0086432,
                "barometer_omm_d": 1440,
 
                "end_valeurs": 0
@@ -32,7 +31,6 @@
             "valeurs":
             {
 
-               "barometer_avg": 1015.32606379,
                "barometer_s": 1462069.53186,
                "barometer_d": 1440,
                "barometer_max_time": "2021-01-02T00:05:00",
@@ -40,7 +38,7 @@
                "barometer_min_time": "2021-01-02T15:49:03",
                "barometer_min": 1013.57983982,
 
-               "barometer_omm_avg": 1015.31113076,
+               "barometer_omm_avg": 1462048.0282944,
                "barometer_omm_d": 1440,
 
                "end_valeurs": 0

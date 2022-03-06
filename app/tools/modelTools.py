@@ -1,22 +1,6 @@
 from app.models import Observation, AggHour, AggDay, AggMonth, AggYear, AggAll, AggTodo, ExtremeTodo, AggHisto, Incident
 
 
-def isTmpLevel(agg_level: str) -> bool:
-    return False
-
-
-def getObservationTable(is_tmp: bool):
-    return Observation
-
-
-def getAggHistoTable(agg_level: str):
-    return AggHisto
-
-
-def getAggHistoTableWithBool(is_tmp: bool):
-    return AggHisto
-
-
 def getAggTable(niveau_agg: str):
     """get the aggregation depending on the level"""
     if niveau_agg == "H":
@@ -49,14 +33,8 @@ def getAggTableName(niveau_agg: str):
         raise Exception("getAggTableName", "wrong niveau_agg: " + niveau_agg)
 
 
-def getAggTodoObject(is_tmp: bool):
-    """get the aggregation depending on the level"""
-    return AggTodo
-
-
 def doesObservationExist(obs_id: int, is_tmp: bool) -> bool:
-    obs_table = getObservationTable(is_tmp)
-    return obs_table.objects.filter(id=obs_id).exists()
+    return Observation.objects.filter(id=obs_id).exists()
 
 
 def doesAggExist(agg_id: int, agg_level: str) -> bool:

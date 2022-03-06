@@ -11,28 +11,28 @@
           "duration": 5,
 
           "valeurs": {
-            "barometer_avg": 1008.3047501,
+            "barometer_s": 5041.5237505,
+            "barometer_d": 5,
             "barometer_max_time": "2022-02-18T00:02:02",
             "barometer_max": 1008.36480205,
             "barometer_min_time": "2022-02-18T00:04:33",
             "barometer_min": 1008.22934652,
-            "barometer": 1008.22934652,
 
            "end_valeurs": 0
           }
         },
         {
           "stop_dat": "2022-02-18T00:10:00",
+          "duration": 1,
 
           "valeurs": {
-            "duration": 1,
 
-            "barometer_avg": 1008.3047501,
+            "barometer_s": 5041.5237505,
+            "barometer_d": 5,
             "barometer_max_time": "2022-02-18T00:06:26",
             "barometer_max": 1008.36480205,
             "barometer_min_time": "2022-02-18T00:08:45",
             "barometer_min": 1008.22934652,
-            "barometer": 1008.22934652,
 
             "end_valeurs": 0
           }

@@ -1,16 +1,20 @@
+from app.tools.dateTools import str_to_date, date_to_str
+from app.tools.jsonPlus import JsonPlus
+# from django_prometheus.models import ExportModelOperationsMixin
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
+from django.db.models import DateTimeField
+# import app.tools.myTools as t
 import datetime
 
-from app.tools.jsonPlus import JsonPlus
-from app.tools.dateTools import str_to_date, date_to_str
-from django.core.serializers.json import DjangoJSONEncoder
-# import app.tools.myTools as t
-# from django_prometheus.models import ExportModelOperationsMixin
+
+class DateTimeWithoutTZField(DateTimeField):
+    """ timestamp with no time zone """
+    def db_type(self, connection):
+        return 'timestamp'
 
 
-class DateCharField(models.CharField):
-    # __metaclass__ = models.CharField
-    # description = "String Date in db, datetime in python"
+class DateCharField(DateTimeWithoutTZField):
 
     def __init__(self, *args, **kwargs):
         # self.max_length = 20
@@ -82,27 +86,13 @@ class DateJSONField(models.JSONField):
 
 # class Poste(ExportModelOperationsMixin('poste'), models.Model):
 class Poste(models.Model):
-    GESTION_EXTREME = (
-        (0, 'Inconnu'),
-        (1, 'Auto dans observation'),
-        (2, 'Auto dans agrégation'),
-        (3, 'Manuel'),
-    )
-    NIVEAU_AGGREGATION = (
-        ('',  'not set'),
-        ('H', 'Heure'),
-        ('D', 'Day'),
-        ('M', 'Month'),
-        ('Y', 'Year'),
-        ('A', 'Global'),
-    )
     # mandatory fields
     id = models.AutoField(primary_key=True)
     meteor = models.CharField(null=False, max_length=10, verbose_name="Code MeteoR.OI")
     lock_calculus = models.SmallIntegerField(null=True, default=0, verbose_name="internal field used to lock the calculus on one poste")
 
     # optional fields - will be used
-    fuseau = models.SmallIntegerField(null=True, default=4, verbose_name="nombre heure entre TU et heure fuseau, default UTC+4")
+    fuseau_delta = models.SmallIntegerField(null=True, default=0, verbose_name="delta entre TU station et default UTC+4")
     meteofr = models.CharField(null=True, default='', max_length=10, verbose_name="Code Meteo France")
 
     # la suite n'est pas utilise par climato - a revoir pour pages html...
@@ -160,76 +150,69 @@ class Exclusion(models.Model):
 # class Observation(ExportModelOperationsMixin('obs'), models.Model):
 class Observation(models.Model):
     id = models.BigAutoField(primary_key=True)
+
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
+
     agg_start_dat = DateCharField(null=False, max_length=20, default="1900-01-01T00:00:00", verbose_name="date début période")
+    # just to allow a join with agg_hour... Could be removed in future..
+
     stop_dat = DateCharField(null=False, max_length=20, verbose_name="date de fin de période")
+
     duration = models.IntegerField(null=False, verbose_name="durée période", default=0)
+
     filename = models.CharField(default='???', max_length=100, null=False, verbose_name='filename used to load data')
 
+    json_type = models.CharField(max_length=1, null=False, verbose_name='data type stored in j')
+    # O => Observation data (data sent every 5 mn)
+    # C => Measure regenerated, extremes computed from measures values + xtreme field
+    # H => Hourly data agregated by weeWX. extremes computed from measures values + xtreme field
+    # D,M,Y,A => data agregated by weeWX, extremes are weeWX saved extremes (no xtreme data)
+
+    # quality fields
     qa_modifications = models.IntegerField(null=False, default=0, verbose_name='qa_modifications')
     qa_incidents = models.IntegerField(null=False, default=0, verbose_name='qa_incidents')
     qa_check_done = models.BooleanField(null=False, default=False, verbose_name='qa_check_done')
+
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name='mesures Json')
-    ''' Array of measure data. Usually only one element. Has to be an array '''
-    j_agg = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name='données pré-agrégées')
-    ''' Array of data coming from aggregations key, for future used during agg_xxx updates '''
+    # j is an array. content depend on number of element in j:
+    # j.__len__() == 1 => j hold the measure values (normal situation)
+    # j.__len__() == 2 => update to be processed (short transition):
+    #       j[0] => current values in agregation to be removed. j[1] => new values to add in aggregations
+
     j_xtreme = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name='données pré-agrégées')
-    ''' Array of data coming from aggregations key, for future used during agg_xxx updates '''
+    # j_xtreme is an array. content depend on number of element in j_xtreme:
+    # j_xtreme.__len__() == 1 => j_xtreme hold the measure values (normal situation)
+    # j_xtreme.__len__() == 2 => update to be processed (short transition):
+    #       j_xtreme[0] => current values in agregation to be removed. j_xtreme[1] => new values to add in aggregations
 
     def __str__(self):
-        return "Observation id: " + str(self.id) + ", poste: " + str(self.poste) + ", de " + str(self.stop_dat - datetime.timedelta(minutes=self.duration)) + " a: " + str(self.stop_dat)
+        return "Observation id: " + str(self.id) + ", poste: " + str(self.poste) + ", start_dat " + str(self.stop_dat - datetime.timedelta(minutes=self.duration)) + ", stop_dat: " + str(self.stop_dat)
 
     class Meta:
         db_table = "obs"
         unique_together = (("poste", "stop_dat"))
 
 
-# class AggTodo(ExportModelOperationsMixin('agg_todo'), models.Model):
-class AggTodo(models.Model):
-    id = models.IntegerField(primary_key=True)
-    # obs = models.ForeignKey(null=False, to="Observation", on_delete=models.CASCADE)
-    priority = models.IntegerField(null=True, default=9, verbose_name='priority, 0: one current-data, 9: multiple current-data')
-    status = models.IntegerField(null=False, default=0, verbose_name='status, 0: wait, 9: error, 99: processed')
-    json_type = models.CharField(null=False, max_length=1, verbose_name='json_type')
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='default_values coming from obs processing')
-    j_error = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='error info, when status = 99')
-
-    def __str__(self):
-        return "AggTodo id: " + str(self.id) + ", obs: " + str(self.obs) + ", priority: " + str(self.priority)
-
-    class Meta:
-        db_table = "agg_todo"
-
-
-# class ExtremeTodo(ExportModelOperationsMixin('extreme_todo'), models.Model):
-class ExtremeTodo(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    poste = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
-    level = models.CharField(null=False, max_length=2, verbose_name="Aggregation level")
-    start_dat = DateCharField(null=False, max_length=20, verbose_name="start date de l agregation'")
-    invalid_type = models.CharField(null=False, max_length=3, verbose_name="Type Invalidation (max or min)")
-    status = models.IntegerField(null=False, default=0, verbose_name='status, 0: wait, 9: error, 99: processed')
-    j_recompute = DateJSONField(encoder=DjangoJSONEncoder, null=False)
-
-    def __str__(self):
-        return "ExtremeTodo id: " + str(self.id) + ", level: " + self.level + ", start_dat: " + str(self.start_dat) + ", type: " + str.invalid_type
-
-    class Meta:
-        db_table = "extreme_todo"
-
-
 # class AggHour(ExportModelOperationsMixin('agg_hour'), models.Model):
 class AggHour(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.BigAutoField(primary_key=True)
     poste = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
+
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
+    # start_dat is rounded to the beginning of the aggregation period
 
     duration_sum = models.IntegerField(null=False, verbose_name="Durées agrégées", default=0)
+    # Sum of data aggregated in this aggregation
+
     duration_max = models.IntegerField(null=False, verbose_name="Durée max", default=0)
+    # length of the aggregation
+
+    # quality indicators
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
 
+    # data
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Agrégations")
 
     def __str__(self):
@@ -244,14 +227,22 @@ class AggHour(models.Model):
 class AggDay(models.Model):
     id = models.AutoField(primary_key=True)
     poste = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
+
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
+    # start_dat is rounded to the beginning of the aggregation period
 
     duration_sum = models.IntegerField(null=False, verbose_name="Durées agrégées", default=0)
+    # Sum of data aggregated in this aggregation
+
     duration_max = models.IntegerField(null=False, verbose_name="Durée max", default=0)
+    # length of the aggregation
+
+    # quality indicators
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
 
+    # data
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Agrégations")
 
     def __str__(self):
@@ -266,14 +257,22 @@ class AggDay(models.Model):
 class AggMonth(models.Model):
     id = models.AutoField(primary_key=True)
     poste = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
+
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
+    # start_dat is rounded to the beginning of the aggregation period
 
     duration_sum = models.IntegerField(null=False, verbose_name="Durées agrégées", default=0)
+    # Sum of data aggregated in this aggregation
+
     duration_max = models.IntegerField(null=False, verbose_name="Durée max", default=0)
+    # length of the aggregation
+
+    # quality indicators
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
 
+    # data
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Agrégations")
 
     def __str__(self):
@@ -287,15 +286,24 @@ class AggMonth(models.Model):
 # class AggYear(ExportModelOperationsMixin('agg_year'), models.Model):
 class AggYear(models.Model):
     id = models.AutoField(primary_key=True)
+
     poste = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
+
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
+    # start_dat is rounded to the beginning of the aggregation period
 
     duration_sum = models.IntegerField(null=False, verbose_name="Durées agrégées", default=0)
+    # Sum of data aggregated in this aggregation
+
     duration_max = models.IntegerField(null=False, verbose_name="Durée max", default=0)
+    # length of the aggregation
+
+    # quality indicators
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
 
+    # data
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Agrégations")
 
     def __str__(self):
@@ -309,15 +317,24 @@ class AggYear(models.Model):
 # class AggAll(ExportModelOperationsMixin('agg_all'), models.Model):
 class AggAll(models.Model):
     id = models.AutoField(primary_key=True)
+
     poste = models.ForeignKey(to="Poste", on_delete=models.CASCADE)
+
     start_dat = DateCharField(null=False, max_length=20, verbose_name="start date")
+    # start_dat is rounded to the beginning of the aggregation period
 
     duration_sum = models.IntegerField(null=False, verbose_name="Durées agrégées", default=0)
+    # Sum of data aggregated in this aggregation
+
     duration_max = models.IntegerField(null=False, verbose_name="Durée max", default=0)
+    # length of the aggregation
+
+    # quality indicators
     qa_modifications = models.IntegerField(null=False, default=0)
     qa_incidents = models.IntegerField(null=False, default=0)
     qa_check_done = models.BooleanField(null=False, default=False)
 
+    # data
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Agrégations")
 
     def __str__(self):
@@ -328,14 +345,67 @@ class AggAll(models.Model):
         unique_together = (("poste", "start_dat"))
 
 
+# class AggTodo(ExportModelOperationsMixin('agg_todo'), models.Model):
+class AggTodo(models.Model):
+    id = models.IntegerField(primary_key=True)
+
+    # obs = models.ForeignKey(null=False, to="Observation", on_delete=models.CASCADE)
+
+    priority = models.IntegerField(null=True, default=9, verbose_name='priority, 0: one current-data, 9: multiple current-data')
+
+    status = models.IntegerField(null=False, default=0, verbose_name='status, 0: wait, 9: error, 99: processed')
+
+    json_type = models.CharField(null=False, max_length=1, verbose_name='json_type')
+    # O,C,H,D,M,Y,A
+
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='default_values coming from obs processing')
+    # delta_values to push into aggregations
+
+    j_error = DateJSONField(encoder=DjangoJSONEncoder, null=False, default=dict, verbose_name='error info, when status = 99')
+    # error information when status = 999
+
+    def __str__(self):
+        return "AggTodo id: " + str(self.id) + ", obs: " + str(self.obs) + ", priority: " + str(self.priority)
+
+    class Meta:
+        db_table = "agg_todo"
+
+
+# class ExtremeTodo(ExportModelOperationsMixin('extreme_todo'), models.Model):
+class ExtremeTodo(models.Model):
+    id = models.BigAutoField(primary_key=True)
+
+    poste = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
+
+    level = models.CharField(null=False, max_length=2, verbose_name="Aggregation level")
+
+    start_dat = DateCharField(null=False, max_length=20, verbose_name="start date de l agregation'")
+
+    invalid_type = models.CharField(null=False, max_length=3, verbose_name="Type Invalidation (max or min)")
+
+    status = models.IntegerField(null=False, default=0, verbose_name='status, 0: wait, 9: error, 99: processed')
+
+    j_recompute = DateJSONField(encoder=DjangoJSONEncoder, null=False)
+
+    def __str__(self):
+        return "ExtremeTodo id: " + str(self.id) + ", level: " + self.level + ", start_dat: " + str(self.start_dat) + ", type: " + str.invalid_type
+
+    class Meta:
+        db_table = "extreme_todo"
+
+
 class AggHisto(models.Model):
     id = models.AutoField(primary_key=True)
-    obs_id = models.IntegerField(null=False, default=0, verbose_name="Obs_id")
-    agg_id = models.IntegerField(null=False, default=0, verbose_name="Agg_id")
-    agg_level = models.CharField(null=False, max_length=2, verbose_name="level")
-    delta_duration = models.IntegerField(null=False, verbose_name="Delta durées")
 
-    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Delta agrégation")
+    obs_id = models.IntegerField(null=False, default=0, verbose_name="Obs_id")
+
+    agg_id = models.IntegerField(null=False, default=0, verbose_name="Agg_id")
+
+    agg_level = models.CharField(null=False, max_length=2, verbose_name="level")
+
+    delta_duration = models.IntegerField(null=False, verbose_name="Delta duration added in aggregation")
+
+    j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Delta values added in aggregation")
 
     def __str__(self):
         return "AggHisto id: " + str(self.id) + ", obs: " + str(self.obs_id) + ", Aggreg: " + str(self.agg_id) + ", level: " + self.agg_level
@@ -350,11 +420,19 @@ class AggHisto(models.Model):
 
 class Incident(models.Model):
     id = models.AutoField(primary_key=True)
-    dat = DateCharField(null=False, max_length=30, verbose_name="start date de l incident'")
+
+    dat = DateCharField(null=False, max_length=30, verbose_name="Incident date'")
+
     source = models.CharField(null=False, max_length=100, verbose_name='source')
+
     level = models.CharField(null=False, max_length=20, verbose_name='level')
+    # error, critical, exception
+
     reason = models.TextField(null=False, verbose_name='reason')
+
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Details")
+    # stack for exception
+
     active = models.BooleanField(default=True, verbose_name='active')
 
     def __str__(self):

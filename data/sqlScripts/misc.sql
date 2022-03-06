@@ -12,7 +12,23 @@ select
         left join agg_hour ah on ah.id = a.agg_id and a.agg_level = 'H'
         left join agg_day ad on ad.id = a.agg_id and a.agg_level = 'D' 
         
-    where obs_id = 31852 and a.j['out_temp_d'] is not null;
+    where a.j['out_temp_d'] is not null;
+
+select 
+    a.id as agg_histo_id,
+    o.stop_dat as obs_stop_dat,
+    a.agg_level as level,
+    ah.start_dat as start_H,
+    ad.start_dat as start_D,
+    a.j['out_temp_omm_max'] as out_temp_omm_max,
+    a.j['out_temp_omm_max_time'] as out_temp_omm_max_time 
+    
+    from agg_histo a
+        join obs o on o.id = a.obs_id 
+        left join agg_hour ah on ah.id = a.agg_id and a.agg_level = 'H'
+        left join agg_day ad on ad.id = a.agg_id and a.agg_level = 'D' 
+        
+    where a.j['out_temp_omm_max_time'] is not null;
 
 
 CREATE OR REPLACE FUNCTION

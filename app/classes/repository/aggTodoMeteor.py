@@ -1,5 +1,4 @@
 from app.models import AggTodo, Observation
-from app.tools.modelTools import getAggTodoObject
 from django.db import transaction
 
 
@@ -27,7 +26,7 @@ class AggTodoMeteor():
 
     @staticmethod
     def count(is_tmp: bool = None):
-        return getAggTodoObject(False).objects.count()
+        return AggTodo.objects.filter(status=0).count()
 
     def ReportError(self, err):
         self.status = 9

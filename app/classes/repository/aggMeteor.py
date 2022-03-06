@@ -1,5 +1,6 @@
 from app.tools.aggTools import calcAggDate, getAggDuration
-from app.tools.modelTools import getAggTable, getAggHistoTable, getAggTableName
+from app.tools.modelTools import getAggTable, getAggTableName
+from app.models import AggHisto
 from django.db import connection
 import datetime
 
@@ -77,13 +78,12 @@ class AggMeteor():
             if self.agg_niveau[0] == 'A' or self.agg_niveau[0] == 'Y' or self.agg_niveau[0] == 'M':
                 return
 
-            agg_histo_table = getAggHistoTable(self.agg_niveau)
-            if agg_histo_table.objects.filter(obs_id=self.obs_id).filter(agg_id=self.data.id).filter(agg_level=self.agg_niveau).exists():
-                my_agg_histo = agg_histo_table.objects.filter(obs_id=self.obs_id, agg_id=self.data.id, agg_level=self.agg_niveau).first()
+            if AggHisto.objects.filter(obs_id=self.obs_id).filter(agg_id=self.data.id).filter(agg_level=self.agg_niveau).exists():
+                my_agg_histo = AggHisto.objects.filter(obs_id=self.obs_id, agg_id=self.data.id, agg_level=self.agg_niveau).first()
                 my_agg_histo.j = delta_j
                 my_agg_histo.delta_duration = self.data.duration_sum - self.duration_ori
             else:
-                my_agg_histo = agg_histo_table(obs_id=self.obs_id, agg_id=self.data.id, agg_level=self.agg_niveau, delta_duration=(self.data.duration_sum - self.duration_ori), j=delta_j)
+                my_agg_histo = AggHisto(obs_id=self.obs_id, agg_id=self.data.id, agg_level=self.agg_niveau, delta_duration=(self.data.duration_sum - self.duration_ori), j=delta_j)
 
             my_agg_histo.save()
             # refresh copy data, just if this instance of object is re-used later

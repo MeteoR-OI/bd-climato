@@ -142,6 +142,7 @@ DATA_FS_PATH = os.path.join(MEDIA_ROOT, 'data')
 
 # App settings
 AUTOLOAD_DIR = "./data/json_auto_load"          # in symc with dc-telemetry.yaml
+ARCHIVE_DIR = "./data/json_archive"             # in symc with dc-telemetry.yaml
 LOCAL_REMOTE_DIR = "./data/json_not_in_git"     # server loading file thru view
 LOCAL_DIR = './data/json_not_in_git'            # client loaded file with loadson command
 
@@ -155,7 +156,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'loggers': {
         'log_dev': {
-            'handlers': ['console_dev', 'logFile_hdl'],
+            'handlers': ['console_dev'],
             'level': 'DEBUG'
         },
         'log_prod': {
@@ -172,13 +173,13 @@ LOGGING = {
         },
         'console_dev': {
             'class': 'logging.StreamHandler',
-            'formatter': 'console_fmt',
+            'formatter': 'file_fmt',
             'level': 'DEBUG'
         },
         'console_prod': {
             'class': 'logging.StreamHandler',
             'formatter': 'console_fmt',
-            'level': 'WARNING'
+            'level': 'ERROR'
         }
     },
     'formatters': {

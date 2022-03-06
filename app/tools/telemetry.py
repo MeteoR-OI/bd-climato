@@ -36,8 +36,6 @@ class SpanMok:
     SpanMok
         Mok class to simulate Span class when no telemetry is used
     """
-    ctx = ContextMok()
-
     def __init__(self, name: str = "???"):
         """
             __init__
@@ -51,6 +49,8 @@ class SpanMok:
         self.name = name
         self.atts = []
         self.events = []
+        self.ctx = ContextMok()
+        self.ctx.span_id = time.time()
 
     def __enter__(self):
         """
@@ -58,7 +58,6 @@ class SpanMok:
 
         start of a with statement support
         """
-        self.ctx.span_id = time.time()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -210,7 +209,7 @@ class TracerTriage:
             tmp_span = get_current_span()
             if tmp_span == INVALID_SPAN:
                 tmp_span = self.start_as_current_span(name)
-                tmp_span = get_current_span()
+                self.current_span = tmp_span
             return tmp_span
 
     def get_current_span(self):
@@ -254,11 +253,9 @@ class TracerTriage:
             trace_flag
         """
         if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
-            self.current_span = SpanMok(span_name)
-            return self.current_span
+            return SpanMok(span_name)
         else:
-            self.current_span = self.real_tracer.start_span(span_name)
-            return self.current_span
+            return self.real_tracer.start_span(span_name)
 
 
 class Telemetry:

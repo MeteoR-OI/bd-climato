@@ -16,7 +16,7 @@ class PosteMetier(PosteMeteor):
         Add obs/agg/exclu info to PosteMeteor
     """
 
-    def __init__(self, poste_id: int, start_date: datetime = datetime.datetime.now(datetime.timezone.utc)):
+    def __init__(self, poste_id: int, start_date: datetime = datetime.datetime.now()):
         """ load our instance from db, load exclusions at date_histo """
         super().__init__(poste_id)
         self.exclus = ExcluMeteor.getAllForAPoste(self.data.id, start_date)
@@ -56,7 +56,7 @@ class PosteMetier(PosteMeteor):
                 return anExclu['value']
         return None
 
-    def getAllForAPoste(self, start_dat: datetime = datetime.datetime.now(datetime.timezone.utc)) -> json:
+    def getAllForAPoste(self, start_dat: datetime = datetime.datetime.now()) -> json:
         # can be different from self.exclus if the start_date are not the same
         return ExcluMeteor.getAllForAPoste(self.data.id, start_dat)
 
@@ -72,14 +72,16 @@ class PosteMetier(PosteMeteor):
         # m_duration = self.data.du
         needed_dates = []
         ti_all = AllTypeInstruments()
-        for an_instru in ti_all.get_all_instruments():
-            for a_measure in an_instru['object'].measures:
-                if json_type in ["O", "C", "H"]:
+        if json_type in ["O", "C", "H"]:
+            for an_instru in ti_all.get_all_instruments():
+                for a_measure in an_instru['object'].measures:
                     # only use deca for obs, or hour agregated data
                     for deca_type in ['hour_deca', 'deca_max', 'deca_min']:
                         hour_deca = int(a_measure[deca_type])
                         if hour_deca not in needed_dates:
                             needed_dates.append(hour_deca)
+        else:
+            needed_dates.append(0)
 
         # now load the needed aggregations
         ret = []

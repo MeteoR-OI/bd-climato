@@ -91,7 +91,7 @@ class CalcAggreg():
         """ Aggregate data from an agg_todo """
 
         # my_span life is controled in the CalcAggregControler func
-        my_span = self.tracer.start_as_current_span("Calc agg")
+        my_span = self.tracer.get_current_span()
 
         time_start = datetime.datetime.now()
         all_instr = AllTypeInstruments()
@@ -102,7 +102,7 @@ class CalcAggreg():
         a_start_dat = a_todo.obs.agg_start_dat
 
         # sub span when retrieving posteMetier and needed aggregations
-        with self.tracer.start_span("finding needed aggregations") as span_load_data:
+        with self.tracer.start_as_current_span("finding needed aggregations") as span_load_data:
             poste_metier = PosteMetier(a_todo.obs.poste_id, a_start_dat)
 
             poste_metier.lock()
@@ -112,23 +112,31 @@ class CalcAggreg():
             idx_dv = 0
             while idx_dv < a_todo.data.j.__len__():
                 # sub span for each data item
-                with self.tracer.start_span("item_" + str(idx_dv)) as span_load_data_x:
+                with self.tracer.start_as_current_span("item_" + str(idx_dv)) as span_load_data_x:
                     span_load_data_x.set_attribute('idx', idx_dv)
+                    delta_values = a_todo.data.j[idx_dv]
+
+                    # we can have different json_type in the same obs, but it is very rare
+                    if delta_values.get('json_type') is not None and json_type != delta_values['json_type']:
+                        json_type =delta_values['json_type']
+                        is_json_obs = True if json_type in ["O", "C"] else False
+                        aggregations = poste_metier.aggregations(a_todo.data.id, m_stop_dat, True, False, json_type)
 
                     # load dv, add duration to the main aggregations
-                    delta_values = a_todo.data.j[idx_dv]
                     tmp_duration = delta_values["duration"]
                     if is_json_obs is True:
                         mini_level = 'H'
                     else:
-                        mini_level = delta_values.get['level'] if not None else 'H'
+                        mini_level = delta_values.get('json_type')
+                        if mini_level is None or mini_level == 'C':
+                            mini_level = 'H'
 
                     # propagate measure duration to all aggregations that need it
                     self.add_duration_to_agg(aggregations, mini_level, tmp_duration, span_load_data)
 
                     # loop on each level
                     for anAgg in getAggLevels(False):
-                        with self.tracer.start_span("level " + anAgg) as span_lvl:
+                        with self.tracer.start_as_current_span("level " + anAgg) as span_lvl:
                             b_insert_start_dat = True
 
                             # dv_next is the delta_values for next level
@@ -140,7 +148,7 @@ class CalcAggreg():
                                 for my_measure in an_instrument["object"].get_all_measures():
 
                                     # load the needed aggregation for this measure
-                                    agg_decas = self.load_aggregations_in_array(my_measure, anAgg, aggregations, m_stop_dat)
+                                    agg_decas = self.load_aggregations_in_array(my_measure, anAgg, aggregations, m_stop_dat, is_json_obs)
 
                                     if b_insert_start_dat:
                                         b_insert_start_dat = False
@@ -154,7 +162,7 @@ class CalcAggreg():
                 idx_dv += 1
 
             # save our aggregations for this delta_values
-            with self.tracer.start_span("saveData"):
+            with self.tracer.start_as_current_span("saveData") as save_span:
                 for an_agg in aggregations:
                     an_agg.save()
 
@@ -167,7 +175,7 @@ class CalcAggreg():
                 dur_millisec = round(duration.total_seconds() * 1000)
                 t.logInfo(
                     "Aggregation computed",
-                    my_span,
+                    save_span,
                     {
                         "obsId": a_todo.obs.id,
                         "meteor": a_todo.obs.poste.meteor,
@@ -178,7 +186,7 @@ class CalcAggreg():
         finally:
             poste_metier.unlock()
 
-    def load_aggregations_in_array(self, my_measure, anAgg: str, aggregations, m_stop_dat: datetime):
+    def load_aggregations_in_array(self, my_measure, anAgg: str, aggregations, m_stop_dat: datetime, is_json_obs: bool):
         """
             load array of aggregations for calculus:
 
@@ -198,7 +206,7 @@ class CalcAggreg():
 
         old_deca = 999
         for deca_hour in deca_hours:
-            if deca_hour == old_deca:
+            if agg_decas.__len__() > 0 and (deca_hour == old_deca or is_json_obs is False):
                 # use last pushed data if deca_hour is the same
                 agg_decas.append(agg_decas[-1])
             else:

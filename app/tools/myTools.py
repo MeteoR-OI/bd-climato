@@ -211,17 +211,17 @@ class LogMe:
         else:
             msg = 'timestamp=' + str(log_j.get("timestamp")) + " "
             msg += 'level=' + str(log_j.get("level")).upper() + " "
-            msg += ' pyFile=' + str(log_j.get("pyFile")) + " "
-            msg += ' pyLine=' + str(log_j.get("pyLine"))
-            msg += ' pyFunc=' + str(log_j.get("pyFunc"))
-            msg += ' msg=' + str(log_j.get("msg")) + ' '
+            msg += 'pyFile=' + str(log_j.get("pyFile")) + " "
+            msg += 'pyLine=' + str(log_j.get("pyLine")) + " "
+            msg += 'pyFunc=' + str(log_j.get("pyFunc")) + " "
+            msg += 'msg=' + str(log_j.get("msg")) + " "
             if log_j.get("traceID") != "no_trace" and log_j.get("traceID") is not None:
-                msg += 'traceID=' + str(log_j.get("traceID"))
+                msg += 'traceID=' + str(log_j.get("traceID")) + " "
             if log_j.get("spanID") != "no_trace" and log_j.get("spanID") is not None:
-                msg += 'spanID=' + str(log_j.get("spanID"))
+                msg += 'spanID=' + str(log_j.get("spanID")) + " "
             if params != {}:
                 for key in params:
-                    msg += "  " + key + "=" + str(params[key])
+                    msg += "  " + key + "=" + str(params[key]) + " "
 
         if level == 'info':
             self.log.info(msg)

@@ -13,7 +13,7 @@
 
           "valeurs":
           {
-            "barometer_avg": 1008.3047501,
+            "barometer_s": 60498.285006,
             "barometer_d": 60,
             "barometer_max_time": "2022-02-18T08:02:02",
             "barometer_max": 1008.36480205,
@@ -28,13 +28,12 @@
 
           "valeurs":
           {
-            "barometer_avg": 1008.3047501,
+            "barometer_s": 60498.2850061,
             "barometer_d": 60,
             "barometer_max_time": "2022-02-18T05:02:02",
             "barometer_max": 1008.36480205,
             "barometer_min_time": "2022-02-18T14:04:33",
             "barometer_min": 1008.22934652,
-            "barometer": 1008.22934652,
 
             "end_valeurs": 0
           }
