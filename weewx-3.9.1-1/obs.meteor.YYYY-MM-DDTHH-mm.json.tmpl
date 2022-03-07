@@ -75,8 +75,9 @@ LOW#slurp
 [
 {
   "meteor" : "$BootstrapLabels.station_id",
-  "version":2,
   "info" : {
+     "version":1,
+     "json_type":"O",
      "title":"JSON pour BDClimato",
      "hardware":"$station.hardware",
      "weewxVersion":"$station.version",
@@ -95,27 +96,17 @@ LOW#slurp
 #set $interval = $current.interval.raw * 60 ## interval obs en secondes
 #if $uptime < $interval + ($interval/10) ## on teste si weewx vient de demarrer
 #set $tds = $last_timestamp - $last_update_stop
-###set $h_delta = int(($tds.days*24) + round($tds.seconds/3600)) + 1 ##nb heures a recuperer + 1
 #set $h_delta = int($tds.days*86400) + round($tds.seconds) ##nb secondes a recuperer + 1
 #else
 #set $h_delta = 0 ## sinon fonctionnement normal
 #end if ## fin test redemarrage
 #set $boucle_obs = $span($time_delta=$h_delta) ## definit la periode a traiter
-###set $all_obs = $boucle_obs.rxCheckPercent.count.raw ## compte le nb obs presentes
-###set $all_obs = round($all_obs)
-###set $nb_obs = 0 ## numero obs en cours dans la boucle
 #for $obs in $boucle_obs.records ## debut boucle obs
 #set $amin = round($obs.interval.raw) ##intervalle de la mesure
 #set $datetime_obs = datetime.fromtimestamp($obs.dateTime.raw) ## obs en cours de traitement
 #set $datetime_obs += timedelta(minutes=1) / 2 ## arrondie a 1 mn pres
 #set $d = $datetime_obs
 #set $datetime_obs -= timedelta(minutes=$d.minute % 1, seconds=$d.second, microseconds=$d.microsecond)
-## #if $start == 0 ## on traite le probleme des obs non rondes au redemarrage
-## #set $diff = time.mktime($datetime_obs.timetuple()) - time.mktime($datetime_obs_prev.timetuple())
-## #if $diff > $amin * 60
-## #set $datetime_obs -= timedelta(minutes=$amin)
-## #end if ## fin $diff > $amin*60
-## #end if ## fin $start = 0 probleme des obs non rondes au redemarrage
 #set $datetime_obs_start = format($datetime_obs - timedelta(minutes=$amin),"%Y-%m-%dT%H:%M:%S")
 #set $datetime_obs_stop = format($datetime_obs,"%Y-%m-%dT%H:%M:%S")
 #set $duration = round($obs.interval.raw)
@@ -125,23 +116,16 @@ LOW#slurp
 #set $final_obs = $datetime_obs == $datetime_cur
 #set $restartw  = $h_delta > 0
 #set $start = 0
-## #set $aggregation_hour = 0
 #else
 #set $new_hour  = $datetime_obs.hour != $datetime_obs_prev.hour
 #set $final_obs = $datetime_obs == $datetime_cur
 #set $restartw  = $h_delta > 0
-## #if $aggregation_hour == 0
       }}, ## apres 1er current on ferme proprement current precedent
-## #else
-
-##      }, ## idem mais agregation hour suit
-## #end if
 #end if ## fin test premiere obs
-## #set $aggregation_hour = 0
       {
-       "start_dat":"$datetime_obs_start",
        "stop_dat":"$datetime_obs_stop",
-       "current": {
+       "duration":$duration,       
+       "valeurs": {
        $CleVal("out_temp",$obs.outTemp.degree_C.raw)
        #if $final_obs
        $CleVal("out_temp_min",$currentagg.outTemp.min.degree_C.raw)       
@@ -264,11 +248,6 @@ LOW#slurp
 #set $delta_d = ($datetime_cur - $datetime_obs).days
 #set $delta_h = (($delta_d * 86400) + $delta_s) // 3600 + 1
 #end if ## fin final_obs
-##        },
-## #set $aggregation_hour = 1
-##        "aggregations":
-##        [{
-##        "level":"H",
 ## traitement special pour affichage de l'etp qui n'est disponible que sur current a heure ronde
 #if $day.ET.has_data and $day.ET.sum.raw >0.0
        $CleVal("etp_s",$hour.ET.sum.raw)
@@ -276,22 +255,17 @@ LOW#slurp
 #end if
 ##        "start_dat":$datef($hour($hours_ago=$delta_h).dateTime.raw)
 #end if ## fin heure intermediaire
-## #if $aggregation_hour == 1
-##         ##si agregation hour on referme apres $hour
-##        }]#slurp
-## #end if
 #end if ## fin test change heure ou final obs
        $CleVal("rx",$obs.rxCheckPercent.raw)
        $CleVal("voltage",$obs.consBatteryVoltage.raw)
        #if $final_obs
        $CleAvg("voltage_avg",$currentagg.consBatteryVoltage.sum.raw,$currentagg.consBatteryVoltage.count.raw)
        $CleVal("voltage_min",$currentagg.consBatteryVoltage.min.raw)
-       $CleDat("voltage_min_time",$currentagg.consBatteryVoltage.mintime.raw)
+       $CleDat("voltage_min_time",$currentagg.consBatteryVoltage.mintime.raw)  
        #end if
-       "duration":$duration
+       "end_valeurs":0
 #set $datetime_obs_prev = $datetime_obs ## garde en memoire obs traitee
 #end for ## fin boucle obs       
-## #if $aggregation_hour == 0 and $final_obs
 #if $final_obs 
         ## derniere obs faut refermer current
        }#slurp

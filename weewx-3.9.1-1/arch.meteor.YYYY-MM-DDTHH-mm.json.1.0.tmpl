@@ -76,8 +76,10 @@ LOW#slurp
 [
 {
   "meteor" : "$Extras.station_id",
-  "version":2,
   "info" : {
+     "version":1,
+#set $json_level = $json.level
+     "json_type":"$json_level",
      "title":"JSON pour BDClimato",
      "hardware":"$station.hardware",
      "weewxVersion":"$station.version",
@@ -86,11 +88,7 @@ LOW#slurp
 #set $last_timestamp=datetime.fromtimestamp($db_lookup.last_timestamp)
      "last_update":"$last_timestamp",
 #set $last_update_stop = datetime.fromtimestamp(user.extensions.last_update_stop)
-     "last_update_before_stop":"$last_update_stop", ## final maj depuis arret weewx
-#set $json_level = $json.level
-     "json_level":"$json_level",  
-#set $json_valid = $json.validation
-     "json_valid":"$json_valid"  
+     "last_update_before_stop":"$last_update_stop" ## final maj depuis arret weewx
      },
   "data":
      [
@@ -101,8 +99,11 @@ LOW#slurp
 #set $uptime = round($station.uptime.raw) ## temps passe depuis demarrage weewx
 #set $interval = $current.interval.raw * 60 ## interval obs en secondes
 #set $boucle_obs = $span($time_delta=$time_period).records ## definit la periode a traiter
-#for $obs in $boucle_obs ## debut boucle obs
-##if $json_level == 'C' or $json_level == 'H'
+##############################################
+##############################################
+#for $obs in $boucle_obs ## debut boucle obs #
+##############################################
+##############################################
 #set $amin = round($obs.interval.raw) ##intervalle de la mesure
 #set $datetime_obs = datetime.fromtimestamp($obs.dateTime.raw) ## obs en cours de traitement
 #set $datetime_obs += timedelta(minutes=1) / 2 ## arrondie a interval pres
@@ -118,6 +119,7 @@ LOW#slurp
 #set $datetime_obs_stop = format($datetime_obs,"%Y-%m-%dT%H:%M:%S")
 #set $duration = round($obs.interval.raw)
 ##end if ## fin level 'C' or 'H'
+## ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #if $start == 1 ## si premiere obs, obs precedente initialisee
 #set $datetime_obs_prev = datetime.fromtimestamp($obs.dateTime.raw) - timedelta(minutes=$amin,seconds=-1)
 #set $new_hour  = $datetime_obs.hour != $datetime_obs_prev.hour
@@ -131,40 +133,44 @@ LOW#slurp
 #set $aggregation_day   = 0
 #set $aggregation_month = 0
 #set $aggregation_year  = 0
-#else
+#else ## si non premiere obs
 #set $new_hour  = $datetime_obs.hour != $datetime_obs_prev.hour
 #set $new_day   = $datetime_obs.day != $datetime_obs_prev.day
 #set $new_month = $datetime_obs.month != $datetime_obs_prev.month
 #set $new_year  = $datetime_obs.year != $datetime_obs_prev.year
 #set $diff_time = time.mktime($datetime_obs.timetuple()) - time.mktime($datetime_cur.timetuple())
 #set $final_obs = abs($diff_time) < 100
+## ---------------------------------------------------------
 #if ($aggregation_hour == 0 and $aggregation_day == 0)
 #if $json_level == 'C'
       }}, ## apres 1er current on ferme proprement current precedent
 #end if
 #else
-
-      }, 
+         }
+       }  
+     ], 
 #end if
+## ----------------------------------------------------------
 #end if ## fin test premiere obs
+## ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #set $aggregation_hour  = 0
 #set $aggregation_day   = 0
 #set $aggregation_month = 0
 #set $aggregation_year  = 0
+## -----------------------------------------------------
 #if $json_level == 'C' or $new_hour or $final_obs
 #if not $json_level == 'D'
       {
-       "start_dat":"$datetime_obs_start",
        "stop_dat":"$datetime_obs_stop",
 #elif $new_day or $final_obs
       {
-       "start_dat":"$datetime_obs_start",
-       "stop_dat":"$datetime_obs_stop",
-       "aggregations:"
+       "extremes:"
 #end if
 #end if
+## -----------------------------------------------------
 #if $json_level == 'C'
-       "current": {
+       "duration":$duration,
+       "valeurs": {
        $CleVal("out_temp",$obs.outTemp.degree_C.raw)
        $CleVal("windchill",$obs.windchill.degree_C.raw)
        $CleVal("heatindex",$obs.heatindex.degree_C.raw)
@@ -189,9 +195,27 @@ LOW#slurp
        #end if
        $CleVal("in_temp",$obs.inTemp.degree_C.raw)
        $CleVal("in_humidity",$obs.inHumidity.raw,0)
+#if $new_hour or $final_obs ## test change heure ou final obs
+#if $new_hour ## heure intermediaire
+#if $final_obs ## final obs
+#set $delta_h = 0
+#else
+## calcule les deltas pour agregation
+#set $delta_s = ($datetime_cur - $datetime_obs).seconds
+#set $delta_d = ($datetime_cur - $datetime_obs).days
+#set $delta_h = (($delta_d * 86400) + $delta_s) // 3600 + 1
+#end if ## fin final_obs
+## traitement special pour affichage de l'etp qui n'est disponible que sur current a heure ronde
+#if $day.ET.has_data and $day.ET.sum.raw >0.0
+       $CleVal("etp_s",$hour.ET.sum.raw)
+       $CleVal("etp_d",60)
+#end if
+##        "start_dat":$datef($hour($hours_ago=$delta_h).dateTime.raw)
+#end if ## fin heure intermediaire
+#end if ## fin test change heure ou final obs
        $CleVal("rx",$obs.rxCheckPercent.raw)
        $CleVal("voltage",$obs.consBatteryVoltage.raw)
-       "duration":$duration
+       "end_valeurs":0      
 #end if
 #if $new_hour or $final_obs ## test change heure ou final obs
 #if $new_hour ## heure intermediaire
@@ -203,10 +227,10 @@ LOW#slurp
 #set $delta_d = ($datetime_cur - $datetime_obs).days
 #set $delta_h = (($delta_d * 86400) + $delta_s) // 3600 ##+ 1
 #end if
-#if $json_level == 'C'
-       },
-#end if
-#if $json_level == 'C' or $json_level == 'H'
+## #if $json_level == 'C'
+##        },
+## #end if
+#if $json_level == 'H'
 #set $aggregation_hour = 1
        "aggregations":
        [{
@@ -243,7 +267,7 @@ LOW#slurp
        "start_dat":$datef($hour($hours_ago=$delta_h).dateTime.raw)
 #end if
 #end if ## fin heure intermediaire
-#if ($new_day and json_level == 'D' and not $final_obs)## test (change jour)
+#if ($new_day)## test (change jour)
 #if $final_obs ## test final obs pour calcul deltas differencies
 #set $delta_h = 0
 #set $delta_d = 0
@@ -269,7 +293,7 @@ LOW#slurp
 #if not $json_level == 'D'
        },
 #end if
-       "aggregations":
+       "extremes":
 #else
        },
        { ## sinon on ajoute les agregations superieures
@@ -803,7 +827,11 @@ LOW#slurp
 #end if
 #end if ## fin test change heure ou final obs
 #set $datetime_obs_prev = $datetime_obs ## garde en memoire obs traitee
-#end for ## fin boucle obs       
+###########################################
+###########################################
+#end for ## fin boucle obs                #
+###########################################
+###########################################
 #if $aggregation_hour == 0 and $aggregation_day == 0 and $aggregation_month == 0 and $aggregation_year == 0 and $final_obs 
         ## si aucune agregation faut refermer current
        }#slurp

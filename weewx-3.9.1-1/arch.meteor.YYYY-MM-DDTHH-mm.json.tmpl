@@ -1,0 +1,211 @@
+#encoding UTF-8
+#def get_battery_status($x)
+#if $x == 0
+OK#slurp
+#else
+LOW#slurp
+#end if
+#end def
+## fonction cle et moyenne
+#def CleAvg($cle,$x,$y,$d=None)
+#if $x is not None and $y is not None
+#set $val = $x/$y
+#if $d is None
+#set $nval = $val
+#elif $d == 0 
+#set $nval = round($val)
+#else
+#set $nval = round($val,$d)
+#end if
+"$cle":$nval,#slurp
+#end if
+#end def
+## fin fonction cle et moyenne
+## fonction formatage date
+#def datef($x)
+#if $x is None
+#set $res = "n/a" ## valeur nulle n/a
+"$res"#slurp
+#else 
+#set $d = datetime.fromtimestamp($x)
+#set $d = format($d,"%Y-%m-%dT%H:%M:%S")
+"$d"#slurp
+#end if
+#end def
+## fin fonction formatage date
+## fonction formatage date avec cle
+#def CleDat($cle, $dat)
+#if $dat is not None
+#set $ndat = datetime.fromtimestamp($dat)
+#set $ndat = format($ndat,"%Y-%m-%dT%H:%M:%S")
+"$cle":"$ndat",#slurp
+#end if
+#end def
+## fin fonction formatage date avec cle
+## fonction formatage valeur avec cle
+#def CleVal($cle, $val, $d=None)
+#if $val is not None
+#if $d is None
+#set $nval = $val
+#elif $d == 0 
+#set $nval = round($val)
+#else
+#set $nval = round($val,$d)
+#end if
+"$cle":$nval,#slurp
+#end if
+#end def
+## fin fonction formatage valeur avec cle
+## fonction calcul valeur avec cle
+#def CleCal($cle, $val, $mult, $d=None)
+#if $val is not None and $mult is not None
+#if $d is None
+#set $nval = $val*$mult
+#elif $d == 0 
+#set $nval = round($val*$mult)
+#else
+#set $nval = round($val*$mult,$d)
+#end if
+"$cle":$nval,#slurp
+#end if
+#end def
+## fin fonction calcul valeur avec cle
+#from datetime import datetime, timedelta
+#from time import mktime
+#import user.extensions
+[
+{
+  "meteor" : "$Extras.station_id",
+  "info" : {
+     "version":1,
+#set $json_level = $json.level
+     "json_type":"$json_level",
+     "title":"JSON pour BDClimato",
+     "hardware":"$station.hardware",
+     "weewxVersion":"$station.version",
+     "time":"$current.dateTime",
+     "uptime":"$station.uptime",
+#set $last_timestamp=datetime.fromtimestamp($db_lookup.last_timestamp)
+     "last_update":"$last_timestamp",
+#set $last_update_stop = datetime.fromtimestamp(user.extensions.last_update_stop)
+     "last_update_before_stop":"$last_update_stop" ## final maj depuis arret weewx
+     },
+  "data":
+     [
+#set $datetime_cur = datetime.fromtimestamp($current.dateTime.raw)
+#set $time_period = $current.dateTime.raw - $json.start
+#set $start = 1 ## indique debut de la boucle sur les currents
+#set $uptime = round($station.uptime.raw) ## temps passe depuis demarrage weewx
+#set $interval = $current.interval.raw * 60 ## interval obs en secondes
+#set $boucle_obs = $span($time_delta=$time_period).records ## definit la periode a traiter
+##############################################
+#for $obs in $boucle_obs ## debut boucle obs #
+##############################################
+#set $amin = round($obs.interval.raw) ##intervalle de la mesure
+#set $datetime_obs = datetime.fromtimestamp($obs.dateTime.raw) ## obs en cours de traitement
+#set $datetime_obs += timedelta(minutes=1) / 2 ## arrondie a interval pres
+#set $d = $datetime_obs
+#set $datetime_obs -= timedelta(minutes=$d.minute % 1, seconds=$d.second, microseconds=$d.microsecond)
+#set $datetime_obs_start = format($datetime_obs - timedelta(minutes=$amin),"%Y-%m-%dT%H:%M:%S")
+#set $datetime_obs_stop = format($datetime_obs,"%Y-%m-%dT%H:%M:%S")
+#set $duration = round($obs.interval.raw)
+## ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#if $start == 1 ## si premiere obs, obs precedente initialisee
+#set $datetime_obs_prev = datetime.fromtimestamp($obs.dateTime.raw) - timedelta(minutes=$amin,seconds=-1)
+#set $start = 0
+#end if ## fin test premiere obs
+## ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#set $new_hour  = $datetime_obs.hour != $datetime_obs_prev.hour
+#set $diff_time = time.mktime($datetime_obs.timetuple()) - time.mktime($datetime_cur.timetuple())
+#set $final_obs = abs($diff_time) < 100
+## -----------------------------------------------------
+#if $json_level == 'C' ## debut json_level == C
+      {
+       "stop_dat":"$datetime_obs_stop",
+       "duration":$duration,
+       "valeurs": {
+       $CleVal("out_temp",$obs.outTemp.degree_C.raw)
+       $CleVal("windchill",$obs.windchill.degree_C.raw)
+       $CleVal("heatindex",$obs.heatindex.degree_C.raw)
+       $CleVal("dewpoint",$obs.dewpoint.degree_C.raw)
+       #if $obs.soilTemp1.has_data and $day.soilTemp1.has_data
+       $CleVal("soil_temp",$obs.soilTemp1.degree_C.raw)
+       #end if     
+       $CleVal("humidity",$obs.outHumidity.raw,0)
+       $CleVal("barometer",$obs.barometer.hPa.raw)
+       $CleVal("pressure",$obs.pressure.hPa.raw)
+       $CleVal("wind_avg",$obs.windSpeed.meter_per_second.raw)
+       $CleVal("wind_dir",$obs.windDir.raw)
+       $CleVal("wind_max",$obs.windGust.meter_per_second.raw)
+       $CleVal("wind_max_dir",$obs.windGustDir.raw)
+       $CleVal("rain",$obs.rain.mm.raw)
+       $CleVal("rain_rate_max",$obs.rainRate.mm_per_hour.raw)
+       #if $day.UV.has_data
+       $CleVal("uv_indice",$obs.UV.raw)
+       #end if
+       #if $obs.radiation.has_data  
+       $CleCal("radiation",$obs.radiation.raw,$amin*0.006)
+       #end if
+       $CleVal("in_temp",$obs.inTemp.degree_C.raw)
+       $CleVal("in_humidity",$obs.inHumidity.raw,0)
+## traitement special pour affichage de l'etp qui n'est disponible que sur current a heure ronde
+#if $new_hour and $day.ET.has_data and $day.ET.sum.raw >0.0
+       $CleVal("etp_s",$hour.ET.sum.raw)
+       $CleVal("etp_d",60)
+#end if
+       $CleVal("rx",$obs.rxCheckPercent.raw)
+       $CleVal("voltage",$obs.consBatteryVoltage.raw)
+       "end_valeurs":0
+#if not $final_obs
+       }},
+#end if
+#end if ## fin json_level == C
+#if json_level == 'H' ## debut json_level == H
+#if $new_hour
+      {
+       "stop_dat":"$datetime_obs_stop",
+       "valeurs": {
+## calcule les deltas pour agregation
+#set $delta_s = ($datetime_cur - $datetime_obs).seconds
+#set $delta_d = ($datetime_cur - $datetime_obs).days
+#set $delta_h = (($delta_d * 86400) + $delta_s) // 3600 ##+ 1
+       $CleVal("out_temp",$hour($hours_ago=$delta_h).outTemp.last.degree_C.raw)
+       $CleVal("windchill",$hour($hours_ago=$delta_h).windchill.last.degree_C.raw)
+       $CleVal("heatindex",$hour($hours_ago=$delta_h).heatindex.last.degree_C.raw)
+       $CleVal("dewpoint",$hour($hours_ago=$delta_h).dewpoint.last.degree_C.raw)
+       #if $hour($hours_ago=$delta_h).soilTemp1.has_data and $day.soilTemp1.has_data
+       $CleVal("soil_temp",$hour($hours_ago=$delta_h).soilTemp1.last.degree_C.raw)
+       #end if     
+       $CleVal("humidity",$hour($hours_ago=$delta_h).outHumidity.last.raw,0)
+       $CleVal("barometer",$hour($hours_ago=$delta_h).barometer.last.hPa.raw)
+       $CleVal("pressure",$hour($hours_ago=$delta_h).pressure.last.hPa.raw)
+       $CleVal("wind_avg",$hour($hours_ago=$delta_h).windSpeed.last.meter_per_second.raw)
+       $CleVal("wind_dir",$hour($hours_ago=$delta_h).windDir.last.raw)
+       $CleVal("wind_max",$hour($hours_ago=$delta_h).windGust.last.meter_per_second.raw)
+       $CleVal("wind_max_dir",$hour($hours_ago=$delta_h).windGustDir.last.raw)
+       $CleVal("rain",$hour($hours_ago=$delta_h).rain.last.mm.raw)
+       $CleVal("rain_rate_max",$hour($hours_ago=$delta_h).rainRate.last.mm_per_hour.raw)
+       #if $day.UV.has_data
+       $CleVal("uv_indice",$hour($hours_ago=$delta_h).UV.last.raw)
+       #end if
+       #if $hour($hours_ago=$delta_h).radiation.has_data  
+       $CleCal("radiation",$hour($hours_ago=$delta_h).radiation.last.raw,$amin*0.006)
+       #end if
+       $CleVal("in_temp",$hour($hours_ago=$delta_h).inTemp.last.degree_C.raw)
+       $CleVal("in_humidity",$hour($hours_ago=$delta_h).inHumidity.last.raw,0)
+       $CleVal("rx",$hour($hours_ago=$delta_h).rxCheckPercent.last.raw)
+       $CleVal("voltage",$hour($hours_ago=$delta_h).consBatteryVoltage.last.raw)
+       "end_valeurs":0
+#if not $final_obs
+       }},
+#end if
+#end if ## fin new_hour
+#end if ## fin json_level == H
+#set $datetime_obs_prev = $datetime_obs ## garde en memoire obs traitee
+###########################################
+#end for ## fin boucle obs                #
+###########################################
+     }
+   ]
+}
+]
