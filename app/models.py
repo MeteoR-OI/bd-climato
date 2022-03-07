@@ -23,7 +23,6 @@ class DateCharField(models.CharField):
         except Exception:
             pass
         finally:
-            # t.LogDebug("DateCharField..get_prep_value called for " + str(self.attname) + " with " + str(value) + " => " + str(ret))
             return ret
 
     def from_db_value(self, value, expression, connection):
@@ -33,7 +32,6 @@ class DateCharField(models.CharField):
         except Exception:
             pass
         finally:
-            # t.LogDebug("DateCharField..from_db_value called for " + str(self.attname) + " with " + str(value) + " => " + str(ret))
             return ret
 
     def to_python(self, value):
@@ -43,7 +41,6 @@ class DateCharField(models.CharField):
         except Exception:
             pass
         finally:
-            # t.LogDebug("DateCharField..to_python called for " + str(self.attname) + " with " + str(value) + " => " + str(ret))
             return ret
 
 
@@ -56,20 +53,6 @@ class DateJSONField(models.JSONField):
         # self.default = dict
         super(DateJSONField, self).__init__(*args, **kwargs)
 
-    # def get_prep_value(self, value):
-    #     ret = value
-    #     try:
-    #         if value is None or value == {}:
-    #             return {}
-    #         if value == []:
-    #             return []
-    #         ret = JsonPlus().serialize(value)
-    #     except Exception:
-    #         pass
-    #     finally:
-    #         # t.LogDebug("DateJSONField..from_db_value called for " + str(self.attname) + " with " + str(value) + " => " + str(ret))
-    #         return ret
-
     def from_db_value(self, value, expression, connection):
         ret = value
         try:
@@ -81,7 +64,6 @@ class DateJSONField(models.JSONField):
         except Exception:
             pass
         finally:
-            # t.LogDebug("DateJSONField..from_db_value called for " + str(self.attname) + " with " + str(value) + " => " + str(ret))
             return ret
 
     def to_python(self, value):
@@ -95,7 +77,6 @@ class DateJSONField(models.JSONField):
         except Exception:
             pass
         finally:
-            # t.LogDebug("DateJSONField..to_python called for " + str(self.attname) + " with " + str(value) + " => " + str(ret))
             return ret
 
 
@@ -370,7 +351,7 @@ class AggHisto(models.Model):
 class Incident(models.Model):
     id = models.AutoField(primary_key=True)
     dat = DateCharField(null=False, max_length=30, verbose_name="start date de l incident'")
-    source = models.CharField(null=False, max_length=20, verbose_name='source')
+    source = models.CharField(null=False, max_length=100, verbose_name='source')
     level = models.CharField(null=False, max_length=20, verbose_name='level')
     reason = models.TextField(null=False, verbose_name='reason')
     j = DateJSONField(encoder=DjangoJSONEncoder, null=False, verbose_name="Details")

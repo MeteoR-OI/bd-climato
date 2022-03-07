@@ -1,13 +1,13 @@
 # Line number should match in lines 10, 20, 30
-from app.tools.myTools import CopyJson, LogCritical, logInfo, LogDebug
+from app.tools.myTools import CopyJson, logCritical, logInfo
 import pytest
 
 
 @pytest.mark.unit
-def test_LogCritical():
+def test_logCritical():
     inst = Exception('test_logE', 'this is an Exception')
-    log_e = LogCritical(inst, None, {"a": 1}, True)
-    assert log_e['loc'] == "test_LogCritical::9"
+    log_e = logCritical(inst, None, {"a": 1}, True)
+    assert log_e['loc'] == "test.logCritical::9"
     assert log_e['level'] == 'error'
     assert log_e["a"] == 1
 
@@ -18,15 +18,6 @@ def test_logInfo():
     assert log_e['msg'] == 'my message'
     assert log_e['loc'] == "test_logInfo::17"
     assert log_e['level'] == 'info'
-    assert log_e["a"] == 1
-
-
-@pytest.mark.unit
-def test_LogDebug():
-    log_e = LogDebug("my message", None, {"a": 1}, True)
-    assert log_e['msg'] == 'my message'
-    assert log_e['loc'] == "test_LogDebug::26"
-    assert log_e['level'] == 'trace'
     assert log_e["a"] == 1
 
 
