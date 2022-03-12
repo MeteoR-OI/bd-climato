@@ -2,7 +2,7 @@ Cheetah3==3.2.6.post2
 configobj==5.0.6
 ephem==4.0.0.2
 mariadb==1.0.7
-Pillow==8.3.1
+Pillow==9.0.1
 pkg-resources==0.0.0
 pyephem==9.99
 PyMySQL==1.0.2
