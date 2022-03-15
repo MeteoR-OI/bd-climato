@@ -182,7 +182,7 @@ class TimespanBinder(object):
                 print "start dateTime: %s < stop previous dateTime: %s" % (format(datetime.fromtimestamp(rcurr_start),"%Y-%m-%dT%H:%M:%S"),
                         (format(datetime.fromtimestamp(rprec_stop),"%Y-%m-%dT%H:%M:%S")))
             rprec_stop = rcurr_stop
-            print "stop dateTime: %s" % format(datetime.fromtimestamp(record['dateTime']),"%Y-%m-%dT%H:%M:%S")
+            # print "stop dateTime: %s" % format(datetime.fromtimestamp(record['dateTime']),"%Y-%m-%dT%H:%M:%S")
             # end added
             yield CurrentObj(self.db_lookup, self.data_binding, record['dateTime'], self.formatter,
                              self.converter, record=record)

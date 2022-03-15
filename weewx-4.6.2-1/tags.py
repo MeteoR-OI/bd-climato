@@ -204,15 +204,15 @@ class TimespanBinder(object):
         manager = self.db_lookup(self.data_binding)
         rprec_stop = 0 # added by QUETELARD
         for record in manager.genBatchRecords(self.timespan.start, self.timespan.stop):
-            # added by QUETELARD
-            rcurr_stop  = record['dateTime']
-            rcurr_start = rcurr_stop - record['interval']*60
-            if rcurr_start < rprec_stop:
-                print("start dateTime: %s < stop previous dateTime: %s" % (format(datetime.fromtimestamp(rcurr_start),"%Y-%m-%dT%H:%M:%S")),
-                        (format(datetime.fromtimestamp(rprec_stop),"%Y-%m-%dT%H:%M:%S")))
-            rprec_stop = rcurr_stop
-            print("stop dateTime: %s" % format(datetime.fromtimestamp(record['dateTime']),"%Y-%m-%dT%H:%M:%S"))
-            # end added
+            # # added by QUETELARD
+            # rcurr_stop  = record['dateTime']
+            # rcurr_start = rcurr_stop - record['interval']*60
+            # if rcurr_start < rprec_stop:
+            #     print("start dateTime: %s < stop previous dateTime: %s" % (format(datetime.fromtimestamp(rcurr_start),"%Y-%m-%dT%H:%M:%S")),
+            #             (format(datetime.fromtimestamp(rprec_stop),"%Y-%m-%dT%H:%M:%S")))
+            # rprec_stop = rcurr_stop
+            # print("stop dateTime: %s" % format(datetime.fromtimestamp(record['dateTime']),"%Y-%m-%dT%H:%M:%S"))
+            # # end added
             yield CurrentObj(self.db_lookup, self.data_binding, record['dateTime'], self.formatter,
                              self.converter, record=record)
 

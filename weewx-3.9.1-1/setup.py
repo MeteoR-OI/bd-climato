@@ -301,7 +301,7 @@ class weewx_install_data(install_data):
         weecfg.reorder_sections(config_dict, 'Vantage', 'Station', after=True)
        
         # Set the WEEWX_ROOT
-        config_dict['WEEWX_ROOT']    = os.path.normpath(install_dir)
+        config_dict['WEEWX_ROOT']    = os.path.normpath(install_dir.replace('/skins/Json',''))
 
         # NB: use mkstemp instead of NamedTemporaryFile because we need to
         # do the delete (windows gets mad otherwise) and there is no delete
@@ -329,7 +329,7 @@ class weewx_install_data(install_data):
         # Set the permission bits unless this is a dry run:
         if not self.dry_run:
             shutil.copymode(f, install_path)
-
+            
         return rv
 
     def process_Bootstrap_skin_file(self, f, install_dir, **kwargs):
@@ -345,18 +345,22 @@ class weewx_install_data(install_data):
 
         # The path where the Bootstrap skin.conf file will be installed
         install_path = os.path.join(install_dir, os.path.basename(f))
-
+        
         # Do we have an old Bootstrap config file?
         if os.path.isfile(install_path):
             # Yes. Read it
             skin_path, skin_dict = weecfg.read_config(install_path, None)
             if DEBUG:
                 print "Old Bootstrap json file found at", config_path
-
+             
             # Update the old Bootstrap configuration file to the current version
             if 'JSON2' not in skin_dict['CheetahGenerator']['ToDate']:
+                id_station = skin_dict['BootstrapLabels']['station_id']
+                json2_template = dist_skin_dict['CheetahGenerator']['ToDate']['JSON2']['template']
+                json2_template = json2_template.replace('meteor', id_station)
                 skin_dict['CheetahGenerator']['ToDate']['JSON2'] = \
-                            dist_skin_dict['CheetahGenerator']['ToDate']['JSON2']
+                          dist_skin_dict['CheetahGenerator']['ToDate']['JSON2']
+                skin_dict['CheetahGenerator']['ToDate']['JSON2']['template'] = json2_template 
                 skin_dict['CheetahGenerator']['ToDate'].comments['JSON2'] = ['    # added by QUETELARD']
         else:
             # No old Bootstrap skin file. No possible
@@ -380,7 +384,7 @@ class weewx_install_data(install_data):
 
         # Now get rid of the temporary file
         os.remove(tmpfn)
-
+        
         # Set the permission bits unless this is a dry run:
         if not self.dry_run:
             shutil.copymode(f, install_path)
@@ -405,24 +409,34 @@ class weewx_install_data(install_data):
         install_dir_ref = install_dir.replace('/skins/Json','/skins/Bootstrap')
         install_path_ref = os.path.join(install_dir_ref, os.path.basename(f))
         skin_path_ref, skin_dict_ref = weecfg.read_config(install_path_ref, None)
+        id_station = skin_dict_ref['BootstrapLabels']['station_id'] 
+        json_template = dist_skin_dict['CheetahGenerator']['ToDate']['JSON']['template'] 
+        json_template = json_template.replace('meteor', id_station) 
 
         # Do we have an old json skin file?
         if os.path.isfile(install_path):
             # Yes. Read it
             skin_path, skin_dict = weecfg.read_config(install_path, None)
+
             if DEBUG:
                 print "Old Bootstrap skin file found at", config_path
 
             # Update the old json configuration file to the current version
             if 'JSON' not in skin_dict['CheetahGenerator']['ToDate']:
                 skin_dict['CheetahGenerator']['ToDate']['JSON'] = \
-                            dist_skin_dict['CheetahGenerator']['ToDate']['JSON']
+                         dist_skin_dict['CheetahGenerator']['ToDate']['JSON']   
+                skin_dict['CheetahGenerator']['ToDate']['JSON']['template'] = json_template
                 skin_dict['CheetahGenerator']['ToDate'].comments['JSON'] = ['    # added by QUETELARD']
+            else:
+                skin_dict['CheetahGenerator']['ToDate']['JSON']['template'] = json_template
+                 
         else:
             # No old Json skin file. Use the distribution file, then, if we can,
             # use the Bootstrap skin file for update distribution file
             skin_dict = dist_skin_dict
-            skin_dict['Extras']['station_id'] = skin_dict_ref['BootstrapLabels']['station_id']
+            skin_dict['Extras']['station_id'] = id_station
+            skin_dict['CheetahGenerator']['ToDate']['JSON']['template'] = json_template
+            skin_dict['CheetahGenerator']['ToDate'].comments['JSON'] = ['    # added by QUETELARD']
             
         # Time to write it out. Get a temporary file:
         tmpfd, tmpfn = tempfile.mkstemp()
@@ -632,17 +646,18 @@ if __name__ == "__main__":
                ['LICENSE.txt',
                 'README',
                 'trans_json.sh',
+                'wee_json.sh',
                 'weewx.conf']),
               ## added by QUETELARD  
               ('skins/Bootstrap',
                ['skins/Bootstrap/skin.conf']),
               ('skins/Bootstrap/json',
-               ['skins/Bootstrap/json/obs.YYYY-MM-DD-HH-mm.json.tmpl']),
+               ['skins/Bootstrap/json/obs.meteor.YYYY-MM-DDTHH-mm.json.tmpl']),
               ('skins/Json',
                ['skins/Json/skin.conf',
                 'skins/Json/weewx.conf']),
               ('skins/Json/json',
-               ['skins/Json/json/arch.json.tmpl']),
+               ['skins/Json/json/arch.meteor.YYYY-MM-DDTHH-mm.json.tmpl']),
               ('skins/Images',
                ['skins/Images/skin.conf']),
               ('json_archive',

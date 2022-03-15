@@ -11,11 +11,11 @@
 import socket
 import syslog
 
-import datetime
+from datetime import datetime
 import optparse
 import syslog
 import sys
-import time
+from time import mktime
 
 
 import user.extensions #@UnusedImport
@@ -42,8 +42,8 @@ def main():
                       help="Start with this date.")
     parser.add_option("--to", dest="to_date", type=str, metavar="YYYY-mm-dd HH:MM",
                       help="End with this date.")
-    parser.add_option("--validation", action="store_true", dest="validation",
-                      help="validation key in json file.")
+    parser.add_option("--verbose", action="store_true", dest="verbose",
+                      help="Print and log useful extra output.")
     parser.add_option("--level", dest="jlevel", type=str, metavar="C or H or D",
                       help="aggregation level.")
     
@@ -53,7 +53,20 @@ def main():
     
     print "Using configuration file %s" % config_path
 
+    j_level  = options.jlevel
+    if j_level is None:
+        j_level = 'C'
+
     start_d, stop_d = _parse_dates(options)
+    
+    if j_level == 'C' or j_level == 'H':
+        end_d = start_d + 86400
+        end_day = datetime.fromtimestamp(end_d)
+        end_day = datetime(end_day.year, end_day.month, end_day.day, 0, 0, 0)
+        end_d = round(mktime(end_day.timetuple()))
+        if stop_d is None or stop_d > end_d:
+            stop_d = end_d
+
     if stop_d is None:
         print "Generating file arch.json from %s to current time" % timestamp_to_string(start_d)
     else:
@@ -70,14 +83,9 @@ def main():
 
     stn_info = weewx.station.StationInfo(**config_dict['Station'])
 
-    j_valid = options.validation
-    j_level  = options.jlevel
-    if j_level is None:
-        j_level = 'C'
-    
     t = weewx.reportengine.StdReportEngine(config_dict, stn_info, 
                 start_ts=start_d, gen_ts=stop_d,
-                js_valid=j_valid, js_level=j_level) 
+                verbose=options.verbose, js_level=j_level) 
 
     # Although the report engine inherits from Thread, we can just run it in the main thread:
     t.run()
@@ -99,17 +107,19 @@ def _parse_dates(options):
 
     if options.from_date:
         try:
-            _first_d = datetime.datetime.strptime(options.from_date, "%Y-%m-%d %H:%M")
+            options.from_date=options.from_date.replace("T"," ")
+            _first_d = datetime.strptime(options.from_date, "%Y-%m-%d %H:%M")
             tuple = _first_d.timetuple()
-            _first_d = time.mktime(tuple)
+            _first_d = mktime(tuple)
         except ValueError:
             raise ValueError("Invalid --from option specified.")
 
     if options.to_date:
         try:
-            _last_d = datetime.datetime.strptime(options.to_date, "%Y-%m-%d %H:%M")
+            options.to_date=options.to_date.replace("T"," ")
+            _last_d = datetime.strptime(options.to_date, "%Y-%m-%d %H:%M")
             tuple = _last_d.timetuple()
-            _last_d = time.mktime(tuple)
+            _last_d = mktime(tuple)
         except ValueError:
             raise ValueError("Invalid --to option specified.")
 

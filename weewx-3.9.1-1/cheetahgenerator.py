@@ -581,7 +581,7 @@ class JsonObj(object):
 
     def __init__(self, generator):
         self.start = generator.start_ts
-        self.validation = generator.js_valid
+        self.verbose = generator.verbose
         self.level = generator.js_level
 ## end added
 

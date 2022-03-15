@@ -84,7 +84,7 @@ class StdReportEngine(threading.Thread):
     def __init__(self, config_dict, stn_info, 
             record=None, accumulator=None, 
             start_ts=None, gen_ts=None, first_run=True,
-            js_valid=None, js_level=None):
+            verbose=False, js_level=None):
         """Initializer for the report engine.
 
         config_dict: The configuration dictionary.
@@ -103,8 +103,8 @@ class StdReportEngine(threading.Thread):
         first_run: True if this is the first time the report engine has been
         run.  If this is the case, then any 'one time' events should be done.
 
-        js_valid: For output json file, creates key 'validation' for tests
-
+        verbose: Print and log useful extra output
+        
         js_level: Defines the aggregation's level for json files.
         [Optional; default is 'C' for complete data]
         'H' for hour's and day's aggregations
@@ -120,7 +120,7 @@ class StdReportEngine(threading.Thread):
         self.start_ts = start_ts # added by QUETELARD
         self.gen_ts = gen_ts
         self.first_run = first_run
-        self.js_valid = js_valid # added by QUETELARD
+        self.verbose = verbose # added by QUETELARD
         self.js_level = js_level # added by QUETELARD
 
     def run(self):
@@ -208,7 +208,7 @@ class StdReportEngine(threading.Thread):
                             self.gen_ts,
                             self.first_run,
                             self.stn_info,
-                            self.js_valid,  # added by QUETELARD
+                            self.verbose,  # added by QUETELARD
                             self.js_level,  # added by QUETELARD
                             self.record,
                             self.accumulator) # added by QUETELARD
@@ -312,7 +312,7 @@ class ReportGenerator(object):
 
     # modified by QUETELARD
     def __init__(self, config_dict, skin_dict, start_ts, gen_ts, first_run, stn_info, 
-                        js_valid, js_level,        
+                        verbose, js_level,        
                         record=None, accumulator=None):
         self.config_dict = config_dict
         self.skin_dict = skin_dict
@@ -320,7 +320,7 @@ class ReportGenerator(object):
         self.gen_ts = gen_ts
         self.first_run = first_run
         self.stn_info = stn_info
-        self.js_valid = js_valid  # added by QUETELARD
+        self.verbose = verbose  # added by QUETELARD
         self.js_level = js_level  # added by QUETELARD
         self.record = record
         self.accumulator = accumulator  # added by QUETELARD
