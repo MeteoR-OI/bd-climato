@@ -12,6 +12,7 @@ import socket
 import syslog
 
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 import optparse
 import syslog
 import sys
@@ -60,9 +61,18 @@ def main():
     start_d, stop_d = _parse_dates(options)
     
     if j_level == 'C' or j_level == 'H':
-        end_d = start_d + 86400
+        #end_d = start_d + 86400
         end_day = datetime.fromtimestamp(end_d)
+        end_day = end_day + relativedelta(days=1)
         end_day = datetime(end_day.year, end_day.month, end_day.day, 0, 0, 0)
+        end_d = round(mktime(end_day.timetuple()))
+        if stop_d is None or stop_d > end_d:
+            stop_d = end_d
+
+    if j_level == 'D':
+        end_day = datetime.fromtimestamp(end_d)
+        end_day = end_day + relativedelta(months=1)
+        end_day = datetime(end_day.year, end_day.month, 1, 0, 0, 0)
         end_d = round(mktime(end_day.timetuple()))
         if stop_d is None or stop_d > end_d:
             stop_d = end_d
