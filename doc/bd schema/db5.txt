@@ -1,0 +1,530 @@
+
+drop table if exists obs;
+drop table if exists postes;
+drop table if exists mesures;
+
+create table postes(
+    id smallserial primary key not null,
+    meteor varchar(20),
+    delta_timezone smallint
+);
+insert into postes(meteor, delta_timezone) values
+('BAG280', 0),
+('BDN240', 0),
+('BOCO1370', 0),
+('BP130', 0),
+('BRT240', 0),
+('CHAR645', 0),
+('CRT630', 0),
+('ESB005', 0),
+('FAY040', 0),
+('GFD010', 0),
+('LCV050', 0),
+('MTG280', 0),
+('MVP860', 0),
+('PAH575', 0),
+('PFD040', 0),
+('RAM450', 0),
+('SBBM100', 0),
+('TAM1790', 0),
+('TAR600', 0),
+('TRG170', 0),
+('VIN110', 0),
+('YYY111', 0),
+('BBF015', 0),
+('BER590', 0),
+('BOMU1610', 0),
+('BRT155', 0),
+('CAM015', 0),
+('CHP690', 0),
+('CRT635', 0),
+('ELH675', 0),
+('ESH555', 0),
+('GDC030', 0),
+('LAN030', 0),
+('MAT315', 0),
+('MTG320', 0),
+('NDLP1520', 0),
+('PAM320', 0),
+('PSL310', 0),
+('ROQ070', 0),
+('SPC010', 0),
+('TAN1270', 0),
+('TBL105', 0),
+('TRM490', 0)
+
+select 'nb postes: ' || count(*) from postes;
+
+create table mesures(
+    id smallserial primary key not null,
+    name varchar(100) not null,
+    json_input varchar(20) not null,
+    json_key varchar(20) not null,
+    deca smallint default 0,
+    min bool default true,
+    min_deca smallint default 0,
+    max bool default true,
+    max_deca smallint default 0,
+    is_avg boolean not null,
+    is_wind boolean not null
+);
+
+insert into mesures
+(id,      name    ,     json_input,        json_key,      deca,  min, min_deca,  max,  max_deca, is_avg, is_wind) values
+( 1, 'temperature',     'out_temp',       'out_temp',       0,   true,    0,     true,    0,      true,   false),
+( 2, 'temp omm',        'out_temp',       'out_temp_omm',   0,   true,    5,     true,   -7,      true,   false),
+( 3, 'windchill',       'windchill',      'windchill',      0,   true,    0,     false,   0,      true,   false),
+( 4, 'heatindex',       'heatindex',      'heatindex',      0,   false,    0,    true,    0,      true,   false),
+( 5, 'dewpoint',        'dewpoint',       'dewpoint',       0,   true,    0,     true,    0,      true,   false),
+( 6, 'soiltemp',        'soiltemp',       'soiltemp',       0,   true,    0,     false,   0,      true,   false),
+( 7, 'humidity',        'humidity',       'humidity',       0,   true,    0,     true,    0,      true,   false),
+( 8, 'humidity omm',    'humidity',       'humidity_omm',   0,   true,    0,     true,    0,      true,   false),
+( 9, 'barometer',       'barometer',      'barometer',      0,   true,    0,     true,    0,      true,   false),
+(10, 'barometer omm',   'barometer',      'barometer_omm',  0,   true,    0,     true,    0,      true,   false),
+(11, 'pressure',        'pressure',       'pressure',       0,   true,    0,     true,    0,      true,   false),
+(12, 'rain',            'rain',           'rain',           0,   true,    0,     true,    0,     false,   false),
+(13, 'rain omm',        'rain',           'rain_omm',       7,   false,   0,     true,    7,     false,   false),
+(14, 'rain rate',       'rain_rate',      'rain_rate',      0,   false,   0,     true,    0,      true,   false),
+(15, 'wind inst',       'wind_inst',      'wind_inst',      0,   false,   0,     false,   0,      true,   false),
+(16, 'wind',            'wind',           'wind',           0,   true,    0,     true,    0,      true,    true),
+(17, 'gust',            'gust',           'gust',           0,   false,   0,     true,    0,      true,    true),
+(18, 'wind 10',         'wind10',         'wind10',         0,   true,    0,     true,    0,      true,    true),
+(19, 'wind 10 omm',     'wind10',         'wind10_omm',     0,   false,   0,     true,    0,      true,    true),
+(20, 'uv_indice',       'uv',             'uv_indice',      0,   false,   0,     true,    0,      true,   false),
+(21, 'radiation',       'radiation',      'radiation',      0,   true,    0,     true,    0,      true,   false),
+(22, 'etp',             'etp',            'etp_sum',        0,   true,    0,     true,    0,     false,   false),
+(23, 'temp inside',     'in_temp',        'in_temp',        0,   true,    0,     true,    0,      true,   false),
+(24, 'humidity inside', 'in_humidity',    'in_humidity',    0,   true,    0,     true,    0,      true,   false),
+(25, 'rx',              'rx',             'rx',             0,   true,    0,     true,    0,      true,   false),
+(26, 'voltage',         'voltage',        'voltage',        0,   true,    0,     true,    0,      true,   false)
+;
+select 'nb mesures: ' || count(*) from mesures;
+
+
+create table obs_a (
+    id bigserial,   -- no releve
+    id_poste smallint references postes(id) not null,
+    time timestamp not null,
+    duration smallint not null,
+    out_temp float null,
+    windchill float null,
+    dewpoint float null,
+    soiltemp float null,
+    humidity float null,
+    barometer float null,
+    pressure float null,
+    wind float null,
+    wind_dir smallint null,
+    wind_gust float null,
+    wind_gust_dir smallint null,
+    wind10 float null,
+    wind10_dir smallint null,
+    rain float null,
+    rain_rate float null,
+    uv_indice smallint null,
+    radiation float null,
+    etp_sum float null,
+    in_temp float null,
+    in_humidity float null,
+    rx float null,
+    voltage float null
+);
+
+
+select create_hypertable('obs_a', 'time');
+
+SELECT set_chunk_time_interval('obs_a', 6048000000000);
+
+
+delete from obs_a;
+
+
+CREATE OR REPLACE PROCEDURE add_data_obs_a(default_dt timestamp = '2022-03-18 00:00:00')
+language plpgsql
+AS $$
+declare 
+    start_dt timestamp;
+    cc_count_start int;
+    cc_count_end int;
+    nb_rows_total int;
+    nb_rows_one_station int;
+    nb_stations int;
+    nb_mesures int;
+    no_mesure bigint;
+    no_releve bigint;
+    tmp int;
+begin
+  select count(*) from postes into nb_stations;
+  select count(*) from mesures_a into nb_mesures;
+  
+  select coalesce(max(time) + interval '5 minutes', default_dt) into start_dt from obs_a;
+  select ((trunc(trunc(( (extract(epoch from now())) - (extract(epoch from  start_dt)) )/60)/5))) into  nb_rows_one_station;
+
+  select  nb_mesures * nb_stations into nb_rows_total;
+
+  select count(*) into cc_count_start from obs_a;
+  raise notice 'start_dt: (%), nb_rows_total: (%), nb releve: (%)', start_dt, nb_rows_total, nb_rows_one_station;
+  raise notice 'nb_stations: %, nb_mesures: %', nb_stations, nb_mesures;
+  while nb_rows_one_station > 0 loop
+        -- raise notice '    %', start_dt;
+        SELECT nextval('no_releve') into no_releve;
+        -- raise notice 'new no_releve %', no_releve;
+
+        with recursive serie(i) as
+            (select 1
+            UNION ALL
+            select i + 1 from serie where i < nb_rows_total)
+
+        insert into obs_a(
+                id_poste,
+                time,
+                duration,
+                out_temp,
+                windchill,
+                dewpoint,
+                soiltemp,
+                humidity,
+                barometer,
+                pressure,
+                wind,
+                wind_max,
+                wind_dir,
+                wind10,
+                wind10_dir,
+                rain,
+                rain_rate,
+                iv_indice,
+                radiation_sum,
+                etp_sum,
+                in_temp,
+                in_humidity,
+                rx,
+                voltage)
+
+    id bigserial,
+    id_poste smallint references poste(id) not null,
+    time timestamp not null,
+    duration smallint not null,
+    out_temp float null,
+    windchill float null,
+    dewpoint float null,
+    soiltemp float null,
+    humidity float null,
+    barometer float null,
+    pressure float null,
+    wind float null,
+    wind_max float null,
+    wind_dir smallint null,
+    wind10 float null,
+    wind10_dir smallint null,
+    rain float null,
+    rain_rate float null,
+    uv_indice smallint null,
+    radiation float null,
+    in_temp float null,
+    in_humidity float null,
+    rx float null,
+    voltage float null
+
+        select
+        ((i%nb_stations)+1),
+        start_dt + (trunc(i/nb_stations) * interval '5 minutes'),
+        5,
+        (random() * 25) + 10,
+        (random() * 30) + 70,
+        (random() * 40) + 980,
+        (random() * 40) + 0,
+        (random() * 360) + 0,
+        (random() * 12) + 0,
+        (random() * 30) + 5,
+        (random() * 25) + 10,
+        (random() * 30) + 70
+        from serie;
+        insert into obs_a(
+                id_poste,
+                id_mesure,
+                no_releve,
+                time,
+                duration,
+                valeur,
+                j)
+        select
+			((i -1)/ nb_mesures) + 1,
+        	mesures_a.id,
+            no_releve + (((i -1)/ nb_mesures) + 1),
+            start_dt,
+            5,
+            (random() * mesures_a.r1) + mesures_a.r2,
+            '{}'
+        from serie join mesures_a on mesures_a.id =  (mod(i - 1, nb_mesures) + 1);
+
+        nb_rows_one_station = nb_rows_one_station - 1;
+        select start_dt + interval '5 minutes' into start_dt;
+        EXECUTE 'ALTER SEQUENCE no_releve RESTART WITH '|| (no_releve + nb_stations + 1);
+        -- raise notice '  no row: %, new no_releve: %', nb_rows_one_station, (no_releve + nb_stations + 1);
+		commit;
+    end loop;
+    select count(*) into cc_count_end from obs_a;
+    raise notice 'row added: (%), rows per station: (%)', (cc_count_end - cc_count_start), ((cc_count_end - cc_count_start)/nb_stations);
+
+end;
+$$
+;
+
+
+
+select 'nb obs_a: ' || count(*) from obs_a;
+select timescaledb_experimental.time_bucket_ng('1month', time), count(*) from obs_a group by 1 order by 1;
+
+create table obs_i(
+    id bigserial,
+    id_poste smallint references postes(id) not null,
+    id_mesure smallint references mesures_i(id) not null,
+    id_mesure_type smallint not null,
+    no_releve bigint not null,
+    time timestamp not null,
+    valeur float not null
+);
+
+-- mesure_type => 1 -> value, 2 -> max, 3 -> min
+
+select create_hypertable('obs_i', 'time');
+
+SELECT set_chunk_time_interval('obs_i', 6048000000000);
+
+
+
+CREATE OR REPLACE PROCEDURE add_data_obs_i(default_dt timestamp = '2022-03-18 00:00:00')
+language plpgsql
+AS $$
+declare 
+    start_dt timestamp;
+    cc_count_start int;
+    cc_count_end int;
+    nb_rows_total int;
+    nb_rows_one_station int;
+    nb_stations int;
+    nb_mesures int;
+    no_mesure bigint;
+    no_releve bigint;
+    tmp int;
+    b_inc_seq bool;
+begin
+  select count(*) from postes into nb_stations;
+  select count(*) from mesures_i into nb_mesures;
+  
+  select coalesce(max(time) + interval '5 minutes', default_dt) into start_dt from obs_a;
+  select ((trunc(trunc(( (extract(epoch from now())) - (extract(epoch from  start_dt)) )/60)/5))) into  nb_rows_one_station;
+
+  select  nb_mesures * nb_stations into nb_rows_total;
+
+  select count(*) into cc_count_start from obs_a;
+  raise notice 'start_dt: (%), nb_rows_total: (%), nb releve: (%)', start_dt, nb_rows_total, nb_rows_one_station;
+  raise notice 'nb_stations: %, nb_mesures: %', nb_stations, nb_mesures;
+  while nb_rows_one_station > 0 loop
+        SELECT no_releve from obs_a
+            where time = start_dt and
+               id_poste = 1 and
+               id_mesure = 1
+        into no_releve;
+
+        if no_releve is null then
+            select nextval('no_releve') into no_releve;
+            raise notice 'new no_releve %', no_releve;
+            b_inc_seq = true;
+        else
+            raise notice 'no_releve in sync with obs_a: %', no_releve;
+            b_inc_seq = false
+        end if
+
+        with recursive serie(i) as
+            (select 1
+            UNION ALL
+            select i + 1 from serie where i < nb_rows_total)
+
+        insert into obs_a(
+                id_poste,
+                id_mesure,
+                id_mesure_type,
+                no_releve,
+                time,
+                valeur)
+        select
+			((i -1)/ nb_mesures) + 1,
+        	mesures_i.id,
+            1,
+            no_releve + (((i -1)/ nb_mesures) + 1),
+            start_dt,
+            (random() * mesures_i.r1) + mesures_i.r2
+        from serie join mesures_i on mesures_i.id =  (mod(i - 1, nb_mesures) + 1)
+        UNION
+        select
+			((i -1)/ nb_mesures) + 1,
+        	mesures_i.id,
+            2,
+            no_releve + (((i -1)/ nb_mesures) + 1),
+            start_dt,
+            (random() * mesures_i.r1) + mesures_i.r2
+        from serie join mesures_i on mesures_i.id =  (mod(i - 1, nb_mesures) + 1)
+        where mesures_i.max = true
+        UNION
+        select
+			((i -1)/ nb_mesures) + 1,
+        	mesures_i.id,
+            3,
+            no_releve + (((i -1)/ nb_mesures) + 1),
+            start_dt,
+            (random() * mesures_i.r1) + mesures_i.r2
+        from serie join mesures_i on mesures_i.id =  (mod(i - 1, nb_mesures) + 1)
+        where mesures_i.min = true;
+
+        nb_rows_one_station = nb_rows_one_station - 1;
+        select start_dt + interval '5 minutes' into start_dt;
+        if b_inc_seq == true then
+            EXECUTE 'ALTER SEQUENCE no_releve RESTART WITH '|| (no_releve + nb_stations + 1);
+        end if;
+        -- raise notice '  no row: %, new no_releve: %', nb_rows_one_station, (no_releve + nb_stations + 1);
+		commit;
+    end loop;
+    select count(*) into cc_count_end from obs_a;
+    raise notice 'row added: (%), rows per station: (%)', (cc_count_end - cc_count_start), ((cc_count_end - cc_count_start)/nb_stations);
+
+end;
+$$
+;
+
+
+select min(time), max(time) from obs_a;
+        min         |         max
+---------------------+---------------------
+ 2017-01-01 00:00:00 | 2022-03-11 19:55:00
+
+select count(*) from obs;
+  count
+---------
+4 238 150
+
+-- show global info 
+SELECT * FROM timescaledb_information.hypertables;
+
+-- show chunks info
+SELECT chunk_name, range_start, range_end FROM timescaledb_information.chunks WHERE hypertable_name in ('obs_a', 'obs_b') order by 2 desc;
+22 chunks
+
+-- show row count for each chunks obs_a
+SELECT ts.chunk_name, count(o.id)
+    FROM timescaledb_information.chunks ts join obs_a o on o.time >= ts.range_start and o.time < ts.range_end
+    WHERE hypertable_name = 'obs_a'
+    group by 1
+    order by 1
+;
+     chunk_name      | count
+---------------------+--------
+ _hyper_1_1254_chunk | 141120
+ _hyper_1_1255_chunk | 201600
+ ...
+ _hyper_1_1274_chunk | 201600
+ _hyper_1_1275_chunk |  65030
+
+-- show row count for each chunks obs_i
+SELECT ts.chunk_name, count(o.id)
+    FROM timescaledb_information.chunks ts join obs_i o on o.time >= ts.range_start and o.time < ts.range_end
+    WHERE hypertable_name = 'obs_i'
+    group by 1
+    order by 1
+;
+
+-- get chunk size
+select 
+    'obs_a' as table,
+    chunk_name,
+    pg_size_pretty(table_bytes) as table_bytes,
+    pg_size_pretty(index_bytes) as index_bytes,
+    pg_size_pretty(total_bytes) as total_bytes
+from chunks_detailed_size('obs_a');
+UNION
+select 
+    'obs_i' as table,
+    chunk_name,
+    pg_size_pretty(table_bytes) as table_bytes,
+    pg_size_pretty(index_bytes) as index_bytes,
+    pg_size_pretty(total_bytes) as total_bytes
+from chunks_detailed_size('obs_i');
+
+-- get db size
+select 
+   'obs_a' as table,
+    pg_size_pretty(table_bytes) as table_bytes,
+    pg_size_pretty(index_bytes) as index_bytes,
+    pg_size_pretty(total_bytes) as total_bytes
+from hypertable_detailed_size('obs_a');
+union
+select 
+   'obs_i' as table,
+    pg_size_pretty(table_bytes) as table_bytes,
+    pg_size_pretty(index_bytes) as index_bytes,
+    pg_size_pretty(total_bytes) as total_bytes
+from hypertable_detailed_size('obs_i');
+
+-- ????
+with size_total as (
+        select sum(total_bytes) as total_size_byte,
+               sum(after_compression_total_bytes) as compressed_total_bytes
+        from chunks_detailed_size('obs_a') as o
+             inner join chunck_compression_stats('obs_a') c
+               on o.chunk_schema = c.chunk_shema
+
+)
+select pg_size_pretty(total_size_compressed(total_size-compressed-total-size)) as total_uncompressed,
+        pg_size_pretty(compressed_total_bytes) as total_compressed,
+        pg_size_pretty(total_size_bytes) as total_size
+        from size_totals;
+
+-- get compression info
+SELECT * FROM timescaledb_information.compression_settings WHERE hypertable_name in ('obs_a', 'obs_i');
+
+-- ??
+SELECT * from timescaledb_information.dimensions ORDER BY hypertable_name, dimension_number;
+
+-- get global information
+SELECT * FROM timescaledb_information.hypertables WHERE hypertable_name in ('obs_a', 'obs_i');
+
+-- chunck length
+SELECT h.table_name, c.interval_length FROM _timescaledb_catalog.dimension c
+JOIN _timescaledb_catalog.hypertable h ON h.id = c.hypertable_id;
+
+
+
+
+Grafana
+1 mesure for 1 station, with n last measures
+=============================================
+select time, case when step = 0 then 'now' else (-interval)::text END AS metric, moyenne from
+(select step, (step||${aggreg:singlequote})::interval as interval from generate_series(0, $steps_histo) g(step)) my_steps
+ join lateral
+(SELECT
+    timescaledb_experimental.time_bucket_ng('15m', o.time + interval)::timestamptz AS time, avg(o.$mesure) AS moyenne
+    FROM obs o join poste p on p.id = o.id_poste
+    WHERE p.meteor = ${station:singlequote} and
+          o.time between $__timeFrom()::timestamptz - interval and $__timeTo()::timestamptz - interval
+    GROUP BY 1
+    ORDER BY 1
+) l on true
+order by 1
+
+
+// requetes
+cumul glissant pluie 1/3/6 hours sur 3/6 jours
+
+
+
+select 'id_poste','dateTime','duration','out_temp','windchill','dewpoint','soiltemp','humidity','barometer','pressure','wind','wind_dir','wind_gust','wind_gust_dir','wind10','wind10_dir','rain','rain_rate','uv_indice','radiation','etp_sum','in_temp','in_humidity','rx','voltage'
+union
+
+select 1, dateTime, `interval`, outTemp, windchill, dewpoint, soilTemp1, outHumidity, barometer, pressure, windSpeed, windDir, windGust, windGustDir, 0, 0, rain, rainRate, UV, radiation, ET, inTemp, inHumidity, rxCheckPercent, consBatteryVoltage from archive limit 10
+
+INTO OUTFILE 'testMySql.csv'
+FIELDS ENCLOSED BY '"' 
+TERMINATED BY ','
+ESCAPED BY '"'
+LINES TERMINATED BY 'n'
