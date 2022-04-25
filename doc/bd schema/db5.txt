@@ -9,55 +9,57 @@ create table postes(
     id smallserial primary key not null,
     meteor varchar(20),
     delta_timezone smallint,
-    geolocation geography(point) null
+    altitude smallint null,
+    long float null,
+    lat float null
 );
-insert into postes(meteor, delta_timezone, geolocation) values
-('BAG280', 0, 'point(10 20)'),
-('BBF015', 0, 'point(10 20)'),
-('BDN240', 0, 'point(10 20)'),
-('BER590', 0, 'point(10 20)'),
-('BOCO1370', 0, 'point(10 20)'),
-('BOMU1610', 0, 'point(10 20)'),
-('BRT155', 0, 'point(10 20)'),
-('BRT240', 0, 'point(10 20)'),
-('CAM015', 0, 'point(10 20)'),
-('CHAR645', 0, 'point(10 20)'),
-('CHP690', 0, 'point(10 20)'),
-('ELH675', 0, 'point(10 20)'),
-('ESB005', 0, 'point(10 20)'),
-('ESH555', 0, 'point(10 20)'),
-('FAY040', 0, 'point(10 20)'),
-('GDC030', 0, 'point(10 20)'),
-('LCV050', 0, 'point(10 20)'),
-('MAT315', 0, 'point(10 20)'),
-('MTG280', 0, 'point(10 20)'),
-('MTG320', 0, 'point(10 20)'),
-('MVP860', 0, 'point(10 20)'),
-('NDLP1520', 0, 'point(10 20)'),
-('PFD040', 0, 'point(10 20)'),
-('RAM450', 0, 'point(10 20)'),
-('ROQ070', 0, 'point(10 20)'),
-('SBBM100', 0, 'point(10 20)'),
-('TAM1790', 0, 'point(10 20)'),
-('TAR600', 0, 'point(10 20)'),
-('TBL105', 0, 'point(10 20)'),
-('TRG170', 0, 'point(10 20)'),
-('TRM490', 0, 'point(10 20)')
+insert into postes(meteor, delta_timezone, altitude, long, lat) values
+('BAG280', 0, 100, 10 , 20),
+('BBF015', 0, 100, 10 , 20),
+('BDN240', 0, 100, 10 , 20),
+('BER590', 0, 100, 10 , 20),
+('BOCO1370', 0, 100, 10 , 20),
+('BOMU1610', 0, 100, 10 , 20),
+('BRT155', 0, 100, 10 , 20),
+('BRT240', 0, 100, 10 , 20),
+('CAM015', 0, 100, 10 , 20),
+('CHAR645', 0, 100, 10 , 20),
+('CHP690', 0, 100, 10 , 20),
+('ELH675', 0, 100, 10 , 20),
+('ESB005', 0, 100, 10 , 20),
+('ESH555', 0, 100, 10 , 20),
+('FAY040', 0, 100, 10 , 20),
+('GDC030', 0, 100, 10 , 20),
+('LCV050', 0, 100, 10 , 20),
+('MAT315', 0, 100, 10 , 20),
+('MTG280', 0, 100, 10 , 20),
+('MTG320', 0, 100, 10 , 20),
+('MVP860', 0, 100, 10 , 20),
+('NDLP1520', 0, 100, 10 , 20),
+('PFD040', 0, 100, 10 , 20),
+('RAM450', 0, 100, 10 , 20),
+('ROQ070', 0, 100, 10 , 20),
+('SBBM100', 0, 100, 10 , 20),
+('TAM1790', 0, 100, 10 , 20),
+('TAR600', 0, 100, 10 , 20),
+('TBL105', 0, 100, 10 , 20),
+('TRG170', 0, 100, 10 , 20),
+('TRM490', 0, 100, 10 , 20)
 ;
 select 'nb postes: ' || count(*) from postes;
 
-('BP130', 0, 'point(10 20)'),
-('CRT630', 0, 'point(10 20)'),
-('CRT635', 0, 'point(10 20)'),
-('GFD010', 0, 'point(10 20)'),
-('LAN030', 0, 'point(10 20)'),
-('PAH575', 0, 'point(10 20)'),
-('PAM320', 0, 'point(10 20)'),
-('PSL310', 0, 'point(10 20)'),
-('SPC010', 0, 'point(10 20)'),
-('TAN1270', 0, 'point(10 20)'),
-('VIN110', 0, 'point(10 20)'),
-('YYY111', 0, 'point(10 20)'),
+('BP130', 0, 100, 10 , 20),
+('CRT630', 0, 100, 10 , 20),
+('CRT635', 0, 100, 10 , 20),
+('GFD010', 0, 100, 10 , 20),
+('LAN030', 0, 100, 10 , 20),
+('PAH575', 0, 100, 10 , 20),
+('PAM320', 0, 100, 10 , 20),
+('PSL310', 0, 100, 10 , 20),
+('SPC010', 0, 100, 10 , 20),
+('TAN1270', 0, 100, 10 , 20),
+('VIN110', 0, 100, 10 , 20),
+('YYY111', 0, 100, 10 , 20),
 
 
 create table mesures(
@@ -79,23 +81,23 @@ create table mesures(
 insert into mesures
 (id,      name    ,     json_input,       archive_col,     val_deca, min,  min_deca,  max,  max_deca, is_avg, is_wind, omm_link, allow_zero) values
 ( 1, 'temperature',     'out_temp',       'outTemp',            0,   true,    0,     true,    0,      true,   false,    null,      true),
-( 2, 'temp omm',        'out_temp',       'outTemp_omm',        0,   true,    5,     true,   -7,      true,   false,       1,      true),
+( 2, 'temp omm',        'out_temp_omm',   'outTemp_omm',        0,   true,    5,     true,   -7,      true,   false,       1,      true),
 ( 3, 'windchill',       'windchill',      'windchill',          0,   true,    0,     false,   0,      true,   false,    null,      true),
 ( 4, 'heatindex',       'heatindex',      'heatindex',          0,   false,    0,    true,    0,      true,   false,    null,      true),
 ( 5, 'dewpoint',        'dewpoint',       'dewpoint',           0,   true,    0,     true,    0,      true,   false,    null,      true),
 ( 6, 'soiltemp',        'soiltemp',       'soilTemp1',          0,   true,    0,     false,   0,      true,   false,    null,      true),
 ( 7, 'humidity',        'humidity',       'outHumidity',        0,   true,    0,     true,    0,      true,   false,    null,      true),
-( 8, 'humidity omm',    'humidity',       'outHumidity_omm',    0,   true,    0,     true,    0,      true,   false,       7,      true),
+( 8, 'humidity omm',    'humidity_omm',   'outHumidity_omm',    0,   true,    0,     true,    0,      true,   false,       7,      true),
 ( 9, 'barometer',       'barometer',      'barometer',          0,   true,    0,     true,    0,      true,   false,    null,      true),
-(10, 'barometer omm',   'barometer',      'barometer_omm',      0,   true,    0,     true,    0,      true,   false,       9,      true),
+(10, 'barometer omm',   'barometer_omm',  'barometer_omm',      0,   true,    0,     true,    0,      true,   false,       9,      true),
 (11, 'pressure',        'pressure',       'pressure',           0,   true,    0,     true,    0,      true,   false,    null,      true),
 (12, 'rain',            'rain',           'rain',               0,   true,    0,     true,    0,     false,   false,    null,      true),
-(13, 'rain omm',        'rain',           'rain_omm',           7,   false,   0,     true,    7,     false,   false,      12,      true),
+(13, 'rain omm',        'rain_omm',       'rain_omm',           7,   false,   0,     true,    7,     false,   false,      12,      true),
 (14, 'rain rate',       'rain_rate',      'rainRate',           0,   false,   0,     true,    0,      true,   false,    null,      true),
 (15, 'wind',            'wind',           'wind',               0,   true,    0,     true,    0,      true,    true,    null,      true),
 (16, 'gust',            'gust',           'windGust',           0,   false,   0,     true,    0,      true,   false,    null,      true),
 (17, 'wind 10',         'wind10',         'wind',               0,   true,    0,     true,    0,      true,    true,    null,      true),
-(18, 'wind 10 omm',     'wind10',         'wind_omm',           0,   false,   0,     true,    0,      true,    true,      17,      true),
+(18, 'wind 10 omm',     'wind10_omm',     'wind_omm',           0,   false,   0,     true,    0,      true,    true,      17,      true),
 (19, 'uv_indice',       'uv',             'UV',                 0,   false,   0,     true,    0,      true,   false,    null,      true),
 (20, 'radiation',       'radiation',      'radiation',          0,   true,    0,     true,    0,      true,   false,    null,      true),
 (21, 'etp',             'etp',            'ET',                 0,   true,    0,     true,    0,     false,   false,    null,      true),
@@ -148,18 +150,6 @@ select create_hypertable('obs', 'time');
 
 SELECT set_chunk_time_interval('obs', 6048000000000);
 
- select timescaledb_experimental.time_bucket_ng('1 month', time) as time, avg(out_temp) as out_temp, avg(out_temp_omm) as out_temp_omm, avg(windchill) as windchill,
- avg(dewpoint) as dewpoint, avg(soiltemp) as soiltemp, avg(humidity) as humidity, avg(humidity_omm) as hunidity_omm, 
- avg(barometer) as barometer, avg(barometer_omm) as barometer_omm, avg(pressure) as pressure, avg(wind) as wind, max(wind_gust) as wind_gust,
- avg(wind10) as wind10, avg(wind10_omm) as wind10_omm, sum(rain) as rain, sum(rain_omm) as rain_omm, avg(rain_rate) as rain_rate, max(uv_indice) as max_uv_indice,
- max(radiation) as max_radiation, sum(etp_sum) as etp_sum, avg(in_temp) as in_temp, avg(in_humidity) as in_humidity, avg(rx) as rx, avg(voltage) as voltage
- from obs
- where id_poste = 2
- group by 1
- order by 1
-;
-
-
 
 create table extremes (
     id bigserial,
@@ -178,266 +168,41 @@ select create_hypertable('extremes', 'date');
 
 SELECT set_chunk_time_interval('extremes', 25920000000000);
 
+-- ------------------
+-- sql select/insert
+-- ------------------
+insert into obs(id_poste, time, duration, out_temp, out_temp_omm, windchill, dewpoint, soiltemp,
+        humidity, humidity_omm, barometer, barometer_omm, heatindex, pressure, wind, wind_dir, wind10_omm,
+        wind_gust, wind_gust_dir, wind10, wind10_dir, rain, rain_omm, rain_rate, uv_indice, radiation,
+        etp_sum, in_temp, in_humidity, rx, voltage)
+    (select id_poste, time, duration, out_temp, out_temp_omm, windchill, dewpoint, soiltemp,
+            humidity, humidity_omm, barometer, barometer_omm, heatindex, pressure, wind, wind_dir, wind10_omm,
+            wind_gust, wind_gust_dir, wind10, wind10_dir, rain, rain_omm, rain_rate, uv_indice, radiation,
+            etp_sum, in_temp, in_humidity, rx, voltage from obs_old order by time)
+;
 
+insert into extremes(id_poste, date, id_obs, id_mesure, min, mintime, max, maxtime, max_dir)
+    (select id_poste, date, id_obs, id_mesure, min, mintime, max, maxtime, max_dir
+       from x2 order by date
+    );
 
-delete from obs;
-
-
-CREATE OR REPLACE PROCEDURE add_data_obs(default_dt timestamp = '2022-03-18 00:00:00')
-language plpgsql
-AS $$
-declare 
-    start_dt timestamp;
-    cc_count_start int;
-    cc_count_end int;
-    nb_rows_total int;
-    nb_rows_one_station int;
-    nb_stations int;
-    nb_mesures int;
-    no_mesure bigint;
-    no_releve bigint;
-    tmp int;
-begin
-  select count(*) from postes into nb_stations;
-  select count(*) from mesures_a into nb_mesures;
-  
-  select coalesce(max(time) + interval '5 minutes', default_dt) into start_dt from obs;
-  select ((trunc(trunc(( (extract(epoch from now())) - (extract(epoch from  start_dt)) )/60)/5))) into  nb_rows_one_station;
-
-  select  nb_mesures * nb_stations into nb_rows_total;
-
-  select count(*) into cc_count_start from obs;
-  raise notice 'start_dt: (%), nb_rows_total: (%), nb releve: (%)', start_dt, nb_rows_total, nb_rows_one_station;
-  raise notice 'nb_stations: %, nb_mesures: %', nb_stations, nb_mesures;
-  while nb_rows_one_station > 0 loop
-        -- raise notice '    %', start_dt;
-        SELECT nextval('no_releve') into no_releve;
-        -- raise notice 'new no_releve %', no_releve;
-
-        with recursive serie(i) as
-            (select 1
-            UNION ALL
-            select i + 1 from serie where i < nb_rows_total)
-
-        insert into obs(
-                id_poste,
-                time,
-                duration,
-                out_temp,
-                windchill,
-                dewpoint,
-                soiltemp,
-                humidity,
-                barometer,
-                pressure,
-                wind,
-                wind_max,
-                wind_dir,
-                wind10,
-                wind10_dir,
-                rain,
-                rain_rate,
-                iv_indice,
-                radiation_sum,
-                etp_sum,
-                in_temp,
-                in_humidity,
-                rx,
-                voltage)
-
-    id bigserial,
-    id_poste smallint references poste(id) not null,
-    time timestamp not null,
-    duration smallint not null,
-    out_temp float null,
-    windchill float null,
-    dewpoint float null,
-    soiltemp float null,
-    humidity float null,
-    barometer float null,
-    pressure float null,
-    wind float null,
-    wind_max float null,
-    wind_dir smallint null,
-    wind10 float null,
-    wind10_dir smallint null,
-    rain float null,
-    rain_rate float null,
-    uv_indice smallint null,
-    radiation float null,
-    in_temp float null,
-    in_humidity float null,
-    rx float null,
-    voltage float null
-
-        select
-        ((i%nb_stations)+1),
-        start_dt + (trunc(i/nb_stations) * interval '5 minutes'),
-        5,
-        (random() * 25) + 10,
-        (random() * 30) + 70,
-        (random() * 40) + 980,
-        (random() * 40) + 0,
-        (random() * 360) + 0,
-        (random() * 12) + 0,
-        (random() * 30) + 5,
-        (random() * 25) + 10,
-        (random() * 30) + 70
-        from serie;
-        insert into obs(
-                id_poste,
-                id_mesure,
-                no_releve,
-                time,
-                duration,
-                valeur,
-                j)
-        select
-			((i -1)/ nb_mesures) + 1,
-        	mesures_a.id,
-            no_releve + (((i -1)/ nb_mesures) + 1),
-            start_dt,
-            5,
-            (random() * mesures_a.r1) + mesures_a.r2,
-            '{}'
-        from serie join mesures_a on mesures_a.id =  (mod(i - 1, nb_mesures) + 1);
-
-        nb_rows_one_station = nb_rows_one_station - 1;
-        select start_dt + interval '5 minutes' into start_dt;
-        EXECUTE 'ALTER SEQUENCE no_releve RESTART WITH '|| (no_releve + nb_stations + 1);
-        -- raise notice '  no row: %, new no_releve: %', nb_rows_one_station, (no_releve + nb_stations + 1);
-		commit;
-    end loop;
-    select count(*) into cc_count_end from obs;
-    raise notice 'row added: (%), rows per station: (%)', (cc_count_end - cc_count_start), ((cc_count_end - cc_count_start)/nb_stations);
-
-end;
-$$
+-- ------------------
+-- materialized view
+-- ------------------
+create materialized view obs_day as
+ select timescaledb_experimental.time_bucket_ng('1 day', time) as time, id_poste, avg(out_temp) as out_temp, avg(out_temp_omm) as out_temp_omm, avg(windchill) as windchill,
+ avg(dewpoint) as dewpoint, avg(soiltemp) as soiltemp, avg(humidity) as humidity, avg(humidity_omm) as hunidity_omm, 
+ avg(barometer) as barometer, avg(barometer_omm) as barometer_omm, avg(heatindex) as heatindex, avg(pressure) as pressure, avg(wind) as wind, max(wind_gust) as wind_gust,
+ avg(wind10) as wind10, avg(wind10_omm) as wind10_omm, sum(rain) as rain, sum(rain_omm) as rain_omm, avg(rain_rate) as rain_rate, max(uv_indice) as max_uv_indice,
+ max(radiation) as max_radiation, sum(etp_sum) as etp_sum, avg(in_temp) as in_temp, avg(in_humidity) as in_humidity, avg(rx) as rx, avg(voltage) as voltage
+ from obs
+ group by 1,2
+ order by 1,2
 ;
 
 
 
-select 'nb obs: ' || count(*) from obs;
-select timescaledb_experimental.time_bucket_ng('1month', time), count(*) from obs group by 1 order by 1;
-
-create table obs_i(
-    id bigserial,
-    id_poste smallint references postes(id) not null,
-    id_mesure smallint references mesures_i(id) not null,
-    id_mesure_type smallint not null,
-    no_releve bigint not null,
-    time timestamp not null,
-    valeur float not null
-);
-
--- mesure_type => 1 -> value, 2 -> max, 3 -> min
-
-select create_hypertable('obs_i', 'time');
-
-SELECT set_chunk_time_interval('obs_i', 6048000000000);
-
-
-
-CREATE OR REPLACE PROCEDURE add_data_obs_i(default_dt timestamp = '2022-03-18 00:00:00')
-language plpgsql
-AS $$
-declare 
-    start_dt timestamp;
-    cc_count_start int;
-    cc_count_end int;
-    nb_rows_total int;
-    nb_rows_one_station int;
-    nb_stations int;
-    nb_mesures int;
-    no_mesure bigint;
-    no_releve bigint;
-    tmp int;
-    b_inc_seq bool;
-begin
-  select count(*) from postes into nb_stations;
-  select count(*) from mesures_i into nb_mesures;
-  
-  select coalesce(max(time) + interval '5 minutes', default_dt) into start_dt from obs;
-  select ((trunc(trunc(( (extract(epoch from now())) - (extract(epoch from  start_dt)) )/60)/5))) into  nb_rows_one_station;
-
-  select  nb_mesures * nb_stations into nb_rows_total;
-
-  select count(*) into cc_count_start from obs;
-  raise notice 'start_dt: (%), nb_rows_total: (%), nb releve: (%)', start_dt, nb_rows_total, nb_rows_one_station;
-  raise notice 'nb_stations: %, nb_mesures: %', nb_stations, nb_mesures;
-  while nb_rows_one_station > 0 loop
-        SELECT no_releve from obs
-            where time = start_dt and
-               id_poste = 1 and
-               id_mesure = 1
-        into no_releve;
-
-        if no_releve is null then
-            select nextval('no_releve') into no_releve;
-            raise notice 'new no_releve %', no_releve;
-            b_inc_seq = true;
-        else
-            raise notice 'no_releve in sync with obs: %', no_releve;
-            b_inc_seq = false
-        end if
-
-        with recursive serie(i) as
-            (select 1
-            UNION ALL
-            select i + 1 from serie where i < nb_rows_total)
-
-        insert into obs(
-                id_poste,
-                id_mesure,
-                id_mesure_type,
-                no_releve,
-                time,
-                valeur)
-        select
-			((i -1)/ nb_mesures) + 1,
-        	mesures_i.id,
-            1,
-            no_releve + (((i -1)/ nb_mesures) + 1),
-            start_dt,
-            (random() * mesures_i.r1) + mesures_i.r2
-        from serie join mesures_i on mesures_i.id =  (mod(i - 1, nb_mesures) + 1)
-        UNION
-        select
-			((i -1)/ nb_mesures) + 1,
-        	mesures_i.id,
-            2,
-            no_releve + (((i -1)/ nb_mesures) + 1),
-            start_dt,
-            (random() * mesures_i.r1) + mesures_i.r2
-        from serie join mesures_i on mesures_i.id =  (mod(i - 1, nb_mesures) + 1)
-        where mesures_i.max = true
-        UNION
-        select
-			((i -1)/ nb_mesures) + 1,
-        	mesures_i.id,
-            3,
-            no_releve + (((i -1)/ nb_mesures) + 1),
-            start_dt,
-            (random() * mesures_i.r1) + mesures_i.r2
-        from serie join mesures_i on mesures_i.id =  (mod(i - 1, nb_mesures) + 1)
-        where mesures_i.min = true;
-
-        nb_rows_one_station = nb_rows_one_station - 1;
-        select start_dt + interval '5 minutes' into start_dt;
-        if b_inc_seq == true then
-            EXECUTE 'ALTER SEQUENCE no_releve RESTART WITH '|| (no_releve + nb_stations + 1);
-        end if;
-        -- raise notice '  no row: %, new no_releve: %', nb_rows_one_station, (no_releve + nb_stations + 1);
-		commit;
-    end loop;
-    select count(*) into cc_count_end from obs;
-    raise notice 'row added: (%), rows per station: (%)', (cc_count_end - cc_count_start), ((cc_count_end - cc_count_start)/nb_stations);
-
-end;
-$$
-;
-
-
+// timescaledb dictionary
 select min(time), max(time) from obs;
         min         |         max
 ---------------------+---------------------
@@ -470,10 +235,10 @@ SELECT ts.chunk_name, count(o.id)
  _hyper_1_1274_chunk | 201600
  _hyper_1_1275_chunk |  65030
 
--- show row count for each chunks obs_i
+-- show row count for each chunks extremes
 SELECT ts.chunk_name, count(o.id)
-    FROM timescaledb_information.chunks ts join obs_i o on o.time >= ts.range_start and o.time < ts.range_end
-    WHERE hypertable_name = 'obs_i'
+    FROM timescaledb_information.chunks ts join obs_old o on o.time >= ts.range_start and o.time < ts.range_end
+    WHERE hypertable_name = 'obs_old'
     group by 1
     order by 1
 ;
@@ -488,12 +253,12 @@ select
 from chunks_detailed_size('obs');
 UNION
 select 
-    'obs_i' as table,
+    'obs_old' as table,
     chunk_name,
     pg_size_pretty(table_bytes) as table_bytes,
     pg_size_pretty(index_bytes) as index_bytes,
     pg_size_pretty(total_bytes) as total_bytes
-from chunks_detailed_size('obs_i');
+from chunks_detailed_size('obs_old');
 
 -- get db size
 select 
@@ -501,14 +266,14 @@ select
     pg_size_pretty(table_bytes) as table_bytes,
     pg_size_pretty(index_bytes) as index_bytes,
     pg_size_pretty(total_bytes) as total_bytes
-from hypertable_detailed_size('obs');
+from hypertable_detailed_size('obs')
 union
 select 
-   'obs_i' as table,
+   'extremes' as table,
     pg_size_pretty(table_bytes) as table_bytes,
     pg_size_pretty(index_bytes) as index_bytes,
     pg_size_pretty(total_bytes) as total_bytes
-from hypertable_detailed_size('obs_i');
+from hypertable_detailed_size('extremes');
 
 -- ????
 with size_total as (
@@ -525,21 +290,21 @@ select pg_size_pretty(total_size_compressed(total_size-compressed-total-size)) a
         from size_totals;
 
 -- get compression info
-SELECT * FROM timescaledb_information.compression_settings WHERE hypertable_name in ('obs', 'obs_i');
+SELECT * FROM timescaledb_information.compression_settings WHERE hypertable_name in ('obs', 'extremes');
 
 -- ??
 SELECT * from timescaledb_information.dimensions ORDER BY hypertable_name, dimension_number;
 
 -- get global information
-SELECT * FROM timescaledb_information.hypertables WHERE hypertable_name in ('obs', 'obs_i');
+SELECT * FROM timescaledb_information.hypertables WHERE hypertable_name in ('obs', 'extremes');
 
 -- chunck length
 SELECT h.table_name, c.interval_length FROM _timescaledb_catalog.dimension c
 JOIN _timescaledb_catalog.hypertable h ON h.id = c.hypertable_id;
 
-
-
-
+-- -------------------------------------------------------------------
+-- Tout ce qui est apres marchait sur une ancienne version de la base
+-- -------------------------------------------------------------------
 Grafana
 1 mesure for 1 station, with n last measures
 =============================================
@@ -572,3 +337,14 @@ FIELDS ENCLOSED BY '"'
 TERMINATED BY ','
 ESCAPED BY '"'
 LINES TERMINATED BY 'n'
+
+
+SELECT
+  timescaledb_experimental.time_bucket_ng('1 day', time) AS time,
+  avg(barometer_omm) as barometer_omm
+FROM obs_day
+WHERE
+  time BETWEEN '2021-04-25T20:39:37.248Z' AND '2022-04-25T20:39:37.248Z'
+  and id_poste = 20
+  group by 1
+ORDER BY 1;

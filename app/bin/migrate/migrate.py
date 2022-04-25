@@ -455,4 +455,5 @@ def get_json_keys(mesures, meteor):
 
 
 if __name__ == '__main__':
-    load_data(sys.argv[1])
+    load_data('BBF015')
+    # load_data(sys.argv[1])
