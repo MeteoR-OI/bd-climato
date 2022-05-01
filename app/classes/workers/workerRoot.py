@@ -1,16 +1,18 @@
 # Worker class
 # ------------
-#   wait on eventRunMe(frequency)
-#       if killFlag -> exit
-#       loop until queueRun.empty is True:
-#           param = queueRun.get()
-#           call svc func(param)
-#       eventRunMe.clear()
-#       loop
+# The worker class should implement the following 4 methods:
+#   work_item = class.getNextWorkItem()
+#       return None -> no more work for now
+#       return a work_item data, which should include enought info for other calls
+#   processItem(work_item, my_span)
+#       Process the work item
+#   succeedWorkItem(work_item, my_span)
+#       Mark the work_item as processed
+#   failWorkItem(work_item, exc, my_span)
+#       mark the work_item as failed (exc is the exception)
 # ----------
 import threading
 import time
-import queue
 import json
 from app.tools.refManager import RefManager
 from app.tools.telemetry import Telemetry
@@ -28,7 +30,7 @@ class WorkerRoot:
     all_syn = []
     trace_flag = []
 
-    def __init__(self, name, fct, frequency: int = 120, synonym: dict = ['']):
+    def __init__(self, name, cls, frequency: int = 120, synonym: dict = ['']):
         self.name = name
         self.ref_mgr = RefManager.GetInstance()
         try:
@@ -57,11 +59,12 @@ class WorkerRoot:
         # event to notify when a thread is exited
         self.eventRunMe = threading.Event()
         self.eventRunMe.clear()
-        self.queueRun = queue.Queue()
+        self.closed = threading.Event()
+        self.closed.clear()
         self.killFlag = False
 
         # register and start our service
-        self.__register(name, fct)
+        self.__register(name, cls)
 
     @staticmethod
     def GetInstance(myClass):
@@ -99,14 +102,11 @@ class WorkerRoot:
     def RunMe(self, params: json = {}):
         if self.IsRunning() is False:
             raise Exception('service ' + self.display + ' is stopped')
-        self.queueRun.put(params)
         self.eventRunMe.set()
 
     # Start the service (in waitable mode)
     def Start(self):
         try:
-            if self.IsRunning() is True:
-                return
             WorkerRoot.wrks_lock.acquire()
             for a_worker in WorkerRoot.wrks:
                 if a_worker['name'] == self.name:
@@ -115,6 +115,7 @@ class WorkerRoot:
                             # just return if the task already running
                             return
                         self.killFlag = False
+                        self.closed = False
                         thread = threading.Thread(target=self.__runSvc, args=(a_worker,), daemon=True)
                         thread.setName(self.name)
                         if self.GetTraceFlag() is True:
@@ -123,7 +124,6 @@ class WorkerRoot:
                         a_worker['threadRunning'] = True
                         # force the thread to run once
                         time.sleep(1)
-                        self.queueRun.put({})
                         self.eventRunMe.set()
                         return
 
@@ -150,18 +150,10 @@ class WorkerRoot:
                     self.eventRunMe.set()
                     t.logInfo('Stop command received', None, {"svc": self.display, "status": "stopped"})
 
-                    # Notify service handler
-                    try:
-                        a_worker['fct']({"param": {"StopMe": True}})
-                    except Exception as exc:
-                        with self.tracer.start_as_current_span(self.display) as my_span:
-                            t.logException(exc, my_span)
-                    #  Bye
-                    return
+                    self.closed.wait(5)
 
                 except Exception as exc:
-                    t.logError('Stop ' + self.display + ": Exception", None, {"exception": str(exc)})
-                    raise exc
+                    t.Exception(exc, None)
 
                 finally:
                     with WorkerRoot.wrks_lock:
@@ -184,12 +176,12 @@ class WorkerRoot:
 
     # private methods
     # Register in WorkerRoot.wrks (global variable)
-    def __register(self, name: str, fct):
+    def __register(self, name: str, cls):
         for a_worker in WorkerRoot.wrks:
             if a_worker['name'] == name:
                 t.logError('task ' + self.display + name + ' already registered')
         WorkerRoot.wrks_lock.acquire()
-        WorkerRoot.wrks.append({"name": name, "fct": fct, 'threadRunning': False, 'run': False, 'killMe': threading.Event()})
+        WorkerRoot.wrks.append({"name": name, "class": cls, 'threadRunning': False})
         WorkerRoot.wrks_lock.release()
 
     # Start the service, and call the service function every frequency
@@ -210,47 +202,30 @@ class WorkerRoot:
 
                     #  Stop request processing
                     if self.killFlag is True:
+                        self.closed.set()
                         return
 
-                    # Loop on queue messages
-                    call_params = {"param": {}}
-                    one_run = False
-                    while self.queueRun.empty() is False or one_run is False:
+                    work_item = a_worker['class'].getNextWorkItem()
+                    if work_item is None:
+                        self.eventRunMe.clear()
+                        continue
 
-                        # get our param
-                        if self.queueRun.empty() is False:
-                            call_params["param"] = self.queueRun.get(False)
-                        if call_params['param'].get('trace_flag') is not None:
-                            trace_flag = call_params['param']['trace_flag']
-                            self.SetTraceFlag(trace_flag)
-                            t.logInfo('task ' + self.display + " Run " + self.display, None)
-
-                        # old bug...
-                        if call_params['param'] is None or call_params == []:
-                            call_params['param'] = {}
-                        call_params["param"]["trace_flag"] = trace_flag
-
+                    with self.tracer.start_as_current_span("load Json") as my_span:
                         # call the service handler
                         try:
-                            if a_worker['run'] is False:
-                                try:
-                                    a_worker['run'] = True
-                                    a_worker['fct'](call_params, self.IsKilled)
-                                finally:
-                                    a_worker['run'] = False
+                            # my_span = self.tracer.start_as_current_span("load Json")
+                            a_worker['class'].processWorkItem(work_item, my_span, self.tracer)
+                            a_worker['class'].succeedWorkItem(work_item, my_span)
+                            my_span._status._status_code = Telemetry.get_ok_status()
 
                         except Exception as exc:
-                            with self.tracer.start_as_current_span(self.display) as my_span:
-                                t.logException(exc, my_span)
-                            a_worker['run'] = False
-                        finally:
-                            one_run = True
+                            my_span._status._status_code = Telemetry.get_error_status()
+                            a_worker['class'].failWorkItem(work_item, exc, my_span)
 
-                    self.eventRunMe.clear()
+                    self.eventRunMe.set()
 
                 except Exception as exc:
-                    with self.tracer.start_as_current_span(self.display) as my_span:
-                        t.logException(exc, my_span)
+                    t.logException(exc)
 
         finally:
             WorkerRoot.wrks_lock.acquire()

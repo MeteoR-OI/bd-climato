@@ -1,11 +1,11 @@
 
 
-from app.classes.calcul.calcObservation import CalcObs
+from app.classes.json_loader.jsonLoader import JsonLoader
 from app.classes.workers.workerRoot import WorkerRoot
 import json
 
 
-class SvcAutoLoad(WorkerRoot):
+class SvcJsonLoader(WorkerRoot):
     """
         SvcAggregate
 
@@ -14,20 +14,20 @@ class SvcAutoLoad(WorkerRoot):
 
     def __init__(self, is_tmp: bool = None):
         # call parent __init__
-        super(SvcAutoLoad, self).__init__(
-            str(SvcAutoLoad),
-            CalcObs.GetInstance().LoadJsonControler,
+        super(SvcJsonLoader, self).__init__(
+            str(SvcJsonLoader),
+            JsonLoader(),
             30,
-            ['svcAutoLoad', 'autoload', 'auto', 'obs', 'observation', 'load', 'loadjson', 'json'],
+            ['svcJsonLoader', 'autoload', 'auto', 'load', 'loadjson', 'json'],
         )
 
     @staticmethod
     def GetInstance(myClass: object = None):
-        return WorkerRoot.GetInstance(SvcAutoLoad)
+        return WorkerRoot.GetInstance(SvcJsonLoader)
 
     @staticmethod
     def runMe(params: json = {}):
-        svc_agg_instance = SvcAutoLoad.GetInstance()
-        if svc_agg_instance.IsRunning() is False:
-            svc_agg_instance.Start()
-        svc_agg_instance.RunMe(params)
+        svc_json_loader = SvcJsonLoader.GetInstance()
+        if svc_json_loader.IsRunning() is False:
+            svc_json_loader.Start()
+        # svc_json_loader.RunMe(params)

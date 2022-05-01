@@ -1,0 +1,292 @@
+# JsonLoader process
+#   work_item = class.getNextWorkItem()
+#       return None -> no more work for now
+#       return a work_item data, which should include enought info for other calls
+#   processItem(work_item, my_span):
+#       Process the work item
+#   succeedWorkItem(work_item, my_span):
+#       Mark the work_item as processed
+#   failWorkItem(work_item, exc, my_span):
+#       mark the work_item as failed
+from app.classes.repository.mesureMeteor import MesureMeteor
+from app.classes.repository.posteMeteor import PosteMeteor
+from app.classes.repository.incidentMeteor import IncidentMeteor
+from app.classes.repository.excluMeteor import ExcluMeteor
+from app.classes.repository.obsMeteor import ObsMeteor
+from app.classes.repository.extremeMeteor import ExtremeMeteor
+from app.tools.jsonValidator import checkJson
+from datetime import timedelta
+import app.tools.myTools as t
+from app.tools.jsonPlus import JsonPlus
+from django.db import transaction
+from django.conf import settings
+import json
+import os
+
+
+class JsonLoader:
+    def __init__(self):
+        # save mesures definition
+        self.mesures = MesureMeteor.getDefinitions()
+        self.decas = MesureMeteor.getAllDecas()
+
+        # boolean to stop processing files
+        self.stopRequested = False
+
+        # get directories settings
+        if hasattr(settings, "AUTOLOAD_DIR") is True:
+            self.base_dir = settings.AUTOLOAD_DIR
+        else:
+            self.base_dir = (os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/../../data/json_auto_load")
+
+        if hasattr(settings, "ARCHIVE_DIR") is True:
+            self.archive_dir = settings.ARCHIVE_DIR
+        else:
+            self.archive_dir = self.base_dir
+
+    # ----------------
+    # private methods
+    # ----------------
+    def getNextWorkItem(self):
+        file_names = []
+        # get json file names
+        filenames = os.listdir(self.base_dir)
+        for filename in filenames:
+            if str(filename).endswith('.json'):
+                file_names.append(filename)
+        # stop processing
+        if len(file_names) == 0:
+            return None
+
+        file_names = sorted(file_names)
+        a_filename = file_names[0]
+        # load our json file
+        texte = ""
+
+        with open(self.base_dir + '/' + a_filename, "r") as f:
+            lignes = f.readlines()
+            for aligne in lignes:
+                texte += str(aligne)
+        my_json = JsonPlus().loads(texte)
+        if 'dict' in str(type(my_json)):
+            my_json = [my_json]
+        return {'f': a_filename, 'json': my_json}
+
+    def succeedWorkItem(self, work_item, my_span):
+        # move the file to archive
+        str_annee = 'inconnu'
+        str_mois = 'inconnu'
+        meteor = 'inconnu'
+        try:
+            str_annee = str(work_item['f']).split(".")[2].split("-")[0]
+            str_mois = str(work_item['f']).split(".")[2].split("-")[1]
+            meteor = str(work_item['f']).split(".")[1]
+        except Exception:
+            pass
+
+        filename_prefix = self.archive_dir + "/" + meteor + "/" + str_annee + "/" + str_mois + "/"
+        if not os.path.exists(filename_prefix):
+            os.makedirs(filename_prefix)
+
+        os.rename(self.base_dir + "/" + work_item['f'], filename_prefix + work_item['f'])
+
+        # set my_span attributes
+        my_span.set_attribute("filename", work_item['f'])
+        my_span.set_attribute("meteor", meteor)
+
+    def failWorkItem(self, work_item, exc, my_span):
+        meteor = 'inconnu'
+        try:
+            meteor = str(work_item['f']).split(".")[1]
+        except Exception:
+            pass
+
+        t.logException(exc, my_span)
+
+        j_info = {"filename": work_item['f'], "dest": self.archive_dir + "/" + meteor + "/failed/" + work_item['f']}
+        t.logInfo("file moved to fail directory", None, j_info)
+        IncidentMeteor.new('_getJsonFileNameAndData', 'error', 'file moved to failed directory', j_info)
+
+        if not os.path.exists(self.archive_dir + "/" + meteor + '/failed'):
+            os.makedirs(self.archive_dir + "/" + meteor + '/failed')
+        os.rename(self.base_dir + "/" + work_item['f'],  self.archive_dir + "/" + meteor + "/failed/" + work_item['f'])
+
+        # set my_span attributes
+        my_span.set_attribute("filename", work_item['f'])
+        my_span.set_attribute("meteor", meteor)
+
+    @transaction.atomic
+    def processWorkItem(self, work_item: json, my_span, op_tracer):
+        filename = work_item['f']
+        jsons_to_load = work_item['json']
+        idx_global = 0
+        my_span.set_attribute('filename', filename)
+        meteor = str(jsons_to_load[0].get("meteor"))
+        pid = PosteMeteor.getPosteIdByMeteor(jsons_to_load[0]["meteor"])
+        my_span.set_attribute('meteor', meteor)
+        check_result = checkJson(jsons_to_load, pid, filename)
+        if check_result is not None:
+            my_span.set_event('check_json', check_result)
+            raise Exception("Invalid Json file: " + filename + ": " + check_result)
+
+        while idx_global < jsons_to_load.__len__():
+            try:
+                meteor = str(jsons_to_load[idx_global].get("meteor"))
+                pid = PosteMeteor.getPosteIdByMeteor(jsons_to_load[0]["meteor"])
+                if pid is None:
+                    raise Exception("code meteor inconnu: " + meteor)
+
+                idx_data = 0
+                while idx_data < jsons_to_load[idx_global]['data'].__len__():
+                    with op_tracer.start_as_current_span("Item_" + str(idx_global) + ", data_" + str(idx_data)) as my_data_span:
+                        try:
+                            a_work_item = jsons_to_load[idx_global]['data'][idx_data]
+                            # get data from our json item
+                            j_stop_dat = a_work_item["stop_dat"]
+                            j_duration = a_work_item["duration"]
+                            j_start_dat = j_stop_dat - timedelta(minutes=j_duration)
+                            j_exclus = ExcluMeteor.getExclusForAPoste(pid, j_start_dat, j_stop_dat)
+                            all_obs = ObsMeteor.load_all_needed_obs(pid, self.decas, j_stop_dat)
+
+                            # load attributes in our sub_spam
+                            my_data_span.set_attribute("stop_dat", str(j_stop_dat))
+
+                            # check if json already loaded
+                            # NCNC -> futur: check if stop_dat in range ]time-duration, time]
+                            if all_obs[0]['obs'].data.duration != 0:
+                                if a_work_item.__contains__("force_replace") is not True:
+                                    t.logInfo(
+                                            'already loaded', my_data_span,
+                                            {'meteor': meteor, 'filename': filename, 'idx': idx_data, 'stop_dat': str(j_stop_dat)})
+                                    continue
+                                else:
+                                    # delete our obs, and linked extremes
+                                    all_obs[0]['obs'].data.delete()
+                                    # reload a new set of obs (first will be new now)
+                                    all_obs = ObsMeteor.load_mesures(pid, self.decas, j_stop_dat)
+
+                            all_obs[0]['obs'].data.duration = j_duration
+                            all_obs[0]['obs'].data.save()
+
+                            self.load_obs_data_j(pid, all_obs, a_work_item['valeurs'], j_stop_dat, j_duration, j_exclus)
+
+                            for an_obs in all_obs:
+                                an_obs['obs'].data.save()
+
+                            my_data_span.set_attribute("obs_id", str(all_obs[0]['obs'].data.id))
+
+                        except Exception as exc:
+                            raise(exc)
+
+                        finally:
+                            idx_data += 1
+            finally:
+                idx_global += 1
+
+    def load_obs_data_j(self, pid, all_obs, valeurs, stop_dat, j_duration, j_exclus):
+        for a_mesure in self.mesures:
+            cur_vals = self.get_valeurs(a_mesure, valeurs, stop_dat, j_exclus)
+            cur_obs = self.get_cur_obs(all_obs, a_mesure)
+
+            # store the value in the observation data
+            if cur_vals[0] is not None:
+                cur_obs.data.__setattr__(a_mesure['col'], cur_vals[0])
+                if a_mesure['iswind'] is True and cur_vals[1] is not None:
+                    cur_obs.data.__setattr__(a_mesure['col'] + '_dir', cur_vals[1])
+
+            # store min/max
+            self.insert_extremes(
+                pid,
+                all_obs[0]['obs'].data.id,
+                a_mesure,
+                [
+                    {'col': 'min', 'v': cur_vals[2], 't': cur_vals[3], 'd': None},
+                    {'col': 'max', 'v': cur_vals[4], 't': cur_vals[5], 'd': cur_vals[6]}
+                ]
+            )
+
+    def get_valeurs(self, a_mesure, valeurs, stop_dat, j_exclus, is_abs=False):
+        #  [0]   [1]       [2]     [3]      [4]      [5]       [6]
+        # val, dir|None, valmin, min_time, valmax, max_time, max_dir
+
+        # for omm values, get the underlying data
+        if a_mesure['ommidx'] is not None:
+            return self.get_valeurs(self.mesures[a_mesure['ommidx']], valeurs, stop_dat, j_exclus, True)
+
+        # if a_mesure['col'] == 'rain':
+        #     print('rain')
+
+        if is_abs is False:
+            j_keys = [a_mesure['col'] + '_avg', a_mesure['col']]
+        else:
+            j_keys = [a_mesure['col'], a_mesure['col'] + '_avg']
+
+        my_val = None
+        my_val_dir = None
+        my_val_min = my_val_min_time = None
+        my_val_max = my_val_max_time = my_val_max_dir = None
+
+        # get our value
+        for a_key in j_keys:
+            if valeurs.get(a_key) is not None:
+                my_val = valeurs[a_key]
+                if a_mesure['iswind'] is True and valeurs.get(a_key + '_dir') is not None:
+                    my_val_dir = valeurs[a_key + '_dir']
+                break
+
+        # get our min
+        if valeurs.get(a_mesure['col'] + '_min') is not None:
+            my_val_min = valeurs[a_mesure['col'] + '_min']
+            my_val_min_time = valeurs[a_mesure['col'] + '_min_time']
+        else:
+            my_val_min = my_val
+            my_val_min_time = stop_dat
+
+        # get our max
+        if valeurs.get(a_mesure['col'] + '_max') is not None:
+            my_val_max = valeurs[a_mesure['col'] + '_max']
+            my_val_max_time = valeurs[a_mesure['col'] + '_max_time']
+            if a_mesure['iswind'] is True and valeurs.get(a_mesure['col'] + '_max_dir') is not None:
+                my_val_max_dir = valeurs[a_mesure['col'] + '_max_dir']
+        else:
+            my_val_max = my_val
+            my_val_max_time = stop_dat
+
+        return [my_val, my_val_dir, my_val_min, my_val_min_time, my_val_max, my_val_max_time, my_val_max_dir]
+
+    def get_cur_obs(self, all_obs, a_mesure):
+        idx = 0
+        while idx < all_obs.__len__():
+            if all_obs[idx]['deca'] == a_mesure['valdk']:
+                return all_obs[idx]['obs']
+            idx += 1
+        raise Exception("obs not in cache for dk: " + str(a_mesure['valdk']))
+
+    def insert_extremes(self, pid, id_obs, a_mesure, x_data):
+        x_row = None
+        for a_data in x_data:
+            if a_mesure[a_data['col']] is True and a_data['t'] is not None:
+                x_date_key = a_data['t'] + timedelta(hours=a_mesure[a_data['col'] + 'dk'])
+                x_date_key = x_date_key.date()
+                if x_row is None or x_row.data.date != x_date_key:
+                    if x_row is not None:
+                        x_row.data.id_obs = id_obs
+                        x_row.data.save()
+                    x_row = ExtremeMeteor.get_extrenes(pid, a_mesure['id'], x_date_key)
+                if (a_data['col'] == 'min' and
+                        (hasattr(x_row.data, a_data['col']) is False or
+                         x_row.data.__getattribute__(a_data['col']) is None or
+                         a_data['v'] < x_row.data.__getattribute__(a_data['col']))) or \
+                   (a_data['col'] == 'max' and
+                        (hasattr(x_row.data, a_data['col']) is False or
+                         x_row.data.__getattribute__(a_data['col']) is None or
+                         a_data['v'] > x_row.data.__getattribute__(a_data['col']))):
+                    # set the new value for the extreme
+                    x_row.data.__setattr__(a_data['col'], a_data['v'])
+                    x_row.data.__setattr__(a_data['col'] + '_time', a_data['t'])
+                    if a_data['d'] is not None:
+                        x_row.data.__setattr__(a_data['col'] + '_dir', a_data['d'])
+
+        if x_row is not None:
+            x_row.data.id_obs = id_obs
+            x_row.data.save()

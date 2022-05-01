@@ -1,12 +1,6 @@
 from app.tools.constantClass import Constants
 
 
-class ClimConstants(Constants):
-    """ general purpose constants """
-    JSON_CURRENT = 'current'
-    JSON_AGGREGATE = 'aggregate'
-
-
 class MeasureProcessingBitMask(Constants):
     """ special measure processing"""
     Standard = 0

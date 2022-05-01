@@ -1,6 +1,5 @@
 import datetime
 import dateutil.parser
-from app.tools.aggTools import calcAggDate
 
 
 def date_to_str(my_date: datetime.datetime) -> str:
@@ -37,13 +36,3 @@ def str_to_date(dt_str: str) -> datetime.datetime:
     tmp_dt = dateutil.parser.parse(dt_str)
     # tmp_dt.tzinfo = None
     return tmp_dt
-
-
-def is_in_rounded_hour(stop_dat: datetime.datetime, duration: int) -> bool:
-    start_dat = stop_dat - datetime.timedelta(minutes=duration)
-    rounded_dat = calcAggDate('H', stop_dat, 0, False)
-    if stop_dat.minute == 00 and stop_dat.second < 2:
-        return True
-    if rounded_dat > start_dat and rounded_dat < stop_dat:
-        return True
-    return False
