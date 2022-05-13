@@ -30,11 +30,10 @@ SECRET_KEY = 'n=m9oh3l5np7o!63#ad5tgjy_r7*tqlm6l!%lzjw#^=pue0ba)'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-        'beta.meteor-oi.re',
+        'dina.meteor-oi.re',
         '127.0.0.1',
-        '10.5.0.90',
-        'data.meteor-oi.re',
-        'localhost']
+        'localhost',
+]
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "app", "static"),
@@ -92,17 +91,14 @@ WSGI_APPLICATION = 'Clim_MeteoR.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/2.0/ref/settings/#databases
-
-# tester si le password a blanc est pareil que pas de mot de passe...
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'climatest',
+        'NAME': 'climato2',
         'USER': os.getenv('PGUSER', 'postgres'),
         'PASSWORD': os.getenv('PGPASS', 'Funiculi'),
-        'HOST': 'localhost',                        # defined in dc-telemetry.yaml
-        'PORT': '5432',                             # defined in dc-telemetry.yaml
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
@@ -129,7 +125,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = False
+USE_TZ = False          # need to use no timezone !!!
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
@@ -143,10 +139,13 @@ DATA_FS_PATH = os.path.join(MEDIA_ROOT, 'data')
 # App settings
 AUTOLOAD_DIR = "./data/json_auto_load"          # in symc with dc-telemetry.yaml
 ARCHIVE_DIR = "./data/json_archive"             # in symc with dc-telemetry.yaml
-LOCAL_REMOTE_DIR = "./data/json_not_in_git"     # server loading file thru view
-LOCAL_DIR = './data/json_not_in_git'            # client loaded file with loadson command
 
-TELEMETRY = False                                # activate telemetry
+
+TELEMETRY_PROVIDER = "Thrift"          # None, Console, Jaeger, Thrift
+TELEMETRY_HOST = "localhost"
+JAEGER_PORT = 14250
+THRIFT_PORT = 14250
+
 PROD = False
 LOG_FILE_DIR = "./data/localStorage/log"    # log storage
 
