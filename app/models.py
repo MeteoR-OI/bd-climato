@@ -80,19 +80,37 @@ class Exclusion(models.Model):
 
 # class Observation(ExportModelOperationsMixin('obs'), models.Model):
 class Observation(models.Model):
-    # duration, j, qa_modifications, qa_incidents, qa_check_done
+    
+    # ??  hail | hailRate | heatingTemp ??
+
     id = models.BigAutoField(primary_key=True, verbose_name="id de l'observation")
     time = DateTimeFieldNoTZ(null=False, verbose_name="date fin période observation")
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
     duration = models.SmallIntegerField(null=True, default=0, verbose_name="durée période")
+    # null data
     out_temp = models.FloatField(null=True, verbose_name="température extérieure")
     out_temp_omm = models.FloatField(null=True, verbose_name="température OMM extérieure")
     windchill = models.FloatField(null=True, verbose_name="windchill")
     dewpoint = models.FloatField(null=True, verbose_name="point de rosée")
     heatindex = models.FloatField(null=True, verbose_name="heatindex")
-    soiltemp = models.FloatField(null=True, verbose_name="température du sol")
+    soiltemp1 = models.FloatField(null=True, verbose_name="température du sol niveau du sol")
+    soiltemp2 = models.FloatField(null=True, verbose_name="température du sol niveau 1")
+    soiltemp3 = models.FloatField(null=True, verbose_name="température du sol niveau 2")
+    soiltemp4 = models.FloatField(null=True, verbose_name="température du sol niveau 3")
+    soilmoist1 = models.FloatField(null=True, verbose_name="humidité du sol niveau du sol")
+    soilmoist2 = models.FloatField(null=True, verbose_name="humidité du sol niveau 1")
+    soilmoist3 = models.FloatField(null=True, verbose_name="humidité du sol niveau 2")
+    soilmoist4 = models.FloatField(null=True, verbose_name="humidité du sol niveau 3")
+    leaftemp1 = models.FloatField(null=True, verbose_name="temp des feuilles no 1")
+    leaftemp2 = models.FloatField(null=True, verbose_name="temp des feuilles no 2")
+    leafwet1 = models.FloatField(null=True, verbose_name="humidité des feuilles no 1")
+    leafwet2 = models.FloatField(null=True, verbose_name="humidité des feuilles no 2")
     humidity = models.FloatField(null=True, verbose_name="humidité")
     humidity_omm = models.FloatField(null=True, verbose_name="humidité OMM")
+    extra_humidity1 = models.FloatField(null=True, verbose_name="extra humidité 1")
+    extra_humidity2 = models.FloatField(null=True, verbose_name="extra humidité 2")
+    extra_temp1 = models.FloatField(null=True, verbose_name="extra temperature 1")
+    extra_temp2 = models.FloatField(null=True, verbose_name="extra temperature 1")
     barometer = models.FloatField(null=True, verbose_name="pression niveau mer")
     barometer_omm = models.FloatField(null=True, verbose_name="pression niveau mer OMM")
     pressure = models.FloatField(null=True, verbose_name="pression station")
@@ -111,6 +129,9 @@ class Observation(models.Model):
     etp_sum = models.FloatField(null=True, verbose_name="somme etp")
     in_temp = models.FloatField(null=True, verbose_name="température intérieure")
     in_humidity = models.FloatField(null=True, verbose_name="humidité intérieure")
+    hail = models.FloatField(null=True, verbose_name="hail")
+    hail_rate = models.FloatField(null=True, verbose_name="hail rate")
+    heating_temp = models.FloatField(null=True, verbose_name="heating temp")
     rx = models.FloatField(null=True, verbose_name="taux reception station")
     voltage = models.FloatField(null=True, verbose_name="voltage")
     j = models.JSONField(null=True, default=dict, verbose_name="données autres")

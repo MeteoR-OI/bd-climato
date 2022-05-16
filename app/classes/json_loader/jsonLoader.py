@@ -1,4 +1,6 @@
 # JsonLoader process
+#   addNewWorkItem(self, work_item)
+#       not supported in jsonLoader
 #   work_item = class.getNextWorkItem()
 #       return None -> no more work for now
 #       return a work_item data, which should include enought info for other calls
@@ -45,8 +47,11 @@ class JsonLoader:
             self.archive_dir = self.base_dir
 
     # ----------------
-    # private methods
+    # public methods
     # ----------------
+    def addNewWorkItem(self, work_item):
+        raise Exception('not supported')
+
     def getNextWorkItem(self):
         file_names = []
         # get json file names

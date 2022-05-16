@@ -1,5 +1,5 @@
 from app.classes.workers.workerRoot import WorkerRoot
-from app.classes.json_loader.calcAggreg import CalcAggreg
+from app.classes.migrate import 
 import json
 
 
@@ -12,7 +12,11 @@ class SvcAggregate(WorkerRoot):
 
     def __init__(self, is_tmp: bool = None):
         # call parent __init__
-        super(SvcAggregate, self).__init__(str(SvcAggregate), CalcAggreg().ComputeAggregFromSvc, 120, ['agg', 'aggreg', 'agreg', 'agregation', 'aggregation', 'agregate', 'aggregate'])
+        super(SvcAggregate, self).__init__(
+            str(SvcAggregate), CalcAggreg().ComputeAggregFromSvc,
+            120,
+            ['agg', 'aggreg', 'agreg', 'agregation', 'aggregation', 'agregate', 'aggregate'],
+            True)
 
     @staticmethod
     def GetInstance(myClass: object = None):

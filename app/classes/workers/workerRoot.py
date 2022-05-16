@@ -30,8 +30,9 @@ class WorkerRoot:
     all_syn = []
     trace_flag = []
 
-    def __init__(self, name, cls, frequency: int = 120, synonym: dict = ['']):
+    def __init__(self, name, cls, frequency: int = 120, synonym: dict = [''], run_once=False):
         self.name = name
+        self.run_once = run_once
         self.ref_mgr = RefManager.GetInstance()
         try:
             self.display = str(name).replace("<class 'app.classes.workers.", "")
@@ -150,7 +151,8 @@ class WorkerRoot:
                     self.eventRunMe.set()
                     t.logInfo('Stop command received', None, {"svc": self.display, "status": "stopped"})
 
-                    self.closed.wait(5)
+                    if self.run_once is False:
+                        self.closed.wait(5)
 
                 except Exception as exc:
                     t.Exception(exc, None)
@@ -158,6 +160,10 @@ class WorkerRoot:
                 finally:
                     with WorkerRoot.wrks_lock:
                         a_worker['threadRunning'] = False
+
+    #  add manually aork item
+    def AddWorkItem(self, work_item: json):
+        pass
 
     # Check thread list to check if service is running
     def IsRunning(self) -> bool:
@@ -207,6 +213,9 @@ class WorkerRoot:
 
                     work_item = a_worker['class'].getNextWorkItem()
                     if work_item is None:
+                        if self.run_once is True:
+                            self.Stop()
+                            return
                         self.eventRunMe.clear()
                         continue
 
