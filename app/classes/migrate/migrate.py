@@ -72,8 +72,8 @@ class MigrateDB:
             my_span.add_event('start loading measures for ' + meteor)
             self.insert_obs(pid, myconn, pgconn, my_span)
 
-            my_span.add_even('start loading extremes for ' + meteor)
-            self.insert_xtremes(work_item, pgconn, myconn, my_span)
+            my_span.add_event('start loading extremes for ' + meteor)
+            self.insert_xtremes(pid, meteor, pgconn, my_span)
 
         except Exception as e:
             raise(e)
@@ -179,25 +179,27 @@ class MigrateDB:
             pgconn.commit()
             my_span.add_event('all archive inserted, last id: ' + str(test_id))
 
-    def succeedWorkItem(work_item, my_span):
+    def succeedWorkItem(self, work_item, my_span):
+        print('migration success')
         return
 
-    def failWorkItem(work_item, exc, my_span):
+    def failWorkItem(self, work_item, exc, my_span):
+        print('migration failed')
+        print(exc)
         return
 
     # ----------------
     # private methods
     # ----------------
-    def insert_xtremes(self, work_item, pgconn, myconn, my_span):
+    def insert_xtremes(self, pid, meteor, pgconn, my_span):
         day_process = None
-        pid = work_item['pid']
         pg_cur = pgconn.cursor()
         inserted_row = 0
         json_keys = []
         test_id = -1
 
         try:
-            json_keys = self.get_json_keys(myconn)
+            json_keys = self.get_json_keys(meteor)
             while True:
                 day_process, is_done = self.get_next_process_day(json_keys)
                 if is_done is True:
@@ -241,7 +243,7 @@ class MigrateDB:
                         idx_idx += 1
                         inserted_row += 1
 
-                        if test_id == -1:
+                        if test_id == -1 and pg_cur.rowcount > 0:
                             test_id = pg_cur.fetchone()[0]
                             my_span.add_event("first extreme inserted, id: " + str(test_id))
 
@@ -283,8 +285,8 @@ class MigrateDB:
 
     def insert_xtreme_row(self, mesures, pg_cur, args):
         query_pg = """
-            insert into extremes (poste_id, date, id_obs, mesure_id, min, mintime, max, maxtime, max_dir) values
-            (%s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+            insert into extremes (poste_id, date, id_obs, mesure_id, min, min_time, max, max_time, max_dir) values
+            (%s, %s, %s, %s, %s, %s, %s, %s, %s) returning id"""
         pg_cur.execute(query_pg,  args)
 
     def get_next_process_day(self, json_keys):
@@ -367,7 +369,7 @@ class MigrateDB:
 
         return omm_link
 
-    def get_json_keys(self, myconn):
+    def get_json_keys(self, meteor):
         idx = 0
         json_keys = []
         while idx < len(self.mesures):
@@ -378,7 +380,7 @@ class MigrateDB:
                 idx += 1
                 continue
 
-            if '_omm' in mymesure['col']:
+            if mymesure['ommidx'] is not None:
                 for aj_key in json_keys:
                     if self.mesures[mymesure['ommidx']]['id'] == self.mesures[aj_key['idx'][0]]['id']:
                         aj_key['idx'].append(idx)
@@ -388,10 +390,16 @@ class MigrateDB:
                 idx += 1
                 continue
 
+            # fix for wind table
+            table_name = mymesure['col']
+            if mymesure['col'] == 'windSpeed':
+                table_name = 'wind'
+
             if mymesure['iswind'] is True:
-                my_query = 'select dateTime, min, mintime, max, maxtime, max_dir from archive_day_' + mymesure['field'] + ' order by dateTime'
+                my_query = 'select dateTime, min, mintime, max, maxtime, max_dir from archive_day_' + table_name + ' order by dateTime'
             else:
-                my_query = 'select dateTime, min, mintime, max, maxtime from archive_day_' + mymesure['field'] + ' order by dateTime'
+                my_query = 'select dateTime, min, mintime, max, maxtime from archive_day_' + table_name + ' order by dateTime'
+            myconn = self.getMSQLConnection(meteor)
             my_cur = myconn.cursor()
             my_cur.execute(my_query)
             tmp_row = my_cur.fetchone()
@@ -418,10 +426,10 @@ class MigrateDB:
         if myconn.is_connected() is False:
             raise Exception("bug in db access")
 
-        return myconn
-
         # set session timezone to utc
         my_cur = myconn.cursor()
         my_cur.execute("set time_zone = '+00:00'")
         myconn.commit()
         my_cur.close()
+
+        return myconn

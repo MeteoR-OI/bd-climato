@@ -13,9 +13,9 @@ from app.classes.workers.svcLoadJson import SvcJsonLoader
 from app.classes.workers.svcMigrate import SvcMigrate
 from django.core.wsgi import get_wsgi_application
 
-# svc_loader = SvcJsonLoader()
-# svc_loader.Start()
-# svc_loader.RunMe()
+svc_loader = SvcJsonLoader()
+svc_loader.Start()
+svc_loader.RunMe()
 
 svc_migrate = SvcMigrate()
 svc_migrate.Start()
