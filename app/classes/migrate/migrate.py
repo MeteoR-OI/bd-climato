@@ -16,52 +16,6 @@ from datetime import datetime, timedelta
 from app.tools.myTools import logException
 
 
-# column idx in our select statement from archive table
-dateTime = 0
-usUnits = 1
-interval = 2
-barometer = 3
-pressure = 4
-altimeter = 5
-inTemp = 6
-outTemp = 7
-inHumidity = 8
-outHumidity = 9
-windSpeed = 10
-windDir = 11
-windGust = 12
-windGustDir = 13
-rainRate = 14
-rain = 15
-dewpoint = 16
-windchill = 17
-heatindex = 18
-ET = 19
-radiation = 20
-UV = 21
-soilTemp1 = 22
-rxCheckPercent = 23
-consBatteryVoltage = 24
-soilTemp2 = 25
-soilTemp3 = 26
-soilTemp4 = 27
-soilMoist1 = 28
-soilMoist2 = 29
-soilMoist3 = 30
-soilMoist4 = 31
-leafTemp1 = 32
-leafTemp2 = 33
-leafWet1 = 34
-leafWet2 = 35
-extraHumid1 = 36
-extraHumid2 = 37
-extraTemp1 = 38
-extraTemp2 = 39
-hail = 40
-hailRate = 41
-heatingTemp = 42
-
-
 class MigrateDB:
     def __init__(self):
         self._meteors_to_process = []
@@ -106,7 +60,7 @@ class MigrateDB:
         self._meteors_to_process = self._meteors_to_process[1::]
         return work_item
 
-    def processItem(self, work_item, my_span):
+    def processWorkItem(self, work_item, my_span, op_tracer):
         myconn = None
         pgconn = None
         try:
@@ -119,7 +73,7 @@ class MigrateDB:
             self.insert_obs(pid, myconn, pgconn, my_span)
 
             my_span.add_even('start loading extremes for ' + meteor)
-            self.insert_xtremes(work_item, pgconn, myconn)
+            self.insert_xtremes(work_item, pgconn, myconn, my_span)
 
         except Exception as e:
             raise(e)
@@ -131,153 +85,81 @@ class MigrateDB:
                 myconn.close()
 
     def insert_obs(self, pid, myconn, pgconn, my_span):
-        date_omm_decas = []
+        mesures = self.mesures
+        query_my = "select from_unixTime(dateTime + 4 * 3600), usUnits, `interval`"
+        query_args = []
+        query_pg1 = "insert into obs(poste_id, time, duration"
+        query_pg2 = ") values (%s, %s, %s"
+        row_datetime = 0
+        row_usunit = 1
+        row_interval = 2
+
+        # get all needed valdk
+        used_decas = [0]
+        for a_mesure in mesures:
+            if a_mesure['valdk'] not in used_decas:
+                used_decas.append(a_mesure['valdk'])
+
+        # query_args = array of query args, one for each valdk
+        for a_deca in used_decas:
+            query_args.append({'valdk': a_deca, 'dirty': False, 'args': []})
+
+        nb_col = 0
+        for a_mesure in mesures:
+            nb_col += 1
+
+            # add field name into our select statement
+            query_my += ', ' + a_mesure['col']
+
+            # add field name into our insert statements
+            query_pg1 += ", " + a_mesure['field']
+            query_pg2 += ', %s'
+
+        query_my += " from archive order by dateTime"""
+        query_pg = query_pg1 + query_pg2 + ") returning id;"""
+
+        # get our cursors
         my_cur = myconn.cursor()
-        query_my = """
-        select from_unixTime(dateTime + 4 * 3600), usUnits, `interval`, barometer, pressure, altimeter, inTemp,
-            outTemp, inHumidity, outHumidity, windSpeed, windDir, windGust, windGustDir, rainRate, rain, dewpoint,
-            windchill, heatindex, ET, radiation, UV, soilTemp1, rxCheckPercent, consBatteryVoltage,
-            soilTemp2, soilTemp3, soilTemp4, soilMoist1, soilMoist2, soilMoist3, soilMoist4,
-            leafTemp1, leafTemp2, leafWet1, leafWet2, extraHumid1, extraHumid2, extraTemp1,  extraTemp2,
-            hail, hailRate, heatingTemp
-            from archive order by dateTime"""
-        my_cur.execute(query_my)
         pg_cur = pgconn.cursor()
-        query_pg = """
-            insert into obs(poste_id, time, duration, out_temp, windchill, dewpoint, soiltemp1, humidity, barometer,
-                            pressure, wind, wind_dir, wind_gust, wind_gust_dir, rain, rain_rate, heatindex,
-                            uv_indice, radiation, etp_sum, in_temp, in_humidity, rx, voltage,
-                            wind10, wind10_dir,
-                            out_temp_omm, humidity_omm, wind10_omm, rain_omm, barometer_omm,
-                            soiltemp2, soiltemp3, soiltemp4, soilmoist1, soilmoist2, soilmoist3, soilmoist4,
-                            leaftemp1, leaftemp2, leafwet1, leafwet2, extra_humidity1, extra_humidity2,
-                            extra_temp1, extra_temp2, hail, hail_rate, heating_temp
-                            ) values
-            (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-            %s, %s, %s, %s, %s, %s, %s, %s, %s
-            ) returning id;"""
 
-        # load ins_idx for omm field in our insert statement
-        for an_omm_base in self.omm_link:
-            match(an_omm_base['col']):
-                case 'outTemp':
-                    an_omm_base['ins_idx'] = 3
-                case 'barometer':
-                    an_omm_base['ins_idx'] = 8
-                case 'outHumidity':
-                    an_omm_base['ins_idx'] = 7
-                case 'wind':
-                    an_omm_base['ins_idx'] = 10
-                case 'rain':
-                    an_omm_base['ins_idx'] = 14
-                case _:
-                    raise Exception('unknown omm column: ' + an_omm_base['col'])
-            for an_omm in an_omm_base['omms']:
-                match(an_omm['col']):
-                    case 'outTemp_omm':
-                        an_omm['ins_idx'] = 24
-                    case 'outHumidity_omm':
-                        an_omm['ins_idx'] = 25
-                    case 'wind_omm':
-                        an_omm['ins_idx'] = 26
-                    case 'rain_omm':
-                        an_omm['ins_idx'] = 27
-                    case 'barometer_omm':
-                        an_omm['ins_idx'] = 28
-                    case _:
-                        raise Exception('unknown omm column: ' + an_omm['col'])
-                if an_omm['decas'][0] not in date_omm_decas:
-                    date_omm_decas.append(an_omm['decas'][0])
-
+        # execute the select statement
+        my_cur.execute(query_my)
         row = my_cur.fetchone()
         nb_inserted = 0
-        pg_cur = None
         test_id = -1
+
         try:
             while row is not None:
-                if row[usUnits] != 16:
-                    raise Exception('bad usUnits: ' + str(usUnits) + ', dateTime: ' + str(row[dateTime]))
-                args = [
-                    pid,
-                    row[dateTime],
-                    row[interval],
-                    row[outTemp],
-                    row[windchill],
-                    row[dewpoint],
-                    row[soilTemp1],
-                    row[outHumidity],
-                    row[barometer],
-                    row[pressure],
-                    row[windSpeed],
-                    row[windDir],
-                    row[windGust],
-                    row[windGustDir],
-                    row[rain],
-                    row[rainRate],
-                    row[heatindex],
-                    row[UV],
-                    row[radiation],
-                    row[ET],
-                    row[inTemp],
-                    row[inHumidity],
-                    row[rxCheckPercent],
-                    row[consBatteryVoltage],
-                    row[windSpeed],
-                    row[windDir],
-                    row[outTemp],
-                    row[outHumidity],
-                    row[windSpeed],
-                    row[rain],
-                    row[barometer],
-                    row[soilTemp2],
-                    row[soilTemp3],
-                    row[soilTemp4],
-                    row[soilMoist1],
-                    row[soilMoist2],
-                    row[soilMoist3],
-                    row[soilMoist4],
-                    row[leafTemp1],
-                    row[leafTemp2],
-                    row[leafWet1],
-                    row[leafWet2],
-                    row[extraHumid1],
-                    row[extraHumid2],
-                    row[extraTemp1],
-                    row[extraTemp2],
-                    row[hail],
-                    row[hailRate],
-                    row[heatingTemp],
-                ]
-                for an_omm_base in self.omm_link:
-                    for an_omm in an_omm_base['omms']:
-                        if an_omm['decas'][0] == 0:
-                            args[an_omm['ins_idx']] = args[an_omm_base['ins_idx']]
+                if row[row_usunit] != 16:
+                    raise Exception('bad usUnits: ' + str(row[row_usunit]) + ', dateTime: ' + str(row[row_datetime]))
 
-                pg_cur.execute(query_pg, args)
-                nb_inserted += 1
+                # reset dirty flag
+                for a_q in query_args:
+                    a_q['dirty'] = False
+                    a_q['args'] = [
+                        str(pid),
+                        str(row[row_datetime] + timedelta(hours=a_q['valdk'])),
+                        str(row[row_interval] if a_q['valdk'] == 0 else 0)
+                        ]
 
-                for a_deca in date_omm_decas:
-                    if a_deca == 0:
-                        continue
-                    args = [
-                        pid,
-                        row[dateTime] + timedelta(hours=a_deca),
-                        0,
-                        None, None, None, None, None, None, None, None, None, None,
-                        None, None, None, None, None, None, None, None, None, None,
-                        None, None, None, None, None, None, None, None, None, None,
-                        None, None, None, None, None, None, None, None, None, None,
-                        None, None, None, None, None, None, None, None, None
-                    ]
-                    for an_omm_base in self.omm_link:
-                        for an_omm in an_omm_base['omms']:
-                            if an_omm['decas'][0] == a_deca:
-                                args[an_omm['ins_idx']] = row[an_omm_base['ins_idx']]
-                    pg_cur.execute(query_pg, args)
-                    nb_inserted += 1
+                idx = 0
+                while idx < nb_col:
+                    a_mesure = mesures[idx]
+                    row_data = row[idx + 3]
+
+                    for a_q in query_args:
+                        if a_q['valdk'] == a_mesure['valdk'] and row_data is not None:
+                            a_q['args'].append(str(row_data))
+                            a_q['dirty'] = True
+                        else:
+                            a_q['args'].append(None)
+                    idx += 1
+
+                for a_q in query_args:
+                    if a_q['dirty'] is True:
+                        pg_cur.execute(query_pg, a_q['args'])
+                        nb_inserted += 1
+
                 if test_id == -1:
                     test_id = pg_cur.fetchone()[0]
                     my_span.add_event("first archive inserted, id: " + str(test_id))
@@ -292,6 +174,7 @@ class MigrateDB:
                 row = my_cur.fetchone()
         finally:
             if pg_cur is not None:
+                test_id = pg_cur.fetchone()[0]
                 pg_cur.close()
             pgconn.commit()
             my_span.add_event('all archive inserted, last id: ' + str(test_id))
@@ -307,7 +190,6 @@ class MigrateDB:
     # ----------------
     def insert_xtremes(self, work_item, pgconn, myconn, my_span):
         day_process = None
-        meteor = work_item['meteor']
         pid = work_item['pid']
         pg_cur = pgconn.cursor()
         inserted_row = 0
@@ -315,7 +197,7 @@ class MigrateDB:
         test_id = -1
 
         try:
-            json_keys = self.get_json_keys(meteor, myconn)
+            json_keys = self.get_json_keys(myconn)
             while True:
                 day_process, is_done = self.get_next_process_day(json_keys)
                 if is_done is True:
@@ -433,7 +315,7 @@ class MigrateDB:
 
     def get_mesures(self, pgconn):
         mesures = []
-        pg_query = "select id, archive_col, archive_col, val_deca, min, min_deca, max, max_deca, is_avg, is_wind, allow_zero, omm_link from mesures"
+        pg_query = "select id, archive_col, json_input, val_deca, min, min_deca, max, max_deca, is_avg, is_wind, allow_zero, omm_link from mesures"
 
         pg_cur = pgconn.cursor()
         pg_cur.execute(pg_query)
@@ -471,21 +353,21 @@ class MigrateDB:
 
         while m_idx < len(self.mesures):
             if self.mesures[m_idx]['ommidx'] is not None:
-                my_mesure_idx = None
+                my_mesure_data = None
                 my_omm_mesure = self.mesures[m_idx]
                 my_mesure = self.mesures[my_omm_mesure['ommidx']]
                 for an_omm_link in omm_link:
                     if an_omm_link['base_idx'] == my_omm_mesure['ommidx']:
-                        my_mesure_idx = an_omm_link
-                if my_mesure_idx is None:
-                    my_mesure_idx = {'base_idx': my_omm_mesure['ommidx'], 'col': my_mesure['col'], 'ins_idx': -1, 'omms': []}
-                    omm_link.append(my_mesure_idx)
-                my_mesure_idx['omms'].append({'ommidx': m_idx, 'col': my_omm_mesure['col'], 'decas': [my_omm_mesure['valdk'], my_omm_mesure['maxdk'], my_omm_mesure['mindk']], 'ins_idx': 0})
+                        my_mesure_data = an_omm_link
+                if my_mesure_data is None:
+                    my_mesure_data = {'base_idx': my_omm_mesure['ommidx'], 'col': my_mesure['col'], 'ins_idx': -1, 'omms': []}
+                    omm_link.append(my_mesure_data)
+                my_mesure_data['omms'].append({'ommidx': m_idx, 'col': my_omm_mesure['col'], 'decas': [my_omm_mesure['valdk'], my_omm_mesure['maxdk'], my_omm_mesure['mindk']], 'ins_idx': 0})
             m_idx += 1
 
         return omm_link
 
-    def get_json_keys(self, meteor, myconn):
+    def get_json_keys(self, myconn):
         idx = 0
         json_keys = []
         while idx < len(self.mesures):
@@ -519,14 +401,12 @@ class MigrateDB:
         return json_keys
 
     def getPGConnexion(self):
-        pgconn = psycopg2.connect(
+        return psycopg2.connect(
             host="localhost",
             user="postgres",
             password="Funiculi",
             database="climato2"
         )
-        if pgconn.is_connected() is False:
-            raise Exception("climato2 cannot be opened")
 
     def getMSQLConnection(self, meteor):
         myconn = mysql.connector.connect(
@@ -537,6 +417,8 @@ class MigrateDB:
         )
         if myconn.is_connected() is False:
             raise Exception("bug in db access")
+
+        return myconn
 
         # set session timezone to utc
         my_cur = myconn.cursor()

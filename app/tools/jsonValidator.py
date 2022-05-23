@@ -1,4 +1,3 @@
-from app.tools.aggTools import getAggDuration
 from app.tools.dateTools import str_to_date
 import json
 
@@ -33,7 +32,6 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
     new_val = {}
     new_val_xtreme = {}
     stop_dat_list = []
-    start_dat_list = []
 
     # add this key used in app
     j["poste_id"] = pid
@@ -53,7 +51,7 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
         return "unsupported version number: " + str(j_info.get("version"))
 
     json_type = j_info.get("json_type")
-    if str(json_type) not in ["O", "C", "H", "D", "M", "Y", "A"]:
+    if str(json_type) not in ["O", "C"]:
         return "invalid json_type: " + str(json_type)
 
     # check data, loop for each item
@@ -61,37 +59,20 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
         a_data_item = j["data"][idx]
 
         # check dates
-        if json_type in ["O", "C"]:
-            if a_data_item.get("stop_dat") is None:
-                return "missing stop_dat !"
+        if a_data_item.get("stop_dat") is None:
+            return "missing stop_dat !"
 
-            tmp_stop_dat = a_data_item.get("stop_dat")
-            if str(tmp_stop_dat) in stop_dat_list:
-                return "stop_dat: " + str(tmp_stop_dat) + " present twice"
-            stop_dat_list.append(str(tmp_stop_dat))
+        tmp_stop_dat = a_data_item.get("stop_dat")
+        if str(tmp_stop_dat) in stop_dat_list:
+            return "stop_dat: " + str(tmp_stop_dat) + " present twice"
+        stop_dat_list.append(str(tmp_stop_dat))
 
-            if a_data_item.get("start_dat") is not None:
-                return "remove start_dat for json_type " + json_type
+        if a_data_item.get("start_dat") is not None:
+            return "remove start_dat for json_type " + json_type
 
-            if a_data_item.get("duration") is None:
-                return "missing duration"
-            # measure_duration = a_data_item.get("duration")
-        else:
-            if a_data_item.get("start_dat") is None:
-                return "missing start_dat !"
-
-            if a_data_item.get("stop_dat") is not None:
-                return "remove stop_dat for json_type " + json_type
-
-            tmp_start_dat = a_data_item.get("start_dat")
-            if str(tmp_start_dat) in start_dat_list:
-                return "start_dat: " + str(tmp_start_dat) + " present twice"
-            start_dat_list.append(str(tmp_start_dat))
-
-            if a_data_item.get("duration") is not None:
-                return "remove duration for json_type " + json_type
-
-            agg_duration = getAggDuration(json_type, str_to_date(tmp_start_dat))
+        if a_data_item.get("duration") is None:
+            return "missing duration"
+        # measure_duration = a_data_item.get("duration")
 
         if a_data_item.get("current") is not None:
             return "remove current key"
@@ -103,77 +84,46 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
         # loop in all keys
         for key in j_valeurs.__iter__():
             j_value = j_valeurs.get(key)
-            if json_type in ["O", "C"]:
-                # check obs data
-                if str(key).endswith("_max") or str(key).endswith("_min"):
-                    # add a time entry if not present
-                    if j_valeurs.__contains__(key + "_time") is False:
-                        new_val = {
-                            "k": key + "_time",
-                            "v": tmp_stop_dat,
-                            "idx": idx,
-                            "k2": "valeurs",
-                        }
-                        valeurs_to_add.append(new_val)
-                    else:
-                        try:
-                            str_to_date(j_valeurs.get(key + '_time'))
-                        except Exception:
-                            return 'Invalid date format for "' + key + '": "' + str(j_value) + '"'
-                    if isinstance(j_valeurs[key], float) is False and isinstance(j_valeurs[key], int) is False:
-                        return "key " + key + " should be a float or an integer. Current value: " + str(j_valeurs[key]) + ", type: " + str(type(j_valeurs[key]))
-
-                # change xxx_sum into xxx_s
-                if str(key).endswith("_sum"):
+            # check obs data
+            if str(key).endswith("_max") or str(key).endswith("_min"):
+                # add a time entry if not present
+                if j_valeurs.__contains__(key + "_time") is False:
                     new_val = {
-                        "k": str(key).replace("_sum", "_s"),
-                        "v": j_valeurs[key],
+                        "k": key + "_time",
+                        "v": tmp_stop_dat,
                         "idx": idx,
                         "k2": "valeurs",
                     }
                     valeurs_to_add.append(new_val)
+                else:
+                    try:
+                        str_to_date(j_valeurs.get(key + '_time'))
+                    except Exception:
+                        return 'Invalid date format for "' + key + '": "' + str(j_value) + '"'
+                if isinstance(j_valeurs[key], float) is False and isinstance(j_valeurs[key], int) is False:
+                    return "key " + key + " should be a float or an integer. Current value: " + str(j_valeurs[key]) + ", type: " + str(type(j_valeurs[key]))
 
-                # change xx_duration into xxx_d
-                if str(key).endswith("_duration"):
-                    new_val = {
-                        "k": str(key).replace("_duration", "_d"),
-                        "v": j_valeurs[key],
-                        "idx": idx,
-                        "k2": "valeurs",
-                    }
-                    valeurs_to_add.append(new_val)
-                    if isinstance(j_valeurs[key], int) is False:
-                        return "key " + key + " should be an integer. Current value: " + str(j_valeurs[key]) + ", type: " + str(type(j_valeurs[key]))
+            # change xxx_sum into xxx_s
+            if str(key).endswith("_sum"):
+                new_val = {
+                    "k": str(key).replace("_sum", "_s"),
+                    "v": j_valeurs[key],
+                    "idx": idx,
+                    "k2": "valeurs",
+                }
+                valeurs_to_add.append(new_val)
 
-            else:
-                # check pre_aggregated data
-                if str(key).endswith("_max") or str(key).endswith("_min"):
-                    if j_valeurs.__contains__(key + "_time") is False:
-                        return "key: " + key + " have no key " + key + "_time"
-
-                # check that xxx_s has a xxx_d
-                if str(key).endswith("_s") and j_valeurs.get(str(key).replace("_s", "_d")) is None:
-                    new_val = {
-                        "k": str(key).replace("_s", "_d"),
-                        "v": agg_duration,
-                        "idx": idx,
-                        "k2": "valeurs",
-                    }
-                    valeurs_to_add.append(new_val)
-                    if isinstance(j_valeurs[key], float) is False and isinstance(j_valeurs[key], int) is False:
-                        return "key " + key + " should be a float or an integer. Current value: " + str(j_valeurs[key]) + ", type: " + str(type(j_valeurs[key]))
-
-                # check that xxx_avg has a xxx_d
-                if str(key).endswith("_avg") and j_valeurs.get(str(key).replace("_avg", "_d")) is None:
-                    new_val = {
-                        "k": str(key).replace("_avg", "_d"),
-                        "v": agg_duration,
-                        "idx": idx,
-                        "k2": "valeurs",
-                    }
-                    valeurs_to_add.append(new_val)
-                    if isinstance(j_valeurs[key], float) is False and isinstance(j_valeurs[key], int) is False:
-                        return "key " + key + " should be a float or an integer. Current value: " + str(j_valeurs[key]) + ", type: " + str(type(j_valeurs[key]))
+            # change xx_duration into xxx_d
+            if str(key).endswith("_duration"):
+                new_val = {
+                    "k": str(key).replace("_duration", "_d"),
+                    "v": j_valeurs[key],
+                    "idx": idx,
+                    "k2": "valeurs",
+                }
+                valeurs_to_add.append(new_val)
+                if isinstance(j_valeurs[key], int) is False:
+                    return "key " + key + " should be an integer. Current value: " + str(j_valeurs[key]) + ", type: " + str(type(j_valeurs[key]))
 
             # for all json_type
             if str(key).endswith("_s") or str(key).endswith("_avg") or str(key).endswith("_max") or str(key).endswith("_min"):

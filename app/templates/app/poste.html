@@ -12,8 +12,8 @@
 
 {% if poste_data %}
     meteor: {{ poste_data.data.meteor }} <p>
-    meteofr: {{ poste_data.data.meteofr }} <p>
-    fuseau: {{poste_data.data.fuseau }} <p>
+    long: {{ poste_data.data.long }} <p>
+    lat: {{poste_data.data.lat }} <p>
     {% if poste_data.exclus %}
         <ul>
         {% for an_exclu in poste_data.exclus %}

@@ -42,7 +42,7 @@ class WorkerRoot:
             self.display = name
 
         # check globally that only one instance was created for the name
-        if self.ref_mgr.IncrementRef(name + '_count') > 0:
+        if self.ref_mgr.IncrementRef("Svc_" + name) > 1:
             IncidentMeteor().new('worker ' + name, 'CRITICAL', 'Multiple instance')
             t.logError('multiple instances of ' + name)
             raise Exception(name, 'Multiple instances called')
@@ -55,6 +55,7 @@ class WorkerRoot:
         WorkerRoot.trace_flag.append({"s": name, "trace_flag": False})
 
         # save a default kill frequency on a global space
+        self.ref_mgr.SetRefIfNotExist(name, cls)
         self.ref_mgr.SetRefIfNotExist("worker_kill_frequency", 15)
 
         # event to notify when a thread is exited
@@ -71,9 +72,9 @@ class WorkerRoot:
     def GetInstance(myClass):
         # return the instance
         ref_mgr = RefManager.GetInstance()
-        if ref_mgr.GetRef('Svc' + str(myClass)) is None:
-            ref_mgr.AddRef('Svc' + str(myClass), myClass())
-        return ref_mgr.GetRef('Svc' + str(myClass))
+        if ref_mgr.GetRef(str(myClass)) is None:
+            ref_mgr.AddRef(str(myClass), myClass())
+        return ref_mgr.GetRef(str(myClass))
 
     @staticmethod
     def GetSynonym():
@@ -125,7 +126,7 @@ class WorkerRoot:
                         a_worker['threadRunning'] = True
                         # force the thread to run once
                         time.sleep(1)
-                        self.eventRunMe.set()
+                        # self.eventRunMe.set()
                         return
 
                     except Exception as exc:
@@ -163,7 +164,18 @@ class WorkerRoot:
 
     #  add manually aork item
     def AddWorkItem(self, work_item: json):
-        pass
+        if self.IsRunning() is False:
+            self.Start()
+        for a_worker in WorkerRoot.wrks:
+            if a_worker['name'] == self.name:
+                try:
+                    a_worker['class'].addNewWorkItem(work_item)
+
+                except Exception as exc:
+                    t.Exception(exc, None)
+
+                finally:
+                    pass
 
     # Check thread list to check if service is running
     def IsRunning(self) -> bool:

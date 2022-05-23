@@ -10,9 +10,17 @@ https://docs.djangoproject.com/en/2.0/howto/deployment/wsgi/
 import os
 
 from app.classes.workers.svcLoadJson import SvcJsonLoader
+from app.classes.workers.svcMigrate import SvcMigrate
 from django.core.wsgi import get_wsgi_application
 
-SvcJsonLoader().Start()
+# svc_loader = SvcJsonLoader()
+# svc_loader.Start()
+# svc_loader.RunMe()
+
+svc_migrate = SvcMigrate()
+svc_migrate.Start()
+svc_migrate.AddWorkItem("BBF015")
+svc_migrate.RunMe()
 
 # from prometheus_client import make_wsgi_app
 # from wsgiref.simple_server import make_server
