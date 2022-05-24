@@ -1,0 +1,165 @@
+
+drop table if exists obs;
+drop table if exists poste;
+drop table if exists mesure;
+
+create table poste(
+    id smallserial primary key not null,
+    meteor varchar(20),
+    delta_timezone smallint
+);
+
+create table mesure(
+    id smallserial primary key not null,
+    name varchar(100),
+    key varchar(20),
+    deca smallint,
+    max bool,
+    max_deca smallint,
+    min bool,
+    min_deca smallint
+);
+
+create table obs (
+    id bigserial,
+    id_mesure smallint references mesure(id),
+    id_poste smallint references poste(id),
+    time timestamp,
+    value float,
+    duration smallint,
+    j jsonb null
+);
+
+select create_hypertable('obs', 'time');
+
+with recursive serie(i) as
+(select 1
+ UNION ALL
+ select i + 1 from serie where i < 10)
+ insert into poste(id, meteor, delta_timezone)
+select i, 'meteor ' || i, 0 from serie;
+select count(*) from poste;
+
+with recursive serie(i) as
+(select 1
+ UNION ALL
+ select i + 1 from serie where i < 24)
+ insert into mesure(id, name, key, deca, max, max_deca, min, min_deca)
+ select 
+    i,
+    'mesure_' || i,
+    'key_' || i,
+    0,
+    true,
+    0,
+    true,
+    0 from serie;
+select count(*) from mesure;
+
+
+
+with recursive serie(i) as
+(select 1
+ UNION ALL
+ select i + 1 from serie where i < 5000000)
+insert into obs(id_mesure, id_poste, time, value, duration, j)
+select
+   trunc(random() * 24) + 1,
+   trunc(random() * 10) + 1,
+   current_timestamp - ((5000000 - i) * 5 || ' minutes')::interval,
+   (random() * 30),
+   5,
+   '{}'
+   from serie;
+
+
+select timescaledb_experimental.time_bucket_ng('1 month', o.time), avg(value), sum(duration)
+    from obs o join poste p on p.id = o.id_poste
+    where o.id_mesure = 12
+    group by 1
+    order by 1
+;
+
+
+select timescaledb_experimental.time_bucket_ng('1 year', o.time), avg(value), sum(duration)
+    from obs o join poste p on p.id = o.id_poste
+    where o.id_mesure = 12
+    group by 1
+    order by 1
+;
+
+select timescaledb_experimental.time_bucket_ng('5 minutes', date_trunc('day', o.time)), o.id_mesure,
+    last(o.value, o.time),
+    sum(duration)
+    from obs o join poste p on p.id = o.id_poste
+    WHERE o.time > now() - interval '1day' 
+    group by 2, 1
+    order by 2, 1
+;
+
+select time_bucket('1 day', o.time), avg(value), sum(duration)
+    from obs o join poste p on p.id = o.id_poste
+    where o.id_mesure = 12 and o.time > now() - interval '1month' 
+    group by 1
+
+ union
+
+select time_bucket('1 day', (o.time - interval '1month')), o.time, avg(value), sum(duration)
+    from obs o join poste p on p.id = o.id_poste
+    where o.id_mesure = 12 and o.time > now() - interval '1month' 
+    group by 1
+order by 1
+;
+
+SELECT time, ride_count, CASE WHEN step = 0 THEN 'today' ELSE (-interval)::text END AS metric
+FROM
+-- sub-query to generate the intervals
+    ( SELECT step, (step||'day')::interval AS interval FROM generate_series(0,3) g(step)) g_offsets
+    JOIN LATERAL (
+-- subquery to select the rides 
+    SELECT
+-- adding set interval to time values
+      time_bucket('15m', o.time + interval)::timestamptz AS time, count(*) AS ride_count FROM obs o
+-- subtract value of interval from time to plot
+-- today = 0, 1 day ago = 1, etc
+    WHERE pickup_datetime BETWEEN now() - interval AND now()
+    GROUP BY 1
+    ORDER BY 1
+    ) l ON true
+;
+
+      
+    dateTime   
+usUnits 
+interval 
+barometer        
+pressure         
+altimeter        
+inTemp           
+outTemp          
+inHumidity 
+outHumidity 
+windSpeed        
+windDir 
+windGust         
+windGustDir 
+rainRate 
+rain 
+dewpoint         
+windchill        
+heatindex        
+ET      
+radiation 
+UV   
+soilTemp1 
+leafTemp1 
+extraHumid1 
+soilMoist1 
+leafWet1 
+rxCheckPercent   
+txBatteryStatus 
+consBatteryVoltage 
+hail 
+hailRate 
+heatingTemp 
+heatingVoltage 

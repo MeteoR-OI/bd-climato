@@ -1,11 +1,11 @@
-from .jsonPlus import JsonPlus, json
-from app.tools.telemetry import Span
 from app.classes.repository.incidentMeteor import IncidentMeteor
+from app.tools.jsonPlus import JsonPlus
 from django.conf import settings
 import traceback
 import datetime
 import inspect
 import logging
+import json
 
 # logException(e, my_span, params):
 # logCritical(source, message: str, my_span, params):
@@ -159,7 +159,7 @@ class LogMe:
         self,
         message: str,
         level: str = None,
-        my_span: Span = None,
+        my_span = None,
         params: json = {}
     ):
         """
@@ -181,7 +181,7 @@ class LogMe:
         module: str,
         message: str,
         level: str = None,
-        my_span: Span = None,
+        my_span = None,
         params: json = {},
     ):
         # build our json
