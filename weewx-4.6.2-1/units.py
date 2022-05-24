@@ -1616,7 +1616,7 @@ def as_value_tuple_for_agg(accumulator_dict, obs_type, aggregate_type):
     elif obs_type not in accumulator_dict:
         # There is an accumulator, but the observation type is not in it
         return UnknownType(obs_type)
-    elif aggregate_type not in ['min','mintime','max','maxtime','sum','wsum','sumtime','count','last','lasttime']:
+    elif aggregate_type not in ['min','mintime','max','maxtime','sum','wsum','sumtime','count','last','lasttime','avg']:
         # There is an accumulator, but the aggregate type is not in it
         return UnknownAggregate(aggregate_type)
     else:
@@ -1644,6 +1644,8 @@ def as_value_tuple_for_agg(accumulator_dict, obs_type, aggregate_type):
                 val = val[0]
         elif aggregate_type == 'lasttime':
             val = accumulator_dict[obs_type].lasttime
+        elif aggregate_type == 'avg':
+            val = accumulator_dict[obs_type].avg
 
         std_unit_system = accumulator_dict.unit_system
 

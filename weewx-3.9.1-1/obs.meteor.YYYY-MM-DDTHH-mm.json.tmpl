@@ -151,16 +151,114 @@ LOW#slurp
        $CleVal("dewpoint_min",$currentagg.dewpoint.min.degree_C.raw)       
        $CleDat("dewpoint_min_time",$currentagg.dewpoint.mintime.raw)
        $CleAvg("dewpoint_avg",$currentagg.dewpoint.sum.degree_C.raw,$currentagg.dewpoint.count.raw)
-       $CleVal("dewpoint_max",$currentagg.dewpoint.max.degree_C.raw)       
+       $CleVal("dewpoint_max",$currentagg.dewpoint.max.degree_C.raw)
        $CleDat("dewpoint_max_time",$currentagg.dewpoint.maxtime.raw)
        #end if
-       #if $obs.soilTemp1.has_data and $day.soilTemp1.has_data
-       $CleVal("soil_temp",$obs.soilTemp1.degree_C.raw)
+       #if $obs.extraTemp1.has_data and $day.extraTemp1.has_data  
        #if $final_obs
-       $CleVal("soil_temp_min",$obs.soilTemp1.min.degree_C.raw)
-       $CleDat("soil_temp_min_time",$obs.soilTemp1.mintime.raw) 
+       $CleVal("extra_temp1_avg",$currentagg.extraTemp1.avg.degree_C.raw)
+       #else
+       $CleVal("extra_temp1",$obs.extraTemp1.degree_C.raw)
+       #end if     
+       #end if
+       #if $obs.extraTemp2.has_data and $day.extraTemp2.has_data
+       #if $final_obs
+       $CleVal("extra_temp2_avg",$currentagg.extraTemp2.avg.degree_C.raw)
+       #else
+       $CleVal("extra_temp2",$obs.extraTemp2.degree_C.raw)
+       #end if     
+       #end if
+       #if $obs.extraTemp3.has_data and $day.extraTemp3.has_data
+       #if $final_obs
+       $CleVal("extra_temp3_avg",$currentagg.extraTemp3.avg.degree_C.raw)
+       #else
+       $CleVal("extra_temp3",$obs.extraTemp3.degree_C.raw)
+       #end if     
+       #end if
+       #if $obs.soilTemp1.has_data and $day.soilTemp1.has_data
+       #if $final_obs
+       $CleVal("soil_temp1_avg",$currentagg.soilTemp1.avg.degree_C.raw)
+       #else
+       $CleVal("soil_temp1",$obs.soilTemp1.degree_C.raw)
        #end if     
        #end if     
+       #if $obs.soilTemp2.has_data and $day.soilTemp2.has_data
+       #if $final_obs
+       $CleVal("soil_temp2_avg",$currentagg.soilTemp2.avg.degree_C.raw)
+       #else
+       $CleVal("soil_temp2",$obs.soilTemp2.degree_C.raw)
+       #end if     
+       #end if
+       #if $obs.soilTemp3.has_data and $day.soilTemp3.has_data
+       #if $final_obs
+       $CleVal("soil_temp3_avg",$currentagg.soilTemp3.avg.degree_C.raw)
+       #else
+       $CleVal("soil_temp3",$obs.soilTemp3.degree_C.raw)
+       #end if     
+       #end if
+       #if $obs.soilTemp4.has_data and $day.soilTemp4.has_data
+       #if $final_obs
+       $CleVal("soil_temp4_avg",$currentagg.soilTemp4.avg.degree_C.raw)
+       #else
+       $CleVal("soil_temp4",$obs.soilTemp4.degree_C.raw)
+       #end if     
+       #end if
+       #if $obs.leafTemp1.has_data and $day.leafTemp1.has_data
+       #if $final_obs
+       $CleVal("leaf_temp1_avg",$currentagg.leafTemp1.avg.degree_C.raw)
+       #else
+       $CleVal("leaf_temp1",$obs.leafTemp1.degree_C.raw)
+       #end if     
+       #end if
+       #if $obs.leafTemp2.has_data and $day.leafTemp2.has_data
+       #if $final_obs
+       $CleVal("leaf_temp2_avg",$currentagg.leafTemp2.avg.degree_C.raw)
+       #else
+       $CleVal("leaf_temp2",$obs.leafTemp2.degree_C.raw)
+       #end if     
+       #end if
+       #if $obs.soilMoist1.has_data and $day.soilMost1.has_data
+       #if $final_obs
+       $CleVal("soil_moist1_avg",$currentagg.soilMoist1.avg.raw)
+       #else
+       $CleVal("soil_moist1",$obs.soilMoist1.raw)
+       #end if     
+       #end if    
+       #if $obs.soilMoist2.has_data and $day.soilMost2.has_data
+       #if $final_obs
+       $CleVal("soil_moist2_avg",$currentagg.soilMoist2.avg.raw)
+       #else
+       $CleVal("soil_moist2",$obs.soilMoist2.raw)
+       #end if     
+       #end if
+       #if $obs.soilMoist3.has_data and $day.soilMost3.has_data
+       #if $final_obs
+       $CleVal("soil_moist3_avg",$currentagg.soilMoist3.avg.raw)
+       #else
+       $CleVal("soil_moist3",$obs.soilMoist3.raw)
+       #end if     
+       #end if
+       #if $obs.soilMoist4.has_data and $day.soilMost4.has_data
+       #if $final_obs
+       $CleVal("soil_moist4_avg",$currentagg.soilMoist4.avg.raw)
+       #else
+       $CleVal("soil_moist4",$obs.soilMoist4.raw)
+       #end if     
+       #end if    
+       #if $obs.leafWet1.has_data and $day.leafWet1.has_data
+       #if $final_obs
+       $CleVal("leaf_wet1_avg",$currentagg.leafWet1.avg.raw)
+       #else
+       $CleVal("leaf_wet1",$obs.leafWet1.raw)
+       #end if     
+       #end if
+       #if $obs.leafWet2.has_data and $day.leafWet2.has_data
+       #if $final_obs
+       $CleVal("leaf_wet2_avg",$currentagg.leafWet2.avg.raw)
+       #else
+       $CleVal("leaf_wet2",$obs.leafWet2.raw)
+       #end if     
+       #end if
        $CleVal("humidity",$obs.outHumidity.raw,0)
        #if $final_obs
        $CleVal("humidity_min",$currentagg.outHumidity.min.raw)       
