@@ -18,7 +18,6 @@ import mysql.connector
 import psycopg2
 from datetime import datetime, timedelta
 from app.tools.myTools import logException
-from datetime import timezone
 
 
 class MigrateDB:
@@ -194,7 +193,7 @@ class MigrateDB:
 
                 if test_id == -1 and pg_cur.rowcount > 0:
                     test_id = pg_cur.fetchone()[0]
-                    t.logInfo("first archive inserted, id: " + str(test_id) + ", from date: " + str(a_q['args'][1]), my_span)
+                    t.logInfo("first archive inserted, id: " + str(test_id) + ", from date: " + str(a_q['args'][1]), my_span, {"svc": self.display})
 
                 if nb_inserted > 10000:
                     pgconn.commit()
@@ -205,20 +204,20 @@ class MigrateDB:
         finally:
             if pg_cur.rowcount > 0:
                 test_id = pg_cur.fetchone()[0]
-                t.logInfo('all archive(s) inserted, last id: ' + str(test_id) + ", date: " + str(a_q['args'][1]), my_span)
+                t.logInfo('all archive(s) inserted, last id: ' + str(test_id) + ", date: " + str(a_q['args'][1]), my_span, {"svc": self.display})
                 my_span.add_event(str(nb_new_rows) + ' rows inserted from archive with timestamp > ' + str(start_date))
             else:
-                t.logInfo('no new data in archive', my_span)
+                t.logInfo('no new data in archive', my_span, {"svc": self.display})
                 my_span.add_event('no new data in archive from timestamp: ' + str(start_date))
 
             pgconn.commit()
 
     def succeedWorkItem(self, work_item, my_span):
-        t.logInfo('migration ' + work_item['meteor'] + ' successfull', my_span)
+        t.logInfo('migration ' + work_item['meteor'] + ' successfull', my_span, {"svc": self.display})
         return
 
     def failWorkItem(self, work_item, exc, my_span):
-        t.logError('migration ' + str(work_item['meteor']) + ' not done...', my_span)
+        t.logError('migration ' + str(work_item['meteor']) + ' not done...', my_span, {"svc": self.display})
         return
 
     def getSpanTitle(self, work_item):
@@ -228,7 +227,7 @@ class MigrateDB:
     # private methods
     # ----------------
     def insert_xtremes(self, pid, meteor, pgconn, my_span):
-        start_date = self.getExtremesStartingDate( pgconn, pid)
+        start_date = self.getExtremesStartingDate(pgconn, pid)
         day_process = None
         pg_cur = pgconn.cursor()
         inserted_row = 0
@@ -284,7 +283,7 @@ class MigrateDB:
 
                         if test_id == -1 and pg_cur.rowcount > 0:
                             test_id = pg_cur.fetchone()[0]
-                            t.logInfo("first extreme inserted, id: " + str(test_id) + ", date: " + str(day_process), my_span)
+                            t.logInfo("first extreme inserted, id: " + str(test_id) + ", date: " + str(day_process), my_span, {"svc": self.display})
 
                         if (inserted_row % 10000) == 0:
                             test_id = pg_cur.fetchone()[0]
@@ -301,10 +300,10 @@ class MigrateDB:
                     j_key['db'].close()
             if pg_cur.rowcount > 0:
                 test_id = pg_cur.fetchone()[0]
-                t.logInfo('all extremes inserted, last id: ' + str(test_id) + ", date: " + str(day_process), my_span)
+                t.logInfo('all extremes inserted, last id: ' + str(test_id) + ", date: " + str(day_process), my_span, {"svc": self.display})
                 my_span.add_event(str(nb_new_row) + ' rows inserted from archive_day_XXX with timestamp > ' + str(start_date))
             else:
-                t.logInfo('no new data for our extremes')
+                t.logInfo('no new data for our extremes', {"svc": self.display})
                 my_span.add_event('no new data in archive_day_XXX from timestamp: ' + str(start_date))
             pg_cur.execute('commit')
             pg_cur.close()

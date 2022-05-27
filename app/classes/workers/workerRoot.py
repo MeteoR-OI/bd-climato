@@ -136,7 +136,7 @@ class WorkerRoot:
 
                     except Exception as exc:
                         a_worker['threadRunning'] = False
-                        t.logError('Start ' + self.display + ": Exception", None, {"exception": str(exc)})
+                        t.logError('Start ' + self.display + ": Exception", None, {"svc": self.display, "exception": str(exc)})
                         raise exc
 
         finally:
