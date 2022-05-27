@@ -94,9 +94,9 @@ class MigrateDB:
         my_q = 'select max(time) from obs where duration != 0 and poste_id = ' + str(pid)
         pg_cur.execute(my_q)
         row = pg_cur.fetchone()
-        if row is None or row[0] == 0:
+        if row is None or row[0] is None or row[0] == 0:
             return 0
-        start_dt = row[0]
+        start_dt = datetime(str(row[0]))
         return start_dt.timestamp() - 2 * 3600
 
     def getExtremesStartingDate(self, pgconn, pid):
@@ -105,7 +105,7 @@ class MigrateDB:
         my_q += " poste_id = " + str(pid)
         pg_cur.execute(my_q)
         row = pg_cur.fetchone()
-        if row is None or row[0] == 0:
+        if row is None or row[0] is None or row[0] == 0:
             return 0
         my_date = row[0] + timedelta(1)
         my_time = datetime.min.time()
