@@ -45,7 +45,7 @@ class WorkerRoot:
         # check globally that only one instance was created for the name
         if self.ref_mgr.IncrementRef("Svc_" + name) > 1:
             IncidentMeteor().new('worker ' + name, 'CRITICAL', 'Multiple instance')
-            t.logError('multiple instances of ' + name)
+            t.logError('WorkerRoot::__init__', 'multiple instances of ' + name, None, {"svc": self.display})
             raise Exception(name, 'Multiple instances called')
 
         self.tracer = Telemetry.Start('svc ' + self.display, __name__)
@@ -136,7 +136,7 @@ class WorkerRoot:
 
                     except Exception as exc:
                         a_worker['threadRunning'] = False
-                        t.logError('Start ' + self.display + ": Exception", None, {"svc": self.display, "exception": str(exc)})
+                        t.logError('Start', self.display + ": Exception", None, {"svc": self.display, "exception": str(exc)}, {"svc": self.display})
                         raise exc
 
         finally:
@@ -189,7 +189,7 @@ class WorkerRoot:
             for a_worker in WorkerRoot.wrks:
                 if a_worker['name'] == self.name:
                     return a_worker['threadRunning']
-            t.logError('Service ' + self.display + " not found", None, {})
+            t.logError('IsRunning', 'Service ' + self.display + " not found", None, {"svc": self.display})
 
         finally:
             WorkerRoot.wrks_lock.release()
@@ -202,7 +202,7 @@ class WorkerRoot:
     def __register(self, name: str, cls):
         for a_worker in WorkerRoot.wrks:
             if a_worker['name'] == name:
-                t.logError('task ' + self.display + name + ' already registered')
+                t.logError('__register', 'task ' + self.display + name + ' already registered', {"svc": self.display})
         WorkerRoot.wrks_lock.acquire()
         WorkerRoot.wrks.append({"name": name, "class": cls, 'threadRunning': False})
         WorkerRoot.wrks_lock.release()
@@ -245,10 +245,12 @@ class WorkerRoot:
                             a_worker['class'].processWorkItem(work_item, my_span, self.tracer)
                             a_worker['class'].succeedWorkItem(work_item, my_span)
                             my_span._status._status_code = Telemetry.get_ok_status()
+                            t.logInfo("work item processed", my_span, {"svc": self.display, "work_item": work_item})
 
                         except Exception as exc:
                             my_span._status._status_code = Telemetry.get_error_status()
                             a_worker['class'].failWorkItem(work_item, exc, my_span)
+                            t.logError('__runSvc', "work item NOT processed", my_span, {"svc": self.display, "work_item": work_item})
 
                     self.eventRunMe.set()
 
