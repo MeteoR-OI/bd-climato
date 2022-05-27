@@ -13,11 +13,15 @@ class SvcMigrate(WorkerRoot):
     def __init__(self, is_tmp: bool = None):
         # call parent __init__
         super(SvcMigrate, self).__init__(
+            self,
             str(SvcMigrate),
             MigrateDB(),
             120,
             ['migrate'],
             True)
+
+    def GetWorkerRoot(self):
+        return super(SvcMigrate, self)
 
     @staticmethod
     def GetInstance(myClass: object = None):

@@ -164,7 +164,7 @@ class MigrateDB:
                         pg_cur.execute(query_pg, a_q['args'])
                         nb_inserted += 1
 
-                if test_id == -1:
+                if test_id == -1 and pg_cur.rowcount > 0:
                     test_id = pg_cur.fetchone()[0]
                     t.logInfo("first archive inserted, id: " + str(test_id) + ", date: " + str(a_q['args'][1]), my_span)
 

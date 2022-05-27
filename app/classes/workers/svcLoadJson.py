@@ -15,11 +15,15 @@ class SvcJsonLoader(WorkerRoot):
     def __init__(self, is_tmp: bool = None):
         # call parent __init__
         super(SvcJsonLoader, self).__init__(
+            self,
             str(SvcJsonLoader),
             JsonLoader(),
             30,
             ['svcJsonLoader', 'autoload', 'auto', 'load', 'loadjson', 'json'],
         )
+
+    def GetWorkerRoot(self):
+        return super(SvcJsonLoader, self)
 
     @staticmethod
     def GetInstance(myClass: object = None):

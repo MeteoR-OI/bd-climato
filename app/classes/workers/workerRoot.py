@@ -30,7 +30,7 @@ class WorkerRoot:
     all_syn = []
     trace_flag = []
 
-    def __init__(self, name, cls, frequency: int = 120, synonym: dict = [''], run_once=False):
+    def __init__(self, svc_instance, name, cls, frequency: int = 120, synonym: dict = [''], run_once=False):
         self.name = name
         self.run_once = run_once
         self.ref_mgr = RefManager.GetInstance()
@@ -41,6 +41,7 @@ class WorkerRoot:
         except Exception:
             self.display = name
 
+        self.ref_mgr.AddRef("Inst_" + self.display, svc_instance)
         # check globally that only one instance was created for the name
         if self.ref_mgr.IncrementRef("Svc_" + name) > 1:
             IncidentMeteor().new('worker ' + name, 'CRITICAL', 'Multiple instance')
@@ -87,6 +88,9 @@ class WorkerRoot:
                 return a_trc['trace_flag']
         return None
 
+    def GetDisplayName(self):
+        return self.display
+
     def SetTraceFlag(self, trace_flag: bool):
         for a_trc in WorkerRoot.trace_flag:
             if a_trc['s'] == self.name:
@@ -101,9 +105,11 @@ class WorkerRoot:
         raise Exception('workerRoot::SetTraceFlag', 'service ' + self.display + ' not found')
 
     # Call the service function with a set of parameter
-    def RunMe(self, params: json = {}):
+    def RunMe(self, params: json = None):
         if self.IsRunning() is False:
-            raise Exception('service ' + self.display + ' is stopped')
+            self.Start()
+        if params is not None:
+            self.AddWorkItem(params)
         self.eventRunMe.set()
 
     # Start the service (in waitable mode)
@@ -117,16 +123,15 @@ class WorkerRoot:
                             # just return if the task already running
                             return
                         self.killFlag = False
-                        self.closed = False
+                        self.closed.clear()
+                        self.eventRunMe.clear()
                         thread = threading.Thread(target=self.__runSvc, args=(a_worker,), daemon=True)
                         thread.setName(self.name)
-                        if self.GetTraceFlag() is True:
-                            t.logInfo('svc thread started', None, {"svc": self.display, "status": "started"})
+                        t.logInfo('svc thread started', None, {"svc": self.display, "status": "started"})
                         thread.start()
                         a_worker['threadRunning'] = True
                         # force the thread to run once
                         time.sleep(1)
-                        # self.eventRunMe.set()
                         return
 
                     except Exception as exc:
