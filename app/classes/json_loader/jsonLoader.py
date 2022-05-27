@@ -109,7 +109,7 @@ class JsonLoader:
         t.logException(exc, my_span)
 
         j_info = {"filename": work_item['f'], "dest": self.archive_dir + "/" + meteor + "/failed/" + work_item['f']}
-        t.logInfo("file moved to fail directory", None, j_info)
+        t.logError("file moved to fail directory", None, j_info)
         IncidentMeteor.new('_getJsonFileNameAndData', 'error', 'file moved to failed directory', j_info)
 
         if not os.path.exists(self.archive_dir + "/" + meteor + '/failed'):
@@ -119,6 +119,9 @@ class JsonLoader:
         # set my_span attributes
         my_span.set_attribute("filename", work_item['f'])
         my_span.set_attribute("meteor", meteor)
+
+    def getSpanTitle(self, work_item):
+        return 'load ' + work_item['f']
 
     @transaction.atomic
     def processWorkItem(self, work_item: json, my_span, op_tracer):
@@ -173,7 +176,11 @@ class JsonLoader:
                             all_obs[0]['obs'].data.duration = j_duration
                             all_obs[0]['obs'].data.save()
 
-                            self.load_obs_data_j(pid, all_obs, a_work_item['valeurs'], j_stop_dat, j_duration, j_exclus)
+                            keys_found = self.load_obs_data_j(pid, all_obs, a_work_item['valeurs'], j_stop_dat, j_duration, j_exclus)
+                            if keys_found is not None:
+                                t.logInfo("keys loaded from json: " + str(keys_found), my_data_span)
+                            else:
+                                t.logError("no keys loaded !!!", my_data_span)
 
                             for an_obs in all_obs:
                                 an_obs['obs'].data.save()
@@ -189,15 +196,22 @@ class JsonLoader:
                 idx_global += 1
 
     def load_obs_data_j(self, pid, all_obs, valeurs, stop_dat, j_duration, j_exclus):
+        keys_found = []
         for a_mesure in self.mesures:
             cur_vals = self.get_valeurs(a_mesure, valeurs, stop_dat, j_exclus)
             cur_obs = self.get_cur_obs(all_obs, a_mesure)
+
+            # if current value is None, try with the second input key
+            if cur_vals[0] is None:
+                if a_mesure.get("col2") is not None and a_mesure['col2'] is not None:
+                    cur_vals = self.get_valeurs(a_mesure, valeurs, stop_dat, j_exclus, False, True)
 
             # store the value in the observation data
             if cur_vals[0] is not None:
                 cur_obs.data.__setattr__(a_mesure['col'], cur_vals[0])
                 if a_mesure['iswind'] is True and cur_vals[1] is not None:
                     cur_obs.data.__setattr__(a_mesure['col'] + '_dir', cur_vals[1])
+                keys_found.append(a_mesure['col'])
 
             # store min/max
             self.insert_extremes(
@@ -209,22 +223,31 @@ class JsonLoader:
                     {'col': 'max', 'v': cur_vals[4], 't': cur_vals[5], 'd': cur_vals[6]}
                 ]
             )
+        return None if keys_found.__len__ == 0 else keys_found
 
-    def get_valeurs(self, a_mesure, valeurs, stop_dat, j_exclus, is_abs=False):
+    def get_valeurs(self, a_mesure, valeurs, stop_dat, j_exclus, force_abs=False, use_second_input_key=False):
         #  [0]   [1]       [2]     [3]      [4]      [5]       [6]
         # val, dir|None, valmin, min_time, valmax, max_time, max_dir
 
         # for omm values, get the underlying data
         if a_mesure['ommidx'] is not None:
-            return self.get_valeurs(self.mesures[a_mesure['ommidx']], valeurs, stop_dat, j_exclus, True)
+            return self.get_valeurs(self.mesures[a_mesure['ommidx']], valeurs, stop_dat, j_exclus, True, use_second_input_key)
 
         # if a_mesure['col'] == 'rain':
         #     print('rain')
 
-        if is_abs is False:
-            j_keys = [a_mesure['col'] + '_avg', a_mesure['col']]
+        suffix_key1 = '_avg'
+        suffix_key2 = '_s'
+
+        mesure_key = a_mesure['col']
+        if use_second_input_key is True and a_mesure.get('col2') is not None and a_mesure['col2'] is not None:
+            mesure_key = a_mesure['col2']
+
+        # load keys used to look for our value in order of importance
+        if force_abs is True or a_mesure['isavg'] is False:
+            j_keys = [mesure_key + suffix_key2, mesure_key, mesure_key + suffix_key1]
         else:
-            j_keys = [a_mesure['col'], a_mesure['col'] + '_avg']
+            j_keys = [mesure_key + suffix_key1, mesure_key, mesure_key + suffix_key2]
 
         my_val = None
         my_val_dir = None
@@ -240,22 +263,25 @@ class JsonLoader:
                 break
 
         # get our min
-        if valeurs.get(a_mesure['col'] + '_min') is not None:
-            my_val_min = valeurs[a_mesure['col'] + '_min']
-            my_val_min_time = valeurs[a_mesure['col'] + '_min_time']
+        if valeurs.get(mesure_key + '_min') is not None:
+            my_val_min = valeurs[mesure_key + '_min']
+            my_val_min_time = valeurs[mesure_key + '_min_time']
         else:
-            my_val_min = my_val
-            my_val_min_time = stop_dat
+            if my_val is not None:
+                my_val_min = my_val
+                my_val_min_time = stop_dat
 
         # get our max
-        if valeurs.get(a_mesure['col'] + '_max') is not None:
-            my_val_max = valeurs[a_mesure['col'] + '_max']
-            my_val_max_time = valeurs[a_mesure['col'] + '_max_time']
-            if a_mesure['iswind'] is True and valeurs.get(a_mesure['col'] + '_max_dir') is not None:
-                my_val_max_dir = valeurs[a_mesure['col'] + '_max_dir']
+        if valeurs.get(mesure_key + '_max') is not None:
+            my_val_max = valeurs[mesure_key + '_max']
+            my_val_max_time = valeurs[mesure_key + '_max_time']
+            if a_mesure['iswind'] is True and valeurs.get(mesure_key + '_max_dir') is not None:
+                my_val_max_dir = valeurs[mesure_key + '_max_dir']
         else:
-            my_val_max = my_val
-            my_val_max_time = stop_dat
+            if my_val is not None:
+                my_val_max = my_val
+                my_val_max_time = stop_dat
+                my_val_max_dir = my_val_dir
 
         return [my_val, my_val_dir, my_val_min, my_val_min_time, my_val_max, my_val_max_time, my_val_max_dir]
 

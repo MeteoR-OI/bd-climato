@@ -10,6 +10,10 @@
 #       Mark the work_item as processed
 #   failWorkItem(work_item, exc, my_span):
 #       mark the work_item as failed
+# ---------------
+# more info on wind vs windGust: https://github-wiki-see.page/m/weewx/weewx/wiki/windgust
+# ---------------
+import app.tools.myTools as t
 import mysql.connector
 import psycopg2
 from datetime import datetime, timedelta
@@ -69,11 +73,11 @@ class MigrateDB:
             pgconn = self.getPGConnexion()
             myconn = self.getMSQLConnection(meteor)
 
-            my_span.add_event('start loading measures for ' + meteor)
-            self.insert_obs(pid, myconn, pgconn, my_span)
+            with op_tracer.start_as_current_span('loading measures for ' + meteor) as my_data_span:
+                self.insert_obs(pid, myconn, pgconn, my_data_span)
 
-            my_span.add_event('start loading extremes for ' + meteor)
-            self.insert_xtremes(pid, meteor, pgconn, my_span)
+            with op_tracer.start_as_current_span('loading extremes for ' + meteor) as my_data_span:
+                self.insert_xtremes(pid, meteor, pgconn, my_data_span)
 
         except Exception as e:
             raise(e)
@@ -86,7 +90,7 @@ class MigrateDB:
 
     def insert_obs(self, pid, myconn, pgconn, my_span):
         mesures = self.mesures
-        query_my = "select from_unixTime(dateTime + 4 * 3600), usUnits, `interval`"
+        query_my = "select from_unixTime(dateTime + 2 * 3600), usUnits, `interval`"
         query_args = []
         query_pg1 = "insert into obs(poste_id, time, duration"
         query_pg2 = ") values (%s, %s, %s"
@@ -162,31 +166,29 @@ class MigrateDB:
 
                 if test_id == -1:
                     test_id = pg_cur.fetchone()[0]
-                    my_span.add_event("first archive inserted, id: " + str(test_id))
+                    t.logInfo("first archive inserted, id: " + str(test_id) + ", date: " + str(a_q['args'][1]), my_span)
 
                 if nb_inserted > 10000:
-                    test_id = pg_cur.fetchone()[0]
-                    my_span.add_event("10000 archive inserted, last id: " + str(test_id))
                     pgconn.commit()
                     pg_cur.close()
                     pg_cur = pgconn.cursor()
                     nb_inserted = 0
                 row = my_cur.fetchone()
         finally:
-            if pg_cur is not None:
-                test_id = pg_cur.fetchone()[0]
-                pg_cur.close()
+            test_id = pg_cur.fetchone()[0]
             pgconn.commit()
-            my_span.add_event('all archive inserted, last id: ' + str(test_id))
+            t.logInfo('all archive(s) inserted, last id: ' + str(test_id) + ", date: " + str(a_q['args'][1]), my_span)
 
     def succeedWorkItem(self, work_item, my_span):
-        print('migration success')
+        t.logInfo('migration ' + work_item['meteor'] + ' successfull', my_span)
         return
 
     def failWorkItem(self, work_item, exc, my_span):
-        print('migration failed')
-        print(exc)
+        t.logError('migration ' + str(work_item['meteor']) + ' not done...', my_span)
         return
+
+    def getSpanTitle(self, work_item):
+        return 'Migrate ' + work_item['meteor']
 
     # ----------------
     # private methods
@@ -245,13 +247,12 @@ class MigrateDB:
 
                         if test_id == -1 and pg_cur.rowcount > 0:
                             test_id = pg_cur.fetchone()[0]
-                            my_span.add_event("first extreme inserted, id: " + str(test_id))
+                            t.logInfo("first extreme inserted, id: " + str(test_id) + ", date: " + str(day_process), my_span)
 
                         if (inserted_row % 10000) == 0:
                             test_id = pg_cur.fetchone()[0]
                             pg_cur.execute('commit')
                             pg_cur.close()
-                            my_span.add_event('10000 extremes inserted, last id: ' + str(test_id))
                             pg_cur = pgconn.cursor()
                             inserted_row = 0
 
@@ -262,7 +263,7 @@ class MigrateDB:
                 if j_key['db'].is_connected():
                     j_key['db'].close()
             test_id = pg_cur.fetchone()[0]
-            my_span.add_event('all extremes inserted, last id: ' + str(test_id))
+            t.logInfo('all extremes inserted, last id: ' + str(test_id) + ", date: " + str(day_process), my_span)
             pg_cur.execute('commit')
             pg_cur.close()
 
@@ -317,7 +318,7 @@ class MigrateDB:
 
     def get_mesures(self, pgconn):
         mesures = []
-        pg_query = "select id, archive_col, json_input, val_deca, min, min_deca, max, max_deca, is_avg, is_wind, allow_zero, omm_link from mesures"
+        pg_query = "select id, archive_col, archive_table, json_input, val_deca, min, min_deca, max, max_deca, is_avg, is_wind, allow_zero, omm_link from mesures"
 
         pg_cur = pgconn.cursor()
         pg_cur.execute(pg_query)
@@ -326,15 +327,16 @@ class MigrateDB:
             one_mesure = {
                 'id': row[0],
                 'col': row[1],
-                'field': row[2],
-                'valdk': row[3],
-                'min': row[4],
-                'mindk': row[5],
-                'max': row[6],
-                'maxdk': row[7],
-                'isavg': row[8],
-                'iswind': row[9],
-                'zero': row[10],
+                'table': row[2],
+                'field': row[3],
+                'valdk': row[4],
+                'min': row[5],
+                'mindk': row[6],
+                'max': row[7],
+                'maxdk': row[8],
+                'isavg': row[9],
+                'iswind': row[10],
+                'zero': row[11],
                 'ommidx': None
             }
             if row[11] != 0:
@@ -392,8 +394,8 @@ class MigrateDB:
 
             # fix for wind table
             table_name = mymesure['col']
-            if mymesure['col'] == 'windSpeed':
-                table_name = 'wind'
+            if mymesure['table'] is not None:
+                table_name = mymesure['table']
 
             if mymesure['iswind'] is True:
                 my_query = 'select dateTime, min, mintime, max, maxtime, max_dir from archive_day_' + table_name + ' order by dateTime'

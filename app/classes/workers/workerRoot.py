@@ -231,7 +231,9 @@ class WorkerRoot:
                         self.eventRunMe.clear()
                         continue
 
-                    with self.tracer.start_as_current_span("load Json") as my_span:
+                    span_title = a_worker['class'].getSpanTitle(work_item)
+
+                    with self.tracer.start_as_current_span(span_title) as my_span:
                         # call the service handler
                         try:
                             # my_span = self.tracer.start_as_current_span("load Json")

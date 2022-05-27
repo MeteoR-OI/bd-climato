@@ -45,7 +45,9 @@ class Mesure(models.Model):
     id = models.SmallAutoField(primary_key=True)
     name = models.CharField(null=False, max_length=100, verbose_name="Nom de la mesure")
     json_input = models.CharField(null=False, max_length=20, verbose_name="Clé utilisée dans le json")
+    json_input_bis = models.CharField(null=True, max_length=20, verbose_name="Autre clé utilisée dans le json")
     archive_col = models.CharField(null=False, max_length=20, verbose_name="nom colonne table weewx.archive")
+    archive_table = models.CharField(null=True, default=None, max_length=20, verbose_name="nom table weewx.archive")
     val_deca = models.SmallIntegerField(null=True, default=0, verbose_name="Décalage mesure")
     max = models.BooleanField(null=True, default=True, verbose_name="Calcul des max")
     max_deca = models.SmallIntegerField(null=True, default=0, verbose_name="Décalage du max")
@@ -55,6 +57,7 @@ class Mesure(models.Model):
     is_wind = models.BooleanField(null=True, default=False, verbose_name="Calcul du wind_dir")
     omm_link = models.SmallIntegerField(null=True, default=0, verbose_name="Lien entre mesure OMM et mesure de base")
     allow_zero = models.BooleanField(null=True, default=True, verbose_name="Zero est une valeur valide")
+    is_hourly = models.BooleanField(null=True, default=False, verbose_name="Must be agregated by hour(s) or more, not less")
 
     def __str__(self):
         return "Mesure id: " + str(self.id) + ", name: " + self.name
@@ -91,7 +94,7 @@ class Observation(models.Model):
     barometer = models.FloatField(null=True, verbose_name="pression niveau mer")
     barometer_omm = models.FloatField(null=True, verbose_name="pression niveau mer OMM")
     dewpoint = models.FloatField(null=True, verbose_name="point de rosée")
-    et = models.FloatField(null=True, verbose_name="somme etp")
+    etp = models.FloatField(null=True, verbose_name="somme etp")
     extra_humid1 = models.FloatField(null=True, verbose_name="extra humidité 1")
     extra_humid2 = models.FloatField(null=True, verbose_name="extra humidité 2")
     extra_temp1 = models.FloatField(null=True, verbose_name="extra temperature 1")
