@@ -18,6 +18,7 @@ import mysql.connector
 import psycopg2
 from datetime import datetime, timedelta
 from app.tools.myTools import logException
+from datetime import timezone
 
 
 class MigrateDB:
@@ -88,7 +89,32 @@ class MigrateDB:
             if myconn is not None and myconn.is_connected():
                 myconn.close()
 
+    def getObsStartingDate(self, pgconn, pid):
+        pg_cur = pgconn.cursor()
+        my_q = 'select max(time) from obs where duration != 0 and poste_id = ' + str(pid)
+        pg_cur.execute(my_q)
+        row = pg_cur.fetchone()
+        if row is None:
+            return 0
+        start_dt = row[0]
+        return start_dt.replace(tzinfo=timezone.utc).timestamp() - 2*3600
+
+    def getExtremesStartingDate(self, pgconn, pid):
+        pg_cur = pgconn.cursor()
+        my_q = 'select max(date) from extremes where '
+        my_q += " poste_id = " + str(pid)
+        pg_cur.execute(my_q)
+        row = pg_cur.fetchone()
+        if row is None:
+            return 0
+        my_date = row[0] + timedelta(1)
+        my_time = datetime.min.time()
+        start_dt = datetime.combine(my_date, my_time)
+        return start_dt.timestamp()
+
     def insert_obs(self, pid, myconn, pgconn, my_span):
+        start_date = self.getObsStartingDate(pgconn, pid)
+
         mesures = self.mesures
         query_my = "select from_unixTime(dateTime + 2 * 3600), usUnits, `interval`"
         query_args = []
@@ -119,7 +145,7 @@ class MigrateDB:
             query_pg1 += ", " + a_mesure['field']
             query_pg2 += ', %s'
 
-        query_my += " from archive order by dateTime"""
+        query_my += " from archive where dateTime > " + str(start_date) + " order by dateTime"""
         query_pg = query_pg1 + query_pg2 + ") returning id;"""
 
         # get our cursors
@@ -130,6 +156,7 @@ class MigrateDB:
         my_cur.execute(query_my)
         row = my_cur.fetchone()
         nb_inserted = 0
+        nb_new_rows = 0
         test_id = -1
 
         try:
@@ -163,10 +190,11 @@ class MigrateDB:
                     if a_q['dirty'] is True:
                         pg_cur.execute(query_pg, a_q['args'])
                         nb_inserted += 1
+                        nb_new_rows += 1
 
                 if test_id == -1 and pg_cur.rowcount > 0:
                     test_id = pg_cur.fetchone()[0]
-                    t.logInfo("first archive inserted, id: " + str(test_id) + ", date: " + str(a_q['args'][1]), my_span)
+                    t.logInfo("first archive inserted, id: " + str(test_id) + ", from date: " + str(a_q['args'][1]), my_span)
 
                 if nb_inserted > 10000:
                     pgconn.commit()
@@ -175,9 +203,15 @@ class MigrateDB:
                     nb_inserted = 0
                 row = my_cur.fetchone()
         finally:
-            test_id = pg_cur.fetchone()[0]
+            if pg_cur.rowcount > 0:
+                test_id = pg_cur.fetchone()[0]
+                t.logInfo('all archive(s) inserted, last id: ' + str(test_id) + ", date: " + str(a_q['args'][1]), my_span)
+                my_span.add_event(str(nb_new_rows) + ' rows inserted from archive with timestamp > ' + str(start_date))
+            else:
+                t.logInfo('no new data in archive', my_span)
+                my_span.add_event('no new data in archive from timestamp: ' + str(start_date))
+
             pgconn.commit()
-            t.logInfo('all archive(s) inserted, last id: ' + str(test_id) + ", date: " + str(a_q['args'][1]), my_span)
 
     def succeedWorkItem(self, work_item, my_span):
         t.logInfo('migration ' + work_item['meteor'] + ' successfull', my_span)
@@ -194,14 +228,16 @@ class MigrateDB:
     # private methods
     # ----------------
     def insert_xtremes(self, pid, meteor, pgconn, my_span):
+        start_date = self.getExtremesStartingDate( pgconn, pid)
         day_process = None
         pg_cur = pgconn.cursor()
         inserted_row = 0
         json_keys = []
         test_id = -1
+        nb_new_row = 0
 
         try:
-            json_keys = self.get_json_keys(meteor)
+            json_keys = self.get_json_keys(meteor, start_date)
             while True:
                 day_process, is_done = self.get_next_process_day(json_keys)
                 if is_done is True:
@@ -244,6 +280,7 @@ class MigrateDB:
                         self.insert_xtreme_row(self.mesures, pg_cur, args)
                         idx_idx += 1
                         inserted_row += 1
+                        nb_new_row += 1
 
                         if test_id == -1 and pg_cur.rowcount > 0:
                             test_id = pg_cur.fetchone()[0]
@@ -262,8 +299,13 @@ class MigrateDB:
             for j_key in json_keys:
                 if j_key['db'].is_connected():
                     j_key['db'].close()
-            test_id = pg_cur.fetchone()[0]
-            t.logInfo('all extremes inserted, last id: ' + str(test_id) + ", date: " + str(day_process), my_span)
+            if pg_cur.rowcount > 0:
+                test_id = pg_cur.fetchone()[0]
+                t.logInfo('all extremes inserted, last id: ' + str(test_id) + ", date: " + str(day_process), my_span)
+                my_span.add_event(str(nb_new_row) + ' rows inserted from archive_day_XXX with timestamp > ' + str(start_date))
+            else:
+                t.logInfo('no new data for our extremes')
+                my_span.add_event('no new data in archive_day_XXX from timestamp: ' + str(start_date))
             pg_cur.execute('commit')
             pg_cur.close()
 
@@ -371,7 +413,7 @@ class MigrateDB:
 
         return omm_link
 
-    def get_json_keys(self, meteor):
+    def get_json_keys(self, meteor, start_date):
         idx = 0
         json_keys = []
         while idx < len(self.mesures):
@@ -398,9 +440,9 @@ class MigrateDB:
                 table_name = mymesure['table']
 
             if mymesure['iswind'] is True:
-                my_query = 'select dateTime, min, mintime, max, maxtime, max_dir from archive_day_' + table_name + ' order by dateTime'
+                my_query = 'select dateTime, min, mintime, max, maxtime, max_dir from archive_day_' + table_name + ' where dateTime > ' + str(start_date) + ' order by dateTime'
             else:
-                my_query = 'select dateTime, min, mintime, max, maxtime from archive_day_' + table_name + ' order by dateTime'
+                my_query = 'select dateTime, min, mintime, max, maxtime from archive_day_' + table_name + ' where dateTime > ' + str(start_date) + ' order by dateTime'
             myconn = self.getMSQLConnection(meteor)
             my_cur = myconn.cursor()
             my_cur.execute(my_query)

@@ -57,20 +57,6 @@ class Telemetry:
         """
         if Telemetry.tracer is None:
             if hasattr(settings, "TELEMETRY_PROVIDER") is True:
-
-                # if settings.TELEMETRY_PROVIDER == "Console":
-                #     resource = Resource(attributes={
-                #         SERVICE_NAME: "Climato"
-                #     })
-                #     provider = TracerProvider(resource=resource)
-                #     processor = BatchSpanProcessor(ConsoleSpanExporter())
-                #     provider.add_span_processor(processor)
-                #     trace.set_tracer_provider(provider)
-                # trace.set_tracer_provider(
-                #     TracerProvider(
-                #         resource=Resource.create({SERVICE_NAME: "Climato"})
-                #     )
-                # )
                 resource = Resource(attributes={
                     SERVICE_NAME: "Climato"
                 })
