@@ -97,7 +97,7 @@ class MigrateDB:
         if row is None or row[0] == 0:
             return 0
         start_dt = row[0]
-        return start_dt.replace(tzinfo=timezone.utc).timestamp() - 2*3600
+        return start_dt.timestamp() - 2 * 3600
 
     def getExtremesStartingDate(self, pgconn, pid):
         pg_cur = pgconn.cursor()
