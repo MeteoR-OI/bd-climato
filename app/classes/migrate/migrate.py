@@ -304,7 +304,7 @@ class MigrateDB:
                 t.logInfo('all extremes inserted, last id: ' + str(test_id) + ", date: " + str(day_process), my_span, {"svc": "migrate", "meteor": meteor})
                 my_span.add_event(str(nb_new_row) + ' rows inserted from archive_day_XXX with timestamp > ' + str(start_date))
             else:
-                t.logInfo('no new data for our extremes', {"svc": "migrate", "meteor": meteor})
+                t.logInfo('no new data for our extremes', my_span, {"svc": "migrate", "meteor": meteor})
                 my_span.add_event('no new data in archive_day_XXX from timestamp: ' + str(start_date))
             pg_cur.execute('commit')
             pg_cur.close()
