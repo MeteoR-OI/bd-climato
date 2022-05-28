@@ -49,7 +49,7 @@ class MigrateDB:
                 raise Exception('station ' + meteor + ' not found')
 
             self._meteors_to_process.append({'pid': poste_id, 'meteor': meteor})
-            t.logInfo("New work item added in queue", None, {"svc": self.display, "work_item": {'pid': poste_id, 'meteor': meteor}})
+            t.logInfo("New work item added in queue", None, {"svc": "migrate", "meteor": meteor, "work_item": {'pid': poste_id, 'meteor': meteor}})
 
         except Exception as e:
             logException(e)
@@ -75,7 +75,7 @@ class MigrateDB:
             myconn = self.getMSQLConnection(meteor)
 
             with op_tracer.start_as_current_span('loading measures for ' + meteor) as my_data_span:
-                self.insert_obs(pid, myconn, pgconn, my_data_span)
+                self.insert_obs(pid, meteor, myconn, pgconn, my_data_span)
 
             with op_tracer.start_as_current_span('loading extremes for ' + meteor) as my_data_span:
                 self.insert_xtremes(pid, meteor, pgconn, my_data_span)
@@ -94,7 +94,7 @@ class MigrateDB:
         my_q = 'select max(time) from obs where duration != 0 and poste_id = ' + str(pid)
         pg_cur.execute(my_q)
         row = pg_cur.fetchone()
-        if row is None or row[0] is None or row[0] == 0:
+        if row is None or row[0] is None:
             return 0
         start_dt = datetime(row[0])
         return start_dt.timestamp() - 2 * 3600
@@ -105,14 +105,14 @@ class MigrateDB:
         my_q += " poste_id = " + str(pid)
         pg_cur.execute(my_q)
         row = pg_cur.fetchone()
-        if row is None or row[0] is None or row[0] == 0:
+        if row is None or row[0] is None:
             return 0
         my_date = row[0] + timedelta(1)
         my_time = datetime.min.time()
         start_dt = datetime.combine(my_date, my_time)
         return start_dt.timestamp()
 
-    def insert_obs(self, pid, myconn, pgconn, my_span):
+    def insert_obs(self, pid, meteor, myconn, pgconn, my_span):
         start_date = self.getObsStartingDate(pgconn, pid)
 
         mesures = self.mesures
@@ -194,7 +194,7 @@ class MigrateDB:
 
                 if test_id == -1 and pg_cur.rowcount > 0:
                     test_id = pg_cur.fetchone()[0]
-                    t.logInfo("first archive inserted, id: " + str(test_id) + ", from date: " + str(a_q['args'][1]), my_span, {"svc": self.display})
+                    t.logInfo("first archive inserted, id: " + str(test_id) + ", from date: " + str(a_q['args'][1]), my_span, {"svc": "migrate", "meteor": meteor})
 
                 if nb_inserted > 10000:
                     pgconn.commit()
@@ -205,20 +205,20 @@ class MigrateDB:
         finally:
             if pg_cur.rowcount > 0:
                 test_id = pg_cur.fetchone()[0]
-                t.logInfo('all archive(s) inserted, last id: ' + str(test_id) + ", date: " + str(a_q['args'][1]), my_span, {"svc": self.display})
+                t.logInfo('all archive(s) inserted, last id: ' + str(test_id) + ", date: " + str(a_q['args'][1]), my_span, {"svc": "migrate", "meteor": meteor})
                 my_span.add_event(str(nb_new_rows) + ' rows inserted from archive with timestamp > ' + str(start_date))
             else:
-                t.logInfo('no new data in archive', my_span, {"svc": self.display})
+                t.logInfo('no new data in archive', my_span, {"svc": "migrate", "meteor": meteor})
                 my_span.add_event('no new data in archive from timestamp: ' + str(start_date))
 
             pgconn.commit()
 
     def succeedWorkItem(self, work_item, my_span):
-        t.logInfo('migration ' + work_item['meteor'] + ' successfull', my_span, {"svc": self.display})
+        t.logInfo('migration ' + work_item['meteor'] + ' successfull', my_span, {"svc": work_item['meteor']})
         return
 
     def failWorkItem(self, work_item, exc, my_span):
-        t.logError('failWorkItem', 'migration ' + str(work_item['meteor']) + ' not done...', my_span, {"svc": self.display})
+        t.logError('failWorkItem', 'migration ' + str(work_item['meteor']) + ' not done...', my_span, {"svc": work_item['meteor']})
         return
 
     def getSpanTitle(self, work_item):
@@ -284,7 +284,7 @@ class MigrateDB:
 
                         if test_id == -1 and pg_cur.rowcount > 0:
                             test_id = pg_cur.fetchone()[0]
-                            t.logInfo("first extreme inserted, id: " + str(test_id) + ", date: " + str(day_process), my_span, {"svc": self.display})
+                            t.logInfo("first extreme inserted, id: " + str(test_id) + ", date: " + str(day_process), my_span, {"svc": "migrate", "meteor": meteor})
 
                         if (inserted_row % 10000) == 0:
                             test_id = pg_cur.fetchone()[0]
@@ -301,10 +301,10 @@ class MigrateDB:
                     j_key['db'].close()
             if pg_cur.rowcount > 0:
                 test_id = pg_cur.fetchone()[0]
-                t.logInfo('all extremes inserted, last id: ' + str(test_id) + ", date: " + str(day_process), my_span, {"svc": self.display})
+                t.logInfo('all extremes inserted, last id: ' + str(test_id) + ", date: " + str(day_process), my_span, {"svc": "migrate", "meteor": meteor})
                 my_span.add_event(str(nb_new_row) + ' rows inserted from archive_day_XXX with timestamp > ' + str(start_date))
             else:
-                t.logInfo('no new data for our extremes', {"svc": self.display})
+                t.logInfo('no new data for our extremes', {"svc": "migrate", "meteor": meteor})
                 my_span.add_event('no new data in archive_day_XXX from timestamp: ' + str(start_date))
             pg_cur.execute('commit')
             pg_cur.close()
