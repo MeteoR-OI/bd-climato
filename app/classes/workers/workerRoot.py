@@ -249,8 +249,8 @@ class WorkerRoot:
 
                         except Exception as exc:
                             my_span._status._status_code = Telemetry.get_error_status()
+                            t.logException(exc, my_span, {"svc": self.display, "work_item": work_item})
                             a_worker['class'].failWorkItem(work_item, exc, my_span)
-                            t.logError('__runSvc', "work item NOT processed", my_span, {"svc": self.display, "work_item": work_item})
 
                     self.eventRunMe.set()
 

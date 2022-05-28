@@ -214,11 +214,11 @@ class MigrateDB:
             pgconn.commit()
 
     def succeedWorkItem(self, work_item, my_span):
-        t.logInfo('migration ' + work_item['meteor'] + ' successfull', my_span, {"svc": work_item['meteor']})
+        # t.logInfo('migration ' + work_item['meteor'] + ' successfull', my_span, {"svc": work_item['meteor']})
         return
 
     def failWorkItem(self, work_item, exc, my_span):
-        t.logError('failWorkItem', 'migration ' + str(work_item['meteor']) + ' not done...', my_span, {"svc": work_item['meteor']})
+        # t.logError('failWorkItem', 'migration ' + str(work_item['meteor']) + ' not done...', my_span, {"svc": work_item['meteor']})
         return
 
     def getSpanTitle(self, work_item):
