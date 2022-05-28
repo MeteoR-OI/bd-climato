@@ -97,7 +97,7 @@ class MigrateDB:
         if row is None or row[0] is None:
             return 0
         start_dt = row[0]
-        return start_dt.timestamp() - 2 * 3600
+        return start_dt.timestamp() - 4 * 3600
 
     def getExtremesStartingDate(self, pgconn, pid):
         pg_cur = pgconn.cursor()
@@ -116,7 +116,7 @@ class MigrateDB:
         start_date = self.getObsStartingDate(pgconn, pid)
 
         mesures = self.mesures
-        query_my = "select from_unixTime(dateTime + 2 * 3600), usUnits, `interval`"
+        query_my = "select from_unixTime(dateTime + 4 * 3600), usUnits, `interval`"
         query_args = []
         query_pg1 = "insert into obs(poste_id, time, duration"
         query_pg2 = ") values (%s, %s, %s"
