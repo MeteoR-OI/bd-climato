@@ -18,6 +18,18 @@
         -p 14269:14269 \
         -p 9411:9411 \
         jaegertracing/all-in-one
+
+        start loki:
+        d run -d --name loki -v $(pwd):/mnt/config -p 3100:3100 grafana/loki -config.file=/mnt/config/loki-config.yaml
+
+    start promtail:
+        docker run -d --name promtail \
+        -v $(pwd):/mnt/config \
+        -v /var/log:/mnt/log \
+        -v /tmp:/mnt/tmp \
+        -v /home/meteor/bd-climato/data/localStorage/log:/mnt/django \
+        grafana/promtail \
+        -config.file=/mnt/config/promtail-config.yaml
 """
 from django.conf import settings
 from opentelemetry import trace

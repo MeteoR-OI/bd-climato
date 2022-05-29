@@ -74,8 +74,8 @@ class MigrateDB:
             pgconn = self.getPGConnexion()
             myconn = self.getMSQLConnection(meteor)
 
-            with op_tracer.start_as_current_span('loading measures for ' + meteor) as my_data_span:
-                self.insert_obs(pid, meteor, myconn, pgconn, my_data_span)
+            # with op_tracer.start_as_current_span('loading measures for ' + meteor) as my_data_span:
+            #     self.insert_obs(pid, meteor, myconn, pgconn, my_data_span)
 
             with op_tracer.start_as_current_span('loading extremes for ' + meteor) as my_data_span:
                 self.insert_xtremes(pid, meteor, pgconn, my_data_span)
@@ -381,10 +381,10 @@ class MigrateDB:
                 'zero': row[11],
                 'ommidx': None
             }
-            if row[11] != 0:
+            if row[12] != 0:
                 idx_mesure = len(mesures) - 1
                 while idx_mesure >= 0:
-                    if mesures[idx_mesure]['id'] == row[11]:
+                    if mesures[idx_mesure]['id'] == row[12]:
                         one_mesure['ommidx'] = idx_mesure
                         idx_mesure = 0
                     idx_mesure -= 1

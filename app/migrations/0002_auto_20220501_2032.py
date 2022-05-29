@@ -21,8 +21,8 @@ class Migration(migrations.Migration):
         migrations.RunSQL(
             "ALTER TABLE extremes DROP CONSTRAINT extremes_pkey;"
         ),
-        migrations.RunSQL("SELECT create_hypertable('extremes', 'time');"),
+        migrations.RunSQL("SELECT create_hypertable('extremes', 'date');"),
         migrations.RunSQL(
             "SELECT set_chunk_time_interval('extremes', 25920000000000);"
-        ),
+        )
     ]
