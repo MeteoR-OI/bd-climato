@@ -1,5 +1,5 @@
 
-insert into postes(meteor, delta_timezone, meteofr, title, owner, email, phone, address, zip, city, country, altitude, long, lat) values
+insert into postes(meteor, delta_timezone, meteofr, title, owner, email, phone, address, zip, city, country, altitude, lat, long) values
 ('BAG280',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  -20.933387, 55.582768),
 ('BBF015',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, 0, 0),
 ('BDN240',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, 0, 0),
@@ -144,23 +144,64 @@ $BODY$
 DECLARE
     obs_dat timestamp;
 BEGIN
-  select last_data_date  into obs_dat from postes where id = NEW.poste_id;
-  if new.duration > 0 and new.time > obs_dat then
-    update postes set last_data_date = NEW.time, last_data_id = NEW.id where id = NEW.poste_id;
+  select last_obs_date  into obs_dat from postes where id = NEW.poste_id;
+  if new.duration > 0 and (obs_dat is null or new.time > obs_dat) then
+    update postes set last_obs_date = NEW.time, last_obs_id = NEW.id where id = NEW.poste_id;
   end if;
   return NEW;
 END
 $BODY$;
 
 /*
-*  With the trigger function created, actually assign it to the truck_reading
-*  table so that it will execute for each row
+*  store in each poste the id and time for the most recent obs
 */ 
 CREATE TRIGGER create_obs_trigger
-  BEFORE INSERT OR UPDATE ON obs
+  AFTER INSERT OR UPDATE ON obs
   FOR EACH ROW EXECUTE PROCEDURE create_obs_trigger_fn();
 
 
+CREATE OR REPLACE FUNCTION create_extremes_trigger_fn()
+  RETURNS TRIGGER LANGUAGE PLPGSQL AS
+$BODY$
+DECLARE
+    x_dat timestamp;
+BEGIN
+  select last_extremes_date  into x_dat from postes where id = NEW.poste_id;
+  if x_dat is null or new.date > x_dat then
+    update postes set last_extremes_date = NEW.date, last_extremes_id = NEW.id where id = NEW.poste_id;
+  end if;
+  return NEW;
+END
+$BODY$;
+
+/*
+*  store in each poste the id and time for the most recent obs
+*/ 
+CREATE OR REPLACE TRIGGER create_extremes_trigger
+  AFTER INSERT OR UPDATE ON extremes
+  FOR EACH ROW EXECUTE PROCEDURE create_extremes_trigger_fn();
+
+CREATE OR REPLACE FUNCTION delete_obs_trigger_fn()
+  RETURNS TRIGGER LANGUAGE PLPGSQL AS
+$BODY$
+DECLARE
+BEGIN
+    delete from extremes where id_obs = OLD.id;
+
+    if OLD.id_obs is null then
+        delete from obs where id_obs = OLD.id;
+	end if;
+  return OLD;
+END
+$BODY$;
+
+
+/*
+*  delete cascase linked obs, and linked extremes
+*/ 
+CREATE TRIGGER delete_obs_trigger
+  AFTER DELETE ON obs
+  FOR EACH ROW EXECUTE PROCEDURE delete_obs_trigger_fn();
 
 
 CREATE OR REPLACE FUNCTION get_last_obs(pid integer)
@@ -285,5 +326,3 @@ BEGIN
 END;
 $$
 ;
-
-

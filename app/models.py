@@ -32,8 +32,11 @@ class Poste(models.Model):
     start_dat = DateTimeFieldNoTZ(null=True, default="1900-01-01T00:00:00", verbose_name="Date d'activation")
     stop_dat = DateTimeFieldNoTZ(null=True, default="2100-12-31T23:59:59", verbose_name="Date de désactivation")
     comment = models.TextField(null=True, default="")
-    last_data_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Date de derniere reception de donnees")
-    last_data_id = models.BigIntegerField(null=True, default=0, verbose_name="ID obs de la derniere reception de donnees")
+    last_obs_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Date de derniere reception de donnees")
+    last_obs_id = models.BigIntegerField(null=True, default=0, verbose_name="ID obs de la derniere reception de donnees")
+    last_extremes_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Date de dernier record")
+    last_extremes_id = models.BigIntegerField(null=True, default=0, verbose_name="ID du dernier record")
+    load_json = models.BooleanField(null=True, default=False, verbose_name="load json status")
 
     def __str__(self):
         return self.meteor + ", id: " + str(self.id)
@@ -89,6 +92,7 @@ class Observation(models.Model):
     # ??  hail | hailRate | heatingTemp ??
 
     id = models.BigAutoField(primary_key=True, verbose_name="id de l'observation")
+    id_obs = models.BigIntegerField(null=True, verbose_name="pour les val_deca: id de l'observation principale")
     time = DateTimeFieldNoTZ(null=False, verbose_name="date fin période observation")
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
     duration = models.SmallIntegerField(null=True, default=0, verbose_name="durée période")

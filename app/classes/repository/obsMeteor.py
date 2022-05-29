@@ -1,6 +1,6 @@
 # check __reverse_delta_values (j_xtreme)
 #
-from app.models import Extreme, Observation, Poste
+from app.models import Observation, Poste
 import json
 from datetime import datetime, timedelta
 
@@ -29,8 +29,7 @@ class ObsMeteor():
         self.data.save()
 
     def delete(self):
-        # delete cascade linked agg_histo rows
-        Extreme.objects.filter(ods_is=self.data.id).delete
+        # delete cascade implemented as a delete trigger
         self.data.delete()
 
     @staticmethod

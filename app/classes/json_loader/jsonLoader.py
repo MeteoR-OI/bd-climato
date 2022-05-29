@@ -131,6 +131,9 @@ class JsonLoader:
         my_span.set_attribute('filename', filename)
         meteor = str(jsons_to_load[0].get("meteor"))
         pid = PosteMeteor.getPosteIdByMeteor(jsons_to_load[0]["meteor"])
+        b_load = PosteMeteor(pid).data.load_json
+        if b_load is False:
+            return
         my_span.set_attribute('meteor', meteor)
         check_result = checkJson(jsons_to_load, pid, filename)
         if check_result is not None:
@@ -168,7 +171,7 @@ class JsonLoader:
                                             {'meteor': meteor, 'filename': filename, 'idx': idx_data, 'stop_dat': str(j_stop_dat)})
                                     continue
                                 else:
-                                    # delete our obs, and linked extremes
+                                    # delete our obs, and linked extremes and obs
                                     all_obs[0]['obs'].data.delete()
                                     # reload a new set of obs (first will be new now)
                                     all_obs = ObsMeteor.load_mesures(pid, self.decas, j_stop_dat)
@@ -182,8 +185,14 @@ class JsonLoader:
                             else:
                                 t.logError("no keys loaded !!!", my_data_span)
 
+                            # save obs, and update id_obs for linked obs
+                            id_obs_main = 0
                             for an_obs in all_obs:
+                                if id_obs_main != 0:
+                                    an_obs['obs'].data.id_obs = id_obs_main
                                 an_obs['obs'].data.save()
+                                if id_obs_main == 0 and an_obs['obs'].data.duration != 0:
+                                    id_obs_main = an_obs['obs'].data.id
 
                             my_data_span.set_attribute("obs_id", str(all_obs[0]['obs'].data.id))
 
