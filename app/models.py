@@ -32,6 +32,8 @@ class Poste(models.Model):
     start_dat = DateTimeFieldNoTZ(null=True, default="1900-01-01T00:00:00", verbose_name="Date d'activation")
     stop_dat = DateTimeFieldNoTZ(null=True, default="2100-12-31T23:59:59", verbose_name="Date de désactivation")
     comment = models.TextField(null=True, default="")
+    last_data_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Date de derniere reception de donnees")
+    last_data_id = models.BigIntegerField(null=True, default=0, verbose_name="ID obs de la derniere reception de donnees")
 
     def __str__(self):
         return self.meteor + ", id: " + str(self.id)

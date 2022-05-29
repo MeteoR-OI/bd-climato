@@ -114,7 +114,7 @@ create materialized view obs_day WITH (timescaledb.continuous) as
         avg(out_temp) as out_temp,
         avg(out_temp_omm) as out_temp_omm,
         avg(pressure) as pressure,
-        max(radiation) as max_radiation,
+        max(radiation) as radiation,
         sum(rain) as rain,
         sum(rain_omm) as rain_omm,
         avg(rain_rate) as rain_rate,
@@ -127,7 +127,7 @@ create materialized view obs_day WITH (timescaledb.continuous) as
         avg(soil_temp2) as soil_temp2,
         avg(soil_temp3) as soil_temp3,
         avg(soil_temp4) as soil_temp4,
-        max(uv) as max_uv,
+        max(uv) as uv,
         avg(voltage) as voltage,
         avg(wind) as wind,
         max(wind_gust) as wind_gust,
@@ -136,3 +136,154 @@ create materialized view obs_day WITH (timescaledb.continuous) as
         avg(windchill) as windchill
     from obs
     group by 1,2;
+
+
+CREATE OR REPLACE FUNCTION create_obs_trigger_fn()
+  RETURNS TRIGGER LANGUAGE PLPGSQL AS
+$BODY$
+DECLARE
+    obs_dat timestamp;
+BEGIN
+  select last_data_date  into obs_dat from postes where id = NEW.poste_id;
+  if new.duration > 0 and new.time > obs_dat then
+    update postes set last_data_date = NEW.time, last_data_id = NEW.id where id = NEW.poste_id;
+  end if;
+  return NEW;
+END
+$BODY$;
+
+/*
+*  With the trigger function created, actually assign it to the truck_reading
+*  table so that it will execute for each row
+*/ 
+CREATE TRIGGER create_obs_trigger
+  BEFORE INSERT OR UPDATE ON obs
+  FOR EACH ROW EXECUTE PROCEDURE create_obs_trigger_fn();
+
+
+
+
+CREATE OR REPLACE FUNCTION get_last_obs(pid integer)
+RETURNS json LANGUAGE plpgsql
+AS $$
+DECLARE
+    tmp_str text;
+    j_result json;
+    v_barometer float;
+    v_barometer_omm float;
+    v_dewpoint float;
+    v_etp float;
+    v_extra_humid1 float;
+    v_extra_humid2 float;
+    v_extra_temp1 float;
+    v_extra_temp2 float;
+    v_extra_temp3 float;
+    v_hail float;
+    v_hail_rate float;
+    v_heatindex float;
+    v_heating_temp float;
+    v_in_humidity float;
+    v_in_temp float;
+    v_leaf_temp1 float;
+    v_leaf_temp2 float;
+    v_leaf_wet1 float;
+    v_leaf_wet2 float;
+    v_out_humidity float;
+    v_out_humidity_omm float;
+    v_out_temp float;
+    v_out_temp_omm float;
+    v_pressure float;
+    v_radiation float;
+    v_rain float;
+    v_rain_omm float;
+    v_rain_rate float;
+    v_rx float;
+    v_soil_moist1 float;
+    v_soil_moist2 float;
+    v_soil_moist3 float;
+    v_soil_moist4 float;
+    v_soil_temp1 float;
+    v_soil_temp2 float;
+    v_soil_temp3 float;
+    v_soil_temp4 float;
+    v_uv float;
+    v_voltage float;
+    v_wind float;
+    v_wind_gust float;
+    v_wind10 float;
+    v_wind10_omm float;
+    v_windchill float;
+BEGIN
+    tmp_str = '';
+
+    select barometer, barometer_omm, dewpoint, etp, extra_humid1,
+           extra_humid2, extra_temp1, extra_temp2, extra_temp3, hail,
+           hail_rate, heatindex, heating_temp, in_humidity, in_temp,
+           leaf_temp1, leaf_temp2, leaf_wet1, leaf_wet2, out_humidity,
+           out_humidity_omm, out_temp, out_temp_omm, pressure, radiation,
+           rain, rain_omm, rain_rate, rx, soil_moist1,
+           soil_moist2, soil_moist3, soil_moist4, soil_temp1, soil_temp2,
+           soil_temp3, soil_temp4, uv, voltage, wind,
+           wind_gust, wind10, wind10_omm, windchill
+    into
+        v_barometer, v_barometer_omm, v_dewpoint, v_etp, v_extra_humid1,
+        v_extra_humid2, v_extra_temp1, v_extra_temp2, v_extra_temp3, v_hail,
+        v_hail_rate, v_heatindex, v_heating_temp, v_in_humidity, v_in_temp,
+        v_leaf_temp1, v_leaf_temp2, v_leaf_wet1, v_leaf_wet2, v_out_humidity,
+        v_out_humidity_omm, v_out_temp, v_out_temp_omm, v_pressure, v_radiation,
+        v_rain, v_rain_omm, v_rain_rate, v_rx, v_soil_moist1,
+        v_soil_moist2, v_soil_moist3, v_soil_moist4, v_soil_temp1, v_soil_temp2,
+        v_soil_temp3, v_soil_temp4, v_uv, v_voltage, v_wind,
+        v_wind_gust, v_wind10, v_wind10_omm, v_windchill
+
+    from obs where id = (select last_data_id from postes where id = pid);
+
+    if v_barometer is not null then tmp_str = concat(tmp_str, ', "barometer", ', v_barometer); end if;        
+    if v_dewpoint is not null then tmp_str = concat(tmp_str, ', "dewpoint", ', v_dewpoint); end if;
+    if v_etp is not null then tmp_str = concat(tmp_str, ', "etp", ', v_etp); end if;
+    if v_extra_humid1 is not null then tmp_str = concat(tmp_str, ', "extra_humid1", ', v_extra_humid1); end if;
+    if v_extra_humid2 is not null then tmp_str = concat(tmp_str, ', "extra_humid2", ', v_extra_humid2); end if;
+    if v_extra_temp1 is not null then tmp_str = concat(tmp_str, ', "extra_temp1", ', v_extra_temp1); end if;
+    if v_extra_temp2 is not null then tmp_str = concat(tmp_str, ', "extra_temp2", ', v_extra_temp2); end if;
+    if v_extra_temp3 is not null then tmp_str = concat(tmp_str, ', "extra_temp3", ', v_extra_temp3); end if;
+    if v_hail is not null then tmp_str = concat(tmp_str, ', "hail", ', v_hail); end if;
+    if v_hail_rate is not null then tmp_str = concat(tmp_str, ', "hail_rate", ', v_hail_rate); end if;
+    if v_heatindex is not null then tmp_str = concat(tmp_str, ', "heatindex", ', v_heatindex); end if;
+    if v_heating_temp is not null then tmp_str = concat(tmp_str, ', "heating_temp", ', v_heating_temp); end if;
+    if v_in_humidity is not null then tmp_str = concat(tmp_str, ', "in_humidity", ', v_in_humidity); end if;
+    if v_in_temp is not null then tmp_str = concat(tmp_str, ', "in_temp", ', v_in_temp); end if;
+    if v_leaf_temp1 is not null then tmp_str = concat(tmp_str, ', "leaf_temp1", ', v_leaf_temp1); end if;
+    if v_leaf_temp2 is not null then tmp_str = concat(tmp_str, ', "leaf_temp2", ', v_out_temp); end if;
+    if v_leaf_wet1 is not null then tmp_str = concat(tmp_str, ', "leaf_wet1", ', v_leaf_wet1); end if;
+    if v_leaf_wet2 is not null then tmp_str = concat(tmp_str, ', "leaf_wet2", ', v_leaf_wet2); end if;
+    if v_out_temp is not null then tmp_str = concat(tmp_str, ', "out_temp", ', v_out_temp); end if;
+    if v_out_humidity is not null then tmp_str = concat(tmp_str, ', "out_humidity", ', v_out_humidity); end if;
+    if v_pressure is not null then tmp_str = concat(tmp_str, ', "pressure", ', v_pressure); end if;
+    if v_rain is not null then tmp_str = concat(tmp_str, ', "rain", ', v_rain); end if;
+    if v_rain_rate is not null then tmp_str = concat(tmp_str, ', "rain_rate", ', v_rain_rate); end if;
+    if v_rx is not null then tmp_str = concat(tmp_str, ', "rx", ', v_rx); end if;
+    if v_soil_moist1 is not null then tmp_str = concat(tmp_str, ', "soil_moist1", ', v_soil_moist1); end if;
+    if v_soil_moist2 is not null then tmp_str = concat(tmp_str, ', "soil_moist2", ', v_soil_moist2); end if;
+    if v_soil_moist3 is not null then tmp_str = concat(tmp_str, ', "soil_moist3", ', v_soil_moist3); end if;
+    if v_soil_moist4 is not null then tmp_str = concat(tmp_str, ', "soil_moist4", ', v_soil_moist4); end if;
+    if v_soil_temp1 is not null then tmp_str = concat(tmp_str, ', "soil_temp1", ', v_soil_temp1); end if;
+    if v_soil_temp2 is not null then tmp_str = concat(tmp_str, ', "soil_temp2", ', v_soil_temp2); end if;
+    if v_soil_temp3 is not null then tmp_str = concat(tmp_str, ', "soil_temp3", ', v_soil_temp3); end if;
+    if v_soil_temp4 is not null then tmp_str = concat(tmp_str, ', "soil_temp4", ', v_soil_temp4); end if;
+    if v_uv is not null then tmp_str = concat(tmp_str, ', "uv", ', v_uv); end if;
+    if v_voltage is not null then tmp_str = concat(tmp_str, ', "voltage", ', v_voltage); end if;
+    if v_wind is not null then tmp_str = concat(tmp_str, ', "wind", ', v_wind); end if;
+    if v_wind_gust is not null then tmp_str = concat(tmp_str, ', "wind_gust", ', v_wind_gust); end if;
+    if v_wind10 is not null then tmp_str = concat(tmp_str, ', "wind10", ', v_wind10); end if;
+    if v_windchill is not null then tmp_str = concat(tmp_str, ', "windchill", ', v_windchill); end if;
+
+	tmp_str = substring(tmp_str, 2);
+    tmp_str = concat('{', tmp_str, '}');
+
+    select json_object(tmp_str::text[]) into j_result;
+    return j_result;
+END;
+$$
+;
+
+
