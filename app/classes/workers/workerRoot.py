@@ -242,6 +242,8 @@ class WorkerRoot:
                         work_item['spanID'] = self.display
                     if work_item.get("info") is None:
                         work_item['info'] = self.display
+                    if work_item.get("meteor") is None:
+                        work_item['meteor'] = "?"
 
                     with self.tracer.start_as_current_span(work_item['spanID']) as my_span:
                         my_span.set_attribute("job", "django")  # for link jaeger -> loki
