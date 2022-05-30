@@ -48,7 +48,13 @@ class MigrateDB:
             if poste_id is None:
                 raise Exception('station ' + meteor + ' not found')
 
-            self._meteors_to_process.append({'pid': poste_id, 'meteor': meteor})
+            self._meteors_to_process.append({
+                'pid': poste_id,
+                'meteor': meteor,
+                'info': meteor,
+                'spanID': 'Migrate ' + meteor
+            })
+
             t.logInfo("New work item added in queue", None, {"svc": "migrate", "meteor": meteor, "work_item": {'pid': poste_id, 'meteor': meteor}})
 
         except Exception as e:
@@ -228,9 +234,6 @@ class MigrateDB:
     def failWorkItem(self, work_item, exc, my_span):
         # t.logError('failWorkItem', 'migration ' + str(work_item['meteor']) + ' not done...', my_span, {"svc": work_item['meteor']})
         return
-
-    def getSpanTitle(self, work_item):
-        return 'Migrate ' + work_item['meteor']
 
     # ----------------
     # private methods

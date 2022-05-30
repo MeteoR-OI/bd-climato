@@ -228,6 +228,7 @@ class WorkerRoot:
                         self.closed.set()
                         return
 
+                    # work_item should have the key: spanID, and info, plus info for the service itself
                     work_item = a_worker['class'].getNextWorkItem()
                     if work_item is None:
                         if self.run_once is True:
@@ -236,9 +237,15 @@ class WorkerRoot:
                         self.eventRunMe.clear()
                         continue
 
-                    span_title = a_worker['class'].getSpanTitle(work_item)
+                    # safe check...
+                    if work_item.get("spanID") is None:
+                        work_item['spanID'] = self.display
+                    if work_item.get("info") is None:
+                        work_item['info'] = self.display
 
-                    with self.tracer.start_as_current_span(span_title) as my_span:
+                    with self.tracer.start_as_current_span(work_item['spanID']) as my_span:
+                        my_span.set_attribute("job", "django")  # for link jaeger -> loki
+                        my_span.set_attribute("info", work_item['info'])
                         # call the service handler
                         try:
                             # my_span = self.tracer.start_as_current_span("load Json")
