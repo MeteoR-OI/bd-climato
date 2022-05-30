@@ -50,7 +50,7 @@ class JsonLoader:
     # public methods
     # ----------------
     def addNewWorkItem(self, work_item):
-        raise Exception('not supported')
+        return
 
     def getNextWorkItem(self):
         file_names = []
@@ -75,7 +75,7 @@ class JsonLoader:
         my_json = JsonPlus().loads(texte)
         if 'dict' in str(type(my_json)):
             my_json = [my_json]
-        return {'f': a_filename, 'json': my_json}
+        return {'f': a_filename, 'json': my_json, 'spanID': 'load of ' + a_filename, 'info': a_filename}
 
     def succeedWorkItem(self, work_item, my_span):
         # move the file to archive
