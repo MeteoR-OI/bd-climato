@@ -248,13 +248,18 @@ class WorkerRoot:
                     with self.tracer.start_as_current_span(work_item['spanID']) as my_span:
                         my_span.set_attribute("job", "django")  # for link jaeger -> loki
                         my_span.set_attribute("info", work_item['info'])
+                        my_span.set_attribute("meteor", work_item['meteor'])
                         # call the service handler
                         try:
                             # my_span = self.tracer.start_as_current_span("load Json")
                             a_worker['class'].processWorkItem(work_item, my_span, self.tracer)
                             a_worker['class'].succeedWorkItem(work_item, my_span)
                             my_span._status._status_code = Telemetry.get_ok_status()
-                            t.logInfo("work item processed", my_span, {"svc": self.display, "info": work_item['info']})
+                            t.logInfo("work item processed", my_span, {
+                                "svc": self.display,
+                                "info": work_item['info'],
+                                "meteor": work_item['meteor'],
+                            })
 
                         except Exception as exc:
                             my_span._status._status_code = Telemetry.get_error_status()
