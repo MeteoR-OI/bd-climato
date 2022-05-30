@@ -95,10 +95,6 @@ class JsonLoader:
 
         os.rename(self.base_dir + "/" + work_item['f'], filename_prefix + work_item['f'])
 
-        # set my_span attributes
-        my_span.set_attribute("filename", work_item['f'])
-        my_span.set_attribute("meteor", meteor)
-
     def failWorkItem(self, work_item, exc, my_span):
         meteor = 'inconnu'
         try:
@@ -116,19 +112,14 @@ class JsonLoader:
             os.makedirs(self.archive_dir + "/" + meteor + '/failed')
         os.rename(self.base_dir + "/" + work_item['f'],  self.archive_dir + "/" + meteor + "/failed/" + work_item['f'])
 
-        # set my_span attributes
-        my_span.set_attribute("filename", work_item['f'])
-        my_span.set_attribute("meteor", meteor)
-
-    def getSpanTitle(self, work_item):
-        return 'load ' + work_item['f']
-
     @transaction.atomic
     def processWorkItem(self, work_item: json, my_span, op_tracer):
         filename = work_item['f']
+        meteor = work_item['meteor']
         jsons_to_load = work_item['json']
         idx_global = 0
         my_span.set_attribute('file', filename)
+        my_span.set_attribute("meteor", meteor)
         meteor = str(jsons_to_load[0].get("meteor"))
         pid = PosteMeteor.getPosteIdByMeteor(jsons_to_load[0]["meteor"])
         b_load = PosteMeteor(pid).data.load_json
@@ -168,7 +159,7 @@ class JsonLoader:
                                 if a_work_item.__contains__("force_replace") is not True:
                                     t.logInfo(
                                             'already loaded', my_data_span,
-                                            {'meteor': meteor, 'filename': filename, 'idx': idx_data, 'stop_dat': str(j_stop_dat)})
+                                            {'meteor': meteor, 'file': filename, 'idx': idx_data, 'stop_dat': str(j_stop_dat)})
                                     continue
                                 else:
                                     # delete our obs, and linked extremes and obs
