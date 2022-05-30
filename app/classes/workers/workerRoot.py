@@ -252,7 +252,7 @@ class WorkerRoot:
                             a_worker['class'].processWorkItem(work_item, my_span, self.tracer)
                             a_worker['class'].succeedWorkItem(work_item, my_span)
                             my_span._status._status_code = Telemetry.get_ok_status()
-                            t.logInfo("work item processed", my_span, {"svc": self.display, "work_item": work_item})
+                            t.logInfo("work item processed", my_span, {"svc": self.display, "info": work_item['info']})
 
                         except Exception as exc:
                             my_span._status._status_code = Telemetry.get_error_status()
