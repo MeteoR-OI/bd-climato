@@ -52,6 +52,7 @@ class MigrateDB:
                 'pid': poste_id,
                 'meteor': meteor,
                 'info': meteor,
+                'meteor': meteor,
                 'spanID': 'Migrate ' + meteor
             })
 
@@ -119,7 +120,8 @@ class MigrateDB:
 
     def insert_obs(self, pid, meteor, myconn, pgconn, my_span):
         start_date = self.getObsStartingDate(pgconn, pid)
-
+        if start_date > 0:
+            my_span.add_event('starting archive table from timestamp: ' + str(start_date) + '(at 4 * 3600 pres...)')
         mesures = self.mesures
         query_my = "select from_unixTime(dateTime + 4 * 3600), usUnits, `interval`"
         query_args = []
@@ -248,6 +250,8 @@ class MigrateDB:
         nb_new_row = 0
 
         try:
+            if start_date > 0:
+                my_span.add_event('starting extremes tables from timestamp: ' + str(start_date) + '(at 4 * 3600 pres...)')
             json_keys = self.get_json_keys(meteor, start_date)
             while True:
                 day_process, is_done = self.get_next_process_day(json_keys)

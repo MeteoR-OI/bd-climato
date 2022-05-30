@@ -75,7 +75,20 @@ class JsonLoader:
         my_json = JsonPlus().loads(texte)
         if 'dict' in str(type(my_json)):
             my_json = [my_json]
-        return {'f': a_filename, 'json': my_json, 'spanID': 'load of ' + a_filename, 'info': a_filename}
+
+        meteor = 'inconnu'
+        try:
+            meteor = str(a_filename).split(".")[1]
+        except Exception:
+            pass
+
+        return {
+            'f': a_filename,
+            'json': my_json,
+            'spanID': 'load of ' + a_filename,
+            'meteor': meteor,
+            'info': a_filename
+        }
 
     def succeedWorkItem(self, work_item, my_span):
         # move the file to archive
@@ -106,7 +119,7 @@ class JsonLoader:
 
         j_info = {"filename": work_item['f'], "dest": self.archive_dir + "/" + meteor + "/failed/" + work_item['f']}
         t.logError("file moved to fail directory", None, j_info)
-        IncidentMeteor.new('_getJsonFileNameAndData', 'error', 'file moved to failed directory', j_info)
+        IncidentMeteor.new('_getJsonFileNameAndData', 'error', 'file ' + work_item['f'] + ' moved to failed directory', j_info)
 
         if not os.path.exists(self.archive_dir + "/" + meteor + '/failed'):
             os.makedirs(self.archive_dir + "/" + meteor + '/failed')
@@ -171,7 +184,8 @@ class JsonLoader:
 
                             keys_found = self.load_obs_data_j(pid, all_obs, a_work_item['valeurs'], j_stop_dat, j_duration, j_exclus)
                             if keys_found is not None:
-                                t.logInfo("keys loaded from json: " + str(keys_found), my_data_span)
+                                # t.logInfo("keys loaded from json: " + str(keys_found), my_data_span)
+                                pass
                             else:
                                 t.logError("no keys loaded !!!", my_data_span)
 
