@@ -115,16 +115,15 @@ class JsonLoader:
     @transaction.atomic
     def processWorkItem(self, work_item: json, my_span, op_tracer):
         filename = work_item['f']
-        meteor = work_item['meteor']
         jsons_to_load = work_item['json']
         idx_global = 0
-        my_span.set_attribute('file', filename)
-        my_span.set_attribute("meteor", meteor)
         meteor = str(jsons_to_load[0].get("meteor"))
         pid = PosteMeteor.getPosteIdByMeteor(jsons_to_load[0]["meteor"])
         b_load = PosteMeteor(pid).data.load_json
         if b_load is False:
+            my_span.add_event('load json inactif for ' + meteor)
             return
+        my_span.set_attribute('file', filename)
         my_span.set_attribute('meteor', meteor)
         check_result = checkJson(jsons_to_load, pid, filename)
         if check_result is not None:
