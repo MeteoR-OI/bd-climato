@@ -128,7 +128,7 @@ class JsonLoader:
         filename = work_item['f']
         jsons_to_load = work_item['json']
         idx_global = 0
-        my_span.set_attribute('filename', filename)
+        my_span.set_attribute('file', filename)
         meteor = str(jsons_to_load[0].get("meteor"))
         pid = PosteMeteor.getPosteIdByMeteor(jsons_to_load[0]["meteor"])
         b_load = PosteMeteor(pid).data.load_json
