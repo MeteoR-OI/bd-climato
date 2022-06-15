@@ -1,6 +1,7 @@
 # check __reverse_delta_values (j_xtreme)
 #
 from app.models import Extreme, Poste, Mesure
+from datetime import timedelta
 
 
 class ExtremeMeteor():
@@ -28,7 +29,7 @@ class ExtremeMeteor():
         self.data.delete()
 
     @staticmethod
-    def get_extrenes(pid, mid, j_dat):
+    def get_extreme(pid, mid, j_dat):
         if Extreme.objects.filter(poste_id=pid).filter(mesure_id=mid).filter(date=j_dat).exists():
             tmp_x = Extreme.objects.filter(poste_id=pid).filter(mesure_id=mid).filter(date=j_dat).first()
             return ExtremeMeteor(tmp_x.id)
@@ -42,6 +43,11 @@ class ExtremeMeteor():
             if new_x.data.mesure is None:
                 raise Exception('invalid mesure_id: ' + str(mid))
         return new_x
+
+    @staticmethod
+    def get_recent(pid, lower_dt, min_dk=0):
+        lower_dt = lower_dt + timedelta(hours=min_dk)
+        return Extreme.objects.filter(poste_id=pid).filter(date__gt=lower_dt).all()
 
     def __str__(self):
         """print myself"""

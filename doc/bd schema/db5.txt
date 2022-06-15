@@ -438,3 +438,8 @@ WHERE
   and poste_id = 20
   group by 1
 ORDER BY 1;
+
+
+TRUNCATE obs RESTART IDENTITY; TRUNCATE extremes RESTART IDENTITY; TRUNCATE histo_obs RESTART IDENTITY; TRUNCATE histo_extreme RESTART IDENTITY; TRUNCATE incidents RESTART IDENTITY; update postes set last_extremes_date='2000-01-01T00:00:00',last_obs_date='2000-01-01T00:00:00', last_extremes_id=0,  last_obs_id=0;
+
+select (select count(*) from obs) as nb_obs, (select count(*) from histo_obs) as nb_histo_obs, (select count(*) from extremes) as nb_extreme, (select count(*) from histo_extreme) as nb_histo_x;

@@ -34,53 +34,53 @@ insert into postes(meteor, delta_timezone, meteofr, title, owner, email, phone, 
 ;
 
 insert into mesures
-(id,    name,            json_input,         archive_col,     archive_table,  val_deca, min, min_deca, max,  max_deca, is_avg, is_wind, omm_link, allow_zero,     json_input_bis, is_hourly) values
-( 1, 'barometer',       'barometer',        'barometer',          null,           0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
-( 4, 'barometer omm',   'barometer_omm',    'barometer',          null,           0,   true,    0,     true,    0,      true,   false,       1,      true,            null,        False),
-( 6, 'dewpoint',        'dewpoint',         'dewpoint',           null,           0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
-( 8, 'etp',             'etp',              'ET',                 null,           0,   true,    0,     true,    0,      false,  false,    null,      true,            null,         True),
-(10, 'extra_temp1',     'extra_temp1',      'extraTemp1',         null,           0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
-(12, 'extra_temp2',     'extra_temp2',      'extraTemp2',         null,           0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
-(14, 'extra_temp3',     'extra_temp3',      'extraTemp3',         null,           0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
-(16, 'extrahumid1',     'extra_humid1',     'extraHumid1',        null,           0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
-(18, 'extrahumid2',     'extra_humid2',     'extraHumid2',        null,           0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
-(20, 'gust',            'wind_gust',        'windGust',          'wind',          0,   false,   0,     true,    0,      true,   true,     null,      true,      'wind_max',        False),
-(22, 'gust dir',        'wind_gust_dir',    'windGustDir',    'windDir',          0,   false,   0,     false,   0,      true,   false,    null,      true,  'wind_max_dir',        False),
-(24, 'hail rate',       'hail_rate',        'hailRate',           null,           0,   false,   0,     true,    0,      true,   false,    null,      true,            null,        False),
-(26, 'hail',            'hail',             'hail',               null,           0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
-(28, 'heatindex',       'heatindex',        'heatindex',          null,           0,   false,   0,     true,    0,      true,   false,    null,      true,            null,        False),
-(30, 'heating temp',    'heating_temp',     'heatingTemp',        null,           0,   false,   0,     true,    0,      true,   false,    null,      true,            null,        False),
-(32, 'humidity inside', 'in_humidity',      'inHumidity',         null,           0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
-(34, 'humidity',        'out_humidity',     'outHumidity',        null,           0,   true,    0,     true,    0,      true,   false,    null,      true,      'humidity',        False),
-(36, 'humidity omm',    'out_humidity_omm', 'outHumidity',        null,           0,   true,    0,     true,    0,      true,   false,      34,      true,  'humidity_omm',        False),
-(38, 'leaftemp1',       'leaf_temp1',       'leafTemp1',          null,           0,   false,   0,     false,   0,      true,   false,    null,      true,      'leaftemp',        False),
-(40, 'leaftemp2',       'leaf_temp2',       'leafTemp2',          null,           0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
-(42, 'leafwet1',        'leaf_wet1',        'leafWet1',           null,           0,   false,   0,     false,   0,      true,   false,    null,      true,       'leafwet',        False),
-(44, 'leafwet2',        'leaf_wet2',        'leafWet2',           null,           0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
-(46, 'pressure',        'pressure',         'pressure',           null,           0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
-(48, 'radiation',       'radiation',        'radiation',          null,           0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
-(50, 'rain rate',       'rain_rate',        'rainRate',           null,           0,   false,   0,     true,    0,      true,   false,    null,      true,            null,        False),
-(52, 'rain',            'rain',             'rain',               null,           0,   true,    0,     true,    0,      false,  false,    null,      true,            null,        False),
-(54, 'rain omm',        'rain_omm',         'rain',               null,           7,   false,   0,     true,    7,      false,  false,      52,      true,            null,        False),
-(56, 'rx',              'rx',               'rxCheckPercent',     null,           0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
-(58, 'soilmoist1',      'soil_moist1',      'soilMoist1',         null,           0,   false,   0,     false,   0,      true,   false,    null,      true,     'soilmoist',        False),
-(60, 'soilmoist2',      'soil_moist2',      'soilMoist2',         null,           0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
-(62, 'soilmoist3',      'soil_moist3',      'soilMoist3',         null,           0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
-(64, 'soilmoist4',      'soil_moist4',      'soilMoist4',         null,           0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
-(66, 'soiltemp1',       'soil_temp1',       'soilTemp1',          null,           0,   false,   0,     false,   0,      true,   false,    null,      true,      'soiltemp',        False),
-(68, 'soiltemp2',       'soil_temp2',       'soilTemp2',          null,           0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
-(70, 'soiltemp3',       'soil_temp3',       'soilTemp3',          null,           0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
-(72, 'soiltemp4',       'soil_temp4',       'soilTemp4',          null,           0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
-(74, 'temp inside',     'in_temp',          'inTemp',             null,           0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
-(76, 'temperature',     'out_temp',         'outTemp',            null,           0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
-(78, 'temp omm',        'out_temp_omm',     'outTemp',            null,           0,   true,    5,     true,   -7,      true,   false,      76,      true,            null,        False),
-(80, 'uv_indice',       'uv',               'UV',                 null,           0,   false,   0,     true,    0,      true,   false,    null,      true,            null,        False),
-(82, 'voltage',         'voltage',          'consBatteryVoltage', null,           0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
-(84, 'wind 10',         'wind10',           'windSpeed',        'wind',           0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
-(86, 'wind 10 omm',     'wind10_omm',       'windSpeed',        'wind',           0,   true,    0,     true,    0,      true,   false,      84,      true,            null,        False),
-(88, 'wind',            'wind',             'windSpeed',        'wind',           0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
-(90, 'wind dir',        'wind_dir',         'windDir',            null,           0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
-(92, 'windchill',       'windchill',        'windchill',          null,           0,   true,    0,     false,   0,      true,   false,    null,      true,            null,        False)
+(id,    name,            json_input,         archive_col,   archive_table, field_dir, val_deca, min, min_deca, max,  max_deca, is_avg, is_wind, omm_link, allow_zero,     json_input_bis, is_hourly) values
+( 1, 'barometer',       'barometer',        'barometer',          null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
+( 4, 'barometer omm',   'barometer_omm',    'barometer',          null,        null,     0,   true,    0,     true,    0,      true,   false,       1,      true,            null,        False),
+( 6, 'dewpoint',        'dewpoint',         'dewpoint',           null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
+( 8, 'etp',             'etp',              'ET',                 null,        null,     0,   true,    0,     true,    0,      false,  false,    null,      true,            null,         True),
+(10, 'extra_temp1',     'extra_temp1',      'extraTemp1',         null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
+(12, 'extra_temp2',     'extra_temp2',      'extraTemp2',         null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
+(14, 'extra_temp3',     'extra_temp3',      'extraTemp3',         null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
+(16, 'extrahumid1',     'extra_humid1',     'extraHumid1',        null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
+(18, 'extrahumid2',     'extra_humid2',     'extraHumid2',        null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
+(20, 'gust',            'wind_gust',        'windGust',          'wind',         22,     0,   false,   0,     true,    0,      true,   true,     null,      true,      'wind_max',        False),
+(22, 'gust dir',        'wind_gust_dir',    'windGustDir',    'windDir',       null,     0,   false,   0,     false,   0,      true,   false,    null,      true,  'wind_max_dir',        False),
+(24, 'hail rate',       'hail_rate',        'hailRate',           null,        null,     0,   false,   0,     true,    0,      true,   false,    null,      true,            null,        False),
+(26, 'hail',            'hail',             'hail',               null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
+(28, 'heatindex',       'heatindex',        'heatindex',          null,        null,     0,   false,   0,     true,    0,      true,   false,    null,      true,            null,        False),
+(30, 'heating temp',    'heating_temp',     'heatingTemp',        null,        null,     0,   false,   0,     true,    0,      true,   false,    null,      true,            null,        False),
+(32, 'humidity inside', 'in_humidity',      'inHumidity',         null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
+(34, 'humidity',        'out_humidity',     'outHumidity',        null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,      'humidity',        False),
+(36, 'humidity omm',    'out_humidity_omm', 'outHumidity',        null,        null,     0,   true,    0,     true,    0,      true,   false,      34,      true,  'humidity_omm',        False),
+(38, 'leaftemp1',       'leaf_temp1',       'leafTemp1',          null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,      'leaftemp',        False),
+(40, 'leaftemp2',       'leaf_temp2',       'leafTemp2',          null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
+(42, 'leafwet1',        'leaf_wet1',        'leafWet1',           null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,       'leafwet',        False),
+(44, 'leafwet2',        'leaf_wet2',        'leafWet2',           null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
+(46, 'pressure',        'pressure',         'pressure',           null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
+(48, 'radiation',       'radiation',        'radiation',          null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
+(50, 'rain rate',       'rain_rate',        'rainRate',           null,        null,     0,   false,   0,     true,    0,      true,   false,    null,      true,            null,        False),
+(52, 'rain',            'rain',             'rain',               null,        null,     0,   true,    0,     true,    0,      false,  false,    null,      true,            null,        False),
+(54, 'rain omm',        'rain_omm',         'rain',               null,        null,     7,   false,   0,     true,    7,      false,  false,      52,      true,            null,        False),
+(56, 'rx',              'rx',               'rxCheckPercent',     null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
+(58, 'soilmoist1',      'soil_moist1',      'soilMoist1',         null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,     'soilmoist',        False),
+(60, 'soilmoist2',      'soil_moist2',      'soilMoist2',         null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
+(62, 'soilmoist3',      'soil_moist3',      'soilMoist3',         null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
+(64, 'soilmoist4',      'soil_moist4',      'soilMoist4',         null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
+(66, 'soiltemp1',       'soil_temp1',       'soilTemp1',          null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,      'soiltemp',        False),
+(68, 'soiltemp2',       'soil_temp2',       'soilTemp2',          null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
+(70, 'soiltemp3',       'soil_temp3',       'soilTemp3',          null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
+(72, 'soiltemp4',       'soil_temp4',       'soilTemp4',          null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
+(74, 'temp inside',     'in_temp',          'inTemp',             null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
+(76, 'temperature',     'out_temp',         'outTemp',            null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
+(78, 'temp omm',        'out_temp_omm',     'outTemp',            null,        null,     0,   true,    5,     true,   -7,      true,   false,      76,      true,            null,        False),
+(80, 'uv_indice',       'uv',               'UV',                 null,        null,     0,   false,   0,     true,    0,      true,   false,    null,      true,            null,        False),
+(82, 'voltage',         'voltage',          'consBatteryVoltage', null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
+(84, 'wind 10',         'wind10',           'windSpeed',        'wind',          90,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
+(86, 'wind 10 omm',     'wind10_omm',       'windSpeed',        'wind',        null,     0,   true,    0,     true,    0,      true,   false,      84,      true,            null,        False),
+(88, 'wind',            'wind',             'windSpeed',        'wind',          90,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
+(90, 'wind dir',        'wind_dir',         'windDir',            null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
+(92, 'windchill',       'windchill',        'windchill',          null,        null,     0,   true,    0,     false,   0,      true,   false,    null,      true,            null,        False)
 ;
 
 select 'nb postes: ' || count(*) from postes;
@@ -181,27 +181,27 @@ CREATE OR REPLACE TRIGGER create_extremes_trigger
   AFTER INSERT OR UPDATE ON extremes
   FOR EACH ROW EXECUTE PROCEDURE create_extremes_trigger_fn();
 
-CREATE OR REPLACE FUNCTION delete_obs_trigger_fn()
-  RETURNS TRIGGER LANGUAGE PLPGSQL AS
-$BODY$
-DECLARE
-BEGIN
-    delete from extremes where id_obs = OLD.id;
+-- CREATE OR REPLACE FUNCTION delete_obs_trigger_fn()
+--   RETURNS TRIGGER LANGUAGE PLPGSQL AS
+-- $BODY$
+-- DECLARE
+-- BEGIN
+--     delete from extremes where id_obs = OLD.id;
 
-    if OLD.id_obs is null then
-        delete from obs where id_obs = OLD.id;
-	end if;
-  return OLD;
-END
-$BODY$;
+--     if OLD.id_obs is null then
+--         delete from obs where id_obs = OLD.id;
+-- 	end if;
+--   return OLD;
+-- END
+-- $BODY$;
 
 
-/*
-*  delete cascase linked obs, and linked extremes
-*/ 
-CREATE TRIGGER delete_obs_trigger
-  AFTER DELETE ON obs
-  FOR EACH ROW EXECUTE PROCEDURE delete_obs_trigger_fn();
+-- /*
+-- *  delete cascase linked obs, and linked extremes
+-- */ 
+-- CREATE TRIGGER delete_obs_trigger
+--   AFTER DELETE ON obs
+--   FOR EACH ROW EXECUTE PROCEDURE delete_obs_trigger_fn();
 
 
 CREATE OR REPLACE FUNCTION get_last_obs(pid integer)

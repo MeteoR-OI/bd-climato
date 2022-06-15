@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Index, Q
+from django.db.models import Index, UniqueConstraint
 
 
 class DateTimeFieldNoTZ(models.Field):
@@ -53,6 +53,7 @@ class Mesure(models.Model):
     json_input_bis = models.CharField(null=True, max_length=20, verbose_name="Autre clé utilisée dans le json")
     archive_col = models.CharField(null=False, max_length=20, verbose_name="nom colonne table weewx.archive")
     archive_table = models.CharField(null=True, default=None, max_length=20, verbose_name="nom table weewx.archive")
+    field_dir = models.SmallIntegerField(null=True, verbose_name="id de la mesure wind dans table weewx.archive")
     val_deca = models.SmallIntegerField(null=True, default=0, verbose_name="Décalage mesure")
     max = models.BooleanField(null=True, default=True, verbose_name="Calcul des max")
     max_deca = models.SmallIntegerField(null=True, default=0, verbose_name="Décalage du max")
@@ -88,14 +89,12 @@ class Exclusion(models.Model):
 
 # class Observation(ExportModelOperationsMixin('obs'), models.Model):
 class Observation(models.Model):
-
     # ??  hail | hailRate | heatingTemp ??
 
     id = models.BigAutoField(primary_key=True, verbose_name="id de l'observation")
-    id_obs = models.BigIntegerField(null=True, verbose_name="pour les val_deca: id de l'observation principale")
     time = DateTimeFieldNoTZ(null=False, verbose_name="date fin période observation")
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
-    duration = models.SmallIntegerField(null=True, default=0, verbose_name="durée période")
+    duration = models.SmallIntegerField(null=True, default=0, verbose_name="durée période, seulement pour les obs principales")
     # nullable data
     barometer = models.FloatField(null=True, verbose_name="pression niveau mer")
     barometer_omm = models.FloatField(null=True, verbose_name="pression niveau mer OMM")
@@ -156,13 +155,15 @@ class Observation(models.Model):
 
     class Meta:
         db_table = "obs"
+        indexes = [
+            Index(name='obs_pid', fields=['poste_id', '-time']),
+        ]
 
 
 class Extreme(models.Model):
     id = models.BigAutoField(primary_key=True)
     date = models.DateField(null=False, verbose_name="date de l'extrême")
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
-    id_obs = models.BigIntegerField(null=False, verbose_name="id de l'obs associée")
     mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.CASCADE)
     min = models.FloatField(null=True, verbose_name="valeur minimum")
     min_time = DateTimeFieldNoTZ(null=True, verbose_name="date du minimum")
@@ -176,7 +177,7 @@ class Extreme(models.Model):
     class Meta:
         db_table = "extremes"
         indexes = [
-            Index(name='extremes_id_obs', fields=['id_obs', ], condition=Q(id_obs__gt=0)),
+            Index(name='extremes_pid', fields=['poste_id', '-date']),
         ]
 
 
@@ -197,6 +198,44 @@ class Incident(models.Model):
 
     class Meta:
         db_table = "incidents"
+
+
+class HistoObs(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    src_obs_id = models.BigIntegerField(null=False, verbose_name="obs_id source")
+    target_obs_id = models.BigIntegerField(null=False, verbose_name="obs_id modifiée")
+
+    def __str__(self):
+        return "HistoObs src_obs_id: " + str(self.src_obs_id) + ", target: " + str(self.target_obs_id)
+
+    class Meta:
+        db_table = "histo_obs"
+        constraints = [
+            UniqueConstraint(fields=['src_obs_id', 'target_obs_id'], name='unique_histo_obs_mapping'),
+        ]
+        indexes = [
+            Index(name='histo_obs_target', fields=['src_obs_id', 'target_obs_id']),
+            Index(name='histo_obs_src', fields=['target_obs_id', 'src_obs_id'])
+        ]
+
+
+class HistoExtremes(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    src_obs_id = models.BigIntegerField(null=False, verbose_name="obs_id source")
+    target_x_id = models.BigIntegerField(null=False, verbose_name="extreme_id modifiée")
+
+    def __str__(self):
+        return "HistoObs src_obs_id: " + str(self.src_obs_id) + ", extremes updated: " + str(self.target_x_id)
+
+    class Meta:
+        db_table = "histo_extreme"
+        constraints = [
+            UniqueConstraint(fields=['src_obs_id', 'target_x_id'], name='unique_histo_x_mapping'),
+        ]
+        indexes = [
+            Index(name='histo_x_target', fields=['src_obs_id', 'target_x_id']),
+            Index(name='histo_x_src', fields=['target_x_id', 'src_obs_id'])
+        ]
 
 
 class Annotation(models.Model):
