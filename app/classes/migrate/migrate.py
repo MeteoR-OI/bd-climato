@@ -759,7 +759,7 @@ class MigrateDB:
             host="localhost",
             user="postgres",
             password="Funiculi",
-            database="climato2"
+            database="climato"
         )
 
     def getMSQLConnection(self, meteor):
