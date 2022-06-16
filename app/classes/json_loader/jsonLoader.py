@@ -369,6 +369,6 @@ class JsonLoader:
             host="localhost",
             user="postgres",
             password="Funiculi",
-            database="climato2"
+            database="climato"
         )
 
