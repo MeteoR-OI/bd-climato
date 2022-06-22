@@ -28,7 +28,7 @@ matplotlib==3.4.3
 mccabe==0.6.1
 mypy==0.910
 mypy-extensions==0.4.3
-numpy==1.21.3
+numpy==1.22.0
 opentelemetry-api==1.6.2
 opentelemetry-exporter-jaeger==1.6.2
 opentelemetry-exporter-jaeger-proto-grpc==1.6.2
