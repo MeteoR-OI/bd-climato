@@ -371,4 +371,3 @@ class JsonLoader:
             password="Funiculi",
             database="climato"
         )
-

@@ -674,8 +674,8 @@ class MigrateDB:
             row = pg_cur.fetchone()
             if row is not None:
                 poste_id = row[0]
-                last_obs_ts = row[1].timestamp()
-                last_x_ts = row[2].timestamp()
+                last_obs_ts = 0 if row[1] is None else row[1].timestamp()
+                last_x_ts =  0 if row[2] is None else row[2].timestamp()
             my_span.set_attribute('meteor', meteor)
             my_span.set_attribute('last_obs_ts', last_obs_ts)
             my_span.set_attribute('last_extremes_ts', last_x_ts)
