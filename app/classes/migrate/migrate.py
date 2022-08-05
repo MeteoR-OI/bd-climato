@@ -268,7 +268,7 @@ class MigrateDB:
             row_no += 1
             row = my_cur.fetchone()
 
-        my_span.add_event('nombre de mesure mise en cache: ' + str(nb_record_cached))
+        my_span.add_event('nombre de mesures mise en cache: ' + str(nb_record_cached))
 
     # ------------------------------------
     # generate max/min from WeeWX records
@@ -330,7 +330,7 @@ class MigrateDB:
                 finally:
                     my_cur.close()
                     if nb_record_added > 0:
-                        my_span.add_event('nombre de record mis en cache pour ' + a_mesure['field'] + ': ' + str((nb_record_added - 1) / 2))
+                        my_span.add_event("nombre de 'records' mis en cache pour " + a_mesure['field'] + ': ' + str((nb_record_added - 1) / 2))
 
         except Exception as e:
             logException(e)
