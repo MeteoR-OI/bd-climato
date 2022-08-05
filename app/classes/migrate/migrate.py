@@ -268,7 +268,7 @@ class MigrateDB:
             row_no += 1
             row = my_cur.fetchone()
 
-        my_span.add_event('nombre de mesure mise en cache: ' + str(nb_record_cached))
+        my_span.add_event('nombre de mesures mise en cache: ' + str(nb_record_cached))
 
     # ------------------------------------
     # generate max/min from WeeWX records
@@ -330,7 +330,7 @@ class MigrateDB:
                 finally:
                     my_cur.close()
                     if nb_record_added > 0:
-                        my_span.add_event('nombre de record mis en cache pour ' + a_mesure['field'] + ': ' + str((nb_record_added - 1) / 2))
+                        my_span.add_event("nombre de 'records' mis en cache pour " + a_mesure['field'] + ': ' + str((nb_record_added - 1) / 2))
 
         except Exception as e:
             logException(e)
@@ -675,7 +675,7 @@ class MigrateDB:
             if row is not None:
                 poste_id = row[0]
                 last_obs_ts = 0 if row[1] is None else row[1].timestamp()
-                last_x_ts =  0 if row[2] is None else row[2].timestamp()
+                last_x_ts = 0 if row[2] is None else row[2].timestamp()
             my_span.set_attribute('meteor', meteor)
             my_span.set_attribute('last_obs_ts', last_obs_ts)
             my_span.set_attribute('last_extremes_ts', last_x_ts)
