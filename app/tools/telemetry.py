@@ -354,8 +354,6 @@ class TracerTriage:
             if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
                 self.current_span = SpanMok(span_name, trace_flag)
                 self.trace = trace_flag
-                if trace_flag is None:
-                    print("   ** trace_flag is None")
                 return self.current_span
             else:
                 my_span = self.real_tracer.start_as_current_span(span_name)
@@ -390,8 +388,6 @@ class TracerTriage:
             if hasattr(settings, "TELEMETRY") is False or settings.TELEMETRY is False:
                 self.current_span = SpanMok(span_name, trace_flag)
                 self.trace = trace_flag
-                if trace_flag is None:
-                    print("   ** trace_flag is None")
                 return self.current_span
             else:
                 self.current_span = self.real_tracer.start_span(span_name)
