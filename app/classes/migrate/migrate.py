@@ -110,9 +110,9 @@ class MigrateDB:
         histo_o = []
 
         if last_ts_in_obs > 0:
-            my_span.add_event('starting migration from archive from timestamp: ' + str(last_ts_in_obs) + '(at 4 * 3600 pres...)')
+            my_span.add_event('migrate', 'starting migration from archive from timestamp: ' + str(last_ts_in_obs) + '(at 4 * 3600 pres...)')
         else:
-            my_span.add_event('starting a full migration from archive')
+            my_span.add_event('migrate', 'starting a full migration from archive')
 
         query_my = self.get_weewx_select_sql(last_ts_in_obs)
         query_pg, query_args = self.prepare_sql_insert_structure()
@@ -211,10 +211,10 @@ class MigrateDB:
 
         if nb_new_obs > 0:
             t.logInfo('all archive(s) inserted, last id: ' + str(obs_new_id) + ", date: " + str(a_q['args'][1]), my_span, {"svc": "migrate", "meteor": meteor})
-            my_span.add_event(str(nb_new_obs) + ' rows inserted from archive with timestamp > ' + str(last_ts_in_obs))
+            my_span.add_event('extremes', str(nb_new_obs) + ' rows inserted from archive with timestamp > ' + str(last_ts_in_obs))
         else:
             t.logInfo('no new data in archive', my_span, {"svc": "migrate", "meteor": meteor})
-            my_span.add_event('no new data in archive from timestamp: ' + str(last_ts_in_obs))
+            my_span.add_event('extremes', 'no new data in archive from timestamp: ' + str(last_ts_in_obs))
 
     # ---------------------------------------------
     # generate max/min from mesure, and cache them
@@ -227,9 +227,9 @@ class MigrateDB:
         last_ts_in_extreme = work_item['last_x_ts']
 
         if last_ts_in_obs > 0:
-            my_span.add_event('generation des max/min a partir des mesures depuis: ' + str(last_ts_in_obs) + '(at 4 * 3600 pres...)')
+            my_span.add_event('maxmin', 'generation des max/min a partir des mesures depuis: ' + str(last_ts_in_obs) + '(at 4 * 3600 pres...)')
         else:
-            my_span.add_event('generation des max/min a partir de toutes les mesures')
+            my_span.add_event('maxmin', 'generation des max/min a partir de toutes les mesures')
 
         nb_record_cached = 0
         row_no = 0
@@ -268,7 +268,7 @@ class MigrateDB:
             row_no += 1
             row = my_cur.fetchone()
 
-        my_span.add_event('nombre de mesures mise en cache: ' + str(nb_record_cached))
+        my_span.add_event('maxmin_caching', 'nombre de mesures mise en cache: ' + str(nb_record_cached))
 
     # ------------------------------------
     # generate max/min from WeeWX records
@@ -277,11 +277,6 @@ class MigrateDB:
         last_ts_in_extremes = work_item['last_x_ts']
         myconn = self.getMSQLConnection(work_item['meteor'])
         try:
-            if last_ts_in_extremes > 0:
-                my_span.add_event('mise en cache des records WeeWX depuis: ' + str(last_ts_in_extremes))
-            else:
-                my_span.add_event('mise en cache de tous les records WeeWX')
-
             for a_mesure in self.mesures:
                 nb_record_added = 0
                 mid = a_mesure['id']
@@ -330,7 +325,7 @@ class MigrateDB:
                 finally:
                     my_cur.close()
                     if nb_record_added > 0:
-                        my_span.add_event("nombre de 'records' mis en cache pour " + a_mesure['field'] + ': ' + str((nb_record_added - 1) / 2))
+                        my_span.add_event('maxmin_record_caching', "nombre de 'records' mis en cache pour " + a_mesure['field'] + ': ' + str((nb_record_added - 1) / 2))
 
         except Exception as e:
             logException(e)
@@ -361,13 +356,13 @@ class MigrateDB:
                 x_to_update.append(an_item)
             mesure_cached['cache'] = []             # free memory
         sort_length = datetime.now() - start_dt
-        my_span.add_event('build global array, length:' + str(len(x_to_update)) + ', time: ' + str(sort_length.seconds * 1000 + sort_length.microseconds/1000) + ' milliseconds')
+        # my_span.add_event('build global array, length:' + str(len(x_to_update)) + ', time: ' + str(sort_length.seconds * 1000 + sort_length.microseconds/1000) + ' milliseconds')
 
         # do a global sort
         start_dt = datetime.now()
         x_to_update.sort(key=lambda x: (x[self.row_cache_datetime], x[self.row_cache_mid]))
         sort_length = datetime.now() - start_dt
-        my_span.add_event('sort, length:' + str(len(x_to_update)) + ', time: ' + str(sort_length.seconds * 1000 + sort_length.microseconds/1000) + ' milliseconds')
+        # my_span.add_event('sort, length:' + str(len(x_to_update)) + ', time: ' + str(sort_length.seconds * 1000 + sort_length.microseconds/1000) + ' milliseconds')
 
         # compact caches having the same date
         start_dt = datetime.now()
@@ -412,7 +407,7 @@ class MigrateDB:
             last_item[self.row_cache_datetime] = None
 
         sort_length = datetime.now() - start_dt
-        my_span.add_event('compacting length: ' + str(nb_active_row) + ', time: ' + str(sort_length.seconds * 1000 + sort_length.microseconds/1000) + ' milliseconds')
+        # my_span.add_event('compacting length: ' + str(nb_active_row) + ', time: ' + str(sort_length.seconds * 1000 + sort_length.microseconds/1000) + ' milliseconds')
 
         # now insert/update extremes from our compacted array
         start_dt = datetime.now()
@@ -465,14 +460,14 @@ class MigrateDB:
 
         sort_length = datetime.now() - start_dt
         sort_len = sort_length.seconds * 1000 + sort_length.microseconds/1000
-        my_span.add_event('extremes inserted: ' + str(nb_extremes_inserted) + ', updated: ' + str(nb_extremes_updated) + ', time: ' + str(sort_len) + ' milliseconds')
+        my_span.add_event('extremes_new', 'extremes inserted: ' + str(nb_extremes_inserted) + ', updated: ' + str(nb_extremes_updated) + ', time: ' + str(sort_len) + ' milliseconds')
 
         # now insert/update histo extremes
         start_dt = datetime.now()
 
         HistoExtreme.storeArray(pgconn, histo_x)
         histo_x_length = datetime.now() - start_dt
-        my_span.add_event('add histo_extremes nombre: ' + str(len(histo_x)) + ', time: ' + str(histo_x_length.seconds * 1000 + histo_x_length.microseconds/1000) + ' milliseconds')
+        my_span. ** trace_flag ('histo_x_new', 'add histo_extremes nombre: ' + str(len(histo_x)) + ', time: ' + str(histo_x_length.seconds * 1000 + histo_x_length.microseconds/1000) + ' milliseconds')
         histo_x = []
         pgconn.commit()
         pgconn.close()
