@@ -467,7 +467,7 @@ class MigrateDB:
 
         HistoExtreme.storeArray(pgconn, histo_x)
         histo_x_length = datetime.now() - start_dt
-        my_span. ** trace_flag ('histo_x_new', 'add histo_extremes nombre: ' + str(len(histo_x)) + ', time: ' + str(histo_x_length.seconds * 1000 + histo_x_length.microseconds/1000) + ' milliseconds')
+        my_span.add_event('histo_x_new', 'add histo_extremes nombre: ' + str(len(histo_x)) + ', time: ' + str(histo_x_length.seconds * 1000 + histo_x_length.microseconds/1000) + ' milliseconds')
         histo_x = []
         pgconn.commit()
         pgconn.close()
