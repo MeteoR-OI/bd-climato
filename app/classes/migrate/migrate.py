@@ -40,7 +40,7 @@ class MigrateDB:
             'meteor': meteor,
             'info': meteor,
             'meteor': meteor,
-            'spanID': 'Migrate ' + meteor
+            'spanID': 'Start ' + meteor + ' migration'
         })
 
         t.logInfo("New work item added in queue", None, {"svc": "migrate", "meteor": meteor, "work_item": self._meteors_to_process[len(self._meteors_to_process) - 1]})

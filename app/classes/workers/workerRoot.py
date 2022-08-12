@@ -215,6 +215,7 @@ class WorkerRoot:
                 t.logInfo('task ' + self.display + " running", None, {})
 
             while True:
+                in_use = False
                 try:
                     trace_flag = self.GetTraceFlag()
                     if trace_flag is True:
@@ -227,6 +228,9 @@ class WorkerRoot:
                     if self.killFlag is True:
                         self.closed.set()
                         return
+
+                    if in_use is True:
+                        continue
 
                     # work_item should have the key: spanID, and info, plus info for the service itself
                     work_item = a_worker['class'].getNextWorkItem()
@@ -251,7 +255,7 @@ class WorkerRoot:
                         my_span.set_attribute("meteor", work_item['meteor'])
                         # call the service handler
                         try:
-                            # my_span = self.tracer.start_as_current_span("load Json")
+                            in_use = True
                             a_worker['class'].processWorkItem(work_item, my_span, self.tracer)
                             a_worker['class'].succeedWorkItem(work_item, my_span)
                             my_span._status._status_code = Telemetry.get_ok_status()
@@ -266,10 +270,17 @@ class WorkerRoot:
                             t.logException(exc, my_span, {"svc": self.display, "work_item": work_item})
                             a_worker['class'].failWorkItem(work_item, exc, my_span)
 
+                        finally:
+                            in_use = False
+
                     self.eventRunMe.set()
 
                 except Exception as exc:
+                    in_use = False
                     t.logException(exc)
+                    print('#$##$#$#$##$#')
+                    print('Exception in ' + self.display + '=>' + str(exc))
+                    print('#$##$#$#$##$#')
 
         finally:
             WorkerRoot.wrks_lock.acquire()

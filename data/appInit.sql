@@ -30,7 +30,7 @@ insert into postes(meteor, delta_timezone, meteofr, title, owner, email, phone, 
 ('TAR600',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  -21.059972, 55.289673),
 ('TBL105',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.317372, 55.800674),
 ('TRG170',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.338827, 55.51276),
-('TRM490',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.26666, 55.495548),
+('TRM490',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.26666, 55.495548)
 ;
 
 insert into mesures
