@@ -1,6 +1,6 @@
-from app.classes.workers.svcLoadJson import SvcJsonLoader
-from app.classes.workers.svcMigrate import SvcMigrate
-import app.classes.workers
+# from app.classes.workers.svcLoadJson import SvcJsonLoader
+# from app.classes.workers.svcMigrate import SvcMigrate
+# import app.classes.workers
 from app.tools.refManager import RefManager
 from django.http import HttpResponse
 from app.tools.jsonPlus import JsonPlus
@@ -31,7 +31,7 @@ def viewControlSvc(request):
             svc_instance.RunMe(params)
             j_resp['result'] = ['service activated']
             return
-        
+
         if action == 'start':
             svc_instance.Start()
             j_resp['result'] = ['service started']
