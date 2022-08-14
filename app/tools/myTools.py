@@ -20,7 +20,7 @@ def logException(e, my_span=None, params: json = {}):
         params,
     )
     if my_span is not None:
-        my_span.record_exception(e)
+        my_span.add_event('exception', str(e))
     return LogMe.GetInstance().LogMe(message, "critical", my_span, params)
 
 

@@ -414,7 +414,7 @@ class MigrateDB:
 
         nb_extremes_inserted = nb_extremes_updated = 0
         histo_x = []
-        first_time = True
+
         for an_item in x_to_update:
             # skip compacted item
             if an_item[self.row_cache_datetime] is None:
@@ -441,9 +441,6 @@ class MigrateDB:
 
                 insert_sql += ") returning id"
 
-                if first_time is True or len(insert_sql) < 20:
-                    print('insert: ' + insert_sql)
-                    first_time = False
                 pg_cur.execute(insert_sql)
                 insert_sql = ""
                 nb_extremes_inserted += 1
