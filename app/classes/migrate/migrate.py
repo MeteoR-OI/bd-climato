@@ -73,9 +73,14 @@ class MigrateDB:
     def processWorkItem(self, work_item, my_span, op_tracer):
         try:
             meteor = work_item['meteor']
-            work_item['pid'], work_item['last_obs_ts'], work_item['last_x_ts'] = self.get_poste_info(meteor, my_span)
+            work_item['pid'], work_item['last_obs_ts'], work_item['last_x_ts'], load_json = self.get_poste_info(meteor, my_span)
             if work_item['pid'] is None:
                 raise Exception('station ' + meteor + ' not found')
+
+            # skipping postes with active updates
+            if load_json is True:
+                my_span.add_event('migrate', 'load_json is active, skipping')
+                return
 
             cached_data = {}    # [{m_<id>: mesure_id, {'mid': mid, 'cache': [], 'last': 0, 'last_in_db': 0}}]
             mapping_rowno_obsid = []
@@ -137,6 +142,7 @@ class MigrateDB:
             idx += 1
 
         nb_obs_inserted = 0
+        nb_histo_inserted = 0
         nb_new_obs = 0
         last_obs_id = -1
 
@@ -199,6 +205,7 @@ class MigrateDB:
                 nb_obs_inserted = 0
                 HistoObsMeteor.storeArray(pgconn, histo_o)
                 pgconn.commit()
+                nb_histo_inserted += len(histo_o)
                 histo_o = []
 
             row2 = my_cur.fetchone()
@@ -207,15 +214,18 @@ class MigrateDB:
         pg_cur.close()
         HistoObsMeteor.storeArray(pgconn, histo_o)
         pgconn.commit()
+        nb_histo_inserted += len(histo_o)
         histo_o = []
         pgconn.close()
 
         if nb_new_obs > 0:
             t.logInfo('obs inserted, last id: ' + str(obs_new_id) + ", date: " + str(a_q['args'][1]), my_span, {"svc": "migrate", "meteor": meteor})
             my_span.add_event('obs', str(nb_new_obs) + ' rows inserted')
+            my_span.add_event('histo', str(nb_histo_inserted) + ' rows inserted')
         else:
             t.logInfo('no new obs inserted', my_span, {"svc": "migrate", "meteor": meteor})
             my_span.add_event('obs', 'no row inserted')
+            my_span.add_event('histo', 'no row inserted')
 
     # ---------------------------------------------
     # generate max/min from mesure, and cache them
@@ -468,7 +478,9 @@ class MigrateDB:
 
         HistoExtreme.storeArray(pgconn, histo_x)
         histo_x_length = datetime.now() - start_dt
-        my_span.add_event('histo_x_new', str(len(histo_x)) + ' rows histo_extremes inserted, time: ' + str(histo_x_length.seconds * 1000 + histo_x_length.microseconds/1000) + ' milliseconds')
+        my_span.add_event(
+            'histo_extreme',
+            str(len(histo_x)) + ' rows inserted, time: ' + str(histo_x_length.seconds * 1000 + histo_x_length.microseconds/1000) + ' milliseconds')
         histo_x = []
         pgconn.commit()
         pgconn.close()
@@ -666,12 +678,13 @@ class MigrateDB:
         try:
             pgconn = self.getPGConnexion()
             pg_cur = pgconn.cursor()
-            pg_cur.execute("select id, last_obs_date, last_extremes_date from postes where meteor = '" + meteor + "'")
+            pg_cur.execute("select id, last_obs_date, last_extremes_date, load_json from postes where meteor = '" + meteor + "'")
             row = pg_cur.fetchone()
             if row is not None:
                 poste_id = row[0]
                 last_obs_ts = 0 if row[1] is None else row[1].timestamp()
                 last_x_ts = 0 if row[2] is None else row[2].timestamp()
+                load_json = row[3]
             # my_span.set_attribute('meteor', meteor)
             my_span.set_attribute('last_obs_ts', last_obs_ts)
             my_span.set_attribute('last_extremes_ts', last_x_ts)
@@ -683,7 +696,7 @@ class MigrateDB:
         finally:
             pg_cur.close()
             pgconn.close()
-            return poste_id, last_obs_ts, last_x_ts
+            return poste_id, last_obs_ts, last_x_ts, load_json
 
     def get_mesures(self, pgconn):
         mesures = []
