@@ -121,7 +121,7 @@ class JsonLoader:
         t.logException(exc, my_span)
 
         j_info = {"filename": work_item['f'], "dest": self.archive_dir + "/" + meteor + "/failed/" + work_item['f']}
-        t.logError("file moved to fail directory", None, j_info)
+        t.logError('jsonloader', "file moved to fail directory", None, j_info)
         IncidentMeteor.new('_getJsonFileNameAndData', 'error', 'file ' + work_item['f'] + ' moved to failed directory', j_info)
 
         if not os.path.exists(self.archive_dir + "/" + meteor + '/failed'):
@@ -134,6 +134,8 @@ class JsonLoader:
         jsons_to_load = work_item['json']
         idx_global = 0
         meteor = str(jsons_to_load[0].get("meteor"))
+        if meteor == 'None':
+            raise Exception('invalid file ' + filename)
         pid = PosteMeteor.getPosteIdByMeteor(jsons_to_load[0]["meteor"])
         b_load = PosteMeteor(pid).data.load_json
         if b_load is False:
@@ -193,7 +195,7 @@ class JsonLoader:
                                 # t.logInfo("keys loaded from json: " + str(keys_found), my_data_span)
                                 pass
                             else:
-                                t.logError("no keys loaded !!!", my_data_span)
+                                t.logError("jsonloder", "no keys loaded !!!", my_data_span)
 
                             # save obs, store dependencies in histoObs
                             id_obs_main = 0

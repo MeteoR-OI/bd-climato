@@ -73,14 +73,19 @@ class MigrateDB:
     def processWorkItem(self, work_item, my_span, op_tracer):
         try:
             meteor = work_item['meteor']
-            work_item['pid'], work_item['last_obs_ts'], work_item['last_x_ts'] = self.get_poste_info(meteor, my_span)
+            work_item['pid'], work_item['last_obs_ts'], work_item['last_x_ts'], load_json = self.get_poste_info(meteor, my_span)
             if work_item['pid'] is None:
                 raise Exception('station ' + meteor + ' not found')
+
+            # skipping postes with active updates
+            if load_json is True:
+                my_span.add_event('migrate', 'load_json is active, skipping')
+                return
 
             cached_data = {}    # [{m_<id>: mesure_id, {'mid': mid, 'cache': [], 'last': 0, 'last_in_db': 0}}]
             mapping_rowno_obsid = []
 
-            with op_tracer.start_as_current_span('ecritures des mesures') as my_span:
+            with op_tracer.start_as_current_span('ecritures des obs') as my_span:
                 self.insert_obs_extremes(work_item, mapping_rowno_obsid, my_span)
 
             with op_tracer.start_as_current_span('generation des records a partir des mesures ') as my_span:
@@ -110,9 +115,10 @@ class MigrateDB:
         histo_o = []
 
         if last_ts_in_obs > 0:
-            my_span.add_event('migrate', 'starting migration from archive from timestamp: ' + str(last_ts_in_obs) + '(at 4 * 3600 pres...)')
+            str_date = datetime.utcfromtimestamp(last_ts_in_obs).strftime('%Y-%m-%d %H:%M:%S')
+            my_span.add_event('migrate', 'starting migration from archive with timestamp: ' + str(last_ts_in_obs) + ' (' + str(str_date) + ')')
         else:
-            my_span.add_event('migrate', 'starting a full migration from archive')
+            my_span.add_event('migrate', 'starting a full migration from all archives')
 
         query_my = self.get_weewx_select_sql(last_ts_in_obs)
         query_pg, query_args = self.prepare_sql_insert_structure()
@@ -136,6 +142,7 @@ class MigrateDB:
             idx += 1
 
         nb_obs_inserted = 0
+        nb_histo_inserted = 0
         nb_new_obs = 0
         last_obs_id = -1
 
@@ -198,6 +205,7 @@ class MigrateDB:
                 nb_obs_inserted = 0
                 HistoObsMeteor.storeArray(pgconn, histo_o)
                 pgconn.commit()
+                nb_histo_inserted += len(histo_o)
                 histo_o = []
 
             row2 = my_cur.fetchone()
@@ -206,15 +214,18 @@ class MigrateDB:
         pg_cur.close()
         HistoObsMeteor.storeArray(pgconn, histo_o)
         pgconn.commit()
+        nb_histo_inserted += len(histo_o)
         histo_o = []
         pgconn.close()
 
         if nb_new_obs > 0:
-            t.logInfo('all archive(s) inserted, last id: ' + str(obs_new_id) + ", date: " + str(a_q['args'][1]), my_span, {"svc": "migrate", "meteor": meteor})
-            my_span.add_event('extremes', str(nb_new_obs) + ' rows inserted from archive with timestamp > ' + str(last_ts_in_obs))
+            t.logInfo('obs inserted, last id: ' + str(obs_new_id) + ", date: " + str(a_q['args'][1]), my_span, {"svc": "migrate", "meteor": meteor})
+            my_span.add_event('obs', str(nb_new_obs) + ' rows inserted')
+            my_span.add_event('histo', str(nb_histo_inserted) + ' rows inserted')
         else:
-            t.logInfo('no new data in archive', my_span, {"svc": "migrate", "meteor": meteor})
-            my_span.add_event('extremes', 'no new data in archive from timestamp: ' + str(last_ts_in_obs))
+            t.logInfo('no new obs inserted', my_span, {"svc": "migrate", "meteor": meteor})
+            my_span.add_event('obs', 'no row inserted')
+            my_span.add_event('histo', 'no row inserted')
 
     # ---------------------------------------------
     # generate max/min from mesure, and cache them
@@ -227,9 +238,10 @@ class MigrateDB:
         last_ts_in_extreme = work_item['last_x_ts']
 
         if last_ts_in_obs > 0:
-            my_span.add_event('maxmin', 'generation des max/min a partir des mesures depuis: ' + str(last_ts_in_obs) + '(at 4 * 3600 pres...)')
+            str_date = datetime.utcfromtimestamp(last_ts_in_obs).strftime('%Y-%m-%d %H:%M:%S')
+            my_span.add_event('maxmin_begin', 'mise en cache des max/min a partir des archives depuis: ' + str(last_ts_in_obs) + ' (' + str(str_date) + ')')
         else:
-            my_span.add_event('maxmin', 'generation des max/min a partir de toutes les mesures')
+            my_span.add_event('maxmin_begin', 'mise en cache des max/min a partir de toutes les archives')
 
         nb_record_cached = 0
         row_no = 0
@@ -268,7 +280,7 @@ class MigrateDB:
             row_no += 1
             row = my_cur.fetchone()
 
-        my_span.add_event('maxmin_caching', 'nombre de mesures mise en cache: ' + str(nb_record_cached))
+        my_span.add_event('maxmin_end', 'nombre de mesures mise en cache: ' + str(nb_record_cached))
 
     # ------------------------------------
     # generate max/min from WeeWX records
@@ -324,8 +336,10 @@ class MigrateDB:
                         row = my_cur.fetchone()
                 finally:
                     my_cur.close()
-                    if nb_record_added > 0:
-                        my_span.add_event('maxmin_record_caching', "nombre de 'records' mis en cache pour " + a_mesure['field'] + ': ' + str((nb_record_added - 1) / 2))
+                    if nb_record_added == 0:
+                        my_span.add_event('cache_maxmin_from_weewx', "pas de 'records' ajoute en cache pour " + a_mesure['field'])
+                    else:
+                        my_span.add_event('cache_maxmin_from_weewx', str((nb_record_added - 1) / 2) + " nouveaux 'records' en cache pour " + a_mesure['field'])
 
         except Exception as e:
             logException(e)
@@ -414,7 +428,7 @@ class MigrateDB:
 
         nb_extremes_inserted = nb_extremes_updated = 0
         histo_x = []
-        first_time = True
+
         for an_item in x_to_update:
             # skip compacted item
             if an_item[self.row_cache_datetime] is None:
@@ -441,9 +455,6 @@ class MigrateDB:
 
                 insert_sql += ") returning id"
 
-                if first_time is True or len(insert_sql) < 20:
-                    print('insert: ' + insert_sql)
-                    first_time = False
                 pg_cur.execute(insert_sql)
                 insert_sql = ""
                 nb_extremes_inserted += 1
@@ -460,14 +471,16 @@ class MigrateDB:
 
         sort_length = datetime.now() - start_dt
         sort_len = sort_length.seconds * 1000 + sort_length.microseconds/1000
-        my_span.add_event('extremes_new', 'extremes inserted: ' + str(nb_extremes_inserted) + ', updated: ' + str(nb_extremes_updated) + ', time: ' + str(sort_len) + ' milliseconds')
+        my_span.add_event('extremes', str(nb_extremes_inserted) + ' rows extremes inserted, ' + str(nb_extremes_updated) + ' updated, time: ' + str(sort_len) + ' milliseconds')
 
         # now insert/update histo extremes
         start_dt = datetime.now()
 
         HistoExtreme.storeArray(pgconn, histo_x)
         histo_x_length = datetime.now() - start_dt
-        my_span.add_event('histo_x_new', 'add histo_extremes nombre: ' + str(len(histo_x)) + ', time: ' + str(histo_x_length.seconds * 1000 + histo_x_length.microseconds/1000) + ' milliseconds')
+        my_span.add_event(
+            'histo_extreme',
+            str(len(histo_x)) + ' rows inserted, time: ' + str(histo_x_length.seconds * 1000 + histo_x_length.microseconds/1000) + ' milliseconds')
         histo_x = []
         pgconn.commit()
         pgconn.close()
@@ -665,13 +678,14 @@ class MigrateDB:
         try:
             pgconn = self.getPGConnexion()
             pg_cur = pgconn.cursor()
-            pg_cur.execute("select id, last_obs_date, last_extremes_date from postes where meteor = '" + meteor + "'")
+            pg_cur.execute("select id, last_obs_date, last_extremes_date, load_json from postes where meteor = '" + meteor + "'")
             row = pg_cur.fetchone()
             if row is not None:
                 poste_id = row[0]
                 last_obs_ts = 0 if row[1] is None else row[1].timestamp()
                 last_x_ts = 0 if row[2] is None else row[2].timestamp()
-            my_span.set_attribute('meteor', meteor)
+                load_json = row[3]
+            # my_span.set_attribute('meteor', meteor)
             my_span.set_attribute('last_obs_ts', last_obs_ts)
             my_span.set_attribute('last_extremes_ts', last_x_ts)
 
@@ -682,7 +696,7 @@ class MigrateDB:
         finally:
             pg_cur.close()
             pgconn.close()
-            return poste_id, last_obs_ts, last_x_ts
+            return poste_id, last_obs_ts, last_x_ts, load_json
 
     def get_mesures(self, pgconn):
         mesures = []

@@ -189,7 +189,7 @@ class WorkerRoot:
             for a_worker in WorkerRoot.wrks:
                 if a_worker['name'] == self.name:
                     return a_worker['threadRunning']
-            t.logError('IsRunning', 'Service ' + self.display + " not found", None, {"svc": self.display})
+            t.logError('workerRoot::IsRunning', 'Service ' + self.display + " not found", None, {"svc": self.display})
 
         finally:
             WorkerRoot.wrks_lock.release()
@@ -202,7 +202,7 @@ class WorkerRoot:
     def __register(self, name: str, cls):
         for a_worker in WorkerRoot.wrks:
             if a_worker['name'] == name:
-                t.logError('__register', 'task ' + self.display + name + ' already registered', {"svc": self.display})
+                t.logError('workerRoot::__register', 'task ' + self.display + name + ' already registered', {"svc": self.display})
         WorkerRoot.wrks_lock.acquire()
         WorkerRoot.wrks.append({"name": name, "class": cls, 'threadRunning': False})
         WorkerRoot.wrks_lock.release()
