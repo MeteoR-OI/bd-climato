@@ -139,7 +139,7 @@ class JsonLoader:
         pid = PosteMeteor.getPosteIdByMeteor(jsons_to_load[0]["meteor"])
         b_load = PosteMeteor(pid).data.load_json
         if b_load is False:
-            my_span.add_event('inactif', 'file ' + filename + ' -> ' + meteor)
+            my_span.add_event('jsonload', meteor + ' inactif json_load is False), skipping file ' + filename)
             return
         my_span.set_attribute('file', filename)
         my_span.set_attribute('meteor', meteor)
@@ -220,7 +220,11 @@ class JsonLoader:
                             HistoExtreme.storeArray(pgconn, histo_x_new)
                             pgconn.commit()
                             pgconn.close()
-                            my_data_span.add_event('jsonload', "file: " + filename + " DONE! -> new histoObs: " + str(len(histo_obs_new)) + ", new histoExtreme: " + str(len(histo_x_new)))
+                            nico()
+                            my_data_span.add_event('jsonload', "file: " + filename + " DONE")
+                            my_data_span.add_event('obs', 'new rows: ' + str(len(histo_obs_new)))
+                            # my_data_span.add_event('histo', "new rows: " + str(len(histo_x_new)))
+                            my_data_span.add_event('histo_extreme', "new rows: " + str(len(histo_x_new)))
                             histo_obs_new = []
                             histo_x_new = []
 
