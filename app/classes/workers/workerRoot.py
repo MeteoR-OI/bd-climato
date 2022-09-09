@@ -30,7 +30,7 @@ class WorkerRoot:
     all_syn = []
     trace_flag = []
 
-    def __init__(self, name, cls, frequency: int = 120, synonym: dict = [''], run_once=False):
+    def __init__(self, svc_instance, name, cls, frequency: int = 120, synonym: dict = [''], run_once=False):
         self.name = name
         self.run_once = run_once
         self.ref_mgr = RefManager.GetInstance()
@@ -41,10 +41,11 @@ class WorkerRoot:
         except Exception:
             self.display = name
 
+        self.ref_mgr.AddRef("Inst_" + self.display, svc_instance)
         # check globally that only one instance was created for the name
         if self.ref_mgr.IncrementRef("Svc_" + name) > 1:
             IncidentMeteor().new('worker ' + name, 'CRITICAL', 'Multiple instance')
-            t.logError('multiple instances of ' + name)
+            t.logError('WorkerRoot::__init__', 'multiple instances of ' + name, None, {"svc": self.display})
             raise Exception(name, 'Multiple instances called')
 
         self.tracer = Telemetry.Start('svc ' + self.display, __name__)
@@ -87,6 +88,9 @@ class WorkerRoot:
                 return a_trc['trace_flag']
         return None
 
+    def GetDisplayName(self):
+        return self.display
+
     def SetTraceFlag(self, trace_flag: bool):
         for a_trc in WorkerRoot.trace_flag:
             if a_trc['s'] == self.name:
@@ -101,9 +105,11 @@ class WorkerRoot:
         raise Exception('workerRoot::SetTraceFlag', 'service ' + self.display + ' not found')
 
     # Call the service function with a set of parameter
-    def RunMe(self, params: json = {}):
+    def RunMe(self, params: json = None):
         if self.IsRunning() is False:
-            raise Exception('service ' + self.display + ' is stopped')
+            self.Start()
+        if params is not None:
+            self.AddWorkItem(params)
         self.eventRunMe.set()
 
     # Start the service (in waitable mode)
@@ -117,21 +123,20 @@ class WorkerRoot:
                             # just return if the task already running
                             return
                         self.killFlag = False
-                        self.closed = False
+                        self.closed.clear()
+                        self.eventRunMe.clear()
                         thread = threading.Thread(target=self.__runSvc, args=(a_worker,), daemon=True)
                         thread.setName(self.name)
-                        if self.GetTraceFlag() is True:
-                            t.logInfo('svc thread started', None, {"svc": self.display, "status": "started"})
+                        t.logInfo('svc thread started', None, {"svc": self.display, "status": "started"})
                         thread.start()
                         a_worker['threadRunning'] = True
                         # force the thread to run once
                         time.sleep(1)
-                        # self.eventRunMe.set()
                         return
 
                     except Exception as exc:
                         a_worker['threadRunning'] = False
-                        t.logError('Start ' + self.display + ": Exception", None, {"exception": str(exc)})
+                        t.logError('Start', self.display + ": Exception", None, {"svc": self.display, "exception": str(exc)}, {"svc": self.display})
                         raise exc
 
         finally:
@@ -184,7 +189,7 @@ class WorkerRoot:
             for a_worker in WorkerRoot.wrks:
                 if a_worker['name'] == self.name:
                     return a_worker['threadRunning']
-            t.logError('Service ' + self.display + " not found", None, {})
+            t.logError('workerRoot::IsRunning', 'Service ' + self.display + " not found", None, {"svc": self.display})
 
         finally:
             WorkerRoot.wrks_lock.release()
@@ -197,7 +202,7 @@ class WorkerRoot:
     def __register(self, name: str, cls):
         for a_worker in WorkerRoot.wrks:
             if a_worker['name'] == name:
-                t.logError('task ' + self.display + name + ' already registered')
+                t.logError('workerRoot::__register', 'task ' + self.display + name + ' already registered', {"svc": self.display})
         WorkerRoot.wrks_lock.acquire()
         WorkerRoot.wrks.append({"name": name, "class": cls, 'threadRunning': False})
         WorkerRoot.wrks_lock.release()
@@ -210,6 +215,7 @@ class WorkerRoot:
                 t.logInfo('task ' + self.display + " running", None, {})
 
             while True:
+                in_use = False
                 try:
                     trace_flag = self.GetTraceFlag()
                     if trace_flag is True:
@@ -223,6 +229,10 @@ class WorkerRoot:
                         self.closed.set()
                         return
 
+                    if in_use is True:
+                        continue
+
+                    # work_item should have the key: spanID, and info, plus info for the service itself
                     work_item = a_worker['class'].getNextWorkItem()
                     if work_item is None:
                         if self.run_once is True:
@@ -231,22 +241,46 @@ class WorkerRoot:
                         self.eventRunMe.clear()
                         continue
 
-                    with self.tracer.start_as_current_span("load Json") as my_span:
+                    # safe check...
+                    if work_item.get("spanID") is None:
+                        work_item['spanID'] = self.display
+                    if work_item.get("info") is None:
+                        work_item['info'] = self.display
+                    if work_item.get("meteor") is None:
+                        work_item['meteor'] = "?"
+
+                    with self.tracer.start_as_current_span(work_item['spanID']) as my_span:
+                        my_span.set_attribute("job", "django")  # for link jaeger -> loki
+                        my_span.set_attribute("info", work_item['info'])
+                        my_span.set_attribute("meteor", work_item['meteor'])
                         # call the service handler
                         try:
-                            # my_span = self.tracer.start_as_current_span("load Json")
+                            in_use = True
                             a_worker['class'].processWorkItem(work_item, my_span, self.tracer)
                             a_worker['class'].succeedWorkItem(work_item, my_span)
                             my_span._status._status_code = Telemetry.get_ok_status()
+                            t.logInfo("work item processed", my_span, {
+                                "svc": self.display,
+                                "info": work_item['info'],
+                                "meteor": work_item['meteor'],
+                            })
 
                         except Exception as exc:
                             my_span._status._status_code = Telemetry.get_error_status()
+                            t.logException(exc, my_span, {"svc": self.display, "work_item": work_item})
                             a_worker['class'].failWorkItem(work_item, exc, my_span)
+
+                        finally:
+                            in_use = False
 
                     self.eventRunMe.set()
 
                 except Exception as exc:
+                    in_use = False
                     t.logException(exc)
+                    print('#$##$#$#$##$#')
+                    print('Exception in ' + self.display + '=>' + str(exc))
+                    print('#$##$#$#$##$#')
 
         finally:
             WorkerRoot.wrks_lock.acquire()

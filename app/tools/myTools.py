@@ -20,7 +20,7 @@ def logException(e, my_span=None, params: json = {}):
         params,
     )
     if my_span is not None:
-        my_span.record_exception(e)
+        my_span.add_event('exception', str(e))
     return LogMe.GetInstance().LogMe(message, "critical", my_span, params)
 
 
@@ -159,7 +159,7 @@ class LogMe:
         self,
         message: str,
         level: str = None,
-        my_span = None,
+        my_span=None,
         params: json = {}
     ):
         """
@@ -181,7 +181,7 @@ class LogMe:
         module: str,
         message: str,
         level: str = None,
-        my_span = None,
+        my_span=None,
         params: json = {},
     ):
         # build our json
@@ -205,6 +205,7 @@ class LogMe:
             log_j["spanID"] = format(int(my_span.get_span_context().span_id), 'x')
         else:
             log_j["traceID"] = "no_trace"
+            log_j["spanID"] = "no_trace"
 
         if hasattr(settings, "TELEMETRY") is True and settings.TELEMETRY is True:
             msg = JsonPlus().dumps(log_j)
@@ -214,7 +215,7 @@ class LogMe:
             msg += 'pyFile=' + str(log_j.get("pyFile")) + " "
             msg += 'pyLine=' + str(log_j.get("pyLine")) + " "
             msg += 'pyFunc=' + str(log_j.get("pyFunc")) + " "
-            msg += 'msg=' + str(log_j.get("msg")) + " "
+            msg += 'msg="' + str(log_j.get("msg")) + '" '
             if log_j.get("traceID") != "no_trace" and log_j.get("traceID") is not None:
                 msg += 'traceID=' + str(log_j.get("traceID")) + " "
             if log_j.get("spanID") != "no_trace" and log_j.get("spanID") is not None:

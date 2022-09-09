@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Index, Q
+from django.db.models import Index, UniqueConstraint
 
 
 class DateTimeFieldNoTZ(models.Field):
@@ -32,6 +32,11 @@ class Poste(models.Model):
     start_dat = DateTimeFieldNoTZ(null=True, default="1900-01-01T00:00:00", verbose_name="Date d'activation")
     stop_dat = DateTimeFieldNoTZ(null=True, default="2100-12-31T23:59:59", verbose_name="Date de désactivation")
     comment = models.TextField(null=True, default="")
+    last_obs_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Date de derniere reception de donnees")
+    last_obs_id = models.BigIntegerField(null=True, default=0, verbose_name="ID obs de la derniere reception de donnees")
+    last_extremes_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Date de dernier record")
+    last_extremes_id = models.BigIntegerField(null=True, default=0, verbose_name="ID du dernier record")
+    load_json = models.BooleanField(null=True, default=False, verbose_name="load json status")
 
     def __str__(self):
         return self.meteor + ", id: " + str(self.id)
@@ -45,7 +50,10 @@ class Mesure(models.Model):
     id = models.SmallAutoField(primary_key=True)
     name = models.CharField(null=False, max_length=100, verbose_name="Nom de la mesure")
     json_input = models.CharField(null=False, max_length=20, verbose_name="Clé utilisée dans le json")
+    json_input_bis = models.CharField(null=True, max_length=20, verbose_name="Autre clé utilisée dans le json")
     archive_col = models.CharField(null=False, max_length=20, verbose_name="nom colonne table weewx.archive")
+    archive_table = models.CharField(null=True, default=None, max_length=20, verbose_name="nom table weewx.archive")
+    field_dir = models.SmallIntegerField(null=True, verbose_name="id de la mesure wind dans table weewx.archive")
     val_deca = models.SmallIntegerField(null=True, default=0, verbose_name="Décalage mesure")
     max = models.BooleanField(null=True, default=True, verbose_name="Calcul des max")
     max_deca = models.SmallIntegerField(null=True, default=0, verbose_name="Décalage du max")
@@ -55,6 +63,7 @@ class Mesure(models.Model):
     is_wind = models.BooleanField(null=True, default=False, verbose_name="Calcul du wind_dir")
     omm_link = models.SmallIntegerField(null=True, default=0, verbose_name="Lien entre mesure OMM et mesure de base")
     allow_zero = models.BooleanField(null=True, default=True, verbose_name="Zero est une valeur valide")
+    is_hourly = models.BooleanField(null=True, default=False, verbose_name="Must be agregated by hour(s) or more, not less")
 
     def __str__(self):
         return "Mesure id: " + str(self.id) + ", name: " + self.name
@@ -80,18 +89,17 @@ class Exclusion(models.Model):
 
 # class Observation(ExportModelOperationsMixin('obs'), models.Model):
 class Observation(models.Model):
-
     # ??  hail | hailRate | heatingTemp ??
 
     id = models.BigAutoField(primary_key=True, verbose_name="id de l'observation")
     time = DateTimeFieldNoTZ(null=False, verbose_name="date fin période observation")
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
-    duration = models.SmallIntegerField(null=True, default=0, verbose_name="durée période")
-    # null data
+    duration = models.SmallIntegerField(null=True, default=0, verbose_name="durée période, seulement pour les obs principales")
+    # nullable data
     barometer = models.FloatField(null=True, verbose_name="pression niveau mer")
     barometer_omm = models.FloatField(null=True, verbose_name="pression niveau mer OMM")
     dewpoint = models.FloatField(null=True, verbose_name="point de rosée")
-    et = models.FloatField(null=True, verbose_name="somme etp")
+    etp = models.FloatField(null=True, verbose_name="somme etp")
     extra_humid1 = models.FloatField(null=True, verbose_name="extra humidité 1")
     extra_humid2 = models.FloatField(null=True, verbose_name="extra humidité 2")
     extra_temp1 = models.FloatField(null=True, verbose_name="extra temperature 1")
@@ -101,14 +109,14 @@ class Observation(models.Model):
     hail_rate = models.FloatField(null=True, verbose_name="hail rate")
     heatindex = models.FloatField(null=True, verbose_name="heatindex")
     heating_temp = models.FloatField(null=True, verbose_name="heating temp")
-    out_humidity = models.FloatField(null=True, verbose_name="humidité")
-    out_humidity_omm = models.FloatField(null=True, verbose_name="humidité OMM")
     in_humidity = models.FloatField(null=True, verbose_name="humidité intérieure")
     in_temp = models.FloatField(null=True, verbose_name="température intérieure")
     leaf_temp1 = models.FloatField(null=True, verbose_name="temp des feuilles no 1")
     leaf_temp2 = models.FloatField(null=True, verbose_name="temp des feuilles no 2")
     leaf_wet1 = models.FloatField(null=True, verbose_name="humidité des feuilles no 1")
     leaf_wet2 = models.FloatField(null=True, verbose_name="humidité des feuilles no 2")
+    out_humidity = models.FloatField(null=True, verbose_name="humidité")
+    out_humidity_omm = models.FloatField(null=True, verbose_name="humidité OMM")
     out_temp = models.FloatField(null=True, verbose_name="température extérieure")
     out_temp_omm = models.FloatField(null=True, verbose_name="température OMM extérieure")
     pressure = models.FloatField(null=True, verbose_name="pression station")
@@ -118,13 +126,13 @@ class Observation(models.Model):
     rain_rate = models.FloatField(null=True, verbose_name="rain_rate")
     rx = models.FloatField(null=True, verbose_name="taux reception station")
     soil_moist1 = models.FloatField(null=True, verbose_name="humidité du sol niveau du sol")
-    soil_moist2 = models.FloatField(null=True, verbose_name="humidité du sol niveau 1")
-    soil_moist3 = models.FloatField(null=True, verbose_name="humidité du sol niveau 2")
-    soil_moist4 = models.FloatField(null=True, verbose_name="humidité du sol niveau 3")
+    soil_moist2 = models.FloatField(null=True, verbose_name="humidité du sol niveau 2")
+    soil_moist3 = models.FloatField(null=True, verbose_name="humidité du sol niveau 3")
+    soil_moist4 = models.FloatField(null=True, verbose_name="humidité du sol niveau 4")
     soil_temp1 = models.FloatField(null=True, verbose_name="température du sol niveau du sol")
-    soil_temp2 = models.FloatField(null=True, verbose_name="température du sol niveau 1")
-    soil_temp3 = models.FloatField(null=True, verbose_name="température du sol niveau 2")
-    soil_temp4 = models.FloatField(null=True, verbose_name="température du sol niveau 3")
+    soil_temp2 = models.FloatField(null=True, verbose_name="température du sol niveau 2")
+    soil_temp3 = models.FloatField(null=True, verbose_name="température du sol niveau 3")
+    soil_temp4 = models.FloatField(null=True, verbose_name="température du sol niveau 4")
     uv = models.FloatField(null=True, verbose_name="indice UV")
     voltage = models.FloatField(null=True, verbose_name="voltage")
     wind = models.FloatField(null=True, verbose_name="vitesse moyenne du vent sur la période")
@@ -147,13 +155,15 @@ class Observation(models.Model):
 
     class Meta:
         db_table = "obs"
+        indexes = [
+            Index(name='obs_pid', fields=['poste_id', '-time']),
+        ]
 
 
 class Extreme(models.Model):
     id = models.BigAutoField(primary_key=True)
     date = models.DateField(null=False, verbose_name="date de l'extrême")
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
-    id_obs = models.BigIntegerField(null=False, verbose_name="id de l'obs associée")
     mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.CASCADE)
     min = models.FloatField(null=True, verbose_name="valeur minimum")
     min_time = DateTimeFieldNoTZ(null=True, verbose_name="date du minimum")
@@ -167,13 +177,13 @@ class Extreme(models.Model):
     class Meta:
         db_table = "extremes"
         indexes = [
-            Index(name='extremes_id_obs', fields=['id_obs', ], condition=Q(id_obs__gt=0)),
+            Index(name='extremes_pid', fields=['poste_id', '-date']),
         ]
 
 
 class Incident(models.Model):
     id = models.AutoField(primary_key=True)
-    dat = DateTimeFieldNoTZ(null=False, max_length=30, verbose_name="date'")
+    dat = DateTimeFieldNoTZ(null=False, max_length=30, verbose_name="date")
     source = models.CharField(null=False, max_length=100, verbose_name='source')
     level = models.CharField(null=False, max_length=20, verbose_name='niveau')
     # error, critical, exception
@@ -188,6 +198,44 @@ class Incident(models.Model):
 
     class Meta:
         db_table = "incidents"
+
+
+class HistoObs(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    src_obs_id = models.BigIntegerField(null=False, verbose_name="obs_id source")
+    target_obs_id = models.BigIntegerField(null=False, verbose_name="obs_id modifiée")
+
+    def __str__(self):
+        return "HistoObs src_obs_id: " + str(self.src_obs_id) + ", target: " + str(self.target_obs_id)
+
+    class Meta:
+        db_table = "histo_obs"
+        constraints = [
+            UniqueConstraint(fields=['src_obs_id', 'target_obs_id'], name='unique_histo_obs_mapping'),
+        ]
+        indexes = [
+            Index(name='histo_obs_target', fields=['src_obs_id', 'target_obs_id']),
+            Index(name='histo_obs_src', fields=['target_obs_id', 'src_obs_id'])
+        ]
+
+
+class HistoExtremes(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    src_obs_id = models.BigIntegerField(null=False, verbose_name="obs_id source")
+    target_x_id = models.BigIntegerField(null=False, verbose_name="extreme_id modifiée")
+
+    def __str__(self):
+        return "HistoObs src_obs_id: " + str(self.src_obs_id) + ", extremes updated: " + str(self.target_x_id)
+
+    class Meta:
+        db_table = "histo_extreme"
+        constraints = [
+            UniqueConstraint(fields=['src_obs_id', 'target_x_id'], name='unique_histo_x_mapping'),
+        ]
+        indexes = [
+            Index(name='histo_x_target', fields=['src_obs_id', 'target_x_id']),
+            Index(name='histo_x_src', fields=['target_x_id', 'src_obs_id'])
+        ]
 
 
 class Annotation(models.Model):
