@@ -54,8 +54,8 @@ class weewx_install(install):
     user_options = install.user_options + [('no-prompt', None, 'Do not prompt for station info')]
 
     def initialize_options(self, *args, **kwargs):
-         install.initialize_options(self, *args, **kwargs)
-         self.no_prompt = None
+        install.initialize_options(self, *args, **kwargs)
+        self.no_prompt = None
 
     def finalize_options(self):
         # Call my superclass's version

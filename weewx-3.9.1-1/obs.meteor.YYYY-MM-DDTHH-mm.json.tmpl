@@ -217,28 +217,28 @@ LOW#slurp
        $CleVal("leaf_temp2",$obs.leafTemp2.degree_C.raw)
        #end if     
        #end if
-       #if $obs.soilMoist1.has_data and $day.soilMost1.has_data
+       #if $obs.soilMoist1.has_data and $day.soilMoist1.has_data
        #if $final_obs
        $CleVal("soil_moist1_avg",$currentagg.soilMoist1.avg.raw)
        #else
        $CleVal("soil_moist1",$obs.soilMoist1.raw)
        #end if     
        #end if    
-       #if $obs.soilMoist2.has_data and $day.soilMost2.has_data
+       #if $obs.soilMoist2.has_data and $day.soilMoist2.has_data
        #if $final_obs
        $CleVal("soil_moist2_avg",$currentagg.soilMoist2.avg.raw)
        #else
        $CleVal("soil_moist2",$obs.soilMoist2.raw)
        #end if     
        #end if
-       #if $obs.soilMoist3.has_data and $day.soilMost3.has_data
+       #if $obs.soilMoist3.has_data and $day.soilMoist3.has_data
        #if $final_obs
        $CleVal("soil_moist3_avg",$currentagg.soilMoist3.avg.raw)
        #else
        $CleVal("soil_moist3",$obs.soilMoist3.raw)
        #end if     
        #end if
-       #if $obs.soilMoist4.has_data and $day.soilMost4.has_data
+       #if $obs.soilMoist4.has_data and $day.soilMoist4.has_data
        #if $final_obs
        $CleVal("soil_moist4_avg",$currentagg.soilMoist4.avg.raw)
        #else
@@ -257,9 +257,7 @@ LOW#slurp
        $CleVal("leaf_wet2_avg",$currentagg.leafWet2.avg.raw)
        #else
        $CleVal("leaf_wet2",$obs.leafWet2.raw)
-       #end if     
-
-       
+       #end if            
        #end if
        $CleVal("humidity",$obs.outHumidity.raw,0)
        #if $final_obs
