@@ -73,29 +73,43 @@ class MigrateDB:
     def processWorkItem(self, work_item, my_span, op_tracer):
         try:
             meteor = work_item['meteor']
-            work_item['pid'], work_item['last_obs_ts'], work_item['last_x_ts'], load_json = self.get_poste_info(meteor, my_span)
+            work_item['pid'], str_last_obs_ts, str_last_x_ts, load_json = self.get_poste_info(meteor, my_span)
             if work_item['pid'] is None:
                 raise Exception('station ' + meteor + ' not found')
+
+            work_item['last_obs_ts'] = str_last_obs_ts.timestamp() if str_last_obs_ts is not None else 0
+            work_item['last_x_ts'] = str_last_x_ts.timestamp() if str_last_x_ts is not None else 0
 
             # skipping postes with active updates
             if load_json is True:
                 my_span.add_event('migrate', 'load_json is active, skipping')
                 return
 
-            cached_data = {}    # [{m_<id>: mesure_id, {'mid': mid, 'cache': [], 'last': 0, 'last_in_db': 0}}]
             mapping_rowno_obsid = []
-
             with op_tracer.start_as_current_span('ecritures des obs') as my_span:
                 self.insert_obs_extremes(work_item, mapping_rowno_obsid, my_span)
 
-            with op_tracer.start_as_current_span('generation des records a partir des mesures ') as my_span:
-                self.load_maxmin_from_mesures(work_item, cached_data, mapping_rowno_obsid, my_span)
+            work_item['cur_year'] = 2000 if str_last_x_ts is None else str_last_x_ts.year()
+            work_item['max_year'] = datetime.datetime.today().year
 
-            with op_tracer.start_as_current_span('mise en cache des records WeeWX') as my_span:
-                self.load_maxmin_from_weewx(work_item, cached_data, my_span)
+            # process year per year, to decrease memory pressure
+            while work_item['cur_year'] <= work_item['max_year']:
+                cached_data = {}    # [{m_<id>: mesure_id, {'mid': mid, 'cache': [], 'last': 0, 'last_in_db': 0}}]
+                work_item['end_ts'] = datetime.datetime(work_item['cur_year'], 12, 31, 23, 59, 59, 59).timestamp() + 4 * 3600 + 1
 
-            with op_tracer.start_as_current_span('ecritures des records') as my_span:
-                self.write_extreme_rows(work_item, cached_data, my_span)
+                with op_tracer.start_as_current_span('year ' + str(work_item['cur_year'])):
+                    with op_tracer.start_as_current_span('generation des records a partir des mesures ') as my_span:
+                        self.load_maxmin_from_mesures(work_item, cached_data, mapping_rowno_obsid, my_span)
+
+                    with op_tracer.start_as_current_span('mise en cache des records WeeWX') as my_span:
+                        self.load_maxmin_from_weewx(work_item, cached_data, my_span)
+
+                    with op_tracer.start_as_current_span('ecritures des records') as my_span:
+                        self.write_extreme_rows(work_item, cached_data, my_span)
+
+                # adjust our next starting timestamp
+                work_item['last_x_ts'] = datetime.datetime(work_item['cur_year'], 12, 31, 23, 59, 59).timestamp()
+                work_item['cur_year'] += 1
 
         except Exception as e:
             t.logException(e)
@@ -120,7 +134,7 @@ class MigrateDB:
         else:
             my_span.add_event('migrate', 'starting a full migration from all archives')
 
-        query_my = self.get_weewx_select_sql(last_ts_in_obs)
+        query_my = self.get_weewx_select_sql(last_ts_in_obs, None)
         query_pg, query_args = self.prepare_sql_insert_structure()
 
         # get our cursors
@@ -233,15 +247,14 @@ class MigrateDB:
     def load_maxmin_from_mesures(self, work_item, cached_data, mapping_rowno_obsid, my_span):
         # meteor, cached_data, last_ts_in_obs, last_ts_in_extreme, mapping_rowno_obsid, my_span):
         # work_item, cached_data, mapping_rowno_obsid, my_span
+        start_time = datetime.now()
         meteor = work_item['meteor']
-        last_ts_in_obs = work_item['last_obs_ts']
         last_ts_in_extreme = work_item['last_x_ts']
 
-        if last_ts_in_obs > 0:
-            str_date = datetime.utcfromtimestamp(last_ts_in_obs).strftime('%Y-%m-%d %H:%M:%S')
-            my_span.add_event('maxmin_begin', 'mise en cache des max/min a partir des archives depuis: ' + str(last_ts_in_obs) + ' (' + str(str_date) + ')')
-        else:
-            my_span.add_event('maxmin_begin', 'mise en cache des max/min a partir de toutes les archives')
+        if last_ts_in_extreme > 0:
+            str_date = datetime.utcfromtimestamp(last_ts_in_extreme).strftime('%Y-%m-%d %H:%M:%S')
+            my_span.add_event('maxmin_begin', 'mise en cache des max/min depuis: ' + str(last_ts_in_extreme) + ' (' + str(str_date) + ')')
+        my_span.add_event('maxmin_begin', 'mise en cache des max/min jusqu\'a ' + str(work_item['end_ts']) + ' (31/12/' + str(work_item['cur_year']) + ':23:59:59:59')
 
         nb_record_cached = 0
         row_no = 0
@@ -250,7 +263,7 @@ class MigrateDB:
         my_cur = myconn.cursor()
 
         # execute the select statement
-        my_cur.execute(self.get_weewx_select_sql(last_ts_in_obs))
+        my_cur.execute(self.get_weewx_select_sql(last_ts_in_extreme, work_item['end_ts']))
         row = my_cur.fetchone()
 
         # load mapping column name/id in row
@@ -280,12 +293,14 @@ class MigrateDB:
             row_no += 1
             row = my_cur.fetchone()
 
-        my_span.add_event('maxmin_end', 'nombre de mesures mise en cache: ' + str(nb_record_cached))
+        process_length = datetime.now() - start_time
+        my_span.add_event('maxmin_end', 'mesures ajoutées en cache: ' + str(nb_record_cached) + ' en ' + str(process_length.microseconds/1000) + ' ms')
 
     # ------------------------------------
     # generate max/min from WeeWX records
     # ------------------------------------
     def load_maxmin_from_weewx(self, work_item, cached_data, my_span):
+        start_time = datetime.now()
         last_ts_in_extremes = work_item['last_x_ts']
         myconn = self.getMSQLConnection(work_item['meteor'])
         try:
@@ -310,21 +325,21 @@ class MigrateDB:
                         my_query = \
                             'select mintime + 4 * 3600 as dateTime, min, mintime, null as max, null as maxtime, null as max_dir, ' + str(mid) + ' as mid ' + \
                             ' from archive_day_' + table_name +\
-                            ' where dateTime > ' + str(last_ts_in_extremes - 4 * 3600) + \
+                            ' where dateTime > ' + str(last_ts_in_extremes - 4 * 3600) + ' and dateTime < ' + str(work_item['end_ts']) + \
                             ' union ' + \
                             'select maxtime + 4 * 3600 as dateTime, null as min, null as mintime, max, maxtime, null as max_dir, ' + str(mid) + ' as mid ' + \
                             ' from archive_day_' + table_name +\
-                            ' where dateTime > ' + str(last_ts_in_extremes - 4 * 3600) + \
+                            ' where dateTime > ' + str(last_ts_in_extremes - 4 * 3600) + ' and dateTime < ' + str(work_item['end_ts']) + \
                             ' order by dateTime'
                     else:
                         my_query = \
                             'select mintime + 4 * 3600 as dateTime, min, mintime, null as max, null as maxtime, null as max_dir, ' + str(mid) + ' as mid ' + \
                             ' from archive_day_' + table_name +\
-                            ' where dateTime > ' + str(last_ts_in_extremes - 4 * 3600) + \
+                            ' where dateTime > ' + str(last_ts_in_extremes - 4 * 3600) + ' and dateTime < ' + str(work_item['end_ts']) + \
                             ' union ' + \
                             'select maxtime + 4 * 3600 as dateTime, null as min, null as mintime, max, maxtime, max_dir, ' + str(mid) + ' as mid ' + \
                             ' from archive_day_' + table_name +\
-                            ' where dateTime > ' + str(last_ts_in_extremes - 4 * 3600) + \
+                            ' where dateTime > ' + str(last_ts_in_extremes - 4 * 3600) + ' and dateTime < ' + str(work_item['end_ts']) + \
                             ' order by dateTime'
 
                     my_cur.execute(my_query)
@@ -336,10 +351,9 @@ class MigrateDB:
                         row = my_cur.fetchone()
                 finally:
                     my_cur.close()
-                    if nb_record_added == 0:
-                        my_span.add_event('cache_maxmin_from_weewx', "pas de 'records' ajoute en cache pour " + a_mesure['field'])
-                    else:
-                        my_span.add_event('cache_maxmin_from_weewx', str((nb_record_added - 1) / 2) + " nouveaux 'records' en cache pour " + a_mesure['field'])
+                    if nb_record_added > 0:
+                        process_length = datetime.now() - start_time
+                        my_span.add_event('maxmin_from_weewx', str((nb_record_added - 1) / 2) + " nouveaux 'records' en cache pour " + a_mesure['field'] + ' en ' + str(process_length/1000) + ' ms')
 
         except Exception as e:
             logException(e)
@@ -352,7 +366,6 @@ class MigrateDB:
     # flush our cache into our database
     # ----------------------------------
     def write_extreme_rows(self, work_item, cached_data, my_span):
-        # work_item['pid'], work_item['last_obs_ts'], work_item['last_x_ts']
         pid = work_item['pid']
         x_to_update = []
         insert_cde = "insert into extremes (date, poste_id, mesure_id, min, min_time, max, max_time, max_dir) values "
@@ -369,28 +382,32 @@ class MigrateDB:
             for an_item in mesure_cached['cache']:
                 x_to_update.append(an_item)
             mesure_cached['cache'] = []             # free memory
-        sort_length = datetime.now() - start_dt
-        # my_span.add_event('build global array, length:' + str(len(x_to_update)) + ', time: ' + str(sort_length.seconds * 1000 + sort_length.microseconds/1000) + ' milliseconds')
+        step1_length = datetime.now() - start_dt
+        my_span.add_event('write_x_array', 'build global array: length:' + str(len(x_to_update)) + ', time: ' + str(step1_length / 1000) + ' ms')
 
         # do a global sort
         start_dt = datetime.now()
         x_to_update.sort(key=lambda x: (x[self.row_cache_datetime], x[self.row_cache_mid]))
         sort_length = datetime.now() - start_dt
-        # my_span.add_event('sort, length:' + str(len(x_to_update)) + ', time: ' + str(sort_length.seconds * 1000 + sort_length.microseconds/1000) + ' milliseconds')
+        my_span.add_event('write_x_sort', 'sort time:' + str(sort_length/1000) + ' ms')
 
-        # compact caches having the same date
+        # compact our cache with same date, same measure_id
         start_dt = datetime.now()
 
         main_row = []
         nb_active_row = 0
         last_item = None
         for an_item in x_to_update:
-            if len(main_row) == 0 or \
-                main_row[self.row_cache_datetime] != an_item[self.row_cache_datetime] or\
-                    main_row[self.row_cache_mid] != an_item[self.row_cache_mid]:
-                main_row = an_item
+            # Different date/measure_id
+            if last_item is None or \
+                last_item[self.row_cache_datetime] != an_item[self.row_cache_datetime] or\
+                    last_item[self.row_cache_mid] != an_item[self.row_cache_mid]:
                 nb_active_row += 1
             else:
+                # check min
+
+use last_item and not main_row + add an_otem['active'] = False + skip those item in next processing
+
                 if main_row[self.row_cache_min] is None or (an_item[self.row_cache_min] is not None and an_item[self.row_cache_min] < main_row[self.row_cache_min]):
                     main_row[self.row_cache_min] = an_item[self.row_cache_min]
                     main_row[self.row_cache_mintime] = an_item[self.row_cache_mintime]
@@ -482,6 +499,7 @@ class MigrateDB:
             'histo_extreme',
             str(len(histo_x)) + ' rows inserted, time: ' + str(histo_x_length.seconds * 1000 + histo_x_length.microseconds/1000) + ' milliseconds')
         histo_x = []
+        x_to_update = []
         pgconn.commit()
         pgconn.close()
 
@@ -568,7 +586,7 @@ class MigrateDB:
     # --------------------------------
     # return the sql select statement
     # --------------------------------
-    def get_weewx_select_sql(self, last_ts_in_obs):
+    def get_weewx_select_sql(self, last_ts_in_obs, end_ts=None):
         query_my = "select dateTime, dateTime + (4 * 3600), usUnits, `interval`"
 
         # load an array of query args, one for each valdk, update sql statement
@@ -577,7 +595,11 @@ class MigrateDB:
             query_my += ', ' + a_mesure['col']
 
         # finalize sql statements
-        query_my += " from archive where dateTime > " + str(last_ts_in_obs) + " order by dateTime"""
+        query_my += " from archive where dateTime > " + str(last_ts_in_obs)
+        if end_ts is not None:
+            query_my += " and dateTime < " + str(end_ts)
+        # query_my += " order by dateTime"""
+        query_my += " order by dateTime"
         return query_my
 
     # -----------------------------------
@@ -682,12 +704,12 @@ class MigrateDB:
             row = pg_cur.fetchone()
             if row is not None:
                 poste_id = row[0]
-                last_obs_ts = 0 if row[1] is None else row[1].timestamp()
-                last_x_ts = 0 if row[2] is None else row[2].timestamp()
+                last_obs_ts = None if row[1] is None else row[1]
+                last_x_ts = None if row[2] is None else row[2]
                 load_json = row[3]
             # my_span.set_attribute('meteor', meteor)
-            my_span.set_attribute('last_obs_ts', last_obs_ts)
-            my_span.set_attribute('last_extremes_ts', last_x_ts)
+            my_span.set_attribute('last_obs_ts', last_obs_ts.timestamp() if last_obs_ts is not None else 'None')
+            my_span.set_attribute('last_extremes_ts', last_x_ts.timestamp() if last_x_ts is not None else 'None')
 
         except Exception as e:
             t.logException(e, my_span)
