@@ -21,7 +21,6 @@ from app.classes.repository.extremeMeteor import ExtremeMeteor
 from app.classes.repository.histoObs import HistoObsMeteor
 from app.classes.repository.histoExtreme import HistoExtreme
 from app.tools.myTools import logException
-from app.tools import myTools
 
 
 # --------------------------------------
@@ -74,61 +73,49 @@ class MigrateDB:
     def processWorkItem(self, work_item, my_span, op_tracer):
         try:
             meteor = work_item['meteor']
-            with op_tracer.start_as_current_span('loading archive for ' + meteor) as my_global_span:
+            work_item['pid'], str_last_obs_ts, str_last_x_ts, load_json = self.get_poste_info(meteor, my_span)
+            if work_item['pid'] is None:
+                raise Exception('station ' + meteor + ' not found')
 
-                work_item['pid'], date_last_loaded_obs, date_last_loaded_x, load_json = self.get_poste_info(meteor, my_span)
-                if work_item['pid'] is None:
-                    raise Exception('station ' + meteor + ' not found')
+            work_item['last_obs_ts'] = str_last_obs_ts.timestamp() if str_last_obs_ts is not None else 0
+            work_item['last_x_ts'] = str_last_x_ts.timestamp() if str_last_x_ts is not None else 0
 
-                # skipping postes with active updates
-                if load_json is True:
-                    my_span.add_event('migrate', 'load_json is active, skipping')
-                    return
+            # skipping postes with active updates
+            if load_json is True:
+                my_span.add_event('migrate', 'load_json is active, skipping')
+                return
 
-                start_dt, end_dt, old_json_load = self.getNewDateBraket(work_item)
-                current_dt = datetime.now()
+            cached_data = {}
+            with op_tracer.start_as_current_span('ecritures des obs + caching min-max') as my_span:
+                self.insert_obs_minmax_from_weewx(work_item, cached_data, my_span)
 
-                try:
-                    pgconn = self.getPGConnexion()
-                    pg_cur = pgconn.cursor()
+            with op_tracer.start_as_current_span('mise en cache des records WeeWX') as my_span:
+                self.load_maxmin_from_weewx(work_item, cached_data, my_span)
 
-                    # loop per year
-                    while start_dt < current_dt:
-                        with op_tracer.start_as_current_span('loading data from ' + str(start_dt) + ' to ' + str(end_dt)) as my_span:
+            with op_tracer.start_as_current_span('ecritures des records') as my_span:
+                self.write_extreme_rows(work_item, cached_data, my_span)
 
-                            # Load obs, records from archive
-                            new_records = self.loadExistingObsAndFlushObs(pg_cur, work_item, start_dt, end_dt, my_span)
+            # work_item['cur_year'] = 2000 if str_last_x_ts is None else str_last_x_ts.year()
+            # work_item['max_year'] = datetime.datetime.today().year
 
-                            # load archive data
-                            self.loadExistingRecordsAndFlush(pg_cur, work_item, start_dt, end_dt, new_records)
-                            new_records = None
+            # # process year per year, to decrease memory pressure
+            # while work_item['cur_year'] <= work_item['max_year']:
+            #     # cached_data = {}    # [{m_<id>: mesure_id, {'mid': mid, 'cache': [], 'last': 0, 'last_in_db': 0}}]
+            #     work_item['end_ts'] = datetime.datetime(work_item['cur_year'], 12, 31, 23, 59, 59, 59).timestamp() + 4 * 3600 + 1
 
-                            pgconn.commit()
+            #     # with op_tracer.start_as_current_span('year ' + str(work_item['cur_year'])):
+            #     #     with op_tracer.start_as_current_span('generation des records a partir des mesures ') as my_span:
+            #     #         self.load_maxmin_from_mesures(work_item, cached_data, mapping_rowno_obsid, my_span)
 
-                        start_dt, end_dt, json_load = self.getNewDateBraket(work_item)
+            #     with op_tracer.start_as_current_span('mise en cache des records WeeWX') as my_span:
+            #         self.load_maxmin_from_weewx(work_item, cached_data, my_span)
 
-                except Exception as ex:
-                    # rollback
-                    pgconn.rollback()
-                    myTools.logException(ex, my_global_span)
-                    raise ex
+            #     with op_tracer.start_as_current_span('ecritures des records') as my_span:
+            #         self.write_extreme_rows(work_item, cached_data, my_span)
 
-                finally:
-                    pgconn.close()
-                    pass
-
-            # work_item['last_obs_ts'] = date_last_loaded_obs.timestamp() if date_last_loaded_obs is not None else 0
-            # work_item['last_x_ts'] = date_last_loaded_x.timestamp() if date_last_loaded_x is not None else 0
-
-            # cached_data = {}
-            # with op_tracer.start_as_current_span('ecritures des obs + caching min-max') as my_span:
-            #     self.insert_obs_minmax_from_weewx(work_item, cached_data, my_span)
-
-            # with op_tracer.start_as_current_span('mise en cache des records WeeWX') as my_span:
-            #     self.load_maxmin_from_weewx(work_item, cached_data, my_span)
-
-            # with op_tracer.start_as_current_span('ecritures des records') as my_span:
-            #     self.write_extreme_rows(work_item, cached_data, my_span)
+            #     # adjust our next starting timestamp
+            #     work_item['last_x_ts'] = datetime.datetime(work_item['cur_year'], 12, 31, 23, 59, 59).timestamp()
+            #     work_item['cur_year'] += 1
 
         except Exception as e:
             t.logException(e)
@@ -137,91 +124,38 @@ class MigrateDB:
     # ---------------------------------------
     # other methods specific to this service
     # ---------------------------------------
-    def getNewDateBraket(self, work_item, last_extreme_date_only=False):
-        meteor = work_item['meteor']
-        """Get start_dt/end_dt from postes, and archive table"""
-        pgconn = self.getPGConnexion()
-        pg_cur = pgconn.cursor()
-        myconn = self.getMSQLConnection()
-        my_cur = myconn.cursor()
-        old_load_json = False
-
-        try:
-            # Get dates from postes table
-            pg_cur.execute("select id, last_obs_date, last_extremes_date, load_json from postes where meteor = '" + meteor + "'")
-            row = pg_cur.fetchone()
-            pg_cur.close()
-
-            if row is None:
-                raise Exception('poste ' + meteor + ' not found')
-
-            if last_extreme_date_only is True:
-                # only need the last_extremes_date
-                return row[2]
-
-            start_dt = datetime.now()
-            work_item['pid'] = row[0]
-            if row[1] is not None:
-                start_dt = min(start_dt, row[1])
-            if row[2] is not None:
-                start_dt = min(start_dt, row[2])
-            old_load_json = row[3]
-
-            my_cur.execute(
-                "select from_unixTime(min(datetime) + 4 * 3600) from archive " +
-                " where dateTime > " + str(start_dt.timestamp() - 4 * 3600))
-            row2 = my_cur.fetchone()
-            my_cur.close()
-            if row2 is None:
-                start_dt = datetime(2900, 12, 31, 0, 0, 0)
-            else:
-                start_dt = min(start_dt, row2[0])
-
-            end_dt = datetime(start_dt.year + 1, 1, 1, 0, 0, 0, 0)
-
-            if old_load_json is True:
-                self.updateLoadJsonValue(meteor, False)
-
-            return start_dt, end_dt, old_load_json
-
-        except Exception as ex:
-            raise ex
-
-        finally:
-            pgconn.close()
-            myconn.close()
-
-    def updateLoadJsonValue(self, meteor, new_value):
-        pgconn = self.getPGConnexion()
-        pg_cur = pgconn.cursor()
-
-        try:
-            pg_cur.execute('update postes set load_json = ' + str(new_value) + " where meteor = '" + meteor + "'")
-            pgconn.commit()
-
-        except Exception as ex:
-            pgconn.rollback()
-            raise ex
-
-        finally:
-            pg_cur.close()
 
     # ---------------------------------------------------
     # insert mesures from weewx archive in our obs table
     # ---------------------------------------------------
-    def loadExistingObsAndFlushObs(self, pg_cur, work_item, start_dt, end_dt, my_span):
+    def insert_obs_minmax_from_weewx(self, work_item, cached_data, my_span):
         start_time = datetime.now()
-        cached_data = {}
-        last_ts_in_extreme = self.getNewDateBraket(work_item, True)
 
+        last_ts_in_obs = work_item['last_obs_ts']
         pid = work_item['pid']
         meteor = work_item['meteor']
         histo_o = []
 
-        query_my = self.get_weewx_select_sql(start_dt, end_dt, None)
+        if last_ts_in_obs > 0:
+            str_date = datetime.utcfromtimestamp(last_ts_in_obs).strftime('%Y-%m-%d %H:%M:%S')
+            my_span.add_event('migrate', 'starting migration from archive with timestamp: ' + str(last_ts_in_obs) + ' (' + str(str_date) + ')')
+        else:
+            my_span.add_event('migrate', 'starting a full migration from all archives')
+
+        last_ts_in_extreme = work_item['last_x_ts']
+        if last_ts_in_extreme > 0:
+            str_date = datetime.utcfromtimestamp(last_ts_in_extreme).strftime('%Y-%m-%d %H:%M:%S')
+            my_span.add_event('maxmin_begin', 'mise en cache des max/min depuis: ' + str(last_ts_in_extreme) + ' (' + str(str_date) + ')')
+        else:
+            my_span.add_event('maxmin_begin', 'mise en cache de tous les max/min')
+
+        query_my = self.get_weewx_select_sql(last_ts_in_obs, None)
         query_pg, query_args = self.prepare_sql_insert_structure()
 
-        # get a cursor to our archive db
+        # get our cursors
+        pgconn = self.getPGConnexion()
+        pg_cur = pgconn.cursor()
+
         myconn = self.getMSQLConnection(meteor)
         my_cur = myconn.cursor()
 
@@ -314,11 +248,26 @@ class MigrateDB:
                 mesure_dir = None if a_mesure['diridx'] is None else row2[a_mesure['diridx']]
                 self.load_min_max_from_archive_row(a_mesure, mesure_value, mesure_dir, row2[self.row_archive_datetime], id_obs_main, mesure_cached_item)
 
+            # commit every 10 000 rows
+            if nb_obs_inserted > 10000:
+                pgconn.commit()
+                pg_cur.close()
+                pg_cur = pgconn.cursor()
+                nb_obs_inserted = 0
+                HistoObsMeteor.storeArray(pgconn, histo_o)
+                pgconn.commit()
+                nb_histo_inserted += len(histo_o)
+                histo_o = []
+
             row2 = my_cur.fetchone()
 
-        HistoObsMeteor.storeArray(pg_cur, histo_o)
-        nb_histo_inserted = len(histo_o)
-        histo_o = None
+        pgconn.commit()
+        pg_cur.close()
+        HistoObsMeteor.storeArray(pgconn, histo_o)
+        pgconn.commit()
+        nb_histo_inserted += len(histo_o)
+        histo_o = []
+        pgconn.close()
 
         if nb_new_obs > 0:
             t.logInfo('obs inserted, last id: ' + str(obs_new_id) + ", date: " + str(a_q['args'][1]), my_span, {"svc": "migrate", "meteor": meteor})
@@ -332,7 +281,6 @@ class MigrateDB:
         process_length = datetime.now() - start_time
         my_span.add_event('maxmin_step1', 'mesures ajoutées en cache: ' + str(nb_record_cached))
         my_span.add_event('insert_obs_minmax_from_weewx', 'processing: ' + str(process_length.microseconds/1000) + ' ms')
-        return cached_data
 
     # ------------------------------------
     # generate max/min from WeeWX records
@@ -403,10 +351,13 @@ class MigrateDB:
     # ----------------------------------
     # flush our cache into our database
     # ----------------------------------
-    def write_extreme_rows(self, pg_cur, work_item, cached_data, my_span):
+    def write_extreme_rows(self, work_item, cached_data, my_span):
         pid = work_item['pid']
         x_to_update = []
         insert_cde = "insert into extremes (date, poste_id, mesure_id, min, min_time, max, max_time, max_dir) values "
+
+        pgconn = self.getPGConnexion()
+        pg_cur = pgconn.cursor()
 
         start_dt = datetime.now()
         last_dt_in_cache = 0
@@ -441,7 +392,7 @@ class MigrateDB:
             else:
                 # check min
 
-                # use last_item and not main_row + add an_otem['active'] = False + skip those item in next processing
+# use last_item and not main_row + add an_otem['active'] = False + skip those item in next processing
 
                 if main_row[self.row_cache_min] is None or (an_item[self.row_cache_min] is not None and an_item[self.row_cache_min] < main_row[self.row_cache_min]):
                     main_row[self.row_cache_min] = an_item[self.row_cache_min]
@@ -528,13 +479,15 @@ class MigrateDB:
         # now insert/update histo extremes
         start_dt = datetime.now()
 
-        HistoExtreme.storeArray(pg_cur, histo_x)
+        HistoExtreme.storeArray(pgconn, histo_x)
         histo_x_length = datetime.now() - start_dt
         my_span.add_event(
             'histo_extreme',
             str(len(histo_x)) + ' rows inserted, time: ' + str(histo_x_length.seconds * 1000 + histo_x_length.microseconds/1000) + ' milliseconds')
         histo_x = []
         x_to_update = []
+        pgconn.commit()
+        pgconn.close()
 
     # -----------------------------------------------
     # create a virtual row from an weewx.archive row
@@ -619,7 +572,7 @@ class MigrateDB:
     # --------------------------------
     # return the sql select statement
     # --------------------------------
-    def get_weewx_select_sql(self, start_dt, end_dt, end_ts=None):
+    def get_weewx_select_sql(self, last_ts_in_obs, end_ts=None):
         query_my = "select dateTime, dateTime + (4 * 3600), usUnits, `interval`"
 
         # load an array of query args, one for each valdk, update sql statement
@@ -628,9 +581,9 @@ class MigrateDB:
             query_my += ', ' + a_mesure['col']
 
         # finalize sql statements
-        query_my += " from archive where dateTime >= " + str(start_dt.timestamp() - 4 * 3600)
-        query_my += " and dateTime < " + str(end_dt.timestamp() - 4 * 3600)
-
+        query_my += " from archive where dateTime > " + str(last_ts_in_obs)
+        if end_ts is not None:
+            query_my += " and dateTime < " + str(end_ts)
         # query_my += " order by dateTime"""
         query_my += " order by dateTime"
         return query_my
@@ -737,8 +690,8 @@ class MigrateDB:
             row = pg_cur.fetchone()
             if row is not None:
                 poste_id = row[0]
-                last_obs_ts = datetime.now() if row[1] is None else row[1]
-                last_x_ts = datetime.now() if row[2] is None else row[2]
+                last_obs_ts = None if row[1] is None else row[1]
+                last_x_ts = None if row[2] is None else row[2]
                 load_json = row[3]
             # my_span.set_attribute('meteor', meteor)
             my_span.set_attribute('last_obs_ts', last_obs_ts.timestamp() if last_obs_ts is not None else 'None')

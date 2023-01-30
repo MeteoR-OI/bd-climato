@@ -105,7 +105,10 @@ class JsonLoader:
         except Exception:
             pass
 
-        filename_prefix = self.archive_dir + "/" + meteor + "/" + str_annee + "/" + str_mois + "/"
+        if work_item.get('is_loaded') is not None and work_item['is_loaded'] is not False:
+            filename_prefix = self.archive_dir + "/" + meteor + "/toLoad/"
+        else:
+            filename_prefix = self.archive_dir + "/" + meteor + "/" + str_annee + "/" + str_mois + "/"
         if not os.path.exists(filename_prefix):
             os.makedirs(filename_prefix)
 
@@ -130,6 +133,7 @@ class JsonLoader:
 
     @transaction.atomic
     def processWorkItem(self, work_item: json, my_span, op_tracer):
+        work_item['is_loaded'] = True
         filename = work_item['f']
         jsons_to_load = work_item['json']
         idx_global = 0
@@ -140,6 +144,7 @@ class JsonLoader:
         b_load = PosteMeteor(pid).data.load_json
         if b_load is False:
             my_span.add_event('jsonload', meteor + ' inactif json_load is False), skipping file ' + filename)
+            work_item['is_loaded'] = False
             return
         my_span.set_attribute('file', filename)
         my_span.set_attribute('meteor', meteor)
