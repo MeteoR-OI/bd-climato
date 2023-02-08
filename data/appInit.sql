@@ -32,7 +32,24 @@ insert into postes(meteor, delta_timezone, meteofr, title, owner, email, phone, 
 ('TRG170',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.338827, 55.51276, false),
 ('TRM490',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.26666, 55.495548, false)
 ;
-
+/*
+  name:
+  json_input: field name in json coming from weewx, and in Obs table
+  archive_col: field name in weew archive database
+  archive_table:
+  field_dir: field for wind direction (not in omm measure)
+  val_deca: decallage de la mesure
+  min: compute a min in extreme table
+  min_deca: decallage du min
+  max: compute a max in extreme table
+  max_deca: decallage du max
+  is_avg:
+  is_wind: is it a wind measure (need to find the winddir data)
+  omm_link: for omm measure, link to the base measure
+  allow_zero: not used...
+  json_input_bis: ??
+  is_houly: is data in json coming from weewx is a value for the full hour (etp)
+*/
 insert into mesures
 (id,    name,            json_input,         archive_col,   archive_table, field_dir, val_deca, min, min_deca, max,  max_deca, is_avg, is_wind, omm_link, allow_zero,     json_input_bis, is_hourly) values
 ( 1, 'barometer',       'barometer',        'barometer',          null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
@@ -44,8 +61,8 @@ insert into mesures
 (14, 'extra_temp3',     'extra_temp3',      'extraTemp3',         null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
 (16, 'extrahumid1',     'extra_humid1',     'extraHumid1',        null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
 (18, 'extrahumid2',     'extra_humid2',     'extraHumid2',        null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
-(20, 'gust',            'wind_gust',        'windGust',          'wind',         22,     0,   false,   0,     true,    0,      true,   true,     null,      true,      'wind_max',        False),
-(22, 'gust dir',        'wind_gust_dir',    'windGustDir',    'windDir',       null,     0,   false,   0,     false,   0,      true,   false,    null,      true,  'wind_max_dir',        False),
+(20, 'gust',            'wind_gust',        'windGust',           'wind',        22,     0,   false,   0,     true,    0,      true,   true,     null,      true,      'wind_max',        False),
+(22, 'gust dir',        'wind_gust_dir',    'windGustDir',        'windDir',   null,     0,   false,   0,     false,   0,      true,   false,    null,      true,  'wind_max_dir',        False),
 (24, 'hail rate',       'hail_rate',        'hailRate',           null,        null,     0,   false,   0,     true,    0,      true,   false,    null,      true,            null,        False),
 (26, 'hail',            'hail',             'hail',               null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
 (28, 'heatindex',       'heatindex',        'heatindex',          null,        null,     0,   false,   0,     true,    0,      true,   false,    null,      true,            null,        False),
@@ -76,9 +93,9 @@ insert into mesures
 (78, 'temp omm',        'out_temp_omm',     'outTemp',            null,        null,     0,   true,    5,     true,   -7,      true,   false,      76,      true,            null,        False),
 (80, 'uv_indice',       'uv',               'UV',                 null,        null,     0,   false,   0,     true,    0,      true,   false,    null,      true,            null,        False),
 (82, 'voltage',         'voltage',          'consBatteryVoltage', null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
-(84, 'wind 10',         'wind10',           'windSpeed',        'wind',          90,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
-(86, 'wind 10 omm',     'wind10_omm',       'windSpeed',        'wind',        null,     0,   true,    0,     true,    0,      true,   false,      84,      true,            null,        False),
-(88, 'wind',            'wind',             'windSpeed',        'wind',          90,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
+(84, 'wind 10',         'wind10',           'windSpeed',          'wind',        90,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
+(86, 'wind 10 omm',     'wind10_omm',       'windSpeed',          'wind',      null,     0,   true,    0,     true,    0,      true,   false,      84,      true,            null,        False),
+(88, 'wind',            'wind',             'windSpeed',          'wind',        90,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
 (90, 'wind dir',        'wind_dir',         'windDir',            null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
 (92, 'windchill',       'windchill',        'windchill',          null,        null,     0,   true,    0,     false,   0,      true,   false,    null,      true,            null,        False)
 ;

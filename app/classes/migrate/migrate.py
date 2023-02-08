@@ -31,7 +31,7 @@ from app.tools import myTools
 class MigrateDB:
     def __init__(self):
         self._meteors_to_process = []
-        self.load_self_variables()
+        self.loadSelfVariables()
 
     # -----------------------------------
     # add an item in the list to execute
@@ -71,68 +71,45 @@ class MigrateDB:
     # -----------------
     # process our item
     # -----------------
-    def processWorkItem(self, work_item, my_span, op_tracer):
+    def processWorkItem(self, work_item, my_span):
+        old_json_load = None
         try:
+            pgconn = self.getPGConnexion()
+            pg_cur = pgconn.cursor()
             meteor = work_item['meteor']
-            with op_tracer.start_as_current_span('loading archive for ' + meteor) as my_global_span:
 
-                work_item['pid'], date_last_loaded_obs, date_last_loaded_x, load_json = self.get_poste_info(meteor, my_span)
-                if work_item['pid'] is None:
-                    raise Exception('station ' + meteor + ' not found')
+            start_dt, end_dt, old_json_load = self.getNewDateBraket(work_item, False)
 
-                # skipping postes with active updates
-                if load_json is True:
-                    my_span.add_event('migrate', 'load_json is active, skipping')
-                    return
+            if work_item['pid'] is None:
+                raise Exception('station ' + meteor + ' not found')
 
-                start_dt, end_dt, old_json_load = self.getNewDateBraket(work_item)
-                current_dt = datetime.now()
+            current_dt = datetime.now()
 
-                try:
-                    pgconn = self.getPGConnexion()
-                    pg_cur = pgconn.cursor()
+            # loop per year
+            while start_dt < current_dt:
 
-                    # loop per year
-                    while start_dt < current_dt:
-                        with op_tracer.start_as_current_span('loading data from ' + str(start_dt) + ' to ' + str(end_dt)) as my_span:
+                # Load obs, records from archive
+                new_records = self.loadExistingObsAndFlushObs(pg_cur, work_item, start_dt, end_dt, my_span)
 
-                            # Load obs, records from archive
-                            new_records = self.loadExistingObsAndFlushObs(pg_cur, work_item, start_dt, end_dt, my_span)
+                # load archive data
+                self.loadExistingRecordsAndFlush(pg_cur, work_item, new_records, my_span)
+                new_records = {}
 
-                            # load archive data
-                            self.loadExistingRecordsAndFlush(pg_cur, work_item, start_dt, end_dt, new_records)
-                            new_records = None
+                pgconn.commit()
 
-                            pgconn.commit()
+                start_dt, end_dt, json_load = self.getNewDateBraket(work_item)
 
-                        start_dt, end_dt, json_load = self.getNewDateBraket(work_item)
+        except Exception as ex:
+            # rollback
+            pgconn.rollback()
+            myTools.logException(ex, my_span)
+            raise ex
 
-                except Exception as ex:
-                    # rollback
-                    pgconn.rollback()
-                    myTools.logException(ex, my_global_span)
-                    raise ex
-
-                finally:
-                    pgconn.close()
-                    pass
-
-            # work_item['last_obs_ts'] = date_last_loaded_obs.timestamp() if date_last_loaded_obs is not None else 0
-            # work_item['last_x_ts'] = date_last_loaded_x.timestamp() if date_last_loaded_x is not None else 0
-
-            # cached_data = {}
-            # with op_tracer.start_as_current_span('ecritures des obs + caching min-max') as my_span:
-            #     self.insert_obs_minmax_from_weewx(work_item, cached_data, my_span)
-
-            # with op_tracer.start_as_current_span('mise en cache des records WeeWX') as my_span:
-            #     self.load_maxmin_from_weewx(work_item, cached_data, my_span)
-
-            # with op_tracer.start_as_current_span('ecritures des records') as my_span:
-            #     self.write_extreme_rows(work_item, cached_data, my_span)
-
-        except Exception as e:
-            t.logException(e)
-            raise(e)
+        finally:
+            pg_cur.close()
+            pgconn.close()
+            if old_json_load is not None and old_json_load is True:
+                self.updateLoadJsonValue(meteor, old_json_load)
 
     # ---------------------------------------
     # other methods specific to this service
@@ -159,7 +136,7 @@ class MigrateDB:
                 # only need the last_extremes_date
                 return row[2]
 
-            start_dt = datetime.now()
+            start_dt = datetime(2100, 12, 31, 0, 0)
             work_item['pid'] = row[0]
             if row[1] is not None:
                 start_dt = min(start_dt, row[1])
@@ -172,9 +149,7 @@ class MigrateDB:
                 " where dateTime > " + str(start_dt.timestamp() - 4 * 3600))
             row2 = my_cur.fetchone()
             my_cur.close()
-            if row2 is None:
-                start_dt = datetime(2900, 12, 31, 0, 0, 0)
-            else:
+            if row2 is not None:
                 start_dt = min(start_dt, row2[0])
 
             end_dt = datetime(start_dt.year + 1, 1, 1, 0, 0, 0, 0)
@@ -210,16 +185,19 @@ class MigrateDB:
     # insert mesures from weewx archive in our obs table
     # ---------------------------------------------------
     def loadExistingObsAndFlushObs(self, pg_cur, work_item, start_dt, end_dt, my_span):
+        new_records = {}
+        histo_o = []
+
         start_time = datetime.now()
-        cached_data = {}
+
+        # max timestamp in extreme => use an insert/update, or pure insert (faster)
         last_ts_in_extreme = self.getNewDateBraket(work_item, True)
 
         pid = work_item['pid']
         meteor = work_item['meteor']
-        histo_o = []
 
-        query_my = self.get_weewx_select_sql(start_dt, end_dt, None)
-        query_pg, query_args = self.prepare_sql_insert_structure()
+        query_my = self.getWeewxSelectSql(start_dt, end_dt, None)
+        query_pg, query_args = self.prepareSqlInsertStructure()
 
         # get a cursor to our archive db
         myconn = self.getMSQLConnection(meteor)
@@ -237,19 +215,22 @@ class MigrateDB:
             col_mapping[my_cur.column_names[idx]] = idx
             idx += 1
 
-        nb_obs_inserted = 0
+        nb_new_obs_all = 0
         nb_histo_inserted = 0
-        nb_new_obs = 0
+        nb_new_obs_master = 0
         last_obs_id = -1
 
         while row2 is not None:
             if row2[self.row_archive_usunits] != 16:
-                raise Exception('bad usUnits: ' + str(row2[self.row_archive_usunits]) + ', dateTime: ' + str(row2[self.row_archive_datetime_dt]))
+                raise Exception('bad usUnits: ' + str(row2[self.row_archive_usunits]) + ', dateTime(UTC): ' + str(row2[self.row_archive_datetime]))
 
-            # reset dirty flag
+            # reset dirty flag and load 3 first arg values
             for a_q in query_args:
                 a_q['dirty'] = False
-                str_date = datetime.utcfromtimestamp(row2[self.row_archive_datetime_dt] + a_q['valdk'] * 3600).strftime('%Y-%m-%d %H:%M:%S')
+                if a_q['valdk'] == 0:
+                    str_date = datetime.utcfromtimestamp(row2[self.row_archive_datetime_dt]).strftime('%Y-%m-%d %H:%M:%S')
+                else:
+                    str_date = datetime.utcfromtimestamp(row2[self.row_archive_datetime_dt] + a_q['valdk'] * 3600).strftime('%Y-%m-%d %H:%M:%S')
                 a_q['args'] = [
                     str(pid),
                     str_date,
@@ -258,9 +239,9 @@ class MigrateDB:
 
             # load mesure values in our sql queries
             idx = 0
-            while idx < len(self.mesures):
-                a_mesure = self.mesures[idx]
-                row_mesure_value = row2[idx + 4]         # row values are in same order as self.mesures
+            while idx < len(self.measures):
+                a_mesure = self.measures[idx]
+                row_mesure_value = row2[idx + 4]                        # row values are in same order as self.measures
 
                 # load value in the right insert statement, depending on valdk
                 for a_q in query_args:
@@ -277,42 +258,37 @@ class MigrateDB:
                 if a_q['dirty'] is True:
                     pg_cur.execute(query_pg, a_q['args'])
                     obs_new_id = pg_cur.fetchone()[0]
-                    histo_o.append([id_obs_main, obs_new_id])
-                    nb_obs_inserted += 1
                     if a_q['valdk'] == 0:
                         # Only count main obs (ie. obs with val_deca = 0)
-                        nb_new_obs += 1
+                        nb_new_obs_master += 1
+                    histo_o.append([id_obs_main, obs_new_id])
+                    nb_new_obs_all += 1
                     if id_obs_main == 0 and a_q['args'][2] != 0:
                         id_obs_main = obs_new_id
-            # mapping_rowno_obsid.append(id_obs_main if id_obs_main > 0 else -1)
 
             # message for first insert
             if last_obs_id == -1 and id_obs_main != 0:
                 last_obs_id = id_obs_main
                 t.logInfo("first archive inserted, id: " + str(last_obs_id) + ", from date: " + str(a_q['args'][1]), my_span, {"svc": "migrate", "meteor": meteor})
 
-            # message if first data did not insert a 'main' obs
-            if last_obs_id == -1 and pg_cur.rowcount > 0:
-                last_obs_id = pg_cur.fetchone()[0]
-                t.logInfo("first archive-0 inserted, id: " + str(last_obs_id) + ", from date: " + str(a_q['args'][1]), my_span, {"svc": "migrate", "meteor": meteor})
-
             # store min/max in our cache
-            for a_mesure in self.mesures:
+            for a_mesure in self.measures:
                 mid = a_mesure['id']
+                # get value for the measure, or for the linked measure for omm measures
                 if a_mesure['ommidx'] is None:
                     mesure_value = row2[col_mapping[a_mesure['col']]]
                 else:
-                    mesure_value = row2[col_mapping[self.mesures[a_mesure['ommidx']]['col']]]
+                    mesure_value = row2[col_mapping[self.measures[a_mesure['ommidx']]['col']]]
 
                 # get cached_mesure
-                if cached_data.get('m_' + str(mid)) is None:
-                    cached_data['m_' + str(mid)] = {'mid': mid, 'cache': [], 'last': 0, 'last_in_db': last_ts_in_extreme}
-                mesure_cached_item = cached_data['m_' + str(mid)]
+                if new_records.get('m_' + str(mid)) is None:
+                    new_records['m_' + str(mid)] = {'mid': mid, 'cache': [], 'last': 0, 'last_in_db': last_ts_in_extreme}
+                mesure_cached_item = new_records['m_' + str(mid)]
 
                 # cache mesure as max/min
                 nb_record_cached += 1
                 mesure_dir = None if a_mesure['diridx'] is None else row2[a_mesure['diridx']]
-                self.load_min_max_from_archive_row(a_mesure, mesure_value, mesure_dir, row2[self.row_archive_datetime], id_obs_main, mesure_cached_item)
+                self.load_min_max_from_archive_row(a_mesure, mesure_value, mesure_dir, row2[self.row_archive_datetime_dt], id_obs_main, mesure_cached_item)
 
             row2 = my_cur.fetchone()
 
@@ -320,9 +296,9 @@ class MigrateDB:
         nb_histo_inserted = len(histo_o)
         histo_o = None
 
-        if nb_new_obs > 0:
+        if nb_new_obs_master > 0:
             t.logInfo('obs inserted, last id: ' + str(obs_new_id) + ", date: " + str(a_q['args'][1]), my_span, {"svc": "migrate", "meteor": meteor})
-            my_span.add_event('obs', str(nb_new_obs) + ' rows inserted (with deca == 0)')
+            my_span.add_event('obs', str(nb_new_obs_master) + ' rows inserted (with deca == 0), total rows: ' + str(nb_new_obs_all))
             my_span.add_event('histo', str(nb_histo_inserted) + ' rows inserted')
         else:
             t.logInfo('no new obs inserted', my_span, {"svc": "migrate", "meteor": meteor})
@@ -332,25 +308,26 @@ class MigrateDB:
         process_length = datetime.now() - start_time
         my_span.add_event('maxmin_step1', 'mesures ajoutées en cache: ' + str(nb_record_cached))
         my_span.add_event('insert_obs_minmax_from_weewx', 'processing: ' + str(process_length.microseconds/1000) + ' ms')
-        return cached_data
+        return new_records
 
     # ------------------------------------
     # generate max/min from WeeWX records
     # ------------------------------------
-    def load_maxmin_from_weewx(self, work_item, cached_data, my_span):
+    def load_maxmin_from_weewx(self, work_item, new_records, my_span):
+        # check: nico use: last_in_db for insert-update or insert..
         start_time = datetime.now()
         last_ts_in_extremes = work_item['last_x_ts']
         myconn = self.getMSQLConnection(work_item['meteor'])
         try:
-            for a_mesure in self.mesures:
+            for a_mesure in self.measures:
                 nb_record_added = 0
                 mid = a_mesure['id']
                 my_cur = myconn.cursor()
                 try:
                     # get cached_mesure
-                    if cached_data.get('m_' + str(mid)) is None:
-                        cached_data['m_' + str(mid)] = {'mid': mid, 'cache': [], 'last': 0, 'last_in_db': last_ts_in_extremes}
-                    mesure_cache_item = cached_data['m_' + str(mid)]
+                    if new_records.get('m_' + str(mid)) is None:
+                        new_records['m_' + str(mid)] = {'mid': mid, 'cache': [], 'last': 0, 'last_in_db': last_ts_in_extremes}
+                    mesure_cache_item = new_records['m_' + str(mid)]
 
                     # get table name, fix for wind table
                     table_name = a_mesure['col']
@@ -403,33 +380,51 @@ class MigrateDB:
     # ----------------------------------
     # flush our cache into our database
     # ----------------------------------
-    def write_extreme_rows(self, pg_cur, work_item, cached_data, my_span):
-        pid = work_item['pid']
-        x_to_update = []
-        insert_cde = "insert into extremes (date, poste_id, mesure_id, min, min_time, max, max_time, max_dir) values "
+    def loadExistingRecordsAndFlush(self, pg_cur, work_item, start_dt, end_dt, new_records, my_span):
+        try:
 
+            # Build a global
+            x_to_update, last_dt_in_cache = self.buildSortedGlobalArray(new_records, my_span)
+
+            # Compact our global list
+            self.compactCacheData(x_to_update, my_span)
+
+            # Merge list in db
+            self.mergeListInDB(pg_cur,  work_item['pid'], x_to_update, last_dt_in_cache, my_span)
+
+            x_to_update = []
+
+        except Exception as ex:
+            print(ex)
+            raise ex
+
+    def buildSortedGlobalArray(self, new_records, my_span):
+        # check: nico use: last_in_db for insert-update or insert..
+        x_to_update = []
         start_dt = datetime.now()
         last_dt_in_cache = 0
-        for a_mesure in self.mesures:
-            mesure_cached = cached_data['m_' + str(a_mesure['id'])]
+
+        for a_mesure in self.measures:
+            mesure_cached = new_records['m_' + str(a_mesure['id'])]
             if mesure_cached['last_in_db'] > last_dt_in_cache:
                 last_dt_in_cache = mesure_cached['last_in_db']
-            for an_item in mesure_cached['cache']:
-                x_to_update.append(an_item)
+
+            x_to_update += mesure_cached['cache']
             mesure_cached['cache'] = []             # free memory
         step1_length = datetime.now() - start_dt
-        my_span.add_event('write_x_array', 'build global array: length:' + str(len(x_to_update)) + ', time: ' + str(step1_length / 1000) + ' ms')
+        my_span.add_event('write_x_to_update', 'build x_to_update: length:' + str(len(x_to_update)) + ', time: ' + str(step1_length / 1000) + ' ms')
 
         # do a global sort
         start_dt = datetime.now()
         x_to_update.sort(key=lambda x: (x[self.row_cache_datetime], x[self.row_cache_mid]))
         sort_length = datetime.now() - start_dt
-        my_span.add_event('write_x_sort', 'sort time:' + str(sort_length/1000) + ' ms')
+        my_span.add_event('x_to_update_sort', 'sort time:' + str(sort_length/1000) + ' ms')
+        return x_to_update, last_dt_in_cache
 
+    def compactCacheData(self, x_to_update, my_span):
         # compact our cache with same date, same measure_id
         start_dt = datetime.now()
 
-        main_row = []
         nb_active_row = 0
         last_item = None
         for an_item in x_to_update:
@@ -440,120 +435,101 @@ class MigrateDB:
                 nb_active_row += 1
             else:
                 # check min
-
-                # use last_item and not main_row + add an_otem['active'] = False + skip those item in next processing
-
-                if main_row[self.row_cache_min] is None or (an_item[self.row_cache_min] is not None and an_item[self.row_cache_min] < main_row[self.row_cache_min]):
-                    main_row[self.row_cache_min] = an_item[self.row_cache_min]
-                    main_row[self.row_cache_mintime] = an_item[self.row_cache_mintime]
-                    main_row[self.row_cache_obsid_min] = an_item[self.row_cache_obsid_min]
-                if main_row[self.row_cache_max] is None or (an_item[self.row_cache_max] is not None and an_item[self.row_cache_max] > main_row[self.row_cache_max]):
-                    main_row[self.row_cache_max] = an_item[self.row_cache_max]
-                    main_row[self.row_cache_maxtime] = an_item[self.row_cache_maxtime]
-                    main_row[self.row_cache_maxdir] = an_item[self.row_cache_maxdir]
-                    main_row[self.row_cache_obsid_max] = an_item[self.row_cache_obsid_max]
-                an_item[self.row_cache_datetime] = None
+                if an_item[self.row_cache_min] is None or (last_item[self.row_cache_min] is not None and last_item[self.row_cache_min] > an_item[self.row_cache_min]):
+                    an_item[self.row_cache_min] = last_item[self.row_cache_min]
+                    an_item[self.row_cache_mintime] = last_item[self.row_cache_mintime]
+                    an_item[self.row_cache_obsid_min] = last_item[self.row_cache_obsid_min]
+                # check max
+                if an_item[self.row_cache_max] is None or (last_item[self.row_cache_max] is not None and last_item[self.row_cache_max] < an_item[self.row_cache_max]):
+                    an_item[self.row_cache_max] = last_item[self.row_cache_max]
+                    an_item[self.row_cache_maxtime] = last_item[self.row_cache_maxtime]
+                    an_item[self.row_cache_maxdir] = last_item[self.row_cache_maxdir]
+                    an_item[self.row_cache_obsid_max] = last_item[self.row_cache_obsid_max]
+                # desactivate last_item
+                last_item[self.row_cache_datetime] = None
             last_item = an_item
 
-        # process last in our array
-        if len(main_row) > 0 and \
-            last_item is not None and\
-            main_row[self.row_cache_datetime] == last_item[self.row_cache_datetime] and\
-                main_row[self.row_cache_mid] == last_item[self.row_cache_mid]:
+        compact_ms = datetime.now() - start_dt
+        my_span.add_event('x_to_update_compact', 'size: ' + str(nb_active_row) + ', time: ' + str(compact_ms.seconds * 1000 + compact_ms.microseconds/1000) + ' ms')
 
-            if main_row[self.row_cache_min] is None or (last_item[self.row_cache_min] is not None and last_item[self.row_cache_min] < main_row[self.row_cache_min]):
-                main_row[self.row_cache_min] = last_item[self.row_cache_min]
-                main_row[self.row_cache_mintime] = last_item[self.row_cache_mintime]
-                main_row[self.row_cache_obsid_min] = an_item[self.row_cache_obsid_min]
-            if main_row[self.row_cache_max] is None or (last_item[self.row_cache_max] is not None and last_item[self.row_cache_max] > main_row[self.row_cache_max]):
-                main_row[self.row_cache_max] = last_item[self.row_cache_max]
-                main_row[self.row_cache_maxtime] = last_item[self.row_cache_maxtime]
-                main_row[self.row_cache_maxdir] = last_item[self.row_cache_maxdir]
-                main_row[self.row_cache_obsid_max] = an_item[self.row_cache_obsid_max]
-            last_item[self.row_cache_datetime] = None
-
-        sort_length = datetime.now() - start_dt
-        # my_span.add_event('compacting length: ' + str(nb_active_row) + ', time: ' + str(sort_length.seconds * 1000 + sort_length.microseconds/1000) + ' milliseconds')
-
-        # now insert/update extremes from our compacted array
-        start_dt = datetime.now()
-
+    def mergeListInDB(self, pg_cur, pid, x_to_update, last_dt_in_cache, my_span):
+        # check: nico use: last_in_db for insert-update or insert..
+        insert_cde = "insert into extremes(date, poste_id, mesure_id, min, min_time, max, max_time, max_dir) values "
         nb_extremes_inserted = nb_extremes_updated = 0
         histo_x = []
+        start_dt = datetime.now()
 
         for an_item in x_to_update:
             # skip compacted item
             if an_item[self.row_cache_datetime] is None:
                 continue
 
-            if an_item[self.row_cache_datetime] >= last_dt_in_cache:
-                insert_sql = insert_cde + "("
-                insert_sql += "'" + str(datetime.fromtimestamp(an_item[self.row_cache_datetime])) + "', " + str(pid) + ", "
-                insert_sql += "null, " if an_item[self.row_cache_mid] is None else (str(an_item[self.row_cache_mid]) + ", ")
+            if an_item[self.row_cache_datetime] < last_dt_in_cache:
+                # update data if already one extreme record exist for this date/poste/mid
+                nb_upd = self.insertUpdateExtremes(pid, an_item, histo_x)
+                if nb_upd > 0:
+                    nb_extremes_updated += nb_upd
+                    continue
 
-                if an_item[self.row_cache_min] is None or an_item[self.row_cache_mintime] is None:
-                    insert_sql += "null, null, "
-                else:
-                    insert_sql += str(an_item[self.row_cache_min]) + ", '" + str(datetime.fromtimestamp(an_item[self.row_cache_mintime])) + "', "
+            # Inserting a new row
+            insert_sql = insert_cde + "("
+            insert_sql += "'" + str(datetime.fromtimestamp(an_item[self.row_cache_datetime])) + "', " + str(pid) + ", "
+            insert_sql += "null, " if an_item[self.row_cache_mid] is None else (str(an_item[self.row_cache_mid]) + ", ")
 
-                if an_item[self.row_cache_max] is None or an_item[self.row_cache_maxtime] is None:
-                    insert_sql += "null, null, null "
-                else:
-                    insert_sql += str(an_item[self.row_cache_max]) + ", '" + str(datetime.fromtimestamp(an_item[self.row_cache_maxtime])) + "', "
-                    if an_item[self.row_cache_maxdir] is None:
-                        insert_sql += 'null '
-                    else:
-                        insert_sql += str(an_item[self.row_cache_maxdir]) + " "
-
-                insert_sql += ") returning id"
-
-                pg_cur.execute(insert_sql)
-                insert_sql = ""
-                nb_extremes_inserted += 1
-                x_id = pg_cur.fetchone()[0]
-
-                if an_item[self.row_cache_obsid_min] is not None:
-                    histo_x.append([an_item[self.row_cache_obsid_min], x_id])
-                if an_item[self.row_cache_obsid_max] is not None and an_item[self.row_cache_obsid_min] != an_item[self.row_cache_obsid_max]:
-                    histo_x.append([an_item[self.row_cache_obsid_max], x_id])
+            if an_item[self.row_cache_min] is None or an_item[self.row_cache_mintime] is None:
+                insert_sql += "null, null, "
             else:
-                nb_ins, nb_upd = self.insert_update_extremes(work_item, an_item, histo_x)
-                nb_extremes_inserted += nb_ins
-                nb_extremes_updated += nb_upd
+                insert_sql += str(an_item[self.row_cache_min]) + ", '" + str(datetime.fromtimestamp(an_item[self.row_cache_mintime])) + "', "
+
+            if an_item[self.row_cache_max] is None or an_item[self.row_cache_maxtime] is None:
+                insert_sql += "null, null, null "
+            else:
+                insert_sql += str(an_item[self.row_cache_max]) + ", '" + str(datetime.fromtimestamp(an_item[self.row_cache_maxtime])) + "', "
+                if an_item[self.row_cache_maxdir] is None:
+                    insert_sql += 'null '
+                else:
+                    insert_sql += str(an_item[self.row_cache_maxdir]) + " "
+
+            insert_sql += ") returning id"
+
+            pg_cur.execute(insert_sql)
+            insert_sql = ""
+            nb_extremes_inserted += 1
+            x_id = pg_cur.fetchone()[0]
+
+            if an_item[self.row_cache_obsid_min] is not None:
+                histo_x.append([an_item[self.row_cache_obsid_min], x_id])
+            if an_item[self.row_cache_obsid_max] is not None and an_item[self.row_cache_obsid_min] != an_item[self.row_cache_obsid_max]:
+                histo_x.append([an_item[self.row_cache_obsid_max], x_id])
 
         sort_length = datetime.now() - start_dt
         sort_len = sort_length.seconds * 1000 + sort_length.microseconds/1000
-        my_span.add_event('extremes', str(nb_extremes_inserted) + ' rows extremes inserted, ' + str(nb_extremes_updated) + ' updated, time: ' + str(sort_len) + ' milliseconds')
+        my_span.add_event('extremes', str(nb_extremes_inserted) + ' rows inserted, ' + str(nb_extremes_updated) + ' updated, time: ' + str(sort_len) + ' ms')
 
         # now insert/update histo extremes
         start_dt = datetime.now()
-
         HistoExtreme.storeArray(pg_cur, histo_x)
         histo_x_length = datetime.now() - start_dt
         my_span.add_event(
             'histo_extreme',
             str(len(histo_x)) + ' rows inserted, time: ' + str(histo_x_length.seconds * 1000 + histo_x_length.microseconds/1000) + ' milliseconds')
         histo_x = []
-        x_to_update = []
 
     # -----------------------------------------------
     # create a virtual row from an weewx.archive row
     # -----------------------------------------------
     def load_min_max_from_archive_row(self, a_mesure, mesure_value, dir_value, dt, obs_id, mesure_cached_item):
         virtual_row = [
-            self.round_ts_to_an_exact_day(dt + a_mesure['mindk'] * 3600),
+            self.roundDatetimeToAnExactDay(dt + a_mesure['mindk'] * 3600),
             mesure_value,
             None if mesure_value is None else dt,
-            self.round_ts_to_an_exact_day(dt + a_mesure['maxdk'] * 3600),
+            self.roundDatetimeToAnExactDay(dt + a_mesure['maxdk'] * 3600),
             mesure_value,
             None if mesure_value is None else dt,
             None if mesure_value is None else dir_value,
             a_mesure['id'],
             obs_id
         ]
-
-        if self.round_ts_to_an_exact_day(dt + a_mesure['mindk'] * 3600) in ('2022-02-02', '2022-02-03') and a_mesure['field'] == 'gust':
-            print('day to check - wind 98.1702280006065')
         self.load_min_max(a_mesure, virtual_row, mesure_cached_item)
 
     # ----------------------------------------------
@@ -561,10 +537,10 @@ class MigrateDB:
     # ----------------------------------------------
     def load_min_max_from_extreme_row(self, a_mesure, row, mesure_cached_item):
         row_virtual = [
-            None if row[self.row_extreme_mintime] is None else self.round_ts_to_an_exact_day(row[self.row_extreme_mintime] + a_mesure['mindk'] * 3600),
+            None if row[self.row_extreme_mintime] is None else self.roundDatetimeToAnExactDay(row[self.row_extreme_mintime] + a_mesure['mindk'] * 3600),
             row[self.row_extreme_min],
             None if row[self.row_extreme_min] is None else row[self.row_extreme_mintime],
-            None if row[self.row_extreme_maxtime] is None else self.round_ts_to_an_exact_day(row[self.row_extreme_maxtime] + a_mesure['maxdk'] * 3600),
+            None if row[self.row_extreme_maxtime] is None else self.roundDatetimeToAnExactDay(row[self.row_extreme_maxtime] + a_mesure['maxdk'] * 3600),
             row[self.row_extreme_max],
             None if row[self.row_extreme_max] is None else row[self.row_extreme_maxtime],
             None if row[self.row_extreme_max] is None else row[self.row_extreme_maxdir],
@@ -578,7 +554,7 @@ class MigrateDB:
     # -----------------------------------------
     def load_min_max(self, a_mesure, row, mesure_cached_item):
         if a_mesure['min'] is True and (row[self.row_virtual_min] is not None and row[self.row_virtual_mintime] is not None):
-            cached_extreme = self.get_cached_item(mesure_cached_item, row[self.row_virtual_mindt], row[self.row_virtual_mid])
+            cached_extreme = self.getCachedItem(mesure_cached_item, row[self.row_virtual_mindt], row[self.row_virtual_mid])
             if cached_extreme[self.row_cache_min] is None or row[self.row_virtual_min] < cached_extreme[self.row_cache_min]:
                 cached_extreme[self.row_cache_min] = row[self.row_virtual_min]
                 cached_extreme[self.row_cache_mintime] = row[self.row_virtual_mintime]
@@ -587,7 +563,7 @@ class MigrateDB:
                     mesure_cached_item['last_in_db'] = row[self.row_virtual_mindt]
 
         if a_mesure['max'] is True and (row[self.row_virtual_max] is not None and row[self.row_virtual_maxtime] is not None):
-            cached_extreme = self.get_cached_item(mesure_cached_item, row[self.row_virtual_maxdt], row[self.row_virtual_mid])
+            cached_extreme = self.getCachedItem(mesure_cached_item, row[self.row_virtual_maxdt], row[self.row_virtual_mid])
             if cached_extreme[self.row_cache_max] is None or row[self.row_virtual_max] > cached_extreme[self.row_cache_max]:
                 cached_extreme[self.row_cache_max] = row[self.row_virtual_max]
                 cached_extreme[self.row_cache_maxtime] = row[self.row_virtual_maxtime]
@@ -599,36 +575,41 @@ class MigrateDB:
     # --------------------------
     # return the extreme cached
     # --------------------------
-    def get_cached_item(self, mesure_cached_item, dt, mid):
-        # dt => self.round_ts_to_an_exact_day
+    def getCachedItem(self, mesure_cached_item, dt, mid):
+        # dt => self.roundDatetimeToAnExactDay
         # if  dt > mesure_cached_item['last'] => add new + mesure_cached_item['last'] = dt
         # if dt == mesure_cached_item['last'] => return mesure_cached_item['cache'][len(mesure_cached_item['last'] - 1)]
-        pure_dt = self.round_ts_to_an_exact_day(dt)
+        pure_dt = self.roundDatetimeToAnExactDay(dt)
+
+        # lucky the last one is asked..
+        if pure_dt == mesure_cached_item['last']:
+            return mesure_cached_item['cache'][len(mesure_cached_item['cache']) - 1]
+
+        # Lookup in our cache in reverse order
         if pure_dt < mesure_cached_item['last']:
             for an_item in reversed(mesure_cached_item['cache']):
                 if an_item[0] == pure_dt:
                     return an_item
-        else:
-            if pure_dt == mesure_cached_item['last']:
-                return mesure_cached_item['cache'][len(mesure_cached_item['cache']) - 1]
+
         # add new cache item
         new_item = [pure_dt, mid, None, None, None, None, None, None, None]
         mesure_cached_item['cache'].append(new_item)
+        mesure_cached_item['last'] = pure_dt
         return new_item
 
     # --------------------------------
     # return the sql select statement
     # --------------------------------
-    def get_weewx_select_sql(self, start_dt, end_dt, end_ts=None):
+    def getWeewxSelectSql(self, start_dt, end_dt, end_ts=None):
         query_my = "select dateTime, dateTime + (4 * 3600), usUnits, `interval`"
 
         # load an array of query args, one for each valdk, update sql statement
-        for a_mesure in self.mesures:
+        for a_mesure in self.measures:
             # add field name into our select statement for weewx
             query_my += ', ' + a_mesure['col']
 
         # finalize sql statements
-        query_my += " from archive where dateTime >= " + str(start_dt.timestamp() - 4 * 3600)
+        query_my += " from archive where dateTime > " + str(start_dt.timestamp() - 4 * 3600)
         query_my += " and dateTime < " + str(end_dt.timestamp() - 4 * 3600)
 
         # query_my += " order by dateTime"""
@@ -638,13 +619,13 @@ class MigrateDB:
     # -----------------------------------
     # prepare an array of sql to execute
     # -----------------------------------
-    def prepare_sql_insert_structure(self):
+    def prepareSqlInsertStructure(self):
         query_args = []
         query_pg1 = "insert into obs(poste_id, time, duration"
         query_pg2 = ") values ( %s, %s, %s"      # id_obs has to be the last
 
         # load an array of query args, one for each valdk, update sql statement
-        for a_mesure in self.mesures:
+        for a_mesure in self.measures:
             b_found = False
             for a_deca in query_args:
                 if a_deca['valdk'] == a_mesure['valdk']:
@@ -666,7 +647,7 @@ class MigrateDB:
     # -----------------------
     def get_min_valdk(self):
         min_valdk = 0
-        for a_m in self.mesures:
+        for a_m in self.measures:
             if a_m['mindk'] < min_valdk:
                 min_valdk = a_m['mindk']
             if a_m['maxdk'] < min_valdk:
@@ -676,19 +657,9 @@ class MigrateDB:
     # -------------------------
     # insert or update extreme
     # -------------------------
-    def insert_update_extremes(self, work_item, an_item, histo_x):
-        pid = work_item['pid']
+    def insertUpdateExtremes(self, pid, an_item, histo_x):
         nb_insert = 0
         nb_update = 0
-        # self.row_cache_datetime = 0
-        # self.row_cache_mid = 1
-        # self.row_cache_min = 2
-        # self.row_cache_mintime = 3
-        # self.row_cache_obsid_min = 4
-        # self.row_cache_max = 5
-        # self.row_cache_maxtime = 6
-        # self.row_cache_maxdir = 7
-        # self.row_cache_obsid_max = 8
 
         x_dt = datetime.fromtimestamp(an_item[self.row_cache_datetime]).date()
         current_x = ExtremeMeteor.get_extreme(pid, an_item[self.row_cache_mid], x_dt)
@@ -753,7 +724,7 @@ class MigrateDB:
             pgconn.close()
             return poste_id, last_obs_ts, last_x_ts, load_json
 
-    def get_mesures(self, pgconn):
+    def getMeasures(self, pgconn):
         mesures = []
         pg_query = "select id, archive_col, archive_table, field_dir, json_input, val_deca, min, min_deca, max, max_deca, is_avg, is_wind, allow_zero, omm_link from mesures"
 
@@ -802,11 +773,11 @@ class MigrateDB:
         omm_link = []
         m_idx = 0
 
-        while m_idx < len(self.mesures):
-            if self.mesures[m_idx]['ommidx'] is not None:
+        while m_idx < len(self.measures):
+            if self.measures[m_idx]['ommidx'] is not None:
                 my_mesure_data = None
-                my_omm_mesure = self.mesures[m_idx]
-                my_mesure = self.mesures[my_omm_mesure['ommidx']]
+                my_omm_mesure = self.measures[m_idx]
+                my_mesure = self.measures[my_omm_mesure['ommidx']]
                 for an_omm_link in omm_link:
                     if an_omm_link['base_idx'] == my_omm_mesure['ommidx']:
                         my_mesure_data = an_omm_link
@@ -844,20 +815,21 @@ class MigrateDB:
 
         return myconn
 
-    def round_ts_to_an_exact_day(self, timestamp):
+    def roundDatetimeToAnExactDay(self, timestamp):
         return timestamp - (timestamp % 86400)
 
-    def load_self_variables(self):
+    def loadSelfVariables(self):
         pgconn = None
         try:
             pgconn = self.getPGConnexion()
 
             # load mesures definition in memory
-            self.mesures = self.get_mesures(pgconn)
+            self.measures = self.getMeasures(pgconn)
+
             # load omm link array, between base mesures and linked omm mesures
             self.omm_link = self.get_omm_link()
 
-            # row_id for archive data
+            # row_id for select from archive data, first 4 fields
             self.row_archive_datetime = 0
             self.row_archive_datetime_dt = 1
             self.row_archive_usunits = 2
@@ -883,16 +855,6 @@ class MigrateDB:
             self.row_virtual_maxdir = 6
             self.row_virtual_mid = 7
             self.row_virtual_obsid = 8
-            # self.row_virtual_datetime_min = 0
-            # self.row_virtual_min = 1
-            # self.row_virtual_mintime = 2
-            # self.row_virtual_datetime_max = 3
-            # self.row_virtual_max = 4
-            # self.row_virtual_maxtime = 5
-            # self.row_virtual_maxdir = 6
-            # self.row_virtual_obsid_min = 7
-            # self.row_virtual_mid = 8
-            # self.row_virtual_id = 9
 
             self.row_cache_datetime = 0
             self.row_cache_mid = 1

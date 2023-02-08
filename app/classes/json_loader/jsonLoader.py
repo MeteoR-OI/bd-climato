@@ -132,7 +132,7 @@ class JsonLoader:
         os.rename(self.base_dir + "/" + work_item['f'],  self.archive_dir + "/" + meteor + "/failed/" + work_item['f'])
 
     @transaction.atomic
-    def processWorkItem(self, work_item: json, my_span, op_tracer):
+    def processWorkItem(self, work_item: json, my_span):
         work_item['is_loaded'] = True
         filename = work_item['f']
         jsons_to_load = work_item['json']
@@ -161,83 +161,81 @@ class JsonLoader:
                     raise Exception("code meteor inconnu: " + meteor)
 
                 idx_data = 0
-                while idx_data < jsons_to_load[idx_global]['data'].__len__():
-                    with op_tracer.start_as_current_span("Item_" + str(idx_global) + ", data_" + str(idx_data)) as my_data_span:
-                        try:
-                            a_work_item = jsons_to_load[idx_global]['data'][idx_data]
-                            # get data from our json item
-                            j_stop_dat = a_work_item["stop_dat"]
-                            j_duration = a_work_item["duration"]
-                            j_start_dat = j_stop_dat - timedelta(minutes=j_duration)
-                            j_exclus = ExcluMeteor.getExclusForAPoste(pid, j_start_dat, j_stop_dat)
-                            all_obs = ObsMeteor.load_all_needed_obs(pid, self.decas, j_stop_dat)
+                try:
+                    a_work_item = jsons_to_load[idx_global]['data'][idx_data]
+                    # get data from our json item
+                    j_stop_dat = a_work_item["stop_dat"]
+                    j_duration = a_work_item["duration"]
+                    j_start_dat = j_stop_dat - timedelta(minutes=j_duration)
+                    j_exclus = ExcluMeteor.getExclusForAPoste(pid, j_start_dat, j_stop_dat)
+                    all_obs = ObsMeteor.load_all_needed_obs(pid, self.decas, j_stop_dat)
 
-                            # load attributes in our sub_spam
-                            my_data_span.set_attribute("stop_dat", str(j_stop_dat))
+                    # load attributes in our sub_spam
+                    my_span.set_attribute("stop_dat", str(j_stop_dat))
 
-                            # check if json already loaded
-                            # NCNC -> futur: check if stop_dat in range ]time-duration, time]
-                            if all_obs[0]['obs'].data.duration != 0:
-                                if a_work_item.__contains__("force_replace") is not True:
-                                    t.logInfo(
-                                            'already loaded', my_data_span,
-                                            {'meteor': meteor, 'file': filename, 'idx': idx_data, 'stop_dat': str(j_stop_dat)})
-                                    continue
-                                else:
-                                    # delete our obs, and linked extremes and obs
-                                    all_obs[0]['obs'].data.delete()
-                                    # reload a new set of obs (first will be new now)
-                                    all_obs = ObsMeteor.load_mesures(pid, self.decas, j_stop_dat)
+                    # check if json already loaded
+                    # NCNC -> futur: check if stop_dat in range ]time-duration, time]
+                    if all_obs[0]['obs'].data.duration != 0:
+                        if a_work_item.__contains__("force_replace") is not True:
+                            t.logInfo(
+                                    'already loaded', my_span,
+                                    {'meteor': meteor, 'file': filename, 'idx': idx_data, 'stop_dat': str(j_stop_dat)})
+                            continue
+                        else:
+                            # delete our obs, and linked extremes and obs
+                            all_obs[0]['obs'].data.delete()
+                            # reload a new set of obs (first will be new now)
+                            all_obs = ObsMeteor.load_mesures(pid, self.decas, j_stop_dat)
 
-                            all_obs[0]['obs'].data.duration = j_duration
-                            all_obs[0]['obs'].data.save()
-                            histo_x_list = []
-                            for an_obs in all_obs:
-                                histo_x_list.append([])
+                    all_obs[0]['obs'].data.duration = j_duration
+                    all_obs[0]['obs'].data.save()
+                    histo_x_list = []
+                    for an_obs in all_obs:
+                        histo_x_list.append([])
 
-                            keys_found = self.load_obs_data_j(pid, all_obs, a_work_item['valeurs'], j_stop_dat, j_exclus, histo_x_list)
-                            if keys_found is not None:
-                                # t.logInfo("keys loaded from json: " + str(keys_found), my_data_span)
-                                pass
-                            else:
-                                t.logError("jsonloder", "no keys loaded !!!", my_data_span)
+                    keys_found = self.load_obs_data_j(pid, all_obs, a_work_item['valeurs'], j_stop_dat, j_exclus, histo_x_list)
+                    if keys_found is not None:
+                        # t.logInfo("keys loaded from json: " + str(keys_found), my_span)
+                        pass
+                    else:
+                        t.logError("jsonloder", "no keys loaded !!!", my_span)
 
-                            # save obs, store dependencies in histoObs
-                            id_obs_main = 0
-                            histo_obs_new = []
-                            histo_x_new = []
-                            idx_obs_all = 0
-                            while idx_obs_all < len(all_obs):
-                                an_obs = all_obs[idx_obs_all]
-                                an_obs['obs'].data.save()
+                    # save obs, store dependencies in histoObs
+                    id_obs_main = 0
+                    histo_obs_new = []
+                    histo_x_new = []
+                    idx_obs_all = 0
+                    while idx_obs_all < len(all_obs):
+                        an_obs = all_obs[idx_obs_all]
+                        an_obs['obs'].data.save()
 
-                                if id_obs_main == 0 and an_obs['obs'].data.duration != 0:
-                                    id_obs_main = an_obs['obs'].data.id
+                        if id_obs_main == 0 and an_obs['obs'].data.duration != 0:
+                            id_obs_main = an_obs['obs'].data.id
 
-                                if id_obs_main != 0:
-                                    for an_histo_x in histo_x_list[idx_obs_all]:
-                                        histo_x_new.append([id_obs_main, an_histo_x])
-                                idx_obs_all += 1
+                        if id_obs_main != 0:
+                            for an_histo_x in histo_x_list[idx_obs_all]:
+                                histo_x_new.append([id_obs_main, an_histo_x])
+                        idx_obs_all += 1
 
-                            pgconn = self.getPGConnexion()
-                            HistoObsMeteor.storeArray(pgconn, histo_obs_new)
-                            pgconn.commit()
-                            HistoExtreme.storeArray(pgconn, histo_x_new)
-                            pgconn.commit()
-                            pgconn.close()
-                            nico()
-                            my_data_span.add_event('jsonload', "file: " + filename + " DONE")
-                            my_data_span.add_event('obs', 'new rows: ' + str(len(histo_obs_new)))
-                            # my_data_span.add_event('histo', "new rows: " + str(len(histo_x_new)))
-                            my_data_span.add_event('histo_extreme', "new rows: " + str(len(histo_x_new)))
-                            histo_obs_new = []
-                            histo_x_new = []
+                    pgconn = self.getPGConnexion()
+                    HistoObsMeteor.storeArray(pgconn, histo_obs_new)
+                    pgconn.commit()
+                    HistoExtreme.storeArray(pgconn, histo_x_new)
+                    pgconn.commit()
+                    pgconn.close()
+                    nico()
+                    my_span.add_event('jsonload', "file: " + filename + " DONE")
+                    my_span.add_event('obs', 'new rows: ' + str(len(histo_obs_new)))
+                    # my_span.add_event('histo', "new rows: " + str(len(histo_x_new)))
+                    my_span.add_event('histo_extreme', "new rows: " + str(len(histo_x_new)))
+                    histo_obs_new = []
+                    histo_x_new = []
 
-                        except Exception as exc:
-                            raise(exc)
+                except Exception as exc:
+                    raise(exc)
 
-                        finally:
-                            idx_data += 1
+                finally:
+                    idx_data += 1
             finally:
                 idx_global += 1
 

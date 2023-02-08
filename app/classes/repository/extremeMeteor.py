@@ -33,15 +33,15 @@ class ExtremeMeteor():
         if Extreme.objects.filter(poste_id=pid).filter(mesure_id=mid).filter(date=j_dat).exists():
             tmp_x = Extreme.objects.filter(poste_id=pid).filter(mesure_id=mid).filter(date=j_dat).first()
             return ExtremeMeteor(tmp_x.id)
-        else:
-            new_x = ExtremeMeteor(0)
-            new_x.data.poste = Poste.objects.filter(id=pid).first()
-            if new_x.data.poste is None:
-                raise Exception('invalid poste_id: ' + str(pid))
-            new_x.data.date = j_dat
-            new_x.data.mesure = Mesure.objects.filter(id=mid).first()
-            if new_x.data.mesure is None:
-                raise Exception('invalid mesure_id: ' + str(mid))
+
+        new_x = ExtremeMeteor(0)
+        new_x.data.poste = Poste.objects.filter(id=pid).first()
+        if new_x.data.poste is None:
+            raise Exception('invalid poste_id: ' + str(pid))
+        new_x.data.date = j_dat
+        new_x.data.mesure = Mesure.objects.filter(id=mid).first()
+        if new_x.data.mesure is None:
+            raise Exception('invalid mesure_id: ' + str(mid))
         return new_x
 
     @staticmethod
