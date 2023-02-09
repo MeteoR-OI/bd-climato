@@ -28,6 +28,21 @@
             "django": true
         },
         {
+            "name": "Django-migrate",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "autoReload": {
+                "enable": true
+            },
+            "args": [
+                "migrate", "app"
+            ],
+            "env": {
+                "DJANGO_SETTINGS_MODULE": "Clim_MeteoR.settings",
+            },
+            "django": true
+        },        {
             "name": "Django-telemetry",
             "type": "python",
             "request": "launch",
