@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL("CREATE EXTENSION timescaledb;"),
+        # migrations.RunSQL("CREATE EXTENSION timescaledb;"),
         migrations.RunSQL(
             "ALTER TABLE obs DROP CONSTRAINT obs_pkey;"
         ),

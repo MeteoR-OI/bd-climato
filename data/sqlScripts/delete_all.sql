@@ -1,10 +1,6 @@
-delete from agg_todo;
-delete from agg_histo;
 delete from obs;
-delete from agg_hour;
-delete from agg_day;
-delete from agg_month;
-delete from agg_year;
-delete from agg_all;
-delete from incident;
-
+delete from histo_obs;
+delete from extremes;
+delete from histo_extreme;
+delete from incidents;
+update postes set  last_obs_id=0, last_obs_date=null, last_extremes_id=0, last_extremes_date=null;

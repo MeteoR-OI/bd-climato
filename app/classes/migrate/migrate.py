@@ -78,7 +78,7 @@ class MigrateDB:
             pg_cur = pgconn.cursor()
             meteor = work_item['meteor']
 
-            start_dt, end_dt, old_json_load = self.getNewDateBraket(work_item, False)
+            start_dt, end_dt, old_json_load, last_ts_in_extreme = self.getNewDateBraket(work_item)
 
             if work_item['pid'] is None:
                 raise Exception('station ' + meteor + ' not found')
@@ -89,15 +89,15 @@ class MigrateDB:
             while start_dt < current_dt:
 
                 # Load obs, records from archive
-                new_records = self.loadExistingObsAndFlushObs(pg_cur, work_item, start_dt, end_dt, my_span)
+                new_records = self.loadExistingObsAndFlushObs(pg_cur, work_item, start_dt, end_dt, last_ts_in_extreme, my_span)
 
                 # load archive data
-                self.loadExistingRecordsAndFlush(pg_cur, work_item, new_records, my_span)
+                self.loadExistingRecordsAndFlush(pg_cur, work_item, new_records, last_ts_in_extreme, my_span)
                 new_records = {}
 
                 pgconn.commit()
 
-                start_dt, end_dt, json_load = self.getNewDateBraket(work_item)
+                start_dt, end_dt, _, _ = self.getNewDateBraket(work_item)
 
         except Exception as ex:
             # rollback
@@ -114,12 +114,12 @@ class MigrateDB:
     # ---------------------------------------
     # other methods specific to this service
     # ---------------------------------------
-    def getNewDateBraket(self, work_item, last_extreme_date_only=False):
+    def getNewDateBraket(self, work_item):
         meteor = work_item['meteor']
         """Get start_dt/end_dt from postes, and archive table"""
         pgconn = self.getPGConnexion()
         pg_cur = pgconn.cursor()
-        myconn = self.getMSQLConnection()
+        myconn = self.getMSQLConnection(meteor)
         my_cur = myconn.cursor()
         old_load_json = False
 
@@ -132,32 +132,28 @@ class MigrateDB:
             if row is None:
                 raise Exception('poste ' + meteor + ' not found')
 
-            if last_extreme_date_only is True:
-                # only need the last_extremes_date
-                return row[2]
-
-            start_dt = datetime(2100, 12, 31, 0, 0)
             work_item['pid'] = row[0]
-            if row[1] is not None:
-                start_dt = min(start_dt, row[1])
-            if row[2] is not None:
-                start_dt = min(start_dt, row[2])
+            last_o_dt = row[1]
+            last_x_dt = row[2] if row[2] is not None else datetime(2000, 1, 1)
             old_load_json = row[3]
 
-            my_cur.execute(
-                "select from_unixTime(min(datetime) + 4 * 3600) from archive " +
-                " where dateTime > " + str(start_dt.timestamp() - 4 * 3600))
+            sql = 'select from_unixtime(min(dateTime +3600*4)), from_unixtime(max(dateTime +3600*4)) from archive '
+            if last_o_dt is not None:
+                sql += " where dateTime > '" + str(last_o_dt) + "'"
+            my_cur.execute(sql)
             row2 = my_cur.fetchone()
             my_cur.close()
-            if row2 is not None:
-                start_dt = min(start_dt, row2[0])
+
+            start_dt = row2[0]
+            if start_dt is None:
+                start_dt = datetime(2100, 1, 1)         # start_dt as post current datetime, to exit
 
             end_dt = datetime(start_dt.year + 1, 1, 1, 0, 0, 0, 0)
 
             if old_load_json is True:
                 self.updateLoadJsonValue(meteor, False)
 
-            return start_dt, end_dt, old_load_json
+            return start_dt, end_dt, old_load_json, last_x_dt.timestamp()
 
         except Exception as ex:
             raise ex
@@ -184,14 +180,14 @@ class MigrateDB:
     # ---------------------------------------------------
     # insert mesures from weewx archive in our obs table
     # ---------------------------------------------------
-    def loadExistingObsAndFlushObs(self, pg_cur, work_item, start_dt, end_dt, my_span):
+    def loadExistingObsAndFlushObs(self, pg_cur, work_item, start_dt, end_dt, last_ts_in_extreme, my_span):
         new_records = {}
         histo_o = []
 
         start_time = datetime.now()
 
-        # max timestamp in extreme => use an insert/update, or pure insert (faster)
-        last_ts_in_extreme = self.getNewDateBraket(work_item, True)
+        if last_ts_in_extreme is None:
+            last_ts_in_extreme = datetime(2000, 1, 1)
 
         pid = work_item['pid']
         meteor = work_item['meteor']
@@ -380,17 +376,17 @@ class MigrateDB:
     # ----------------------------------
     # flush our cache into our database
     # ----------------------------------
-    def loadExistingRecordsAndFlush(self, pg_cur, work_item, start_dt, end_dt, new_records, my_span):
+    def loadExistingRecordsAndFlush(self, pg_cur, work_item, new_records,last_ts_in_extreme, my_span):
         try:
 
             # Build a global
-            x_to_update, last_dt_in_cache = self.buildSortedGlobalArray(new_records, my_span)
+            x_to_update = self.buildSortedGlobalArray(new_records, my_span)
 
             # Compact our global list
             self.compactCacheData(x_to_update, my_span)
 
             # Merge list in db
-            self.mergeListInDB(pg_cur,  work_item['pid'], x_to_update, last_dt_in_cache, my_span)
+            self.mergeListInDB(pg_cur,  work_item['pid'], x_to_update, last_ts_in_extreme, my_span)
 
             x_to_update = []
 
@@ -419,7 +415,7 @@ class MigrateDB:
         x_to_update.sort(key=lambda x: (x[self.row_cache_datetime], x[self.row_cache_mid]))
         sort_length = datetime.now() - start_dt
         my_span.add_event('x_to_update_sort', 'sort time:' + str(sort_length/1000) + ' ms')
-        return x_to_update, last_dt_in_cache
+        return x_to_update
 
     def compactCacheData(self, x_to_update, my_span):
         # compact our cache with same date, same measure_id
@@ -466,7 +462,7 @@ class MigrateDB:
 
             if an_item[self.row_cache_datetime] < last_dt_in_cache:
                 # update data if already one extreme record exist for this date/poste/mid
-                nb_upd = self.insertUpdateExtremes(pid, an_item, histo_x)
+                _, nb_upd = self.insertUpdateExtremes(pid, an_item, histo_x)
                 if nb_upd > 0:
                     nb_extremes_updated += nb_upd
                     continue
@@ -609,7 +605,7 @@ class MigrateDB:
             query_my += ', ' + a_mesure['col']
 
         # finalize sql statements
-        query_my += " from archive where dateTime > " + str(start_dt.timestamp() - 4 * 3600)
+        query_my += " from archive where dateTime >= " + str(start_dt.timestamp() - 4 * 3600)
         query_my += " and dateTime < " + str(end_dt.timestamp() - 4 * 3600)
 
         # query_my += " order by dateTime"""
@@ -809,7 +805,8 @@ class MigrateDB:
 
         # set session timezone to utc
         my_cur = myconn.cursor()
-        my_cur.execute("set time_zone = '+00:00'")
+        # my_cur.execute("set time_zone = '+00:00'")
+        my_cur.execute('SET @@session.time_zone = "+00:00"')
         myconn.commit()
         my_cur.close()
 

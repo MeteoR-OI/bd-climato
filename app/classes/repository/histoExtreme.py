@@ -19,10 +19,9 @@ class HistoExtreme():
         pg_cur.execute(sql_str)
 
     @staticmethod
-    def storeArray(pgconn, data):
+    def storeArray(pg_cur, data):
         if len(data) == 0:
             return
-        pg_cur = pgconn.cursor()
         sql_str = "insert into histo_extreme (src_obs_id, target_x_id) values "
         b_hasdata = False
         data.sort(key=lambda x: (x[0], x[1]))
