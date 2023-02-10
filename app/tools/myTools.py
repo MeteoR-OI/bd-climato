@@ -117,6 +117,26 @@ def get_trace_info(exc, nb_levels: int = 3):
     return str(exc.__class__) + ':' + str(exc), ''.join(stack)
 
 
+def ToLocalTS(dt):
+    """Return timestamp for a naive date (with no timezone data)"""
+    return int((dt - datetime.datetime(1970, 1, 1)).total_seconds())
+
+
+def ToReunionTS(dt):
+    """Return timestamp for a date in local time in UTC+4"""
+    return int((dt - datetime.datetime(1970, 1, 1)).total_seconds() - 4 * 3600)
+
+
+def DateFromUTCTS(ts):
+    """return a datetime from an utc timestamp"""
+    return datetime.datetime.utcfromtimestamp(ts)
+
+
+def DateFromReuTS(ts):
+    """return a datetime from a timestamp in local time"""
+    return datetime.datetime.fromtimestamp(ts)
+
+
 class LogMe:
     """
     LogMe

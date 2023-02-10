@@ -119,7 +119,7 @@ class MigrateDB:
 
         except Exception as e:
             t.logException(e)
-            raise(e)
+            raise (e)
 
     # ---------------------------------------
     # other methods specific to this service
@@ -391,8 +391,6 @@ class MigrateDB:
                 nb_active_row += 1
             else:
                 # check min
-
-# use last_item and not main_row + add an_otem['active'] = False + skip those item in next processing
 
                 if main_row[self.row_cache_min] is None or (an_item[self.row_cache_min] is not None and an_item[self.row_cache_min] < main_row[self.row_cache_min]):
                     main_row[self.row_cache_min] = an_item[self.row_cache_min]

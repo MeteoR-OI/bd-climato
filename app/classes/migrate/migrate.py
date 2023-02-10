@@ -13,15 +13,13 @@
 # ---------------
 # more info on wind vs windGust: https://github-wiki-see.page/m/weewx/weewx/wiki/windgust
 # ---------------
-import app.tools.myTools as t
+import app.tools as t
 import mysql.connector
 import psycopg2
 from datetime import datetime
 from app.classes.repository.extremeMeteor import ExtremeMeteor
 from app.classes.repository.histoObs import HistoObsMeteor
 from app.classes.repository.histoExtreme import HistoExtreme
-from app.tools.myTools import logException
-from app.tools import myTools
 
 
 # --------------------------------------
@@ -44,7 +42,7 @@ class MigrateDB:
             'spanID': 'Start ' + meteor + ' migration'
         })
 
-        t.logInfo("New work item added in queue", None, {"svc": "migrate", "meteor": meteor, "work_item": self._meteors_to_process[len(self._meteors_to_process) - 1]})
+        t.myTools.logInfo("New work item added in queue", None, {"svc": "migrate", "meteor": meteor, "work_item": self._meteors_to_process[len(self._meteors_to_process) - 1]})
 
     # -----------------------------
     # get next item form our queue
@@ -92,17 +90,19 @@ class MigrateDB:
                 new_records = self.loadExistingObsAndFlushObs(pg_cur, work_item, start_dt, end_dt, last_ts_in_extreme, my_span)
 
                 # load archive data
-                self.loadExistingRecordsAndFlush(pg_cur, work_item, new_records, last_ts_in_extreme, my_span)
+                self.loadExistingRecordsAndFlush(pg_cur, work_item, new_records, start_dt, end_dt, last_ts_in_extreme, my_span)
                 new_records = {}
 
                 pgconn.commit()
 
+                work_item['start_dt'] = end_dt
                 start_dt, end_dt, _, _ = self.getNewDateBraket(work_item)
 
         except Exception as ex:
             # rollback
             pgconn.rollback()
-            myTools.logException(ex, my_span)
+
+            t.myTools.logException(ex, my_span)
             raise ex
 
         finally:
@@ -133,19 +133,19 @@ class MigrateDB:
                 raise Exception('poste ' + meteor + ' not found')
 
             work_item['pid'] = row[0]
-            last_o_dt = row[1]
-            last_x_dt = row[2] if row[2] is not None else datetime(2000, 1, 1)
+            last_o_dt = row[1] if work_item.get('start_dt') is None else work_item['start_dt']
+            last_x_dt = row[2] if row[2] is not None else datetime(2100, 1, 1)
             old_load_json = row[3]
 
             sql = 'select from_unixtime(min(dateTime +3600*4)), from_unixtime(max(dateTime +3600*4)) from archive '
             if last_o_dt is not None:
-                sql += " where dateTime > '" + str(last_o_dt) + "'"
+                sql += " where dateTime > '" + str(t.myTools.ToReunionTS(last_o_dt)) + "'"
             my_cur.execute(sql)
             row2 = my_cur.fetchone()
             my_cur.close()
 
             start_dt = row2[0]
-            if start_dt is None:
+            if start_dt is None or (last_o_dt is not None and last_o_dt >= start_dt):
                 start_dt = datetime(2100, 1, 1)         # start_dt as post current datetime, to exit
 
             end_dt = datetime(start_dt.year + 1, 1, 1, 0, 0, 0, 0)
@@ -153,7 +153,7 @@ class MigrateDB:
             if old_load_json is True:
                 self.updateLoadJsonValue(meteor, False)
 
-            return start_dt, end_dt, old_load_json, last_x_dt.timestamp()
+            return start_dt, end_dt, old_load_json, t.myTools.ToLocalTS(last_x_dt)
 
         except Exception as ex:
             raise ex
@@ -224,9 +224,9 @@ class MigrateDB:
             for a_q in query_args:
                 a_q['dirty'] = False
                 if a_q['valdk'] == 0:
-                    str_date = datetime.utcfromtimestamp(row2[self.row_archive_datetime_dt]).strftime('%Y-%m-%d %H:%M:%S')
+                    str_date = t.myTools.DateFromUTCTS(row2[self.row_archive_datetime_dt]).strftime('%Y-%m-%d %H:%M:%S')
                 else:
-                    str_date = datetime.utcfromtimestamp(row2[self.row_archive_datetime_dt] + a_q['valdk'] * 3600).strftime('%Y-%m-%d %H:%M:%S')
+                    str_date = t.myTools.DateFromUTCTS(row2[self.row_archive_datetime_dt] + a_q['valdk'] * 3600).strftime('%Y-%m-%d %H:%M:%S')
                 a_q['args'] = [
                     str(pid),
                     str_date,
@@ -265,7 +265,7 @@ class MigrateDB:
             # message for first insert
             if last_obs_id == -1 and id_obs_main != 0:
                 last_obs_id = id_obs_main
-                t.logInfo("first archive inserted, id: " + str(last_obs_id) + ", from date: " + str(a_q['args'][1]), my_span, {"svc": "migrate", "meteor": meteor})
+                t.myTools.logInfo("first archive inserted, id: " + str(last_obs_id) + ", from date: " + str(a_q['args'][1]), my_span, {"svc": "migrate", "meteor": meteor})
 
             # store min/max in our cache
             for a_mesure in self.measures:
@@ -293,11 +293,11 @@ class MigrateDB:
         histo_o = None
 
         if nb_new_obs_master > 0:
-            t.logInfo('obs inserted, last id: ' + str(obs_new_id) + ", date: " + str(a_q['args'][1]), my_span, {"svc": "migrate", "meteor": meteor})
+            t.myTools.logInfo('obs inserted, last id: ' + str(obs_new_id) + ", date: " + str(a_q['args'][1]), my_span, {"svc": "migrate", "meteor": meteor})
             my_span.add_event('obs', str(nb_new_obs_master) + ' rows inserted (with deca == 0), total rows: ' + str(nb_new_obs_all))
             my_span.add_event('histo', str(nb_histo_inserted) + ' rows inserted')
         else:
-            t.logInfo('no new obs inserted', my_span, {"svc": "migrate", "meteor": meteor})
+            t.myTools.logInfo('no new obs inserted', my_span, {"svc": "migrate", "meteor": meteor})
             my_span.add_event('obs', 'no row inserted')
             my_span.add_event('histo', 'no row inserted')
 
@@ -309,20 +309,16 @@ class MigrateDB:
     # ------------------------------------
     # generate max/min from WeeWX records
     # ------------------------------------
-    def load_maxmin_from_weewx(self, work_item, new_records, my_span):
+    def load_maxmin_from_weewx(self, meteor, new_records, start_dt, end_dt, my_span):
         # check: nico use: last_in_db for insert-update or insert..
         start_time = datetime.now()
-        last_ts_in_extremes = work_item['last_x_ts']
-        myconn = self.getMSQLConnection(work_item['meteor'])
+        myconn = self.getMSQLConnection(meteor)
         try:
             for a_mesure in self.measures:
                 nb_record_added = 0
                 mid = a_mesure['id']
                 my_cur = myconn.cursor()
                 try:
-                    # get cached_mesure
-                    if new_records.get('m_' + str(mid)) is None:
-                        new_records['m_' + str(mid)] = {'mid': mid, 'cache': [], 'last': 0, 'last_in_db': last_ts_in_extremes}
                     mesure_cache_item = new_records['m_' + str(mid)]
 
                     # get table name, fix for wind table
@@ -336,21 +332,25 @@ class MigrateDB:
                         my_query = \
                             'select mintime + 4 * 3600 as dateTime, min, mintime, null as max, null as maxtime, null as max_dir, ' + str(mid) + ' as mid ' + \
                             ' from archive_day_' + table_name +\
-                            ' where dateTime > ' + str(last_ts_in_extremes - 4 * 3600) +\
+                            " where dateTime >= '" + str(t.myTools.ToReunionTS(start_dt)) + "'" +\
+                            " and dateTime < '" + str(t.myTools.ToReunionTS(end_dt)) + "'" +\
                             ' union ' + \
                             'select maxtime + 4 * 3600 as dateTime, null as min, null as mintime, max, maxtime, null as max_dir, ' + str(mid) + ' as mid ' + \
                             ' from archive_day_' + table_name +\
-                            ' where dateTime > ' + str(last_ts_in_extremes - 4 * 3600) +\
+                            " where dateTime >= '" + str(t.myTools.ToReunionTS(start_dt)) + "'" +\
+                            " and dateTime < '" + str(t.myTools.ToReunionTS(end_dt)) + "'" +\
                             ' order by dateTime'
                     else:
                         my_query = \
                             'select mintime + 4 * 3600 as dateTime, min, mintime, null as max, null as maxtime, null as max_dir, ' + str(mid) + ' as mid ' + \
                             ' from archive_day_' + table_name +\
-                            ' where dateTime > ' + str(last_ts_in_extremes - 4 * 3600) +\
+                            " where dateTime >= '" + str(t.myTools.ToReunionTS(start_dt)) + "'" +\
+                            " and dateTime < '" + str(t.myTools.ToReunionTS(end_dt)) + "'" +\
                             ' union ' + \
                             'select maxtime + 4 * 3600 as dateTime, null as min, null as mintime, max, maxtime, max_dir, ' + str(mid) + ' as mid ' + \
                             ' from archive_day_' + table_name +\
-                            ' where dateTime > ' + str(last_ts_in_extremes - 4 * 3600) +\
+                            " where dateTime >= '" + str(t.myTools.ToReunionTS(start_dt)) + "'" +\
+                            " and dateTime < '" + str(t.myTools.ToReunionTS(end_dt)) + "'" +\
                             ' order by dateTime'
 
                     my_cur.execute(my_query)
@@ -367,7 +367,7 @@ class MigrateDB:
                         my_span.add_event('maxmin_from_weewx', str((nb_record_added - 1) / 2) + " nouveaux 'records' en cache pour " + a_mesure['field'] + ' en ' + str(process_length/1000) + ' ms')
 
         except Exception as e:
-            logException(e)
+            t.myTools.logException(e)
             raise e
 
         finally:
@@ -376,8 +376,16 @@ class MigrateDB:
     # ----------------------------------
     # flush our cache into our database
     # ----------------------------------
-    def loadExistingRecordsAndFlush(self, pg_cur, work_item, new_records,last_ts_in_extreme, my_span):
+    def loadExistingRecordsAndFlush(self, pg_cur, work_item, new_records, start_dt, end_dt, last_ts_in_extreme, my_span):
         try:
+
+            # Add data from record tables
+            self.load_maxmin_from_weewx(
+                work_item['meteor'],
+                new_records,
+                self.roundDateTimeToAnExactDay(start_dt),
+                self.roundDateTimeToAnExactDay(end_dt),
+                my_span)
 
             # Build a global
             x_to_update = self.buildSortedGlobalArray(new_records, my_span)
@@ -460,7 +468,7 @@ class MigrateDB:
             if an_item[self.row_cache_datetime] is None:
                 continue
 
-            if an_item[self.row_cache_datetime] < last_dt_in_cache:
+            if an_item[self.row_cache_datetime] > last_dt_in_cache:
                 # update data if already one extreme record exist for this date/poste/mid
                 _, nb_upd = self.insertUpdateExtremes(pid, an_item, histo_x)
                 if nb_upd > 0:
@@ -469,18 +477,18 @@ class MigrateDB:
 
             # Inserting a new row
             insert_sql = insert_cde + "("
-            insert_sql += "'" + str(datetime.fromtimestamp(an_item[self.row_cache_datetime])) + "', " + str(pid) + ", "
+            insert_sql += "'" + str(t.myTools.DateFromReuTS(an_item[self.row_cache_datetime])) + "', " + str(pid) + ", "
             insert_sql += "null, " if an_item[self.row_cache_mid] is None else (str(an_item[self.row_cache_mid]) + ", ")
 
             if an_item[self.row_cache_min] is None or an_item[self.row_cache_mintime] is None:
                 insert_sql += "null, null, "
             else:
-                insert_sql += str(an_item[self.row_cache_min]) + ", '" + str(datetime.fromtimestamp(an_item[self.row_cache_mintime])) + "', "
+                insert_sql += str(an_item[self.row_cache_min]) + ", '" + str(t.myTools.DateFromReuTS(an_item[self.row_cache_mintime])) + "', "
 
             if an_item[self.row_cache_max] is None or an_item[self.row_cache_maxtime] is None:
                 insert_sql += "null, null, null "
             else:
-                insert_sql += str(an_item[self.row_cache_max]) + ", '" + str(datetime.fromtimestamp(an_item[self.row_cache_maxtime])) + "', "
+                insert_sql += str(an_item[self.row_cache_max]) + ", '" + str(t.myTools.DateFromReuTS(an_item[self.row_cache_maxtime])) + "', "
                 if an_item[self.row_cache_maxdir] is None:
                     insert_sql += 'null '
                 else:
@@ -516,10 +524,10 @@ class MigrateDB:
     # -----------------------------------------------
     def load_min_max_from_archive_row(self, a_mesure, mesure_value, dir_value, dt, obs_id, mesure_cached_item):
         virtual_row = [
-            self.roundDatetimeToAnExactDay(dt + a_mesure['mindk'] * 3600),
+            self.roundTimeStampToAnExactDay(dt + a_mesure['mindk'] * 3600),
             mesure_value,
             None if mesure_value is None else dt,
-            self.roundDatetimeToAnExactDay(dt + a_mesure['maxdk'] * 3600),
+            self.roundTimeStampToAnExactDay(dt + a_mesure['maxdk'] * 3600),
             mesure_value,
             None if mesure_value is None else dt,
             None if mesure_value is None else dir_value,
@@ -533,10 +541,10 @@ class MigrateDB:
     # ----------------------------------------------
     def load_min_max_from_extreme_row(self, a_mesure, row, mesure_cached_item):
         row_virtual = [
-            None if row[self.row_extreme_mintime] is None else self.roundDatetimeToAnExactDay(row[self.row_extreme_mintime] + a_mesure['mindk'] * 3600),
+            None if row[self.row_extreme_mintime] is None else self.roundTimeStampToAnExactDay(row[self.row_extreme_mintime] + a_mesure['mindk'] * 3600),
             row[self.row_extreme_min],
             None if row[self.row_extreme_min] is None else row[self.row_extreme_mintime],
-            None if row[self.row_extreme_maxtime] is None else self.roundDatetimeToAnExactDay(row[self.row_extreme_maxtime] + a_mesure['maxdk'] * 3600),
+            None if row[self.row_extreme_maxtime] is None else self.roundTimeStampToAnExactDay(row[self.row_extreme_maxtime] + a_mesure['maxdk'] * 3600),
             row[self.row_extreme_max],
             None if row[self.row_extreme_max] is None else row[self.row_extreme_maxtime],
             None if row[self.row_extreme_max] is None else row[self.row_extreme_maxdir],
@@ -572,10 +580,10 @@ class MigrateDB:
     # return the extreme cached
     # --------------------------
     def getCachedItem(self, mesure_cached_item, dt, mid):
-        # dt => self.roundDatetimeToAnExactDay
+        # dt => self.roundTimeStampToAnExactDay
         # if  dt > mesure_cached_item['last'] => add new + mesure_cached_item['last'] = dt
         # if dt == mesure_cached_item['last'] => return mesure_cached_item['cache'][len(mesure_cached_item['last'] - 1)]
-        pure_dt = self.roundDatetimeToAnExactDay(dt)
+        pure_dt = self.roundTimeStampToAnExactDay(dt)
 
         # lucky the last one is asked..
         if pure_dt == mesure_cached_item['last']:
@@ -605,8 +613,8 @@ class MigrateDB:
             query_my += ', ' + a_mesure['col']
 
         # finalize sql statements
-        query_my += " from archive where dateTime >= " + str(start_dt.timestamp() - 4 * 3600)
-        query_my += " and dateTime < " + str(end_dt.timestamp() - 4 * 3600)
+        query_my += " from archive where dateTime >= " + str(t.myTools.ToReunionTS(start_dt))
+        query_my += " and dateTime < " + str(t.myTools.ToReunionTS(end_dt))
 
         # query_my += " order by dateTime"""
         query_my += " order by dateTime"
@@ -657,21 +665,21 @@ class MigrateDB:
         nb_insert = 0
         nb_update = 0
 
-        x_dt = datetime.fromtimestamp(an_item[self.row_cache_datetime]).date()
+        x_dt = t.myTools.DateFromReuTS(an_item[self.row_cache_datetime]).date()
         current_x = ExtremeMeteor.get_extreme(pid, an_item[self.row_cache_mid], x_dt)
         x_dirty = x_min = x_max = False
 
         if an_item[self.row_cache_min] is not None:
             if current_x.data.min is None or an_item[self.row_cache_min] < current_x.data.min:
                 current_x.data.min = an_item[self.row_cache_min]
-                current_x.data.min_time = datetime.fromtimestamp(an_item[self.row_cache_mintime])
+                current_x.data.min_time = t.myTools.DateFromReuTS(an_item[self.row_cache_mintime])
                 x_dirty = True
                 x_min = True
 
         if an_item[self.row_cache_max] is not None:
             if current_x.data.max is None or an_item[self.row_cache_max] < current_x.data.max:
                 current_x.data.max = an_item[self.row_cache_max]
-                current_x.data.max_time = datetime.fromtimestamp(an_item[self.row_cache_maxtime])
+                current_x.data.max_time = t.myTools.DateFromReuTS(an_item[self.row_cache_maxtime])
                 current_x.data.max_dir = an_item[self.row_cache_maxdir]
                 x_dirty = True
                 x_max = True
@@ -708,11 +716,11 @@ class MigrateDB:
                 last_x_ts = datetime.now() if row[2] is None else row[2]
                 load_json = row[3]
             # my_span.set_attribute('meteor', meteor)
-            my_span.set_attribute('last_obs_ts', last_obs_ts.timestamp() if last_obs_ts is not None else 'None')
-            my_span.set_attribute('last_extremes_ts', last_x_ts.timestamp() if last_x_ts is not None else 'None')
+            my_span.set_attribute('last_obs_ts', t.myTools.ToLocalTS(last_obs_ts) if last_obs_ts is not None else 'None')
+            my_span.set_attribute('last_extremes_ts', t.myTools.ToLocalTS(last_x_ts) if last_x_ts is not None else 'None')
 
         except Exception as e:
-            t.logException(e, my_span)
+            t.myTools.logException(e, my_span)
             poste_id = None
 
         finally:
@@ -812,8 +820,11 @@ class MigrateDB:
 
         return myconn
 
-    def roundDatetimeToAnExactDay(self, timestamp):
-        return timestamp - (timestamp % 86400)
+    def roundTimeStampToAnExactDay(self, ts):
+        return ts - (ts % 86400)
+
+    def roundDateTimeToAnExactDay(self, dt):
+        return datetime(dt.year, dt.month, dt.day)
 
     def loadSelfVariables(self):
         pgconn = None
@@ -864,7 +875,7 @@ class MigrateDB:
             self.row_cache_obsid_max = 8
 
         except Exception as e:
-            logException(e)
+            t.myTools.logException(e)
 
         finally:
             if pgconn is not None:
