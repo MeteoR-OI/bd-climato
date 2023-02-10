@@ -18,8 +18,6 @@ import mysql.connector
 import psycopg2
 from datetime import datetime
 from app.classes.repository.extremeMeteor import ExtremeMeteor
-from app.classes.repository.histoObs import HistoObsMeteor
-from app.classes.repository.histoExtreme import HistoExtreme
 
 
 # --------------------------------------
@@ -95,7 +93,7 @@ class MigrateDB:
 
                 pgconn.commit()
 
-                work_item['start_dt'] = end_dt
+                work_item['start_dt'] = self.roundDateTimeToAnExactDay(end_dt)
                 start_dt, end_dt, _, _ = self.getNewDateBraket(work_item)
 
         except Exception as ex:
@@ -148,11 +146,17 @@ class MigrateDB:
             if start_dt is None or (last_o_dt is not None and last_o_dt >= start_dt):
                 start_dt = datetime(2100, 1, 1)         # start_dt as post current datetime, to exit
 
-            end_dt = datetime(start_dt.year + 1, 1, 1, 0, 0, 0, 0)
+            if start_dt.month == 12:
+                end_dt = datetime(start_dt.year + 1, 1, 1, 0, 0, 0, 0)
+            else:
+                end_dt = datetime(start_dt.year, start_dt.month + 1, 1, 0, 0, 0, 0)
 
             if old_load_json is True:
                 self.updateLoadJsonValue(meteor, False)
 
+            print('-----------------')
+            print('new period from: ' + str(start_dt) + ' to ' + str(end_dt))
+            print('-----------------')
             return start_dt, end_dt, old_load_json, t.myTools.ToLocalTS(last_x_dt)
 
         except Exception as ex:
@@ -237,6 +241,7 @@ class MigrateDB:
             idx = 0
             while idx < len(self.measures):
                 a_mesure = self.measures[idx]
+
                 row_mesure_value = row2[idx + 4]                        # row values are in same order as self.measures
 
                 # load value in the right insert statement, depending on valdk
@@ -288,7 +293,7 @@ class MigrateDB:
 
             row2 = my_cur.fetchone()
 
-        HistoObsMeteor.storeArray(pg_cur, histo_o)
+        self.storeObsArray(pg_cur, histo_o)
         nb_histo_inserted = len(histo_o)
         histo_o = None
 
@@ -512,7 +517,7 @@ class MigrateDB:
 
         # now insert/update histo extremes
         start_dt = datetime.now()
-        HistoExtreme.storeArray(pg_cur, histo_x)
+        self.storeHistoExtremeArray(pg_cur, histo_x)
         histo_x_length = datetime.now() - start_dt
         my_span.add_event(
             'histo_extreme',
@@ -730,7 +735,7 @@ class MigrateDB:
 
     def getMeasures(self, pgconn):
         mesures = []
-        pg_query = "select id, archive_col, archive_table, field_dir, json_input, val_deca, min, min_deca, max, max_deca, is_avg, is_wind, allow_zero, omm_link from mesures"
+        pg_query = "select id, archive_col, archive_table, field_dir, json_input, val_deca, min, min_deca, max, max_deca, is_avg, is_wind, allow_zero, omm_link from mesures order by id"
 
         pg_cur = pgconn.cursor()
         pg_cur.execute(pg_query)
@@ -792,6 +797,44 @@ class MigrateDB:
             m_idx += 1
 
         return omm_link
+
+    def storeObsArray(self, pg_cur, data):
+        if len(data) == 0:
+            return
+        sql_str = "insert into histo_obs (src_obs_id, target_obs_id) values "
+        b_hasdata = False
+        data.sort(key=lambda x: (x[0], x[1]))
+        d0 = d1 = -1
+        for an_item in data:
+            if len(an_item) != 2 or an_item[0] is None or an_item[1] is None:
+                continue
+            if an_item[1] <= 0 or an_item[0] <= 0 or (d0 == an_item[0] and d1 == an_item[1]):
+                continue
+            sql_str += '(' + str(an_item[0]) + ', ' + str(an_item[1]) + '), '
+            d0 = an_item[0]
+            d1 = an_item[1]
+            b_hasdata = True
+        if b_hasdata is True:
+            pg_cur.execute(sql_str[0:-2])
+
+    def storeHistoExtremeArray(self, pg_cur, data):
+        if len(data) == 0:
+            return
+        sql_str = "insert into histo_extreme (src_obs_id, target_x_id) values "
+        b_hasdata = False
+        data.sort(key=lambda x: (x[0], x[1]))
+        d0 = d1 = -1
+        for an_item in data:
+            if len(an_item) != 2 or an_item[0] is None or an_item[1] is None:
+                continue
+            if an_item[1] <= 0 or an_item[0] <= 0 or (d0 == an_item[0] and d1 == an_item[1]):
+                continue
+            sql_str += '(' + str(an_item[0]) + ', ' + str(an_item[1]) + '), '
+            d0 = an_item[0]
+            d1 = an_item[1]
+            b_hasdata = True
+        if b_hasdata is True:
+            pg_cur.execute(sql_str[0:-2])
 
     def getPGConnexion(self):
         return psycopg2.connect(
