@@ -36,6 +36,13 @@ class PosteMeteor:
             return Poste.objects.filter(meteor=meteor).first().id
         return None
 
+    @staticmethod
+    def getPosteIdAndTzByMeteor(meteor: str):
+        if Poste.objects.filter(meteor=meteor).exists():
+            p = Poste.objects.filter(meteor=meteor).first()
+            return p.id, p.delta_timezone
+        return None, 0
+
     def __str__(self):
         """print myself"""
         return "PosteMeteor id: " + str(self.data.id) + ", meteor: " + self.data.meteor

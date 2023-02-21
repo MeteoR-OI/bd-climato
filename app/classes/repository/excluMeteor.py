@@ -89,24 +89,3 @@ class ExcluMeteor():
     def __str__(self):
         """print myself"""
         return "ExcluMeteor id: " + str(self.data.id) + ", poste_id: " + str(self.data.poste.id) + ", start_dat: " + str(self.data.start_dat) + ", stop_dat: " + str(self.data.stop_dat)
-
-# from app.models import Exclusion
-
-# Exclusion.objects.filter(poste_id=e1.data.poste_id).filter(stop_dat__gt=e1.data.start_dat).filter(stop_dat__lt=e1.data.stop_dat).values()
-# Exclusion.objects.filter(poste_id=e1.data.poste_id).filter(start_dat__gt=e1.data.start_dat).filter(start_dat__lt=e1.data.stop_dat).filter(stop_dat__gte=e1.data.stop_dat).values()
-
-# Exclusion.objects.filter(poste_id=e1.data.poste_id).filter(start_dat__lt=e1.data.start_dat).filter(stop_dat__gte=e1.data.stop_dat).values()
-
-# import datetime
-# from app.classes.repository.posteMeteor import PosteMeteor
-# from app.classes.repository.excluMeteor import ExcluMeteor
-# p=PosteMeteor(33)
-# e1=ExcluMeteor(-1)
-# e1.data.start_dat=datetime.datetime(2020,1,1)
-# e1.data.poste=p.data
-# e1.save()
-
-
-# e2=ExcluMeteor(-1)
-# e2.data.start_dat=datetime.datetime(2010,1,1)
-# e2.data.poste=p.data

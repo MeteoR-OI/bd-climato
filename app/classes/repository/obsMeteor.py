@@ -33,19 +33,20 @@ class ObsMeteor():
         self.data.delete()
 
     @staticmethod
-    def load_all_needed_obs(poste_id: int, decas: json, dt_obs: datetime):
+    def load_all_needed_obs(poste_id: int, decas: json, dt_obs: datetime, poste_tz: int):
         all_obs = []
         for a_deca in decas:
             dt_to_find = dt_obs + timedelta(hours=a_deca)
-            if Observation.objects.filter(poste_id=poste_id).filter(time=dt_to_find).exists():
-                tmp_obs = Observation.objects.filter(poste_id=poste_id).filter(time=dt_to_find).first()
+            if Observation.objects.filter(poste_id=poste_id).filter(dt_local=dt_to_find).exists():
+                tmp_obs = Observation.objects.filter(poste_id=poste_id).filter(dt_local=dt_to_find).first()
                 new_obs = ObsMeteor(tmp_obs.id)
             else:
                 new_obs = ObsMeteor(0)
                 new_obs.data.poste = Poste.objects.filter(id=poste_id).first()
                 if new_obs.data.poste is None:
                     raise Exception('invalid poste_id')
-                new_obs.data.time = dt_to_find
+                new_obs.data.dt_local = dt_to_find
+                new_obs.data.dt_utc = dt_to_find - timedelta(hours=poste_tz)
 
             all_obs.append({'deca': a_deca, 'obs': new_obs})
         return all_obs

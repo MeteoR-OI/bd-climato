@@ -14,7 +14,7 @@ class Poste(models.Model):
     meteor = models.CharField(null=False, max_length=10, verbose_name="Code MeteoR.OI")
 
     # optional fields - will be used
-    delta_timezone = models.SmallIntegerField(null=True, default=0, verbose_name="delta heure locale et TU+4")
+    delta_timezone = models.SmallIntegerField(null=True, default=0, verbose_name="delta heure locale et UTC")
     meteofr = models.CharField(null=True, default='', max_length=10, verbose_name="Code Meteo France")
 
     # la suite n'est pas utilise par climato - a revoir pour pages html...
@@ -29,12 +29,12 @@ class Poste(models.Model):
     altitude = models.FloatField(null=True, default=0, verbose_name="Altitude")
     lat = models.FloatField(null=True, default=0, verbose_name="Latitude")
     long = models.FloatField(null=True, default=0, verbose_name="Longitude")
-    start_dat = DateTimeFieldNoTZ(null=True, default="1900-01-01T00:00:00", verbose_name="Date d'activation")
-    stop_dat = DateTimeFieldNoTZ(null=True, default="2100-12-31T23:59:59", verbose_name="Date de désactivation")
+    start_dat = DateTimeFieldNoTZ(null=True, default="1900-01-01T00:00:00", verbose_name="Datetime locale d'activation")
+    stop_dat = DateTimeFieldNoTZ(null=True, default="2100-12-31T23:59:59", verbose_name="Datetime locale de désactivation")
     comment = models.TextField(null=True, default="")
-    last_obs_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Date de derniere reception de donnees")
+    last_obs_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Datetime locale de derniere reception de donnees")
     last_obs_id = models.BigIntegerField(null=True, default=0, verbose_name="ID obs de la derniere reception de donnees")
-    last_extremes_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Date de dernier record")
+    last_extremes_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Datetime locale de dernier record")
     last_extremes_id = models.BigIntegerField(null=True, default=0, verbose_name="ID du dernier record")
     load_json = models.BooleanField(null=True, default=False, verbose_name="load json status")
 
@@ -76,8 +76,8 @@ class Mesure(models.Model):
 class Exclusion(models.Model):
     id = models.AutoField(primary_key=True)
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
-    start_dat = DateTimeFieldNoTZ(null=False, max_length=20, default="1900-01-01T00:00:00", verbose_name="Date début exclusion")
-    stop_dat = DateTimeFieldNoTZ(null=False, max_length=20, default="2100-12-31T23:59:59", verbose_name="Date fin exclusion")
+    start_dat = DateTimeFieldNoTZ(null=False, max_length=20, default="1900-01-01T00:00:00", verbose_name="Datetime locale début exclusion")
+    stop_dat = DateTimeFieldNoTZ(null=False, max_length=20, default="2100-12-31T23:59:59", verbose_name="Datetime locale fin exclusion")
     value = models.JSONField(null=False, default=dict, verbose_name="Exclusion")
 
     def __str__(self):
@@ -92,7 +92,8 @@ class Observation(models.Model):
     # ??  hail | hailRate | heatingTemp ??
 
     id = models.BigAutoField(primary_key=True, verbose_name="id de l'observation")
-    time = DateTimeFieldNoTZ(null=False, verbose_name="date fin période observation")
+    dt_local = DateTimeFieldNoTZ(null=False, verbose_name="datetime locale fin période observation")
+    dt_utc = DateTimeFieldNoTZ(null=False, verbose_name="datetime UTC fin période observation")
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
     duration = models.SmallIntegerField(null=True, default=0, verbose_name="durée période, seulement pour les obs principales")
     # nullable data
@@ -156,13 +157,13 @@ class Observation(models.Model):
     class Meta:
         db_table = "obs"
         indexes = [
-            Index(name='obs_pid', fields=['poste_id', '-time']),
+            Index(name='obs_pid', fields=['poste_id', '-dt_local']),
         ]
 
 
 class Extreme(models.Model):
     id = models.BigAutoField(primary_key=True)
-    date = models.DateField(null=False, verbose_name="date de l'extrême")
+    date_local = models.DateField(null=False, verbose_name="date locale de l'extrême")
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
     mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.CASCADE)
     min = models.FloatField(null=True, verbose_name="valeur minimum")
@@ -172,18 +173,18 @@ class Extreme(models.Model):
     max_dir = models.SmallIntegerField(null=True, verbose_name="direction du maximum")
 
     def __str__(self):
-        return "Extreme id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.time) + ", mesure: " + str(self.mesure)
+        return "Extreme id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.date_local) + ", mesure: " + str(self.mesure)
 
     class Meta:
         db_table = "extremes"
         indexes = [
-            Index(name='extremes_pid', fields=['poste_id', '-date']),
+            Index(name='extremes_pid', fields=['poste_id', '-date_local']),
         ]
 
 
 class Incident(models.Model):
     id = models.AutoField(primary_key=True)
-    dat = DateTimeFieldNoTZ(null=False, max_length=30, verbose_name="date")
+    dt_utc = DateTimeFieldNoTZ(null=False, max_length=30, verbose_name="date")
     source = models.CharField(null=False, max_length=100, verbose_name='source')
     level = models.CharField(null=False, max_length=20, verbose_name='niveau')
     # error, critical, exception
@@ -194,7 +195,7 @@ class Incident(models.Model):
     active = models.BooleanField(null=True, default=True, verbose_name='active')
 
     def __str__(self):
-        return "Incident id: " + str(self.id) + ", date: " + str(self.dat) + ", Source: " + str(self.source) + ", Reason: " + str(self.reason)
+        return "Incident id: " + str(self.id) + ", date: " + str(self.dt_utc) + ", Source: " + str(self.source) + ", Reason: " + str(self.reason)
 
     class Meta:
         db_table = "incidents"
@@ -251,21 +252,32 @@ class Annotation(models.Model):
     class Meta:
         db_table = "annotations"
 
-    #  ----------------------------------------
-    #  data to add to the first migration file
-    #  ----------------------------------------
-    # migrations.RunSQL("CREATE EXTENSION timescaledb;"),
-    # migrations.RunSQL(
-    #     "ALTER TABLE obs DROP CONSTRAINT obs_pkey;"
-    # ),
-    # migrations.RunSQL("SELECT create_hypertable('obs', 'time');"),
-    # migrations.RunSQL(
-    #     "SELECT set_chunk_time_interval('obs', 6048000000000);"
-    # ),
-    # migrations.RunSQL(
-    #     "ALTER TABLE extremes DROP CONSTRAINT extremes_pkey;"
-    # ),
-    # migrations.RunSQL("SELECT create_hypertable('extremes', 'time');"),
-    # migrations.RunSQL(
-    #     "SELECT set_chunk_time_interval('extremes', 25920000000000);"
-    # ),
+    # -------------------------------------------------------------
+    # First migration to execute to initialize timescaleDB features
+    # -------------------------------------------------------------
+
+    # from django.db import migrations
+
+    # class Migration(migrations.Migration):
+
+    #     dependencies = [
+    #         ('app', '0001_initial'),
+    #     ]
+
+    #     operations = [
+    #         migrations.RunSQL("CREATE EXTENSION timescaledb;"),
+    #         migrations.RunSQL(
+    #             "ALTER TABLE obs DROP CONSTRAINT obs_pkey;"
+    #         ),
+    #         migrations.RunSQL("SELECT create_hypertable('obs', 'dt_local');"),
+    #         migrations.RunSQL(
+    #             "SELECT set_chunk_time_interval('obs', 6048000000000);"
+    #         ),
+    #         migrations.RunSQL(
+    #             "ALTER TABLE extremes DROP CONSTRAINT extremes_pkey;"
+    #         ),
+    #         migrations.RunSQL("SELECT create_hypertable('extremes', 'date_local');"),
+    #         migrations.RunSQL(
+    #             "SELECT set_chunk_time_interval('extremes', 25920000000000);"
+    #         )
+    #     ]

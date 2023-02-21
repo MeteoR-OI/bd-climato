@@ -156,7 +156,7 @@ class JsonLoader:
         while idx_global < jsons_to_load.__len__():
             try:
                 meteor = str(jsons_to_load[idx_global].get("meteor"))
-                pid = PosteMeteor.getPosteIdByMeteor(jsons_to_load[0]["meteor"])
+                pid, poste_tz = PosteMeteor.getPosteIdAndTzByMeteor(jsons_to_load[0]["meteor"])
                 if pid is None:
                     raise Exception("code meteor inconnu: " + meteor)
 
@@ -168,7 +168,7 @@ class JsonLoader:
                     j_duration = a_work_item["duration"]
                     j_start_dat = j_stop_dat - timedelta(minutes=j_duration)
                     j_exclus = ExcluMeteor.getExclusForAPoste(pid, j_start_dat, j_stop_dat)
-                    all_obs = ObsMeteor.load_all_needed_obs(pid, self.decas, j_stop_dat)
+                    all_obs = ObsMeteor.load_all_needed_obs(pid, self.decas, j_stop_dat, poste_tz)
 
                     # load attributes in our sub_spam
                     my_span.set_attribute("stop_dat", str(j_stop_dat))
@@ -230,9 +230,6 @@ class JsonLoader:
                     my_span.add_event('histo_extreme', "new rows: " + str(len(histo_x_new)))
                     histo_obs_new = []
                     histo_x_new = []
-
-                except Exception as exc:
-                    raise(exc)
 
                 finally:
                     idx_data += 1

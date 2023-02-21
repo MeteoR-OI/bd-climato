@@ -257,9 +257,9 @@ class WorkerRoot:
                         try:
                             in_use = True
                             a_worker['class'].processWorkItem(work_item, my_span)
-                            a_worker['class'].succeedWorkItem(work_item, my_span)
                             my_span._status._status_code = Telemetry.get_ok_status()
-                            t.logInfo("work item processed", my_span, {
+                            a_worker['class'].succeedWorkItem(work_item, my_span)
+                            t.logInfo("work item processed ok", my_span, {
                                 "svc": self.display,
                                 "info": work_item['info'],
                                 "meteor": work_item['meteor'],

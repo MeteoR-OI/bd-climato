@@ -1,36 +1,36 @@
 
 insert into postes(meteor, delta_timezone, meteofr, title, owner, email, phone, address, zip, city, country, altitude, lat, long, load_json) values
-('BAG280',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  -20.933387, 55.582768, false),
-('BBF015',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, 0, 0, false),
-('BDN240',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, 0, 0, false),
-('BER590',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.309871, 55.537723, false),
-('BOCO1370', 0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  -21.196061, 55.53827, false),
-('BOMU1610', 0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.192665, 55.576251, false),
-('BRT155',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -20.912244, 55.493962, false),
-('BRT240',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  0, 0, false),
-('CAM015',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -20.961875, 55.282956, false),
-('CHAR645',  0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.33028, 55.567254, false),
-('CHP690',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, 0, 0, false),
-('ELH675',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  -20.950965, 55.516872, false),
-('ESB005',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.267795, 55.335286, false),
-('ESH555',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.236787, 55.378695, false),
-('FAY040',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -20.941706, 55.65897, false),
-('GDC030',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -20.95888, 55.689574, false),
-('LCV050',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  -20.895952, 55.572072, false),
-('MAT315',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.360229, 55.70152, false),
-('MTG280',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -20.878348, 55.428241, false),
-('MTG320',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -20.882, 55.424667, false),
-('MVP860',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  -21.025844, 55.515549, false),
-('NDLP1520', 0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, 0, 0, false),
-('PFD040',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  -21.300325, 55.418679, false),
-('RAM450',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  -20.928899, 55.365116, false),
-('ROQ070',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.059036, 55.229183, false),
-('SBBM100',  0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.053141, 55.695668, false),
-('TAM1790',  0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  -21.106126, 55.362666, false),
-('TAR600',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  -21.059972, 55.289673, false),
-('TBL105',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.317372, 55.800674, false),
-('TRG170',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.338827, 55.51276, false),
-('TRM490',   0, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.26666, 55.495548, false)
+('BAG280',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  -20.933387, 55.582768, false),
+('BBF015',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, 0, 0, false),
+('BDN240',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, 0, 0, false),
+('BER590',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.309871, 55.537723, false),
+('BOCO1370', 4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  -21.196061, 55.53827, false),
+('BOMU1610', 4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.192665, 55.576251, false),
+('BRT155',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -20.912244, 55.493962, false),
+('BRT240',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  0, 0, false),
+('CAM015',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -20.961875, 55.282956, false),
+('CHAR645',  4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.33028, 55.567254, false),
+('CHP690',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, 0, 0, false),
+('ELH675',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  -20.950965, 55.516872, false),
+('ESB005',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.267795, 55.335286, false),
+('ESH555',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.236787, 55.378695, false),
+('FAY040',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -20.941706, 55.65897, false),
+('GDC030',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -20.95888, 55.689574, false),
+('LCV050',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  -20.895952, 55.572072, false),
+('MAT315',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.360229, 55.70152, false),
+('MTG280',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -20.878348, 55.428241, false),
+('MTG320',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -20.882, 55.424667, false),
+('MVP860',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  -21.025844, 55.515549, false),
+('NDLP1520', 4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, 0, 0, false),
+('PFD040',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  -21.300325, 55.418679, false),
+('RAM450',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  -20.928899, 55.365116, false),
+('ROQ070',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.059036, 55.229183, false),
+('SBBM100',  4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.053141, 55.695668, false),
+('TAM1790',  4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  -21.106126, 55.362666, false),
+('TAR600',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0,  -21.059972, 55.289673, false),
+('TBL105',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.317372, 55.800674, false),
+('TRG170',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.338827, 55.51276, false),
+('TRM490',   4, 'meteofr', 'station VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'rue de la montagne','97400', 'montagne', 'la réunion',  0, -21.26666, 55.495548, false)
 ;
 /*
   name:
@@ -105,7 +105,7 @@ select 'nb mesures: ' || count(*) from mesures;
 
 create materialized view obs_day WITH (timescaledb.continuous) as
     select
-        timescaledb_experimental.time_bucket_ng('1 day', time) as time,
+        timescaledb_experimental.time_bucket_ng('1 day', dt_local) as dt_local,
         poste_id,
         avg(barometer) as barometer,
         avg(barometer_omm) as barometer_omm,
@@ -162,8 +162,8 @@ DECLARE
     obs_dat timestamp;
 BEGIN
   select last_obs_date  into obs_dat from postes where id = NEW.poste_id;
-  if new.duration > 0 and (obs_dat is null or new.time > obs_dat) then
-    update postes set last_obs_date = NEW.time, last_obs_id = NEW.id where id = NEW.poste_id;
+  if new.duration > 0 and (obs_dat is null or new.dt_local > obs_dat) then
+    update postes set last_obs_date = NEW.dt_local, last_obs_id = NEW.id where id = NEW.poste_id;
   end if;
   return NEW;
 END
@@ -184,8 +184,8 @@ DECLARE
     x_dat timestamp;
 BEGIN
   select last_extremes_date  into x_dat from postes where id = NEW.poste_id;
-  if x_dat is null or new.date > x_dat then
-    update postes set last_extremes_date = NEW.date, last_extremes_id = NEW.id where id = NEW.poste_id;
+  if x_dat is null or new.date_local > x_dat then
+    update postes set last_extremes_date = NEW.date_local, last_extremes_id = NEW.id where id = NEW.poste_id;
   end if;
   return NEW;
 END

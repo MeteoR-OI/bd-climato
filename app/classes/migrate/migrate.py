@@ -16,8 +16,9 @@
 import app.tools as t
 import mysql.connector
 import psycopg2
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.classes.repository.extremeMeteor import ExtremeMeteor
+from app.classes.repository.posteMeteor import PosteMeteor
 
 
 # --------------------------------------
@@ -79,6 +80,7 @@ class MigrateDB:
             if work_item['pid'] is None:
                 raise Exception('station ' + meteor + ' not found')
 
+            _, work_item['tz'] = PosteMeteor.getPosteIdAndTzByMeteor(meteor)
             current_dt = datetime.now()
 
             # loop per year
@@ -93,15 +95,9 @@ class MigrateDB:
 
                 pgconn.commit()
 
-                work_item['start_dt'] = self.roundDateTimeToAnExactDay(end_dt)
+                work_item['start_dt'] = end_dt
+
                 start_dt, end_dt, _, _ = self.getNewDateBraket(work_item)
-
-        except Exception as ex:
-            # rollback
-            pgconn.rollback()
-
-            t.myTools.logException(ex, my_span)
-            raise ex
 
         finally:
             pg_cur.close()
@@ -137,7 +133,7 @@ class MigrateDB:
 
             sql = 'select from_unixtime(min(dateTime +3600*4)), from_unixtime(max(dateTime +3600*4)) from archive '
             if last_o_dt is not None:
-                sql += " where dateTime > '" + str(t.myTools.ToReunionTS(last_o_dt)) + "'"
+                sql += " where dateTime > '" + str(t.myTools.ToLocalTS(last_o_dt)) + "'"
             my_cur.execute(sql)
             row2 = my_cur.fetchone()
             my_cur.close()
@@ -146,10 +142,7 @@ class MigrateDB:
             if start_dt is None or (last_o_dt is not None and last_o_dt >= start_dt):
                 start_dt = datetime(2100, 1, 1)         # start_dt as post current datetime, to exit
 
-            if start_dt.month == 12:
-                end_dt = datetime(start_dt.year + 1, 1, 1, 0, 0, 0, 0)
-            else:
-                end_dt = datetime(start_dt.year, start_dt.month + 1, 1, 0, 0, 0, 0)
+            end_dt = self.getLastTimeOfTheMonth(start_dt)
 
             if old_load_json is True:
                 self.updateLoadJsonValue(meteor, False)
@@ -157,9 +150,11 @@ class MigrateDB:
             print('-----------------')
             print('new period from: ' + str(start_dt) + ' to ' + str(end_dt))
             print('-----------------')
-            return start_dt, end_dt, old_load_json, t.myTools.ToLocalTS(last_x_dt)
+
+            return start_dt, end_dt, old_load_json, last_x_dt.timestamp()
 
         except Exception as ex:
+            print("exception: " + str(ex))
             raise ex
 
         finally:
@@ -222,18 +217,21 @@ class MigrateDB:
 
         while row2 is not None:
             if row2[self.row_archive_usunits] != 16:
-                raise Exception('bad usUnits: ' + str(row2[self.row_archive_usunits]) + ', dateTime(UTC): ' + str(row2[self.row_archive_datetime]))
+                raise Exception('bad usUnits: ' + str(row2[self.row_archive_usunits]) + ', dateTime(UTC): ' + str(row2[self.row_archive_dt_utc]))
 
             # reset dirty flag and load 3 first arg values
             for a_q in query_args:
                 a_q['dirty'] = False
                 if a_q['valdk'] == 0:
-                    str_date = t.myTools.DateFromUTCTS(row2[self.row_archive_datetime_dt]).strftime('%Y-%m-%d %H:%M:%S')
+                    str_date = t.myTools.DateFromUTCTS(row2[self.row_archive_dt_local]).strftime('%Y-%m-%d %H:%M:%S')
+                    str_utc_date = t.myTools.DateFromUTCTS(row2[self.row_archive_dt_local] - work_item['tz'] * 3600).strftime('%Y-%m-%d %H:%M:%S')
                 else:
-                    str_date = t.myTools.DateFromUTCTS(row2[self.row_archive_datetime_dt] + a_q['valdk'] * 3600).strftime('%Y-%m-%d %H:%M:%S')
+                    str_date = t.myTools.DateFromUTCTS(row2[self.row_archive_dt_local] + a_q['valdk'] * 3600).strftime('%Y-%m-%d %H:%M:%S')
+                    str_utc_date = t.myTools.DateFromUTCTS(row2[self.row_archive_dt_local] - (work_item['tz'] + a_q['valdk']) * 3600).strftime('%Y-%m-%d %H:%M:%S')
                 a_q['args'] = [
                     str(pid),
                     str_date,
+                    str_utc_date,
                     str(row2[self.row_archive_interval] if a_q['valdk'] == 0 else 0)
                 ]
 
@@ -289,7 +287,7 @@ class MigrateDB:
                 # cache mesure as max/min
                 nb_record_cached += 1
                 mesure_dir = None if a_mesure['diridx'] is None else row2[a_mesure['diridx']]
-                self.load_min_max_from_archive_row(a_mesure, mesure_value, mesure_dir, row2[self.row_archive_datetime_dt], id_obs_main, mesure_cached_item)
+                self.load_min_max_from_archive_row(a_mesure, mesure_value, mesure_dir, row2[self.row_archive_dt_local], id_obs_main, mesure_cached_item)
 
             row2 = my_cur.fetchone()
 
@@ -371,10 +369,6 @@ class MigrateDB:
                         process_length = datetime.now() - start_time
                         my_span.add_event('maxmin_from_weewx', str((nb_record_added - 1) / 2) + " nouveaux 'records' en cache pour " + a_mesure['field'] + ' en ' + str(process_length/1000) + ' ms')
 
-        except Exception as e:
-            t.myTools.logException(e)
-            raise e
-
         finally:
             myconn.close()
 
@@ -382,30 +376,24 @@ class MigrateDB:
     # flush our cache into our database
     # ----------------------------------
     def loadExistingRecordsAndFlush(self, pg_cur, work_item, new_records, start_dt, end_dt, last_ts_in_extreme, my_span):
-        try:
+        # Add data from record tables
+        self.load_maxmin_from_weewx(
+            work_item['meteor'],
+            new_records,
+            self.roundDateTimeToAnExactDay(start_dt),
+            self.roundDateTimeToAnExactDay(end_dt),
+            my_span)
 
-            # Add data from record tables
-            self.load_maxmin_from_weewx(
-                work_item['meteor'],
-                new_records,
-                self.roundDateTimeToAnExactDay(start_dt),
-                self.roundDateTimeToAnExactDay(end_dt),
-                my_span)
+        # Build a global
+        x_to_update = self.buildSortedGlobalArray(new_records, my_span)
 
-            # Build a global
-            x_to_update = self.buildSortedGlobalArray(new_records, my_span)
+        # Compact our global list
+        self.compactCacheData(x_to_update, my_span)
 
-            # Compact our global list
-            self.compactCacheData(x_to_update, my_span)
+        # Merge list in db
+        self.mergeListInDB(pg_cur,  work_item['pid'], x_to_update, last_ts_in_extreme, my_span)
 
-            # Merge list in db
-            self.mergeListInDB(pg_cur,  work_item['pid'], x_to_update, last_ts_in_extreme, my_span)
-
-            x_to_update = []
-
-        except Exception as ex:
-            print(ex)
-            raise ex
+        x_to_update = []
 
     def buildSortedGlobalArray(self, new_records, my_span):
         # check: nico use: last_in_db for insert-update or insert..
@@ -463,7 +451,7 @@ class MigrateDB:
 
     def mergeListInDB(self, pg_cur, pid, x_to_update, last_dt_in_cache, my_span):
         # check: nico use: last_in_db for insert-update or insert..
-        insert_cde = "insert into extremes(date, poste_id, mesure_id, min, min_time, max, max_time, max_dir) values "
+        insert_cde = "insert into extremes(date_local, poste_id, mesure_id, min, min_time, max, max_time, max_dir) values "
         nb_extremes_inserted = nb_extremes_updated = 0
         histo_x = []
         start_dt = datetime.now()
@@ -619,7 +607,7 @@ class MigrateDB:
 
         # finalize sql statements
         query_my += " from archive where dateTime >= " + str(t.myTools.ToReunionTS(start_dt))
-        query_my += " and dateTime < " + str(t.myTools.ToReunionTS(end_dt))
+        query_my += " and dateTime <= " + str(t.myTools.ToReunionTS(end_dt))
 
         # query_my += " order by dateTime"""
         query_my += " order by dateTime"
@@ -630,8 +618,8 @@ class MigrateDB:
     # -----------------------------------
     def prepareSqlInsertStructure(self):
         query_args = []
-        query_pg1 = "insert into obs(poste_id, time, duration"
-        query_pg2 = ") values ( %s, %s, %s"      # id_obs has to be the last
+        query_pg1 = "insert into obs(poste_id, dt_local, dt_utc, duration"
+        query_pg2 = ") values ( %s, %s, %s, %s"      # id_obs has to be the last
 
         # load an array of query args, one for each valdk, update sql statement
         for a_mesure in self.measures:
@@ -723,10 +711,6 @@ class MigrateDB:
             # my_span.set_attribute('meteor', meteor)
             my_span.set_attribute('last_obs_ts', t.myTools.ToLocalTS(last_obs_ts) if last_obs_ts is not None else 'None')
             my_span.set_attribute('last_extremes_ts', t.myTools.ToLocalTS(last_x_ts) if last_x_ts is not None else 'None')
-
-        except Exception as e:
-            t.myTools.logException(e, my_span)
-            poste_id = None
 
         finally:
             pg_cur.close()
@@ -869,6 +853,14 @@ class MigrateDB:
     def roundDateTimeToAnExactDay(self, dt):
         return datetime(dt.year, dt.month, dt.day)
 
+    def getLastTimeOfTheMonth(self, start_dt):
+        if start_dt.month == 12:
+            new_dt = datetime(start_dt.year + 1, 1, 1, 0, 0, 0)
+        else:
+            new_dt = datetime(start_dt.year, start_dt.month + 1, 1, 0, 0, 0)
+
+        return new_dt - timedelta(seconds=1)
+
     def loadSelfVariables(self):
         pgconn = None
         try:
@@ -881,8 +873,8 @@ class MigrateDB:
             self.omm_link = self.get_omm_link()
 
             # row_id for select from archive data, first 4 fields
-            self.row_archive_datetime = 0
-            self.row_archive_datetime_dt = 1
+            self.row_archive_dt_utc = 0
+            self.row_archive_dt_local = 1
             self.row_archive_usunits = 2
             self.row_archive_interval = 3
 
@@ -916,9 +908,6 @@ class MigrateDB:
             self.row_cache_maxtime = 6
             self.row_cache_maxdir = 7
             self.row_cache_obsid_max = 8
-
-        except Exception as e:
-            t.myTools.logException(e)
 
         finally:
             if pgconn is not None:
