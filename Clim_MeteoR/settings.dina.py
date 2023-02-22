@@ -94,14 +94,14 @@ WSGI_APPLICATION = 'Clim_MeteoR.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'climato2',
+        # 'ENGINE': 'django_prometheus.db.backends.postgresql_psycopg2',
+        'NAME': 'climato',
         'USER': os.getenv('PGUSER', 'postgres'),
         'PASSWORD': os.getenv('PGPASS', 'Funiculi'),
-        'HOST': 'localhost',                        # defined in dc-telemetry.yaml
-        'PORT': '5432',                             # defined in dc-telemetry.yaml
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
-
 
 
 # Password validation
@@ -130,11 +130,11 @@ USE_TZ = False          # need to use no timezone !!!
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
-STATIC_ROOT = "/home/meteor/bd-climato/static"
+STATIC_ROOT = "/home/meteor/climato/static"
 STATIC_URL = '/static/'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = "/home/meteor/bd-climato/media"
+MEDIA_ROOT = "/home/meteor/climato/media"
 DATA_FS_PATH = os.path.join(MEDIA_ROOT, 'data')
 
 # App settings
@@ -142,13 +142,13 @@ AUTOLOAD_DIR = "/home/meteor/data/auto_load"          # in symc with dc-telemetr
 ARCHIVE_DIR = "/home/meteor/data/archive"             # in symc with dc-telemetry.yaml
 
 
-TELEMETRY_PROVIDER = "Thrift"          # None, Console, Jaeger, Thrift
+TELEMETRY_PROVIDER = False          # None, Console, Jaeger, Thrift
 TELEMETRY_HOST = "localhost"
 JAEGER_PORT = 14250
 THRIFT_PORT = 14250
 
 PROD = False
-LOG_FILE_DIR = "./data/localStorage/log"    # log storage
+LOG_FILE_DIR = "/home/meteor/data/log"    # log storage
 
 # see comments in mytools.py(LogMe class definition)
 LOGGING = {

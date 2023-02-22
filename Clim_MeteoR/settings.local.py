@@ -94,7 +94,8 @@ WSGI_APPLICATION = 'Clim_MeteoR.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'climato2',
+        # 'ENGINE': 'django_prometheus.db.backends.postgresql_psycopg2',
+        'NAME': 'climato',
         'USER': os.getenv('PGUSER', 'postgres'),
         'PASSWORD': os.getenv('PGPASS', 'Funiculi'),
         'HOST': 'localhost',
@@ -141,7 +142,7 @@ AUTOLOAD_DIR = "./data/json_auto_load"          # in symc with dc-telemetry.yaml
 ARCHIVE_DIR = "./data/json_archive"             # in symc with dc-telemetry.yaml
 
 
-TELEMETRY_PROVIDER = "Thrift"          # None, Console, Jaeger, Thrift
+TELEMETRY_PROVIDER = False          # None, Console, Jaeger, Thrift
 TELEMETRY_HOST = "localhost"
 JAEGER_PORT = 14250
 THRIFT_PORT = 14250
