@@ -1,14 +1,5 @@
 from app.models import Poste
 
-# import pytest
-# import app.tools.myTools as t
-
-
-# @pytest.fixture(autouse=True)
-# def enable_db_access_for_all_tests(db):
-#     # t.logInfo('fixture posteMeteor::enable_db_access_for_all_tests called')
-#     pass
-
 
 class PosteMeteor:
     """
@@ -16,27 +7,41 @@ class PosteMeteor:
 
         objets Poste metier
 
-        p1=PosteMeteor(1) -> recupere le poste id = 1 + exclusions actuelles
-        p2=PosteMeteor(1, my_date) -> recupere le poste id = 1 et exclusions a la date de my_date
+        p1=PosteMeteor(1) -> recupere le poste id = 1
+        p2=PosteMeteor("BBF015") -> recupere le poste meteor BBF015
     """
 
-    def __init__(self, poste_id: int):
-        """ load our instance from db, load exclusions at date_histo """
-        if Poste.objects.filter(id=poste_id).exists():
-            self.data = Poste.objects.get(id=poste_id)
+    def __init__(self, key):
+        if 'int' in str(type(key)):
+            """ load our instance from db, load exclusions at date_histo """
+            if Poste.objects.filter(id=key).exists():
+                self.data = Poste.objects.get(id=key)
+            else:
+                self.data = Poste()
         else:
-            self.data = Poste()
-
-    @staticmethod
-    def getPosteIdByMeteor(meteor: str) -> int:
-        """ find a poste with his meteor name """
-        if Poste.objects.filter(meteor=meteor).exists():
-            return Poste.objects.filter(meteor=meteor).first().id
-        return None
+            """ load our instance from db, load exclusions at date_histo """
+            if Poste.objects.filter(meteor=key).exists():
+                self.data = Poste.objects.get(meteor=key)
+            else:
+                self.data = Poste()
+                self.data.meteor = key
 
     def save(self):
         """ save Poste """
         self.data.save()
+
+    @staticmethod
+    def getPosteIdByMeteor(meteor: str):
+        if Poste.objects.filter(meteor=meteor).exists():
+            return Poste.objects.filter(meteor=meteor).first().id
+        return None
+
+    @staticmethod
+    def getPosteIdAndTzByMeteor(meteor: str):
+        if Poste.objects.filter(meteor=meteor).exists():
+            p = Poste.objects.filter(meteor=meteor).first()
+            return p.id, p.delta_timezone
+        return None, 0
 
     def __str__(self):
         """print myself"""

@@ -5,41 +5,42 @@
 
 <!-- code_chunk_output -->
 
-- [1.	Historique mises à jour](#1historique-mises-à-jour)
+- [1Historique mises à jour](#1historique-mises-à-jour)
 - [2. Installation Outils de developpement](#2-installation-outils-de-developpement)
 - [2.1 MacOs](#21-macos)
 - [3. Database Schema](#3-database-schema)
 - [3.1 Django Tables](#31-django-tables)
-- [3.2 Climato données météo](#32-climato-données-météo)
+- [3.2 Specification des données gérées](#32-specification-des-données-gérées)
 - [4. app tests](#4-app-tests)
 - [5. Problemes courants](#5-problemes-courants)
 - [6. Demarrer avec GIT](#6-demarrer-avec-git)
 - [7. Telemetry](#7-telemetry)
-- [8. Notes Generales](#8-notes-generales)
+- [8. Commandes](#8-commandes)
+- [9. API](#9-api)
+- [10. Notes Generales](#10-notes-generales)
 
 <!-- /code_chunk_output -->
 
 **Doc v 0.52**
 
-# 1.	Historique mises à jour
+# 1Historique mises à jour
 - V0.5 : 10/01/2021. Version initiale
 - v0.52: 17/01/2021. Ajout notice de changement de la structure de la BD. Lien vers gitBasic.md
+- v0.90: 24/01/2022. Release of test version
 
 # 2. Installation Outils de developpement
 # 2.1 MacOs 
 [Mac](doc/install%20dev%20tools-MacOs.md)
 
 # 3. Database Schema
-Le schema de la base de donnees va etre profondement revu...
-
 # 3.1 Django Tables 
-[tables](doc/bd%20schema/django%20tables.png)
+[tables](doc/Tables.md)
 
-# 3.2 Climato données météo
-[data](doc/bd%20schema/climato_data.png)
+# 3.2 Specification des données gérées
+[data](doc/bd%20schema/Specification_json.doc)
 
 # 4. app tests
-[testing](doc/install%20app%20test.md)
+Non disponible avec cette version
 
 # 5. Problemes courants
 [pb courants](doc/problemes%20courant.md)
@@ -50,5 +51,11 @@ Le schema de la base de donnees va etre profondement revu...
 # 7. Telemetry
 [Telemetry](doc/telemetry.md)
 
-# 8. Notes Generales
+# 8. Commandes
+[Commandes](doc/commands.md)
+
+# 9. API
+[Api](doc/api/apiDoc.md)
+
+# 10. Notes Generales
 [Notes](doc/globalNotes.md)

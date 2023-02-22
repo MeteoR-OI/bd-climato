@@ -24,6 +24,10 @@ class ObservationAdmin(admin.ModelAdmin):
         DateJSONField: {'widget': JSONEditorWidget},
     }
 
+    def changelist_view(self, request, extra_context=None):
+        extra_context = {'title': 'Observation'}
+        return super(ObservationAdmin, self).changelist_view(request, extra_context=extra_context)
+
     list_display = (
         'stop_dat',
         'show_clickage_poste_id',

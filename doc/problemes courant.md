@@ -65,6 +65,7 @@ python3 manage.py migrate
 python3 manage.py createsuperuser
 psql -d climatest < data/appInit.sql
 python3 manage.py runserver
+
 => Aller dans http://localhost/admin. Toutes les tables (sauf agg_xxx) ont qq donnees.
 ```
 

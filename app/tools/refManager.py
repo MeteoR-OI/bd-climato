@@ -30,10 +30,13 @@ class RefManager:
             return self.all_refs[name]
         return None
 
+    def ListRefs(self):
+        return self.all_refs
+
     def IncrementRef(self, name: str) -> int:
         """ increment the value, or set to 0 for first call """
         if self.GetRef(name) is None:
-            self.AddRef(name, 0)
+            self.AddRef(name, 1)
         else:
             self.all_refs[name] += 1
         return self.all_refs[name]

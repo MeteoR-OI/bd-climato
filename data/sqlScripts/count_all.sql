@@ -34,6 +34,5 @@ SELECT table_name,
 FROM information_schema.tables
 WHERE table_schema NOT IN ('pg_catalog', 'information_schema') 
     AND table_type='BASE TABLE'
-    AND table_name like '%obs'
-     OR (table_name like '%agg_%' and table_name <> 'pg_aggregate')
+    AND table_name in ('obs', 'extremes', 'histo_obs', 'histo_extreme', 'incidents')
 ORDER by 1;

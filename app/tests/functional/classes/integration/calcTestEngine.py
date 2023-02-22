@@ -1,7 +1,6 @@
 from app.tools.aggTools import calcAggDate
-from app.classes.calcul.calcObservation import CalcObs
-from app.classes.calcul.allCalculus import AllCalculus
-from app.classes.calcul.calcAggreg import CalcAggreg
+# from app.classes.calcul.calcObservation import CalcObs
+# from app.classes.calcul.calcAggreg import CalcAggreg
 from app.classes.metier.posteMetier import PosteMetier
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.aggMeteor import AggMeteor
@@ -13,9 +12,9 @@ import app.tools.myTools as t
 
 class CalcTestEngine():
     def __init__(self, *args, **kwargs):
-        self.calc = AllCalculus()
-        self.calc_obs = CalcObs.GetInstance()
-        self.calc_agg = CalcAggreg()
+        # self.calc = AllCalculus()
+        # self.calc_obs = CalcObs.GetInstance()
+        # self.calc_agg = CalcAggreg()
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         file_name = os.path.join(base_dir, '../fixtures/calculus_test_suite.json')
         texte = ''
@@ -58,19 +57,18 @@ class CalcTestEngine():
                     """)
                 j_data = a_test['data']
                 my_json['data'] = j_data
-                # remove any existing data
-                self.calc.delete_obs_agg(True)
+                # # remove any existing data
+                # self.calc.delete_obs_agg(True)
 
                 if ((option & 1) == 1):
                     my_params = {"param": {
                         "json": my_json,
                         "trace_flag": False,
-                        "delete": False,
                         "is_tmp": True,
                         "validation": False,
                         "filename": 'test_json',
                     }}
-                    self.calc_obs.LoadJsonFromSvc(my_params)
+                    self.calc_obs.LoadJsonControler(my_params)
 
                 if ((option & 2) == 2):
                     self.calc_agg._computeAggreg(True, False)
@@ -104,9 +102,9 @@ class CalcTestEngine():
                         my_row = AggMeteor(pid, a_result['t'], test_dat)
 
                     # if a_result['t'] == "O":
-                    #     t.LogDebug('obs: ' + str(my_row.data.id) + ", dat: " + str(my_row.data.stop_dat) + ", j: " + JsonPlus().dumps(my_row.data.j))
+                    #     t.logdebug('obs: ' + str(my_row.data.id) + ", dat: " + str(my_row.data.stop_dat) + ", j: " + JsonPlus().dumps(my_row.data.j))
                     # else:
-                    #     t.LogDebug('agg_' + a_result['t'] + ': ' + str(my_row.data.id) + ", dat: " + str(my_row.data.start_dat) + ", j: " + JsonPlus().dumps(my_row.data.j))
+                    #     t.logdebug('agg_' + a_result['t'] + ': ' + str(my_row.data.id) + ", dat: " + str(my_row.data.start_dat) + ", j: " + JsonPlus().dumps(my_row.data.j))
                     if a_result.__contains__('count'):
                         stop_dat_mask = ''
                         if a_result.__contains__('stop_dat_mask'):
@@ -132,5 +130,5 @@ class CalcTestEngine():
             assert error_msg.__len__() == 0
 
         except Exception as inst:
-            t.LogDebug(inst.with_traceback(None))
+            t.logdebug(inst.with_traceback(None))
             assert "error in " == " json file"

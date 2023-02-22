@@ -1,8 +1,8 @@
-# from app.models import AggHisto, TmpAggHisto
-from app.tools.modelTools import getAggHistoTableWithBool, getObservationTable
-from django.db import connection
-import datetime
-from app.tools.aggTools import calcAggDate
+# check __reverse_delta_values (j_xtreme)
+#
+from app.models import Observation, Poste
+import json
+from datetime import datetime, timedelta
 
 
 class ObsMeteor():
@@ -16,57 +16,41 @@ class ObsMeteor():
 
     """
 
-    def __init__(self, poste_id: int, stop_dt_utc: datetime, is_tmp: bool = None):
-        """Init a new ObsMeteor object"""
-        # todo: block if my_datetime_utc > previous dat+duration
-        self.is_tmp = is_tmp
-        myObsObj = getObservationTable(is_tmp)
-        if myObsObj.objects.filter(poste_id=poste_id).filter(stop_dat=stop_dt_utc).exists():
-            self.data = myObsObj.objects.filter(poste_id=poste_id).filter(stop_dat=stop_dt_utc).first()
+    def __init__(self, obs_id: int):
+        if Observation.objects.filter(id=obs_id).exists():
+            self.data = Observation.objects.filter(id=obs_id).first()
         else:
-            agg_start_dat = calcAggDate('H', stop_dt_utc, 0, True)
-            self.data = myObsObj(poste_id=poste_id, stop_dat=stop_dt_utc, duration=0, agg_start_dat=agg_start_dat, j={}, j_agg={})
+            self.data = Observation()
 
     def save(self):
         """ save Poste and Exclusions """
-        # we only save if there is some data
-        if self.data.j != {} or self.data.j_agg != {}:
-            # self.data.agg_start_dat = calcAggDate('H', self.data.stop_dat, 0, True)
-            self.data.save()
+        if self.data.id is not None:
+            self.data.qa_modifications += 1
+        self.data.save()
 
     def delete(self):
-        # delete cascade linked agg_histo rows
-        agg_histo_table = getAggHistoTableWithBool(self.is_tmp)
-        agg_histo_table.objects.filter(obs_id=self.data.id).delete()
+        # delete cascade implemented as a delete trigger
         self.data.delete()
 
-    def count(self, poste_id: int = None, stop_dat_mask: str = '', is_tmp: bool = None) -> int:
-        # return count of aggregations
-        myObsObj = self.getObsObject(is_tmp)
-        if poste_id is None:
-            return myObsObj.objects.filter(stop_dat__contains=stop_dat_mask).count()
-        return myObsObj.objects.filter(poste_id=poste_id).filter(stop_dat__contains=stop_dat_mask).count()
+    @staticmethod
+    def load_all_needed_obs(poste_id: int, decas: json, dt_obs: datetime, poste_tz: int):
+        all_obs = []
+        for a_deca in decas:
+            dt_to_find = dt_obs + timedelta(hours=a_deca)
+            if Observation.objects.filter(poste_id=poste_id).filter(dt_local=dt_to_find).exists():
+                tmp_obs = Observation.objects.filter(poste_id=poste_id).filter(dt_local=dt_to_find).first()
+                new_obs = ObsMeteor(tmp_obs.id)
+            else:
+                new_obs = ObsMeteor(0)
+                new_obs.data.poste = Poste.objects.filter(id=poste_id).first()
+                if new_obs.data.poste is None:
+                    raise Exception('invalid poste_id')
+                new_obs.data.dt_local = dt_to_find
+                new_obs.data.dt_utc = dt_to_find - timedelta(hours=poste_tz)
 
-    def getAggUpdates(self, field_name: str = None):
-        agg_histo_table_name = 'agg_histo'
-        if self.is_tmp is True:
-            agg_histo_table_name = 'tmp_agg_histo'
-        if field_name is None:
-            sql = '''
-                select h.id as id, h.obs_id as obsId, o.stop_dat as stopDate, h.agg_id as aggId, h.agg_level as aggLevel, h.delta_duration as duration, h.j as j
-                from ''' + agg_histo_table_name + ''' h join obs o
-                    on.id = h.obs_id
-                where obs_id = " + str(self.data.id)
-            '''
-        else:
-            sql = '''
-                select id, obs_id, agg_id, agg_level, delta_duration, j['" + field_name + "']"
-                from " + agg_histo_table_name + " where obs_id = " + str(self.data.id) + " and j['" + field_name + "'] is not null
-            '''
-        with connection.cursor() as cursor:
-            cursor.execute(sql)
-            return cursor.fetchall()
+            all_obs.append({'deca': a_deca, 'obs': new_obs})
+        return all_obs
 
     def __str__(self):
         """print myself"""
-        return "ObsMeteor id: " + str(self.data.id) + ", poste_id: " + str(self.data.poste_id) + ", fin periode: " + str(self.data.dat)
+        return "ObsMeteor id: " + str(self.data.id) + ", poste_id: " + str(self.data.poste_id) + ", time: " + str(self.data.time)

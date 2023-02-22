@@ -5,18 +5,24 @@ from app.tools.dateTools import date_to_str
 from django.utils.html import format_html
 from app.admins.yearMonthFiltering import MonthListFilterStartDat, YearListFilterStartDat
 from app.tools.aggTools import calcAggDateNextLevel
+from django.urls import reverse
+from django.utils.http import urlencode
 
 
 class AggHourAdmin(admin.ModelAdmin):
-
     formfield_overrides = {
         DateJSONField: {'widget': JSONEditorWidget},
     }
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = {'title': 'AggHour: Agrégations Horaires'}
+        return super(AggHourAdmin, self).changelist_view(request, extra_context=extra_context)
 
     list_display = (
         'start_dat',
         'show_clickage_poste_id',
         'duration_sum',
+        'view_aggregations',
         'show_clickage_agg_day',
     )
     ordering = ('start_dat',)
@@ -31,32 +37,46 @@ class AggHourAdmin(admin.ModelAdmin):
     )
 
     def show_clickage_poste_id(self, obj):
+        """ get a link to the poste of the aggregtion """
         post = Poste.objects.filter(id=obj.poste_id).first()
         if post is None:
             return 'n/a'
-        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/poste/" + str(obj.poste_id) + "/change/", str(obj.poste_id))
+        url = reverse("admin:app_poste_change", args=(obj.poste_id,))
+        return format_html('<a href="{}">{}</a>', url, post.meteor)
     show_clickage_poste_id.short_description = "poste"
 
     def show_clickage_agg_day(self, obj):
+        """ get a link to the aggregation day where our data are aggregated """
         day_start_dat = calcAggDateNextLevel('H', obj.start_dat, 0, False)
         agg = AggDay.objects.filter(poste_id=obj.poste_id).filter(start_dat=day_start_dat).first()
         if agg is None:
             return 'n/a'
-        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/aggday/" + str(agg.id) + "/change/", str(agg.id))
-    show_clickage_agg_day.short_description = "agg Day"
+        url = reverse("admin:app_aggday_change", args=(agg.id,))
+        return format_html('<a href="{}">{}</a>', url, str(agg.start_dat)[0:10])
+    show_clickage_agg_day.short_description = "goto day"
+
+    def view_aggregations(self, obj):
+        """ get the list of observations that were agregated in this agregate """
+        url = reverse("admin:app_agghistobyagg_changelist") + "?" + urlencode({"agg_id": f"{obj.id}"})
+        return format_html('<a href="{}">{}</a>', url, "agrégat")
+    view_aggregations.short_description = "Composition"
 
 
 class AggDayAdmin(admin.ModelAdmin):
-
     formfield_overrides = {
         DateJSONField: {'widget': JSONEditorWidget},
     }
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = {'title': 'AggDay: Agrégations Journalières'}
+        return super(AggDayAdmin, self).changelist_view(request, extra_context=extra_context)
 
     list_display = (
         'start_dat',
         'show_clickage_poste_id',
         'duration_sum',
-        'show_clickage_agg_day',
+        'view_aggregations',
+        'show_clickage_agg_month',
     )
     ordering = ('start_dat',)
     list_filter = ('poste', YearListFilterStartDat, MonthListFilterStartDat)
@@ -73,29 +93,41 @@ class AggDayAdmin(admin.ModelAdmin):
         post = Poste.objects.filter(id=obj.poste_id).first()
         if post is None:
             return 'n/a'
-        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/poste/" + str(obj.poste_id) + "/change/", str(obj.poste_id))
+        url = reverse("admin:app_poste_change", args=(obj.poste_id,))
+        return format_html('<a href="{}">{}</a>', url, post.meteor)
     show_clickage_poste_id.short_description = "poste"
 
-    def show_clickage_agg_day(self, obj):
+    def show_clickage_agg_month(self, obj):
+        """ get a link to the aggregation month where our data are aggregated """
         day_start_dat = calcAggDateNextLevel('D', obj.start_dat, 0, False)
         agg = AggMonth.objects.filter(poste_id=obj.poste_id).filter(start_dat=day_start_dat).first()
         if agg is None:
             return 'n/a'
-        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/aggmonth/" + str(agg.id) + "/change/", str(agg.id))
-    show_clickage_agg_day.short_description = "agg Month"
+        url = reverse("admin:app_aggmonth_change", args=(agg.id,))
+        return format_html('<a href="{}">{}</a>', url, str(agg.start_dat)[0:7])
+    show_clickage_agg_month.short_description = "goto Month"
+
+    def view_aggregations(self, obj):
+        """ get the list of observations that were agregated in this agregate """
+        url = reverse("admin:app_agghistobyagg_changelist") + "?" + urlencode({"agg_id": f"{obj.id}"})
+        return format_html('<a href="{}">{}</a>', url, "agrégat")
+    view_aggregations.short_description = "Composition"
 
 
 class AggMonthAdmin(admin.ModelAdmin):
-
     formfield_overrides = {
         DateJSONField: {'widget': JSONEditorWidget},
     }
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = {'title': 'AggMonth: Agrégations Mensuelles'}
+        return super(AggMonthAdmin, self).changelist_view(request, extra_context=extra_context)
 
     list_display = (
         'start_dat',
         'show_clickage_poste_id',
         'duration_sum',
-        'show_clickage_agg_day',
+        'show_clickage_agg_year',
     )
     ordering = ('start_dat',)
     list_filter = ('poste', YearListFilterStartDat)
@@ -112,32 +144,39 @@ class AggMonthAdmin(admin.ModelAdmin):
         post = Poste.objects.filter(id=obj.poste_id).first()
         if post is None:
             return 'n/a'
-        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/poste/" + str(obj.poste_id) + "/change/", str(obj.poste_id))
+        url = reverse("admin:app_poste_change", args=(obj.poste_id,))
+        return format_html('<a href="{}">{}</a>', url, post.meteor)
     show_clickage_poste_id.short_description = "poste"
 
-    def show_clickage_agg_day(self, obj):
+    def show_clickage_agg_year(self, obj):
+        """ get a link to the aggregation month where our data are aggregated """
         day_start_dat = calcAggDateNextLevel('M', obj.start_dat, 0, False)
         agg = AggYear.objects.filter(poste_id=obj.poste_id).filter(start_dat=day_start_dat).first()
         if agg is None:
             return 'n/a'
-        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/aggyear/" + str(agg.id) + "/change/", str(agg.id))
-    show_clickage_agg_day.short_description = "agg Year"
+        url = reverse("admin:app_aggyear_change", args=(agg.id,))
+        return format_html('<a href="{}">{}</a>', url, str(agg.start_dat)[0:4])
+    show_clickage_agg_year.short_description = "goto Year"
 
 
 class AggYearAdmin(admin.ModelAdmin):
-
     formfield_overrides = {
         DateJSONField: {'widget': JSONEditorWidget},
     }
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = {'title': 'AggYear: Agrégations Annuelles'}
+        return super(AggYearAdmin, self).changelist_view(request, extra_context=extra_context)
 
     list_display = (
         'start_dat',
         'show_clickage_poste_id',
         'duration_sum',
-        'show_clickage_agg_day',
+        'show_clickage_agg_all',
     )
     ordering = ('start_dat',)
     search_fields = ('start_dat',)
+    list_filter = ('poste',)
     list_per_page = 20
     fields = (
         ('poste'),
@@ -150,22 +189,29 @@ class AggYearAdmin(admin.ModelAdmin):
         post = Poste.objects.filter(id=obj.poste_id).first()
         if post is None:
             return 'n/a'
-        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/poste/" + str(obj.poste_id) + "/change/", str(obj.poste_id))
+        url = reverse("admin:app_poste_change", args=(obj.poste_id,))
+        return format_html('<a href="{}">{}</a>', url, post.meteor)
     show_clickage_poste_id.short_description = "poste"
 
-    def show_clickage_agg_day(self, obj):
+    def show_clickage_agg_all(self, obj):
+        """ get a link to the aggregation month where our data are aggregated """
         day_start_dat = calcAggDateNextLevel('Y', obj.start_dat, 0, False)
         agg = AggAll.objects.filter(poste_id=obj.poste_id).filter(start_dat=day_start_dat).first()
         if agg is None:
             return 'n/a'
-        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/aggall/" + str(agg.id) + "/change/", str(agg.id))
-    show_clickage_agg_day.short_description = "agg All"
+        url = reverse("admin:app_aggall_change", args=(agg.id,))
+        return format_html('<a href="{}">{}</a>', url, 'All')
+    show_clickage_agg_all.short_description = "goto All"
 
 
 class AggAllAdmin(admin.ModelAdmin):
     formfield_overrides = {
         DateJSONField: {'widget': JSONEditorWidget},
     }
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = {'title': 'AggAll: Agrégations globales'}
+        return super(AggAllAdmin, self).changelist_view(request, extra_context=extra_context)
 
     list_display = (
         'start_dat',
@@ -175,6 +221,7 @@ class AggAllAdmin(admin.ModelAdmin):
     )
     ordering = ('start_dat',)
     search_fields = ('start_dat',)
+    list_filter = ('poste',)
     list_per_page = 20
     fields = (
         ('poste'),
@@ -187,7 +234,8 @@ class AggAllAdmin(admin.ModelAdmin):
         post = Poste.objects.filter(id=obj.poste_id).first()
         if post is None:
             return 'n/a'
-        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/poste/" + str(obj.poste_id) + "/change/", str(obj.poste_id))
+        url = reverse("admin:app_poste_change", args=(obj.poste_id,))
+        return format_html('<a href="{}">{}</a>', url, post.meteor)
     show_clickage_poste_id.short_description = "poste"
 
 
@@ -195,6 +243,10 @@ class AggHistoAdminByObs(admin.ModelAdmin):
     formfield_overrides = {
         DateJSONField: {'widget': JSONEditorWidget},
     }
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = {'title': 'HistoAgg by Obs: Historique (search by obs_id)'}
+        return super(AggHistoAdminByObs, self).changelist_view(request, extra_context=extra_context)
 
     list_display = (
         'agg_level',
@@ -237,6 +289,10 @@ class AggHistoAdminByAgg(admin.ModelAdmin):
     formfield_overrides = {
         DateJSONField: {'widget': JSONEditorWidget},
     }
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = {'title': 'HistoAgg by Agg: Historique (search by agg_id)'}
+        return super(AggHistoAdminByAgg, self).changelist_view(request, extra_context=extra_context)
 
     list_display = (
         'agg_level',

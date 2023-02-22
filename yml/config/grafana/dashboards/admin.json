@@ -1,0 +1,488 @@
+{
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "target": {
+            "limit": 100,
+            "matchAny": false,
+            "tags": [],
+            "type": "dashboard"
+          },
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": 9,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+      {
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 6,
+          "w": 3,
+          "x": 0,
+          "y": 0
+        },
+        "id": 14,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "auto"
+        },
+        "pluginVersion": "8.4.3",
+        "targets": [
+          {
+            "datasource": {
+              "type": "postgres",
+              "uid": "s7C5SaQnz"
+            },
+            "format": "table",
+            "group": [],
+            "metricColumn": "none",
+            "rawQuery": true,
+            "rawSql": "SELECT\n  timescaledb_experimental.time_bucket_ng('1 day', dat::timestamptz) as time,\n  count(*)\nFROM incidents\nWHERE\n  $__timeFilter(dat::timestamp)\n  and active = true\n  and source = 'exception'\ngroup by 1",
+            "refId": "A",
+            "select": [
+              [
+                {
+                  "params": [
+                    "min"
+                  ],
+                  "type": "column"
+                }
+              ]
+            ],
+            "table": "extremes",
+            "timeColumn": "min_time",
+            "timeColumnType": "timestamp",
+            "where": [
+              {
+                "name": "$__timeFilter",
+                "params": [],
+                "type": "macro"
+              }
+            ]
+          }
+        ],
+        "title": "Exceptions sur la période",
+        "type": "stat"
+      },
+      {
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 1
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 6,
+          "w": 9,
+          "x": 3,
+          "y": 0
+        },
+        "id": 4,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "8.4.3",
+        "targets": [
+          {
+            "datasource": {
+              "type": "postgres",
+              "uid": "s7C5SaQnz"
+            },
+            "format": "time_series",
+            "group": [],
+            "metricColumn": "none",
+            "rawQuery": true,
+            "rawSql": "SELECT\n  timescaledb_experimental.time_bucket_ng('1 day', dat::timestamptz) as time,\n  count(*) as critical\nFROM incidents\nWHERE\n  $__timeFilter(dat)\n  and active = true\n  and level = 'critical'\ngroup by 1",
+            "refId": "A",
+            "select": [
+              [
+                {
+                  "params": [
+                    "latitude"
+                  ],
+                  "type": "column"
+                }
+              ]
+            ],
+            "table": "poste",
+            "timeColumn": "start_dat",
+            "timeColumnType": "timestamp",
+            "where": [
+              {
+                "name": "$__timeFilter",
+                "params": [],
+                "type": "macro"
+              }
+            ]
+          },
+          {
+            "datasource": {
+              "type": "postgres",
+              "uid": "s7C5SaQnz"
+            },
+            "format": "time_series",
+            "group": [],
+            "hide": false,
+            "metricColumn": "none",
+            "rawQuery": true,
+            "rawSql": "SELECT\n  timescaledb_experimental.time_bucket_ng('1 day', dat::timestamptz) as time,\n  count(*) as error\nFROM incidents\nWHERE\n  $__timeFilter(dat)\n  and active = true\n  and level = 'error'\ngroup by 1",
+            "refId": "C",
+            "select": [
+              [
+                {
+                  "params": [
+                    "min"
+                  ],
+                  "type": "column"
+                }
+              ]
+            ],
+            "table": "extremes",
+            "timeColumn": "min_time",
+            "timeColumnType": "timestamp",
+            "where": [
+              {
+                "name": "$__timeFilter",
+                "params": [],
+                "type": "macro"
+              }
+            ]
+          },
+          {
+            "datasource": {
+              "type": "postgres",
+              "uid": "s7C5SaQnz"
+            },
+            "format": "time_series",
+            "group": [
+              {
+                "params": [
+                  "$__interval",
+                  "none"
+                ],
+                "type": "time"
+              }
+            ],
+            "hide": false,
+            "metricColumn": "none",
+            "rawQuery": true,
+            "rawSql": "SELECT\n  timescaledb_experimental.time_bucket_ng('1 day', dat::timestamptz) as time,\n  count(*) AS \"info\"\nFROM incidents\nWHERE\n  $__timeFilter(dat)\n  and active = true\n  and level = 'info'\ngroup by 1",
+            "refId": "B",
+            "select": [
+              [
+                {
+                  "params": [
+                    "id"
+                  ],
+                  "type": "column"
+                },
+                {
+                  "params": [
+                    "count"
+                  ],
+                  "type": "aggregate"
+                },
+                {
+                  "params": [
+                    "id"
+                  ],
+                  "type": "alias"
+                }
+              ]
+            ],
+            "table": "extremes",
+            "timeColumn": "id",
+            "timeColumnType": "int8",
+            "where": [
+              {
+                "name": "$__unixEpochFilter",
+                "params": [],
+                "type": "macro"
+              }
+            ]
+          }
+        ],
+        "title": "Active Incidents",
+        "type": "timeseries"
+      },
+      {
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "custom": {
+              "align": "auto",
+              "displayMode": "auto"
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "meteor"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 93
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "last_date_obs"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 185
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "last_date_extremes"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 187
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "last_obs_date"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 185
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 25,
+          "w": 7,
+          "x": 17,
+          "y": 0
+        },
+        "id": 12,
+        "options": {
+          "footer": {
+            "fields": "",
+            "reducer": [
+              "sum"
+            ],
+            "show": false
+          },
+          "showHeader": true,
+          "sortBy": []
+        },
+        "pluginVersion": "8.4.3",
+        "targets": [
+          {
+            "datasource": {
+              "type": "postgres",
+              "uid": "s7C5SaQnz"
+            },
+            "format": "table",
+            "group": [],
+            "metricColumn": "none",
+            "rawQuery": true,
+            "rawSql": "select\n  p.meteor as meteor,\n  p.last_obs_date,\n  p.last_extremes_date\n  from postes p\n  where p.last_obs_date is not null or p.last_extremes_date is not null\n  order by 2 desc\n",
+            "refId": "A",
+            "select": [
+              [
+                {
+                  "params": [
+                    "min"
+                  ],
+                  "type": "column"
+                }
+              ]
+            ],
+            "table": "extremes",
+            "timeColumn": "min_time",
+            "timeColumnType": "timestamp",
+            "where": [
+              {
+                "name": "$__timeFilter",
+                "params": [],
+                "type": "macro"
+              }
+            ]
+          }
+        ],
+        "title": "status synchronisation",
+        "type": "table"
+      },
+      {
+        "datasource": {
+          "type": "loki",
+          "uid": "Ps5Jg0L7z"
+        },
+        "gridPos": {
+          "h": 18,
+          "w": 16,
+          "x": 0,
+          "y": 6
+        },
+        "id": 16,
+        "options": {
+          "dedupStrategy": "none",
+          "enableLogDetails": true,
+          "prettifyLogMessage": false,
+          "showCommonLabels": false,
+          "showLabels": false,
+          "showTime": false,
+          "sortOrder": "Descending",
+          "wrapLogMessage": false
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "loki",
+              "uid": "Ps5Jg0L7z"
+            },
+            "expr": "{job=\"django\"} | logfmt",
+            "refId": "A"
+          }
+        ],
+        "title": "django log",
+        "type": "logs"
+      }
+    ],
+    "refresh": "",
+    "schemaVersion": 35,
+    "style": "dark",
+    "tags": [],
+    "templating": {
+      "list": []
+    },
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "",
+    "title": "Admin",
+    "uid": "v8VCrfLnz",
+    "version": 36,
+    "weekStart": ""
+  }

@@ -3,6 +3,10 @@ from django.utils.html import format_html
 
 
 class PosteAdmin(admin.ModelAdmin):
+    def changelist_view(self, request, extra_context=None):
+        extra_context = {'title': 'Poste'}
+        return super(PosteAdmin, self).changelist_view(request, extra_context=extra_context)
+
     list_display = (
         'meteor',
         'meteofr',

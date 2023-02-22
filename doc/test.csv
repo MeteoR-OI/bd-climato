@@ -1,0 +1,2 @@
+id,id_poste,time,duration,out_temp,windchill,dewpoint,soiltemp,humidity,barometer,pressure,wind,wind_dir,wind_gust,wind_gust_dir,wind10,wind10_dir,rain,rain_rate,uv_indice,radiation,etp_sum,in_temp,in_humidity,rx,voltage
+1,1,2022-03-25 14:00:00,5,,,,,,,,,,,,,,,,,,,,,,
