@@ -117,6 +117,30 @@ def get_trace_info(exc, nb_levels: int = 3):
     return str(exc.__class__) + ':' + str(exc), ''.join(stack)
 
 
+def GetFirstDayNextMonth(dt):
+    return datetime(dt.year + (dt.month // 12), (dt.month % 12) + 1, 1)
+
+
+def FromTimestampToDate(ts, tz=datetime.timezone.utc):
+    """Load a timestamp to a datetime, as local time, or utc time (no tz given)"""
+    return datetime.fromtimestamp(ts, tz)
+
+
+def FromAwareDtToTimestamp(dt):
+    """Return timestamp for an aware date (with no timezone data)"""
+    return int(AsTimezone(dt).timestamp())
+
+
+def AsTimezone(dt, delta_hours=0):
+    tz = datetime.timezone(datetime.timedelta(hours=delta_hours), 'UTC' + str('{:+03d}:00'.format(+1)))
+    return dt.astimezone(tz)
+
+# dt.replace(tzinfo=timezone.utc) => change the tz to utc, do not convert datetime
+# tz=timezone(timedelta(hours=4), 'Reu')
+# dt=datetime(2023, 1, 31, 23, 59, tzinfo=tz) => create a datetime with local time and tz
+# dt.astimezone(timezone.utc) => convert datetime in UTC
+
+
 def ToLocalTS(dt):
     """Return timestamp for a naive date (with no timezone data)"""
     return int((dt - datetime.datetime(1970, 1, 1)).total_seconds())
@@ -125,16 +149,6 @@ def ToLocalTS(dt):
 def ToReunionTS(dt):
     """Return timestamp for a date in local time in UTC+4"""
     return int((dt - datetime.datetime(1970, 1, 1)).total_seconds() - 4 * 3600)
-
-
-def DateFromUTCTS(ts):
-    """return a datetime from an utc timestamp"""
-    return datetime.datetime.utcfromtimestamp(ts)
-
-
-def DateFromReuTS(ts):
-    """return a datetime from a timestamp in local time"""
-    return datetime.datetime.fromtimestamp(ts)
 
 
 class LogMe:

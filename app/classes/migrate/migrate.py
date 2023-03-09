@@ -14,6 +14,7 @@
 # more info on wind vs windGust: https://github-wiki-see.page/m/weewx/weewx/wiki/windgust
 # ---------------
 import app.tools as t
+from app.tools.myTools import FromTimestampToDate, FromAwareDtToTimestamp, AsTimezone, GetFirstDayNextMonth
 import mysql.connector
 import psycopg2
 from datetime import datetime, timedelta
@@ -69,25 +70,25 @@ class MigrateDB:
     # process our item
     # -----------------
     def processWorkItem(self, work_item, my_span):
-        old_json_load = None
+        work_item['old_json_load'] = None
         try:
             pgconn = self.getPGConnexion()
             pg_cur = pgconn.cursor()
             meteor = work_item['meteor']
+            current_dt = datetime.now()
 
-            start_dt, end_dt, old_json_load, last_ts_in_extreme = self.getNewDateBraket(work_item)
+            work_item['pid'], work_item['tz'], work_item['load_json'] = PosteMeteor.getPosteIdAndTzByMeteor(meteor)
 
             if work_item['pid'] is None:
                 raise Exception('station ' + meteor + ' not found')
 
-            _, work_item['tz'] = PosteMeteor.getPosteIdAndTzByMeteor(meteor)
-            current_dt = datetime.now()
+            self.getNewDateBraket(work_item)
 
             # loop per year
-            while start_dt < current_dt:
+            while work_item['start_dt'] < current_dt:
 
                 # Load obs, records from archive
-                new_records = self.loadExistingObsAndFlushObs(pg_cur, work_item, start_dt, end_dt, last_ts_in_extreme, my_span)
+                new_records = self.loadExistingObsAndFlushObs(pg_cur, work_item, my_span)
 
                 # load archive data
                 self.loadExistingRecordsAndFlush(pg_cur, work_item, new_records, start_dt, end_dt, last_ts_in_extreme, my_span)
@@ -95,78 +96,83 @@ class MigrateDB:
 
                 pgconn.commit()
 
-                work_item['start_dt'] = end_dt
-
-                start_dt, end_dt, _, _ = self.getNewDateBraket(work_item)
+                self.getNewDateBraket(work_item)
 
         finally:
             pg_cur.close()
             pgconn.close()
-            if old_json_load is not None and old_json_load is True:
-                self.updateLoadJsonValue(meteor, old_json_load)
+            if work_item['old_json_load'] is not None and work_item['old_json_load'] is True:
+                self.updateLoadJsonValue(work_item)
 
     # ---------------------------------------
     # other methods specific to this service
     # ---------------------------------------
     def getNewDateBraket(self, work_item):
-        meteor = work_item['meteor']
+
         """Get start_dt/end_dt from postes, and archive table"""
-        pgconn = self.getPGConnexion()
-        pg_cur = pgconn.cursor()
         myconn = self.getMSQLConnection(meteor)
         my_cur = myconn.cursor()
+
         old_load_json = False
+        max_date = datetime(2100, 1, 1)
+        max_ts = max_date.timestamp()
 
         try:
-            # Get dates from postes table
-            pg_cur.execute("select id, last_obs_date, last_extremes_date, load_json from postes where meteor = '" + meteor + "'")
-            row = pg_cur.fetchone()
-            pg_cur.close()
+            # Get scan limit
+            if work_item.get('start_limit_ts') is None:
+                my_cur.execute('select min(dateTime), max(dateTime) from archive')
+                row = my_cur.fetchone()
+                my_cur.close()
+                if row is None or len(row) == 0 or row[0] is None or row[1] is None:
+                    work_item['start_dt'] = max_date
+                    return
+                work_item['start_limit_ts'] = row[0]
+                work_item['end_limit_ts'] = row[1]
 
-            if row is None:
-                raise Exception('poste ' + meteor + ' not found')
+            # Get start_dt/start_ts
+            if work_item.get('end_dt_utc') is None:
+                work_item['start_dt_utc'] = FromTimestampToDate(work_item['start_limit_ts'] - 1)
+                work_item['start_dt_local'] = AsTimezone(work_item['start_dt_utc'], work_item['tz'])
+                work_item['start_ts'] = work_item['start_limit_ts'] - 1
+            else:
+                work_item['start_dt_utc'] = work_item['end_dt_utc']
+                work_item['start_dt_local'] = work_item['end_dt_local']
+                work_item['start_ts'] = work_item['end_ts']
 
-            work_item['pid'] = row[0]
-            last_o_dt = row[1] if work_item.get('start_dt') is None else work_item['start_dt']
-            last_x_dt = row[2] if row[2] is not None else datetime(2100, 1, 1)
-            old_load_json = row[3]
+            # if start_ts greater than end_limit_ts -> exit
+            if work_item['start_ts'] > work_item['end_limit_ts']:
+                work_item['start_dt'] = max_date
+                return
 
-            sql = 'select from_unixtime(min(dateTime +3600*4)), from_unixtime(max(dateTime +3600*4)) from archive '
-            if last_o_dt is not None:
-                sql += " where dateTime > '" + str(t.myTools.ToLocalTS(last_o_dt)) + "'"
-            my_cur.execute(sql)
-            row2 = my_cur.fetchone()
-            my_cur.close()
+            work_item['end_dt_local'] = GetFirstDayNextMonth(work_item['start_dt_local'])
+            work_item['end_dt_utc'] = AsTimezone(work_item['end_dt_utc'], -1 * work_item['tz'])
+            work_item['end_ts'] = work_item['end_dt_utc'].timestamp()
 
-            start_dt = row2[0]
-            if start_dt is None or (last_o_dt is not None and last_o_dt >= start_dt):
-                start_dt = datetime(2100, 1, 1)         # start_dt as post current datetime, to exit
+            if work_item['old_json_load'] is True:
+                work_item['old_json_load'] = False
+                self.updateLoadJsonValue(work_item)
 
-            end_dt = self.getLastTimeOfTheMonth(start_dt)
+            print('-------------------------------------------------')
+            print('new period (local) from: ' + str(work_item['start_dt_local']) + ' to ' + str(work_item['end_dt_local']))
+            print('new period (utc)   from: ' + str(work_item['start_dt_utc']) + ' to ' + str(work_item['end_dt_utc']))
+            print('new period (ts)    from: ' + str(work_item['start_ts']) + ' to ' + str(work_item['end_ts']))
+            print('-------------------------------------------------')
 
-            if old_load_json is True:
-                self.updateLoadJsonValue(meteor, False)
-
-            print('-----------------')
-            print('new period from: ' + str(start_dt) + ' to ' + str(end_dt))
-            print('-----------------')
-
-            return start_dt, end_dt, old_load_json, last_x_dt.timestamp()
+            return
 
         except Exception as ex:
             print("exception: " + str(ex))
             raise ex
 
         finally:
-            pgconn.close()
             myconn.close()
 
-    def updateLoadJsonValue(self, meteor, new_value):
+    def updateLoadJsonValue(self, work_item):
         pgconn = self.getPGConnexion()
         pg_cur = pgconn.cursor()
 
         try:
-            pg_cur.execute('update postes set load_json = ' + str(new_value) + " where meteor = '" + meteor + "'")
+            pg_cur.execute('update postes set load_json = ' + str(work_item['old_json_load']) + " where meteor = '" + work_item['meteor'] + "'")
             pgconn.commit()
 
         except Exception as ex:
@@ -179,23 +185,17 @@ class MigrateDB:
     # ---------------------------------------------------
     # insert mesures from weewx archive in our obs table
     # ---------------------------------------------------
-    def loadExistingObsAndFlushObs(self, pg_cur, work_item, start_dt, end_dt, last_ts_in_extreme, my_span):
+    def loadExistingObsAndFlushObs(self, pg_cur, work_item, my_span):
         new_records = {}
         histo_o = []
 
         start_time = datetime.now()
 
-        if last_ts_in_extreme is None:
-            last_ts_in_extreme = datetime(2000, 1, 1)
-
-        pid = work_item['pid']
-        meteor = work_item['meteor']
-
-        query_my = self.getWeewxSelectSql(start_dt, end_dt, None)
+        query_my = self.getWeewxSelectSql(work_item)
         query_pg, query_args = self.prepareSqlInsertStructure()
 
         # get a cursor to our archive db
-        myconn = self.getMSQLConnection(meteor)
+        myconn = self.getMSQLConnection(work_item['meteor'])
         my_cur = myconn.cursor()
 
         # execute the select statement
@@ -222,16 +222,12 @@ class MigrateDB:
             # reset dirty flag and load 3 first arg values
             for a_q in query_args:
                 a_q['dirty'] = False
-                if a_q['valdk'] == 0:
-                    str_date = t.myTools.DateFromUTCTS(row2[self.row_archive_dt_local]).strftime('%Y-%m-%d %H:%M:%S')
-                    str_utc_date = t.myTools.DateFromUTCTS(row2[self.row_archive_dt_local] - work_item['tz'] * 3600).strftime('%Y-%m-%d %H:%M:%S')
-                else:
-                    str_date = t.myTools.DateFromUTCTS(row2[self.row_archive_dt_local] + a_q['valdk'] * 3600).strftime('%Y-%m-%d %H:%M:%S')
-                    str_utc_date = t.myTools.DateFromUTCTS(row2[self.row_archive_dt_local] - (work_item['tz'] + a_q['valdk']) * 3600).strftime('%Y-%m-%d %H:%M:%S')
+                utc_date = FromTimestampToDate(row2[self.row_archive_dt_utc] + a_q['valdk'] * 3600)
+
                 a_q['args'] = [
-                    str(pid),
-                    str_date,
-                    str_utc_date,
+                    str(work_item['pid']),
+                    AsTimezone(utc_date, work_item['tz']).strftime('%Y-%m-%d %H:%M:%S'),
+                    utc_date.strftime('%Y-%m-%d %H:%M:%S'),
                     str(row2[self.row_archive_interval] if a_q['valdk'] == 0 else 0)
                 ]
 
@@ -240,7 +236,7 @@ class MigrateDB:
             while idx < len(self.measures):
                 a_mesure = self.measures[idx]
 
-                row_mesure_value = row2[idx + 4]                        # row values are in same order as self.measures
+                row_mesure_value = row2[idx + 3]                        # row values are in same order as self.measures
 
                 # load value in the right insert statement, depending on valdk
                 for a_q in query_args:
@@ -268,7 +264,7 @@ class MigrateDB:
             # message for first insert
             if last_obs_id == -1 and id_obs_main != 0:
                 last_obs_id = id_obs_main
-                t.myTools.logInfo("first archive inserted, id: " + str(last_obs_id) + ", from date: " + str(a_q['args'][1]), my_span, {"svc": "migrate", "meteor": meteor})
+                t.myTools.logInfo("first archive inserted, id: " + str(last_obs_id) + ", from local time: " + str(a_q['args'][1]), my_span, {"svc": "migrate", "meteor":  work_item['meteor']})
 
             # store min/max in our cache
             for a_mesure in self.measures:
@@ -279,15 +275,27 @@ class MigrateDB:
                 else:
                     mesure_value = row2[col_mapping[self.measures[a_mesure['ommidx']]['col']]]
 
-                # get cached_mesure
-                if new_records.get('m_' + str(mid)) is None:
-                    new_records['m_' + str(mid)] = {'mid': mid, 'cache': [], 'last': 0, 'last_in_db': last_ts_in_extreme}
-                mesure_cached_item = new_records['m_' + str(mid)]
+                if mesure_value is not None:
+                    # get cached_mesure
+                    if new_records.get('m_' + str(mid)) is None:
+                        new_records['m_' + str(mid)] = {'mid': mid, 'cache': [], 'last': 0, 'last_in_db': 0}
+                    mesure_cached_item = new_records['m_' + str(mid)]
 
-                # cache mesure as max/min
-                nb_record_cached += 1
-                mesure_dir = None if a_mesure['diridx'] is None else row2[a_mesure['diridx']]
-                self.load_min_max_from_archive_row(a_mesure, mesure_value, mesure_dir, row2[self.row_archive_dt_local], id_obs_main, mesure_cached_item)
+                    # get local date
+                    local_date = None
+                    for a_query in query_args:
+                        if a_q['valdk'] == a_mesure['valdk']:
+                            local_date = a_q['args'][1].date()
+
+                    # cache mesure as max/min
+                    nb_record_cached += 1
+                    self.load_min_max_from_archive_row(
+                        a_mesure,
+                        mesure_value,
+                        None if a_mesure['diridx'] is None else row2[a_mesure['diridx']],
+                        local_date,
+                        id_obs_main,
+                        mesure_cached_item)
 
             row2 = my_cur.fetchone()
 
@@ -296,11 +304,11 @@ class MigrateDB:
         histo_o = None
 
         if nb_new_obs_master > 0:
-            t.myTools.logInfo('obs inserted, last id: ' + str(obs_new_id) + ", date: " + str(a_q['args'][1]), my_span, {"svc": "migrate", "meteor": meteor})
+            t.myTools.logInfo('obs inserted, last id: ' + str(obs_new_id) + ", local time: " + str(a_q['args'][1]), my_span, {"svc": "migrate", "meteor":  work_item['meteor']})
             my_span.add_event('obs', str(nb_new_obs_master) + ' rows inserted (with deca == 0), total rows: ' + str(nb_new_obs_all))
             my_span.add_event('histo', str(nb_histo_inserted) + ' rows inserted')
         else:
-            t.myTools.logInfo('no new obs inserted', my_span, {"svc": "migrate", "meteor": meteor})
+            t.myTools.logInfo('no new obs inserted', my_span, {"svc": "migrate", "meteor":  work_item['meteor']})
             my_span.add_event('obs', 'no row inserted')
             my_span.add_event('histo', 'no row inserted')
 
@@ -597,8 +605,8 @@ class MigrateDB:
     # --------------------------------
     # return the sql select statement
     # --------------------------------
-    def getWeewxSelectSql(self, start_dt, end_dt, end_ts=None):
-        query_my = "select dateTime, dateTime + (4 * 3600), usUnits, `interval`"
+    def getWeewxSelectSql(self, work_item):
+        query_my = "select dateTime, usUnits, `interval`"
 
         # load an array of query args, one for each valdk, update sql statement
         for a_mesure in self.measures:
@@ -606,8 +614,8 @@ class MigrateDB:
             query_my += ', ' + a_mesure['col']
 
         # finalize sql statements
-        query_my += " from archive where dateTime >= " + str(t.myTools.ToReunionTS(start_dt))
-        query_my += " and dateTime <= " + str(t.myTools.ToReunionTS(end_dt))
+        query_my += " from archive where dateTime >= " + str(work_item['start_ts'])
+        query_my += " and dateTime < " + str(work_item['end_ts'])
 
         # query_my += " order by dateTime"""
         query_my += " order by dateTime"
@@ -845,6 +853,7 @@ class MigrateDB:
         myconn.commit()
         my_cur.close()
 
+        myconn.time_zone = "+00:00"
         return myconn
 
     def roundTimeStampToAnExactDay(self, ts):
@@ -852,14 +861,6 @@ class MigrateDB:
 
     def roundDateTimeToAnExactDay(self, dt):
         return datetime(dt.year, dt.month, dt.day)
-
-    def getLastTimeOfTheMonth(self, start_dt):
-        if start_dt.month == 12:
-            new_dt = datetime(start_dt.year + 1, 1, 1, 0, 0, 0)
-        else:
-            new_dt = datetime(start_dt.year, start_dt.month + 1, 1, 0, 0, 0)
-
-        return new_dt - timedelta(seconds=1)
 
     def loadSelfVariables(self):
         pgconn = None
@@ -874,9 +875,8 @@ class MigrateDB:
 
             # row_id for select from archive data, first 4 fields
             self.row_archive_dt_utc = 0
-            self.row_archive_dt_local = 1
-            self.row_archive_usunits = 2
-            self.row_archive_interval = 3
+            self.row_archive_usunits = 1
+            self.row_archive_interval = 2
 
             # row_id for extreme data
             self.row_extreme_datetime = 0

@@ -40,7 +40,7 @@ class PosteMeteor:
     def getPosteIdAndTzByMeteor(meteor: str):
         if Poste.objects.filter(meteor=meteor).exists():
             p = Poste.objects.filter(meteor=meteor).first()
-            return p.id, p.delta_timezone
+            return p.id, p.delta_timezone, p.load_json
         return None, 0
 
     def __str__(self):
