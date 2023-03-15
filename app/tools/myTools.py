@@ -117,13 +117,24 @@ def get_trace_info(exc, nb_levels: int = 3):
     return str(exc.__class__) + ':' + str(exc), ''.join(stack)
 
 
+def GetDate(dt):
+    type_date = str(type(dt))
+    if "'datetime.date'>" in type_date:
+        return dt
+    return dt.date()
+
+
 def GetFirstDayNextMonth(dt):
-    return datetime(dt.year + (dt.month // 12), (dt.month % 12) + 1, 1)
+    if str(type(dt)) == "<class 'datetime.date'>":
+        return datetime.datetime(dt.year + (dt.month // 12), (dt.month % 12) + 1, 1, 0, 0)
+    if dt.tzinfo is None:
+        return datetime.datetime(dt.year + (dt.month // 12), (dt.month % 12) + 1, 1)
+    return datetime.datetime(dt.year + (dt.month // 12), (dt.month % 12) + 1, 1, tzinfo=dt.tzinfo)
 
 
 def FromTimestampToDate(ts, tz=datetime.timezone.utc):
     """Load a timestamp to a datetime, as local time, or utc time (no tz given)"""
-    return datetime.fromtimestamp(ts, tz)
+    return datetime.datetime.fromtimestamp(ts, tz)
 
 
 def FromAwareDtToTimestamp(dt):
@@ -132,13 +143,25 @@ def FromAwareDtToTimestamp(dt):
 
 
 def AsTimezone(dt, delta_hours=0):
-    tz = datetime.timezone(datetime.timedelta(hours=delta_hours), 'UTC' + str('{:+03d}:00'.format(+1)))
+    tz = datetime.timezone(datetime.timedelta(hours=delta_hours), 'UTC' + str('{:+03d}:00'.format(delta_hours)))
     return dt.astimezone(tz)
 
-# dt.replace(tzinfo=timezone.utc) => change the tz to utc, do not convert datetime
-# tz=timezone(timedelta(hours=4), 'Reu')
-# dt=datetime(2023, 1, 31, 23, 59, tzinfo=tz) => create a datetime with local time and tz
-# dt.astimezone(timezone.utc) => convert datetime in UTC
+
+def FromTsToLocalDateTime(ts, tz):
+    tmp_dt = FromTimestampToDate(ts)
+    return AsTimezone(tmp_dt, tz)
+
+
+def FromDateToLocalDateTime(dt, delta_hours):
+    tz = datetime.timezone(datetime.timedelta(hours=delta_hours), 'UTC' + str('{:+03d}:00'.format(delta_hours)))
+    return datetime.datetime(dt.year, dt.month, dt.day, tzinfo=tz)
+
+
+def RoundToStartOfDay(timestamp, tz=0):
+    dt = datetime.datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc)
+    dt = AsTimezone(dt, tz)
+    start_of_day = datetime.datetime(year=dt.year, month=dt.month, day=dt.day)
+    return int(start_of_day.timestamp())
 
 
 def ToLocalTS(dt):
