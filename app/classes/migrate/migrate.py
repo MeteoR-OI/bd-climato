@@ -233,7 +233,7 @@ class MigrateDB:
 
     def loadExistingObsAndFlushObs(self, pg_cur, work_item, my_span):
 
-        Nico => add dirty flag to not save duration = 0 with no data...
+        # Nico => add dirty flag to not save duration = 0 with no data...
 
         new_records = self.getExistingRecord(pg_cur, work_item, my_span)
         histo_o = []
@@ -289,9 +289,15 @@ class MigrateDB:
 
                 row_mesure_value = row2[idx + 3]                        # row values are in same order as self.measures
 
+                # If zero not allowed, replace zero with None
+                if a_mesure['zero'] is False and row_mesure_value == 0:
+                    row_mesure_value = None
+
                 # load value in the right insert statement, depending on valdk
                 for a_q in query_args:
                     if a_q['valdk'] == a_mesure['valdk'] and row_mesure_value is not None:
+                        if a_q['valdk'] != 0:
+                            pass
                         a_q['args'].append(str(row_mesure_value))
                         a_q['dirty'] = True
                     else:
@@ -400,6 +406,10 @@ class MigrateDB:
                 mid = a_mesure['id']
                 my_cur = myconn.cursor()
                 try:
+                    # get cached_mesure
+                    if new_records.get('m_' + str(mid)) is None:
+                        new_records['m_' + str(mid)] = {'mid': mid, 'cache': []}
+
                     mesure_cache_item = new_records['m_' + str(mid)]
 
                     # get table name, fix for wind table
