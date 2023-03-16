@@ -10,11 +10,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL("CREATE EXTENSION timescaledb;"),
+        migrations.RunSQL("CREATE EXTENSION IF NOT EXISTS timescaledb;"),
         migrations.RunSQL(
             "ALTER TABLE obs DROP CONSTRAINT obs_pkey;"
         ),
-        migrations.RunSQL("SELECT create_hypertable('obs', 'dt_local');"),
+        migrations.RunSQL("SELECT create_hypertable('obs', 'date_local');"),
         migrations.RunSQL(
             "SELECT set_chunk_time_interval('obs', 6048000000000);"
         ),

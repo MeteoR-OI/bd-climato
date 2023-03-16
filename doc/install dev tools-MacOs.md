@@ -21,6 +21,7 @@
   - [b. Création de la base de données locale vide](#b-création-de-la-base-de-données-locale-vide)
 - [6. Activer le setting local](#6-activer-le-setting-local)
 - [7.	**Lancer VS Code sur le projet**](#7lancer-vs-code-sur-le-projet)
+- [8. Debug code Django](#8-debug-code-django)
 - [8, Code coverage](#8-code-coverage)
 - [9. Ajout d'un bouton pour declencher le code cov](#9-ajout-dun-bouton-pour-declencher-le-code-cov)
 
@@ -190,9 +191,13 @@ Activer la version de python installée, v3.9.1 au moment d'ecrire ce tutorial)
 (voir coment faire dans la doc de l'extension)
 ![logo](https://raw.githubusercontent.com/MeteoR-OI/bd-climato/master/doc/images/pyver.png)
 
-Pour initialiser la base de données (a faire qu'une fois): dans le terminal de VS Code, tapez la commande:
+Pour initialiser la base de données (a faire qu'une fois): dans le terminal de VS Code, tapez les commandes:
 ```shell
   python3 manage.py migrate
+  python3 manage.py migrate app
+  python3 manage.py createsuperuser
+
+  psql -U postgres climato < data/appInit.sql
 ````
 
 Le programme peut etre lancé, ou debug

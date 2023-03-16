@@ -634,7 +634,8 @@ class MigrateDB:
             if cached_extreme[self.row_cache_max] is None or row[self.row_virtual_max] > cached_extreme[self.row_cache_max]:
                 cached_extreme[self.row_cache_max] = row[self.row_virtual_max]
                 cached_extreme[self.row_cache_max_local_dt] = FromTsToLocalDateTime(row[self.row_virtual_maxtime], tz).strftime('%Y-%m-%d %H:%M:%S')
-                cached_extreme[self.row_cache_maxdir] = row[self.row_virtual_maxdir]
+                if a_mesure['iswind'] is True:
+                    cached_extreme[self.row_cache_maxdir] = row[self.row_virtual_maxdir]
                 cached_extreme[self.row_cache_obsid_max] = row[self.row_virtual_obsid]
 
     # --------------------------
@@ -680,7 +681,7 @@ class MigrateDB:
     # -----------------------------------
     def prepareSqlInsertStructure(self):
         query_args = []
-        query_pg1 = "insert into obs(poste_id, dt_local, dt_utc, duration"
+        query_pg1 = "insert into obs(poste_id, date_local, date_utc, duration"
         query_pg2 = ") values ( %s, %s, %s, %s"      # id_obs has to be the last
 
         # load an array of query args, one for each valdk, update sql statement

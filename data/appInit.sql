@@ -36,7 +36,7 @@ insert into postes(meteor, delta_timezone, meteofr, title, owner, email, phone, 
   name:
   json_input: field name in json coming from weewx, and in Obs table
   archive_col: field name in weew archive database
-  archive_table:
+  archive_table: table name when different than archive_col...
   field_dir: field for wind direction (not in omm measure)
   val_deca: decallage de la mesure
   min: compute a min in extreme table
@@ -105,7 +105,7 @@ select 'nb mesures: ' || count(*) from mesures;
 
 create materialized view obs_day WITH (timescaledb.continuous) as
     select
-        timescaledb_experimental.time_bucket_ng('1 day', dt_local) as dt_local,
+        timescaledb_experimental.time_bucket_ng('1 day', date_local) as date_local,
         poste_id,
         avg(barometer) as barometer,
         avg(barometer_omm) as barometer_omm,
@@ -162,8 +162,8 @@ DECLARE
     obs_dat timestamp;
 BEGIN
   select last_obs_date  into obs_dat from postes where id = NEW.poste_id;
-  if new.duration > 0 and (obs_dat is null or new.dt_local > obs_dat) then
-    update postes set last_obs_date = NEW.dt_local, last_obs_id = NEW.id where id = NEW.poste_id;
+  if new.duration > 0 and (obs_dat is null or new.date_local > obs_dat) then
+    update postes set last_obs_date = NEW.date_local, last_obs_id = NEW.id where id = NEW.poste_id;
   end if;
   return NEW;
 END

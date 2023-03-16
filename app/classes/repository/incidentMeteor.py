@@ -14,7 +14,7 @@ class IncidentMeteor():
         """Init a new IncidentMeteor object"""
         self.data = Incident.objects.filter(id=id).first()
         if self.data is None:
-            self.data = Incident(dt_utc=datetime.datetime.utcnow(), source="??", level="??", reason="??", details={}, active=True)
+            self.data = Incident(date_utc=datetime.datetime.utcnow(), source="??", level="??", reason="??", details={}, active=True)
 
     @staticmethod
     def new(source: str, level: str, reason: str, details: json):
@@ -36,6 +36,6 @@ class IncidentMeteor():
 
     def __str__(self):
         """print myself"""
-        ret = "Incident id: " + str(self.data.id) + ", dat: " + str(self.data.dt_utc) + ", source: " + str(self.data.source)
+        ret = "Incident id: " + str(self.data.id) + ", dat: " + str(self.data.date_utc) + ", source: " + str(self.data.source)
         ret += ", level: " + self.data.level + ", reason: " + str(self.data.reason)
         return ret

@@ -92,8 +92,8 @@ class Observation(models.Model):
     # ??  hail | hailRate | heatingTemp ??
 
     id = models.BigAutoField(primary_key=True, verbose_name="id de l'observation")
-    dt_local = DateTimeFieldNoTZ(null=False, verbose_name="datetime locale fin période observation")
-    dt_utc = DateTimeFieldNoTZ(null=False, verbose_name="datetime UTC fin période observation")
+    date_local = DateTimeFieldNoTZ(null=False, verbose_name="datetime locale fin période observation")
+    date_utc = DateTimeFieldNoTZ(null=False, verbose_name="datetime UTC fin période observation")
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
     duration = models.SmallIntegerField(null=True, default=0, verbose_name="durée période, seulement pour les obs principales")
     # nullable data
@@ -157,7 +157,7 @@ class Observation(models.Model):
     class Meta:
         db_table = "obs"
         indexes = [
-            Index(name='obs_pid', fields=['poste_id', '-dt_local']),
+            Index(name='obs_pid', fields=['poste_id', '-date_local']),
         ]
 
 
@@ -184,7 +184,7 @@ class Extreme(models.Model):
 
 class Incident(models.Model):
     id = models.AutoField(primary_key=True)
-    dt_utc = DateTimeFieldNoTZ(null=False, max_length=30, verbose_name="date")
+    date_utc = DateTimeFieldNoTZ(null=False, max_length=30, verbose_name="date")
     source = models.CharField(null=False, max_length=100, verbose_name='source')
     level = models.CharField(null=False, max_length=20, verbose_name='niveau')
     # error, critical, exception
@@ -195,7 +195,7 @@ class Incident(models.Model):
     active = models.BooleanField(null=True, default=True, verbose_name='active')
 
     def __str__(self):
-        return "Incident id: " + str(self.id) + ", date: " + str(self.dt_utc) + ", Source: " + str(self.source) + ", Reason: " + str(self.reason)
+        return "Incident id: " + str(self.id) + ", date: " + str(self.date_utc) + ", Source: " + str(self.source) + ", Reason: " + str(self.reason)
 
     class Meta:
         db_table = "incidents"
@@ -269,7 +269,7 @@ class Annotation(models.Model):
     #         migrations.RunSQL(
     #             "ALTER TABLE obs DROP CONSTRAINT obs_pkey;"
     #         ),
-    #         migrations.RunSQL("SELECT create_hypertable('obs', 'dt_local');"),
+    #         migrations.RunSQL("SELECT create_hypertable('obs', 'date_local');"),
     #         migrations.RunSQL(
     #             "SELECT set_chunk_time_interval('obs', 6048000000000);"
     #         ),
