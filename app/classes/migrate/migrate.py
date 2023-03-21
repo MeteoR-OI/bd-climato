@@ -402,6 +402,8 @@ class MigrateDB:
         myconn = self.getMSQLConnection(work_item['meteor'])
         try:
             for a_mesure in self.measures:
+                if a_mesure.get('table') == 'skip':
+                    continue
                 nb_record_added = 0
                 mid = a_mesure['id']
                 my_cur = myconn.cursor()

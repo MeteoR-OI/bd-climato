@@ -62,7 +62,7 @@ insert into mesures
 (16, 'extrahumid1',     'extra_humid1',     'extraHumid1',        null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
 (18, 'extrahumid2',     'extra_humid2',     'extraHumid2',        null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
 (20, 'gust',            'wind_gust',        'windGust',           'wind',        22,     0,   false,   0,     true,    0,      true,   true,     null,      true,      'wind_max',        False),
-(22, 'gust dir',        'wind_gust_dir',    'windGustDir',        'windDir',   null,     0,   false,   0,     false,   0,      true,   false,    null,      true,  'wind_max_dir',        False),
+(22, 'gust dir',        'wind_gust_dir',    'windGustDir',        'skip',      null,     0,   false,   0,     false,   0,      true,   false,    null,      true,  'wind_max_dir',        False),
 (24, 'hail rate',       'hail_rate',        'hailRate',           null,        null,     0,   false,   0,     true,    0,      true,   false,    null,      true,            null,        False),
 (26, 'hail',            'hail',             'hail',               null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
 (28, 'heatindex',       'heatindex',        'heatindex',          null,        null,     0,   false,   0,     true,    0,      true,   false,    null,      true,            null,        False),
@@ -96,7 +96,7 @@ insert into mesures
 (84, 'wind 10',         'wind10',           'windSpeed',          'wind',        90,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
 (86, 'wind 10 omm',     'wind10_omm',       'windSpeed',          'wind',      null,     0,   true,    0,     true,    0,      true,   false,      84,      true,            null,        False),
 (88, 'wind',            'wind',             'windSpeed',          'wind',        90,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
-(90, 'wind dir',        'wind_dir',         'windDir',            null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
+(90, 'wind dir',        'wind_dir',         'windDir',            'skip',      null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
 (92, 'windchill',       'windchill',        'windchill',          null,        null,     0,   true,    0,     false,   0,      true,   false,    null,      true,            null,        False)
 ;
 
