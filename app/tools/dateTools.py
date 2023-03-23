@@ -36,3 +36,16 @@ def str_to_date(dt_str: str) -> datetime.datetime:
     tmp_dt = dateutil.parser.parse(dt_str)
     # tmp_dt.tzinfo = None
     return tmp_dt
+
+
+def isRoundedHourInDuration(start_datetime, duration_seconds):
+    if start_datetime == start_datetime.replace(minute=0, second=0, microsecond=0):
+        end_datetime = start_datetime
+    else:
+        tmp_datetime = (start_datetime + datetime.timedelta(hours=1))
+        end_datetime = tmp_datetime.replace(minute=0, second=0, microsecond=0)
+    begin_datetime = end_datetime - datetime.timedelta(seconds=duration_seconds)
+    # print('range: ' + str(begin_datetime) + ' to ' + str(end_datetime))
+    # print("date " + str(start_datetime) + " before : " + str(start_datetime > begin_datetime))
+    # print("date " + str(start_datetime) + " after : " + str(start_datetime <= end_datetime))
+    return (start_datetime > begin_datetime) and (start_datetime <= end_datetime)

@@ -33,8 +33,9 @@ from app.tools.myTools import FromTimestampToDate, AsTimezone, GetFirstDayNextMo
 from app.tools.myTools import RoundToStartOfDay, FromDateToLocalDateTime
 import mysql.connector
 import psycopg2
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from app.classes.repository.posteMeteor import PosteMeteor
+from app.tools.dateTools import isRoundedHourInDuration
 
 
 # --------------------------------------
@@ -211,8 +212,8 @@ class MigrateDB:
             cache = []
             sql = 'select id, mesure_id, date_local, min, min_time, max, max_time, max_dir from extremes ' +\
                 ' where poste_id = ' + str(work_item['pid']) +\
-                " and date_local >= '" + str(work_item['start_dt_local']) + "' " +\
-                " and date_local < '" + str(work_item['end_dt_local']) + "' " +\
+                " and date_local >= '" + str(work_item['start_dt_local'] - timedelta(days=1)) + "' " +\
+                " and date_local < '" + str(work_item['end_dt_local'] + timedelta(days=1)) + "' " +\
                 ' order by mesure_id, date_local'
 
             current_mid = -1
@@ -271,14 +272,16 @@ class MigrateDB:
             # reset dirty flag and load 3 first arg values
             for a_q in query_args:
                 a_q['dirty'] = False
-                a_q['utc_ts'] = row2[self.row_archive_dt_utc]
+                a_q['utc_ts'] = row2[self.row_archive_dt_utc]       # utc timestamp with no valdk
                 utc_date = FromTimestampToDate(row2[self.row_archive_dt_utc] + a_q['valdk'] * 3600)
-                local_date = AsTimezone(utc_date, work_item['tz']).strftime('%Y-%m-%d %H:%M:%S')
+                local_date = AsTimezone(utc_date, work_item['tz'])
+                if a_q['valdk'] == 0:
+                    a_q['local_date'] = local_date
 
                 a_q['args'] = [
                     str(work_item['pid']),
-                    local_date,
-                    utc_date.strftime('%Y-%m-%d %H:%M:%S'),
+                    local_date.strftime('%Y-%m-%d %H:%M:%S'),                             # local date including valdk
+                    utc_date.strftime('%Y-%m-%d %H:%M:%S'),     # utc date including valdk
                     str(row2[self.row_archive_interval] if a_q['valdk'] == 0 else 0)
                 ]
 
@@ -289,6 +292,9 @@ class MigrateDB:
 
                 row_mesure_value = row2[idx + 3]                        # row values are in same order as self.measures
 
+                if row_mesure_value is not None and row_mesure_value < 17.4 and a_mesure['id'] in (76, 78):
+                    pass
+
                 # If zero not allowed, replace zero with None
                 if a_mesure['zero'] is False and row_mesure_value == 0:
                     row_mesure_value = None
@@ -296,8 +302,6 @@ class MigrateDB:
                 # load value in the right insert statement, depending on valdk
                 for a_q in query_args:
                     if a_q['valdk'] == a_mesure['valdk'] and row_mesure_value is not None:
-                        if a_q['valdk'] != 0:
-                            pass
                         a_q['args'].append(str(row_mesure_value))
                         a_q['dirty'] = True
                     else:
@@ -326,24 +330,33 @@ class MigrateDB:
             # store min/max in our cache
             for a_mesure in self.measures:
                 mid = a_mesure['id']
+                # debug
+                # if mid not in (76, 78):
+                #     continue
                 # get value for the measure, or for the linked measure for omm measures
                 if a_mesure['ommidx'] is None:
                     mesure_value = row2[col_mapping[a_mesure['col']]]
                 else:
-                    mesure_value = row2[col_mapping[self.measures[a_mesure['ommidx']]['col']]]
-
-                # get cached_mesure
-                if new_records.get('m_' + str(mid)) is None:
-                    new_records['m_' + str(mid)] = {'mid': mid, 'cache': []}
-                mesure_cached_item = new_records['m_' + str(mid)]
+                    if isRoundedHourInDuration(query_args[0]['local_date'], row2[self.row_archive_interval]):
+                        mesure_value = row2[col_mapping[self.measures[a_mesure['ommidx']]['col']]]
+                        if mesure_value is not None and a_mesure['isavg'] is False:
+                            mesure_value = mesure_value * 60
+                    else:
+                        mesure_value = None
 
                 if mesure_value is not None:
+                    # get cached_mesure
+                    if new_records.get('m_' + str(mid)) is None:
+                        new_records['m_' + str(mid)] = {'mid': mid, 'cache': []}
+                    mesure_cached_item = new_records['m_' + str(mid)]
+
                     # get local date
                     utc_ts = None
                     for a_query in query_args:
                         if a_query['valdk'] == a_mesure['valdk']:
                             # nico => utc_ts nt loaded
                             utc_ts = a_q['utc_ts']
+                            break
 
                     # cache mesure as max/min
                     nb_record_cached += 1
@@ -402,6 +415,11 @@ class MigrateDB:
         myconn = self.getMSQLConnection(work_item['meteor'])
         try:
             for a_mesure in self.measures:
+                # debug
+                # if a_mesure['id'] in (76, 78):
+                # pass
+                # else:
+                # continue
                 if a_mesure.get('table') == 'skip':
                     continue
                 nb_record_added = 0
@@ -458,7 +476,11 @@ class MigrateDB:
         start_dt = datetime.now()
 
         for a_mesure in self.measures:
+
+            if new_records.get('m_' + str(a_mesure['id'])) is None:
+                new_records['m_' + str(a_mesure['id'])] = {'mid': a_mesure['id'], 'cache': []}
             x_to_update += new_records['m_' + str(a_mesure['id'])]['cache']
+
             new_records['m_' + str(a_mesure['id'])]['cache'] = []             # free memory
 
         step1_length = datetime.now() - start_dt
@@ -563,7 +585,8 @@ class MigrateDB:
             if an_item[self.row_cache_obsid_min] is not None:
                 histo_x.append([an_item[self.row_cache_obsid_min], x_id])
             if an_item[self.row_cache_obsid_max] is not None and an_item[self.row_cache_obsid_min] != an_item[self.row_cache_obsid_max]:
-                histo_x.append([an_item[self.row_cache_obsid_max], x_id])
+                if an_item[self.row_cache_obsid_min] != an_item[self.row_cache_obsid_max]:
+                    histo_x.append([an_item[self.row_cache_obsid_max], x_id])
 
         sort_length = datetime.now() - start_dt
         sort_len = sort_length.seconds * 1000 + sort_length.microseconds/1000
@@ -599,7 +622,6 @@ class MigrateDB:
     # create a virtual row from an weewx record row
     # ----------------------------------------------
     def loadMinMaxFromExtremeRow(self, work_item, a_mesure, row, mesure_cached_item):
-
         row_virtual = [
             None if row[self.row_extreme_min] is None else row[self.row_extreme_mintime] + a_mesure['mindk'] * 3600,
             row[self.row_extreme_min],
@@ -618,21 +640,29 @@ class MigrateDB:
     # update cached extreme from a virtual row
     # -----------------------------------------
     def loadMinMax(self, a_mesure, row, mesure_cached_item, tz):
-        # max_local_date = self.row_extreme_maxtime + work_item['tz'] * 3600)
-        # max_local_date = AsTimezone(max_utc_date, work_item['tz']).strftime('%Y-%m-%d %H:%M:%S'),
+        # debug
+        # if a_mesure['id'] not in (76, 78):
+        #     return
 
-        # nico getCached item bad slot for mi=8...
-        if a_mesure['id'] == 8:
-            pass
-        if a_mesure['min'] is True and row[self.row_virtual_min] is not None and row[self.row_virtual_min_utc_ts] is not None:
-            cached_extreme = self.getCachedItem(mesure_cached_item, row[self.row_virtual_min_utc_ts], tz, row[self.row_virtual_mid])
+        # debug
+        # rounded_ts = RoundToStartOfDay(row[self.row_virtual_mintime], tz)
+        # local_date = AsTimezone(FromTimestampToDate(rounded_ts), tz).date()
+        # if local_date < date(2014, 11, 29) or local_date > date(2014, 12, 1):
+        #     return
+        # rounded_ts = RoundToStartOfDay(row[self.row_virtual_maxtime], tz)
+        # local_date = AsTimezone(FromTimestampToDate(rounded_ts), tz).date()
+        # if local_date < date(2014, 11, 29) or local_date > date(2014, 12, 1):
+        #     return
+
+        if a_mesure['min'] is True and row[self.row_virtual_min] is not None and row[self.row_virtual_mintime] is not None and row[self.row_virtual_min_utc_ts] is not None:
+            cached_extreme = self.getCachedItem(mesure_cached_item, row[self.row_virtual_mintime], tz, row[self.row_virtual_mid])
             if cached_extreme[self.row_cache_min] is None or row[self.row_virtual_min] < cached_extreme[self.row_cache_min]:
                 cached_extreme[self.row_cache_min] = row[self.row_virtual_min]
                 cached_extreme[self.row_cache_min_local_dt] = FromTsToLocalDateTime(row[self.row_virtual_mintime], tz).strftime('%Y-%m-%d %H:%M:%S')
                 cached_extreme[self.row_cache_obsid_min] = row[self.row_virtual_obsid]
 
-        if a_mesure['max'] is True and row[self.row_virtual_max] is not None and row[self.row_virtual_max_utc_ts] is not None:
-            cached_extreme = self.getCachedItem(mesure_cached_item, row[self.row_virtual_max_utc_ts], tz, row[self.row_virtual_mid])
+        if a_mesure['max'] is True and row[self.row_virtual_max] is not None and row[self.row_virtual_maxtime] is not None and row[self.row_virtual_max_utc_ts] is not None:
+            cached_extreme = self.getCachedItem(mesure_cached_item, row[self.row_virtual_maxtime], tz, row[self.row_virtual_mid])
             if cached_extreme[self.row_cache_max] is None or row[self.row_virtual_max] > cached_extreme[self.row_cache_max]:
                 cached_extreme[self.row_cache_max] = row[self.row_virtual_max]
                 cached_extreme[self.row_cache_max_local_dt] = FromTsToLocalDateTime(row[self.row_virtual_maxtime], tz).strftime('%Y-%m-%d %H:%M:%S')
@@ -723,39 +753,39 @@ class MigrateDB:
     # -----------------------
     # misc utility functions
     # -----------------------
-    def get_min_valdk(self):
-        min_valdk = 0
-        for a_m in self.measures:
-            if a_m['mindk'] < min_valdk:
-                min_valdk = a_m['mindk']
-            if a_m['maxdk'] < min_valdk:
-                min_valdk = a_m['maxdk']
-        return min_valdk
+    # def get_min_valdk(self):
+    #     min_valdk = 0
+    #     for a_m in self.measures:
+    #         if a_m['mindk'] < min_valdk:
+    #             min_valdk = a_m['mindk']
+    #         if a_m['maxdk'] < min_valdk:
+    #             min_valdk = a_m['maxdk']
+    #     return min_valdk
 
-    def get_poste_info(self, meteor, my_span):
-        pgconn = None
-        poste_id = None
-        last_obs_ts = None
-        last_x_ts = None
+    # def get_poste_info(self, meteor, my_span):
+    #     pgconn = None
+    #     poste_id = None
+    #     last_obs_ts = None
+    #     last_x_ts = None
 
-        try:
-            pgconn = self.getPGConnexion()
-            pg_cur = pgconn.cursor()
-            pg_cur.execute("select id, last_obs_date, last_extremes_date, load_json from postes where meteor = '" + meteor + "'")
-            row = pg_cur.fetchone()
-            if row is not None:
-                poste_id = row[0]
-                last_obs_ts = datetime.now() if row[1] is None else row[1]
-                last_x_ts = datetime.now() if row[2] is None else row[2]
-                load_json = row[3]
-            # my_span.set_attribute('meteor', meteor)
-            my_span.set_attribute('last_obs_ts', t.myTools.ToLocalTS(last_obs_ts) if last_obs_ts is not None else 'None')
-            my_span.set_attribute('last_extremes_ts', t.myTools.ToLocalTS(last_x_ts) if last_x_ts is not None else 'None')
+    #     try:
+    #         pgconn = self.getPGConnexion()
+    #         pg_cur = pgconn.cursor()
+    #         pg_cur.execute("select id, last_obs_date, last_extremes_date, load_json from postes where meteor = '" + meteor + "'")
+    #         row = pg_cur.fetchone()
+    #         if row is not None:
+    #             poste_id = row[0]
+    #             last_obs_ts = datetime.now() if row[1] is None else row[1]
+    #             last_x_ts = datetime.now() if row[2] is None else row[2]
+    #             load_json = row[3]
+    #         # my_span.set_attribute('meteor', meteor)
+    #         my_span.set_attribute('last_obs_ts', t.myTools.ToLocalTS(last_obs_ts) if last_obs_ts is not None else 'None')
+    #         my_span.set_attribute('last_extremes_ts', t.myTools.ToLocalTS(last_x_ts) if last_x_ts is not None else 'None')
 
-        finally:
-            pg_cur.close()
-            pgconn.close()
-            return poste_id, last_obs_ts, last_x_ts, load_json
+    #     finally:
+    #         pg_cur.close()
+    #         pgconn.close()
+    #         return poste_id, last_obs_ts, last_x_ts, load_json
 
     def getMeasures(self, pgconn):
         mesures = []
@@ -802,7 +832,7 @@ class MigrateDB:
                     dir_idx += 1
         return mesures
 
-    def get_omm_link(self):
+    def getOmmLink(self):
         omm_link = []
         m_idx = 0
 
@@ -888,11 +918,11 @@ class MigrateDB:
         myconn.time_zone = "+00:00"
         return myconn
 
-    def roundTimeStampToAnExactDay(self, ts):
-        return ts - (ts % 86400)
+    # def roundTimeStampToAnExactDay(self, ts):
+    #     return ts - (ts % 86400)
 
-    def roundDateTimeToAnExactDay(self, dt):
-        return datetime(dt.year, dt.month, dt.day)
+    # def roundDateTimeToAnExactDay(self, dt):
+    #     return datetime(dt.year, dt.month, dt.day)
 
     def loadSelfVariables(self):
         pgconn = None
@@ -903,7 +933,7 @@ class MigrateDB:
             self.measures = self.getMeasures(pgconn)
 
             # load omm link array, between base mesures and linked omm mesures
-            self.omm_link = self.get_omm_link()
+            self.omm_link = self.getOmmLink()
 
             # row_id for select from archive data, first 4 fields
             self.row_archive_dt_utc = 0
