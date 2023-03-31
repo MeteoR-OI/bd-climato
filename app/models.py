@@ -94,7 +94,7 @@ class Observation(models.Model):
     id = models.BigAutoField(primary_key=True, verbose_name="id de l'observation")
     date_local = DateTimeFieldNoTZ(null=False, verbose_name="datetime locale fin période observation")
     date_utc = DateTimeFieldNoTZ(null=False, verbose_name="datetime UTC fin période observation")
-    poste = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
+    poste = models.ForeignKey(null=False, to="Poste", on_delete=models.PROTECT)
     duration = models.SmallIntegerField(null=True, default=0, verbose_name="durée période, seulement pour les obs principales")
     # nullable data
     barometer = models.FloatField(null=True, verbose_name="pression niveau mer")
@@ -164,8 +164,8 @@ class Observation(models.Model):
 class Extreme(models.Model):
     id = models.BigAutoField(primary_key=True)
     date_local = models.DateField(null=False, verbose_name="date locale de l'extrême")
-    poste = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
-    mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.CASCADE)
+    poste = models.ForeignKey(null=False, to="Poste", on_delete=models.PROTECT)
+    mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.PROTECT)
     min = models.FloatField(null=True, verbose_name="valeur minimum")
     min_time = DateTimeFieldNoTZ(null=True, verbose_name="date du minimum")
     max = models.FloatField(null=True, verbose_name="valeur maximum")

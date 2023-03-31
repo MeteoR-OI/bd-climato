@@ -29,7 +29,7 @@
 # more info on wind vs windGust: https://github-wiki-see.page/m/weewx/weewx/wiki/windgust
 # ---------------
 import app.tools as t
-from app.tools.myTools import FromTimestampToDate, AsTimezone, GetFirstDayNextMonth, GetDate, FromTsToLocalDateTime
+from app.tools.myTools import FromTimestampToDate, AsTimezone, GetFirstDayNextMonth, FromTsToLocalDateTime
 from app.tools.myTools import RoundToStartOfDay, FromDateToLocalDateTime
 import mysql.connector
 import psycopg2
@@ -101,7 +101,7 @@ class MigrateDB:
             self.getNewDateBraket(work_item)
 
             # loop per year
-            while work_item['start_ts'] < current_ts:
+            while work_item['start_ts_archive_utc'] < current_ts:
 
                 # Load obs, records from archive
                 new_records = self.loadExistingObsAndFlushObs(pg_cur, work_item, my_span)
@@ -137,44 +137,45 @@ class MigrateDB:
 
         try:
             # Get scan limit
-            if work_item.get('start_limit_ts') is None:
+            if work_item.get('start_ts_limit') is None:
                 my_cur.execute('select min(dateTime), max(dateTime) from archive')
                 row = my_cur.fetchone()
                 my_cur.close()
                 if row is None or len(row) == 0 or row[0] is None or row[1] is None:
-                    work_item['start_ts'] = max_ts
+                    work_item['start_ts_archive_utc'] = max_ts
                     return
-                work_item['start_limit_ts'] = row[0]
-                work_item['end_limit_ts'] = row[1] + 1
+                work_item['start_ts_limit'] = row[0]
+                work_item['end_ts_limit'] = row[1] + 1
 
-            # Get start_dt/start_ts
-            if work_item.get('end_dt_utc') is None:
-                work_item['start_dt_utc'] = FromTimestampToDate(work_item['start_limit_ts'])
-                work_item['start_dt_local'] = GetDate(AsTimezone(work_item['start_dt_utc'], work_item['tz']))
-                work_item['start_ts'] = work_item['start_limit_ts']
+            # Get start_dt/start_ts_archive_utc
+            if work_item.get('end_dt_archive_utc') is None:
+                work_item['start_ts_archive_utc'] = work_item['start_ts_limit']
             else:
-                work_item['start_dt_utc'] = work_item['end_dt_utc']
-                work_item['start_dt_local'] = work_item['end_dt_local']
-                work_item['start_ts'] = work_item['end_ts']
+                work_item['start_ts_archive_utc'] = work_item['end_ts_archive_utc']
 
-            work_item['start_first_ts'] = int(FromDateToLocalDateTime(work_item['start_dt_local'], work_item['tz']).timestamp())
-            # if start_ts greater than end_limit_ts -> exit
-            if work_item['start_ts'] > work_item['end_limit_ts']:
-                work_item['start_ts'] = max_ts
+            work_item['start_dt_archive_utc'] = FromTimestampToDate(work_item['start_ts_archive_utc'])
+            work_item['start_ts_archive_utc_day'] = int((work_item['start_dt_archive_utc'] - timedelta(days=1)).timestamp())
+            work_item['start_date_extremes'] = AsTimezone((work_item['start_dt_archive_utc'] - timedelta(days=1)), work_item['tz']).date()
+
+            # if start_ts_archive_utc greater than end_ts_limit -> exit
+            if work_item['start_ts_archive_utc'] > work_item['end_ts_limit']:
+                work_item['start_ts_archive_utc'] = max_ts
                 return
 
-            work_item['end_dt_utc'] = AsTimezone(GetFirstDayNextMonth(work_item['start_dt_local']), 0)
-            work_item['end_dt_local'] = GetDate(AsTimezone(work_item['end_dt_utc'], work_item['tz']))
-            work_item['end_ts'] = int(work_item['end_dt_utc'].timestamp())
+            work_item['end_dt_archive_utc'] = GetFirstDayNextMonth(FromTimestampToDate(work_item['start_ts_archive_utc']), work_item['tz'])
+            work_item['end_ts_archive_utc'] = int(work_item['end_dt_archive_utc'].timestamp())
+            work_item['end_ts_archive_utc_day'] = int((work_item['end_dt_archive_utc'] + timedelta(days=1)).timestamp())
+            work_item['end_date_extremes'] = AsTimezone((work_item['end_dt_archive_utc'] + timedelta(days=1)), work_item['tz']).date()
 
             if work_item['old_json_load'] is True:
                 work_item['old_json_load'] = False
                 self.updateLoadJsonValue(work_item)
 
             print('-------------------------------------------------')
-            print('new period (local) from: ' + str(work_item['start_dt_local']) + ' to ' + str(work_item['end_dt_local']))
-            print('new period (utc)   from: ' + str(work_item['start_dt_utc']) + ' to ' + str(work_item['end_dt_utc']))
-            print('new period (ts)    from: ' + str(work_item['start_ts']) + ' to ' + str(work_item['end_ts']))
+            print('Archive (dt utc)       from: ' + str(work_item['start_dt_archive_utc']) + ' to ' + str(work_item['end_dt_archive_utc']))
+            print('ts_archive (ts utc)    from: ' + str(work_item['start_ts_archive_utc']) + ' to ' + str(work_item['end_ts_archive_utc']))
+            print('ts_arch_day (date utc) from: ' + str(work_item['start_ts_archive_utc_day']) + ' to ' + str(work_item['end_ts_archive_utc_day']))
+            print('X_Days  (date local)   from: ' + str(work_item['start_date_extremes']) + ' to ' + str(work_item['end_date_extremes']))
             print('-------------------------------------------------')
 
             return
@@ -212,8 +213,8 @@ class MigrateDB:
             cache = []
             sql = 'select id, mesure_id, date_local, min, min_time, max, max_time, max_dir from extremes ' +\
                 ' where poste_id = ' + str(work_item['pid']) +\
-                " and date_local >= '" + str(work_item['start_dt_local'] - timedelta(days=1)) + "' " +\
-                " and date_local < '" + str(work_item['end_dt_local'] + timedelta(days=1)) + "' " +\
+                " and date_local >= '" + str(work_item['start_date_extremes'] - timedelta(days=1)) + "' " +\
+                " and date_local < '" + str(work_item['end_date_extremes'] + timedelta(days=1)) + "' " +\
                 ' order by mesure_id, date_local'
 
             current_mid = -1
@@ -331,7 +332,7 @@ class MigrateDB:
             for a_mesure in self.measures:
                 mid = a_mesure['id']
                 # debug
-                # if mid not in (76, 78):
+                # if mid not in (74,):
                 #     continue
                 # get value for the measure, or for the linked measure for omm measures
                 if a_mesure['ommidx'] is None:
@@ -416,10 +417,10 @@ class MigrateDB:
         try:
             for a_mesure in self.measures:
                 # debug
-                # if a_mesure['id'] in (76, 78):
-                # pass
+                # if a_mesure['id'] in (74,):
+                #     pass
                 # else:
-                # continue
+                #     continue
                 if a_mesure.get('table') == 'skip':
                     continue
                 nb_record_added = 0
@@ -443,15 +444,15 @@ class MigrateDB:
                         my_query = \
                             'select min, mintime, max, maxtime, null as max_dir, ' + str(mid) + ' as mid, dateTime ' + \
                             ' from archive_day_' + table_name +\
-                            " where dateTime > " + str(work_item['start_first_ts']) +\
-                            " and dateTime < " + str(work_item['end_ts']) +\
+                            " where dateTime >= " + str(work_item['start_ts_archive_utc_day']) +\
+                            " and dateTime < " + str(work_item['end_ts_archive_utc_day']) +\
                             " order by dateTime"
                     else:
                         my_query = \
                             'select min, mintime, max, maxtime, max_dir, ' + str(mid) + ' as mid, dateTime ' + \
                             ' from archive_day_' + table_name +\
-                            " where dateTime > " + str(work_item['start_first_ts']) +\
-                            " and dateTime < " + str(work_item['end_ts']) +\
+                            " where dateTime >= " + str(work_item['start_ts_archive_utc_day']) +\
+                            " and dateTime < " + str(work_item['end_ts_archive_utc_day']) +\
                             " order by dateTime"
 
                     my_cur.execute(my_query)
@@ -641,17 +642,17 @@ class MigrateDB:
     # -----------------------------------------
     def loadMinMax(self, a_mesure, row, mesure_cached_item, tz):
         # debug
-        # if a_mesure['id'] not in (76, 78):
+        # if a_mesure['id'] not in (74,):
         #     return
 
         # debug
         # rounded_ts = RoundToStartOfDay(row[self.row_virtual_mintime], tz)
         # local_date = AsTimezone(FromTimestampToDate(rounded_ts), tz).date()
-        # if local_date < date(2014, 11, 29) or local_date > date(2014, 12, 1):
+        # if local_date < date(2022, 4, 1) or local_date > date(2022, 4, 2):
         #     return
-        # rounded_ts = RoundToStartOfDay(row[self.row_virtual_maxtime], tz)
+        # # rounded_ts = RoundToStartOfDay(row[self.row_virtual_maxtime], tz)
         # local_date = AsTimezone(FromTimestampToDate(rounded_ts), tz).date()
-        # if local_date < date(2014, 11, 29) or local_date > date(2014, 12, 1):
+        # if local_date < date(2022, 4, 1) or local_date > date(2022, 4, 2):
         #     return
 
         if a_mesure['min'] is True and row[self.row_virtual_min] is not None and row[self.row_virtual_mintime] is not None and row[self.row_virtual_min_utc_ts] is not None:
@@ -701,8 +702,8 @@ class MigrateDB:
             query_my += ', ' + a_mesure['col']
 
         # finalize sql statements
-        query_my += " from archive where dateTime >= " + str(work_item['start_ts'])
-        query_my += " and dateTime < " + str(work_item['end_ts'])
+        query_my += " from archive where dateTime >= " + str(work_item['start_ts_archive_utc'])
+        query_my += " and dateTime < " + str(work_item['end_ts_archive_utc'])
 
         # query_my += " order by dateTime"""
         query_my += " order by dateTime"
