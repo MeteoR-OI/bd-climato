@@ -79,7 +79,7 @@ insert into mesures
 (48, 'radiation',       'radiation',        'radiation',          null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
 (50, 'rain rate',       'rain_rate',        'rainRate',           null,        null,     0,   false,   0,     true,    0,      true,   false,    null,      true,            null,        False),
 (52, 'rain',            'rain',             'rain',               null,        null,     0,   true,    0,     true,    0,      false,  false,    null,      true,            null,        False),
-(54, 'rain omm',        'rain_omm',         'rain',               null,        null,     7,   false,   0,     true,    7,      false,  false,      52,      true,            null,        False),
+(54, 'rain omm',        'rain_omm',         'rain',               null,        null,    -7,   false,   0,     true,    7,      false,  false,      52,      true,            null,        False),
 (56, 'rx',              'rx',               'rxCheckPercent',     null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
 (58, 'soilmoist1',      'soil_moist1',      'soilMoist1',         null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,     'soilmoist',        False),
 (60, 'soilmoist2',      'soil_moist2',      'soilMoist2',         null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),

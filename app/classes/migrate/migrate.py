@@ -338,12 +338,11 @@ class MigrateDB:
                 if a_mesure['ommidx'] is None:
                     mesure_value = row2[col_mapping[a_mesure['col']]]
                 else:
-                    if isRoundedHourInDuration(query_args[0]['local_date'], row2[self.row_archive_interval]):
-                        mesure_value = row2[col_mapping[self.measures[a_mesure['ommidx']]['col']]]
-                        if mesure_value is not None and a_mesure['isavg'] is False:
-                            mesure_value = mesure_value * 60
-                    else:
+                    if a_mesure['isavg'] is False and isRoundedHourInDuration(query_args[0]['local_date'], row2[self.row_archive_interval]) is False:
+                        # just store the values for the rounded hours
                         mesure_value = None
+                    else:
+                        mesure_value = row2[col_mapping[self.measures[a_mesure['ommidx']]['col']]]
 
                 if mesure_value is not None:
                     # get cached_mesure
