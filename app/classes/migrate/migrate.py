@@ -422,7 +422,7 @@ class MigrateDB:
                 #     continue
                 if a_mesure.get('table') == 'skip':
                     continue
-                nb_record_added = 0
+                nb_record_processed = 0
                 mid = a_mesure['id']
                 my_cur = myconn.cursor()
                 try:
@@ -458,14 +458,14 @@ class MigrateDB:
                     row = my_cur.fetchone()
                     while row is not None:
                         if row[self.row_extreme_max] is not None or row[self.row_extreme_min] is not None:
-                            nb_record_added += 1
+                            nb_record_processed += 1
                             self.loadMinMaxFromExtremeRow(work_item, a_mesure, row, mesure_cache_item)
                         row = my_cur.fetchone()
                 finally:
                     my_cur.close()
-                    if nb_record_added > 0:
+                    if nb_record_processed > 0:
                         process_length = datetime.now() - start_time
-                        my_span.add_event('maxmin_from_weewx', str((nb_record_added - 1) / 2) + " nouveaux 'records' en cache pour " + a_mesure['field'] + ' en ' + str(process_length/1000) + ' ms')
+                        my_span.add_event('weewx.archive_day_' + table_name + " new records: ", str(nb_record_processed) + ' en ' + str(process_length/1000) + ' ms')
 
         finally:
             myconn.close()
