@@ -1,0 +1,30 @@
+new datetime: 1681848000
+old datetime: 1679774400
+
+new datetime: 1681848000
+old datetime: 1679774400
+
+new datetime: 1681848000
+old datetime: 1679774400
+
+-------
+MySql -
+-------
+select from_unixtime(1679774400) as old, from_unixtime(1681848000) as new;
++---------------------+---------------------+
+| old                 | new                 |
++---------------------+---------------------+
+| 2023-03-25 20:00:00 | 2023-04-18 20:00:00 |
++---------------------+---------------------+
+----------
+Postgres -
+----------
+select * from obs where poste_id = 21 and duration > 0 order by date_local desc limit 1;
+
+    id    |     date_local      |      date_utc       | duration
+ 11782674 | 2023-03-26 00:00:00 | 2023-03-25 20:00:00 |        5
+
+select last_obs_date, last_extremes_date  from postes where meteor='MTG320';
+    last_obs_date    | last_extremes_date  
+---------------------+---------------------
+ 2023-03-26 00:00:00 | 2023-03-26 00:00:00

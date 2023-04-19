@@ -11,20 +11,6 @@
 #   failWorkItem(work_item, exc, my_span):
 #       mark the work_item as failed
 
-# MariaDB [BBF015]> select dateTime, from_unixtime(dateTime+4*3600) from archive;
-# +------------+--------------------------------+
-# | dateTime   | from_unixtime(dateTime+4*3600) |
-# +------------+--------------------------------+
-# | 1647115200 | 2022-03-13 00:00:00            |
-# +------------+--------------------------------+
-
-# MariaDB [BBF015]> select dateTime, from_unixtime(dateTime) from archive;
-# +------------+-------------------------+
-# | dateTime   | from_unixtime(dateTime) |
-# +------------+-------------------------+
-# | 1647115200 | 2022-03-12 20:00:00     |
-# +------------+-------------------------+
-
 # ---------------
 # more info on wind vs windGust: https://github-wiki-see.page/m/weewx/weewx/wiki/windgust
 # ---------------
@@ -33,7 +19,7 @@ from app.tools.myTools import FromTimestampToDate, AsTimezone, GetFirstDayNextMo
 from app.tools.myTools import RoundToStartOfDay, FromDateToLocalDateTime
 import mysql.connector
 import psycopg2
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 from app.classes.repository.posteMeteor import PosteMeteor
 from app.tools.dateTools import isRoundedHourInDuration
 
@@ -98,7 +84,7 @@ class MigrateDB:
             if work_item['pid'] is None:
                 raise Exception('station ' + meteor + ' not found')
 
-            self.getNewDateBraket(work_item)
+            self.getNewDateBraket(work_item, my_span)
 
             # loop per year
             while work_item['start_ts_archive_utc'] < current_ts:
@@ -123,11 +109,14 @@ class MigrateDB:
     # ---------------------------------------
     # other methods specific to this service
     # ---------------------------------------
-    def getNewDateBraket(self, work_item):
+    def getNewDateBraket(self, work_item, my_span):
 
         """Get start_dt/end_dt from postes, and archive table"""
         myconn = self.getMSQLConnection(work_item['meteor'])
         my_cur = myconn.cursor()
+
+        pgconn = self.getPGConnexion()
+        pg_cur = pgconn.cursor()
 
         work_item['old_load_json'] = False
 
@@ -149,14 +138,27 @@ class MigrateDB:
 
             # Get start_dt/start_ts_archive_utc
             if work_item.get('end_dt_archive_utc') is None:
-                work_item['start_ts_archive_utc'] = work_item['start_ts_limit']
+                # First pass
+                sql = "select last_obs_date, last_extremes_date  from postes where meteor='" + work_item['meteor'] + "';"
+                pg_cur.execute(sql)
+                row = pg_cur.fetchone()
+                if row is None or len(row) < 1:
+                    work_item['start_ts_archive_utc'] = work_item['start_ts_limit']
+                    work_item['start_dt_archive_utc'] = FromTimestampToDate(work_item['start_ts_archive_utc'])
+                    work_item['start_date_extremes'] = AsTimezone((work_item['start_dt_archive_utc'] - timedelta(days=1)), work_item['tz']).date()
+
+                else:
+                    work_item['start_dt_archive_utc'] = AsTimezone(row[0], 0)
+                    work_item['start_ts_archive_utc'] = work_item['start_dt_archive_utc'].timestamp() + 1
+                    work_item['start_date_extremes'] = AsTimezone(row[1] - timedelta(days=1)).date()
+
             else:
                 work_item['start_ts_archive_utc'] = work_item['end_ts_archive_utc']
+                work_item['start_dt_archive_utc'] = FromTimestampToDate(work_item['start_ts_archive_utc'])
+                work_item['start_date_extremes'] = AsTimezone((work_item['start_dt_archive_utc'] - timedelta(days=1)), work_item['tz']).date()
 
-            work_item['start_dt_archive_utc'] = FromTimestampToDate(work_item['start_ts_archive_utc'])
-            work_item['start_ts_archive_utc_day'] = int((work_item['start_dt_archive_utc'] - timedelta(days=1)).timestamp())
-            work_item['start_date_extremes'] = AsTimezone((work_item['start_dt_archive_utc'] - timedelta(days=1)), work_item['tz']).date()
-
+            work_item['start_ts_archive_utc_day'] = int(AsTimezone((work_item['start_dt_archive_utc'] - timedelta(days=1)), work_item['tz']).timestamp())
+            
             # if start_ts_archive_utc greater than end_ts_limit -> exit
             if work_item['start_ts_archive_utc'] > work_item['end_ts_limit']:
                 work_item['start_ts_archive_utc'] = max_ts
@@ -164,19 +166,24 @@ class MigrateDB:
 
             work_item['end_dt_archive_utc'] = GetFirstDayNextMonth(FromTimestampToDate(work_item['start_ts_archive_utc']), work_item['tz'])
             work_item['end_ts_archive_utc'] = int(work_item['end_dt_archive_utc'].timestamp())
-            work_item['end_ts_archive_utc_day'] = int((work_item['end_dt_archive_utc'] + timedelta(days=1)).timestamp())
             work_item['end_date_extremes'] = AsTimezone((work_item['end_dt_archive_utc'] + timedelta(days=1)), work_item['tz']).date()
+            work_item['end_ts_archive_utc_day'] = int(AsTimezone((work_item['end_dt_archive_utc'] + timedelta(days=1)), work_item['tz']).timestamp())
 
             if work_item['old_json_load'] is True:
                 work_item['old_json_load'] = False
                 self.updateLoadJsonValue(work_item)
 
-            print('-------------------------------------------------')
-            print('Archive (dt utc)       from: ' + str(work_item['start_dt_archive_utc']) + ' to ' + str(work_item['end_dt_archive_utc']))
-            print('ts_archive (ts utc)    from: ' + str(work_item['start_ts_archive_utc']) + ' to ' + str(work_item['end_ts_archive_utc']))
-            print('ts_arch_day (date utc) from: ' + str(work_item['start_ts_archive_utc_day']) + ' to ' + str(work_item['end_ts_archive_utc_day']))
-            print('X_Days  (date local)   from: ' + str(work_item['start_date_extremes']) + ' to ' + str(work_item['end_date_extremes']))
-            print('-------------------------------------------------')
+            t.myTools.logInfo(
+                'ts_archive (ts utc)    from: ' + str(work_item['start_ts_archive_utc']) + ' to ' + str(work_item['end_ts_archive_utc']),
+                my_span,
+                {"svc": "migrate", "meteor":  work_item['meteor']})
+
+            # print('-------------------------------------------------')
+            # print('Archive (dt utc)       from: ' + str(work_item['start_dt_archive_utc']) + ' to ' + str(work_item['end_dt_archive_utc']))
+            # print('ts_archive (ts utc)    from: ' + str(work_item['start_ts_archive_utc']) + ' to ' + str(work_item['end_ts_archive_utc']))
+            # print('ts_arch_day (date utc) from: ' + str(work_item['start_ts_archive_utc_day']) + ' to ' + str(work_item['end_ts_archive_utc_day']))
+            # print('X_Days  (date local)   from: ' + str(work_item['start_date_extremes']) + ' to ' + str(work_item['end_date_extremes']))
+            # print('-------------------------------------------------')
 
             return
 
@@ -465,7 +472,10 @@ class MigrateDB:
                     my_cur.close()
                     if nb_record_processed > 0:
                         process_length = datetime.now() - start_time
-                        my_span.add_event('weewx.archive_day_' + table_name + " new records: ", str(nb_record_processed) + ' en ' + str(process_length/1000) + ' ms')
+                        t.myTools.logInfo(
+                            'weewx.archive_day_' + str(table_name) + " new records: " + str(nb_record_processed) + ' en ' + str(process_length/1000) + ' ms',
+                            my_span,
+                            {"svc": "migrate", "meteor":  work_item['meteor']})
 
         finally:
             myconn.close()
