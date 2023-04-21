@@ -98,7 +98,7 @@ class MigrateDB:
 
                 pgconn.commit()
 
-                self.getNewDateBraket(work_item)
+                self.getNewDateBraket(work_item, my_span)
 
         finally:
             pg_cur.close()
@@ -142,7 +142,7 @@ class MigrateDB:
                 sql = "select last_obs_date, last_extremes_date  from postes where meteor='" + work_item['meteor'] + "';"
                 pg_cur.execute(sql)
                 row = pg_cur.fetchone()
-                if row is None or len(row) < 1:
+                if row is None or len(row) < 1 or row[0] is None or row[1] is None:
                     work_item['start_ts_archive_utc'] = work_item['start_ts_limit']
                     work_item['start_dt_archive_utc'] = FromTimestampToDate(work_item['start_ts_archive_utc'])
                     work_item['start_date_extremes'] = AsTimezone((work_item['start_dt_archive_utc'] - timedelta(days=1)), work_item['tz']).date()
@@ -158,7 +158,7 @@ class MigrateDB:
                 work_item['start_date_extremes'] = AsTimezone((work_item['start_dt_archive_utc'] - timedelta(days=1)), work_item['tz']).date()
 
             work_item['start_ts_archive_utc_day'] = int(AsTimezone((work_item['start_dt_archive_utc'] - timedelta(days=1)), work_item['tz']).timestamp())
-            
+
             # if start_ts_archive_utc greater than end_ts_limit -> exit
             if work_item['start_ts_archive_utc'] > work_item['end_ts_limit']:
                 work_item['start_ts_archive_utc'] = max_ts
@@ -178,12 +178,12 @@ class MigrateDB:
                 my_span,
                 {"svc": "migrate", "meteor":  work_item['meteor']})
 
-            # print('-------------------------------------------------')
-            # print('Archive (dt utc)       from: ' + str(work_item['start_dt_archive_utc']) + ' to ' + str(work_item['end_dt_archive_utc']))
-            # print('ts_archive (ts utc)    from: ' + str(work_item['start_ts_archive_utc']) + ' to ' + str(work_item['end_ts_archive_utc']))
-            # print('ts_arch_day (date utc) from: ' + str(work_item['start_ts_archive_utc_day']) + ' to ' + str(work_item['end_ts_archive_utc_day']))
-            # print('X_Days  (date local)   from: ' + str(work_item['start_date_extremes']) + ' to ' + str(work_item['end_date_extremes']))
-            # print('-------------------------------------------------')
+            print('-------------------------------------------------')
+            print('Archive (dt utc)       from: ' + str(work_item['start_dt_archive_utc']) + ' to ' + str(work_item['end_dt_archive_utc']))
+            print('ts_archive (ts utc)    from: ' + str(work_item['start_ts_archive_utc']) + ' to ' + str(work_item['end_ts_archive_utc']))
+            print('ts_arch_day (date utc) from: ' + str(work_item['start_ts_archive_utc_day']) + ' to ' + str(work_item['end_ts_archive_utc_day']))
+            print('X_Days  (date local)   from: ' + str(work_item['start_date_extremes']) + ' to ' + str(work_item['end_date_extremes']))
+            print('-------------------------------------------------')
 
             return
 
@@ -470,12 +470,12 @@ class MigrateDB:
                         row = my_cur.fetchone()
                 finally:
                     my_cur.close()
-                    if nb_record_processed > 0:
-                        process_length = datetime.now() - start_time
-                        t.myTools.logInfo(
-                            'weewx.archive_day_' + str(table_name) + " new records: " + str(nb_record_processed) + ' en ' + str(process_length/1000) + ' ms',
-                            my_span,
-                            {"svc": "migrate", "meteor":  work_item['meteor']})
+                    # if nb_record_processed > 0:
+                    #     process_length = datetime.now() - start_time
+                    #     t.myTools.logInfo(
+                    #         'weewx.archive_day_' + str(table_name) + " new records: " + str(nb_record_processed) + ' en ' + str(process_length/1000) + ' ms',
+                    #         my_span,
+                    #         {"svc": "migrate", "meteor":  work_item['meteor']})
 
         finally:
             myconn.close()
@@ -549,7 +549,7 @@ class MigrateDB:
                 continue
 
             if an_item[self.row_cache_row_id] is not None:
-                delete_sql = 'delete from extremes where id = ' + str(self.row_cache_row_id)
+                delete_sql = 'delete from extremes where id = ' + str(an_item[self.row_cache_row_id])
                 pg_cur.execute(delete_sql)
 
             # self.row_cache_datetime = 0

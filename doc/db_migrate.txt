@@ -1,30 +1,121 @@
-new datetime: 1681848000
+old date_utc: 2023-03-25 20:00:00
 old datetime: 1679774400
 
 new datetime: 1681848000
-old datetime: 1679774400
+new date_utc: 2023-04-18 22:00:00
 
-new datetime: 1681848000
-old datetime: 1679774400
-
--------
-MySql -
--------
-select from_unixtime(1679774400) as old, from_unixtime(1681848000) as new;
-+---------------------+---------------------+
-| old                 | new                 |
-+---------------------+---------------------+
-| 2023-03-25 20:00:00 | 2023-04-18 20:00:00 |
-+---------------------+---------------------+
 ----------
-Postgres -
+-- MySql -
 ----------
-select * from obs where poste_id = 21 and duration > 0 order by date_local desc limit 1;
+======
+== old
+======
+select max(datetime) as ts_utc, from_unixtime(max(datetime)) as date_utc, from_unixtime(max(datetime) + 4 *3600)  as date_local from archive;
++------------+---------------------+---------------------+
+| ts_utc     | date_utc            | date_local          |
++------------+---------------------+---------------------+
+| 1679774400 | 2023-03-25 20:00:00 | 2023-03-26 00:00:00 |
++------------+---------------------+---------------------+
 
-    id    |     date_local      |      date_utc       | duration
- 11782674 | 2023-03-26 00:00:00 | 2023-03-25 20:00:00 |        5
+======
+== new
+======
+select max(datetime) as ts_utc, from_unixtime(max(datetime)) as date_utc, from_unixtime(max(datetime) + 4 *3600)  as date_local from archive;
++------------+---------------------+---------------------+
+| ts_utc     | date_utc            | date_local          |
++------------+---------------------+---------------------+
+| 1681848000 | 2023-04-18 22:00:00 | 2023-04-19 02:00:00 |
++------------+---------------------+---------------------+
+
+-------------
+-- Postgres -
+-------------
+
+======
+== old
+======
+select  id, date_local, date_utc, duration from obs where poste_id = 21 and duration > 0 order by date_local desc limit 1;
+   id    |     date_local      |      date_utc       | duration
+---------+---------------------+---------------------+----------
+ 1353617 | 2023-03-26 00:00:00 | 2023-03-25 20:00:00 |        5
+
 
 select last_obs_date, last_extremes_date  from postes where meteor='MTG320';
-    last_obs_date    | last_extremes_date  
+    last_obs_date    | last_extremes_date
 ---------------------+---------------------
  2023-03-26 00:00:00 | 2023-03-26 00:00:00
+
+======
+== new
+======
+select  id, date_local, date_utc, duration from obs where poste_id = 21 and duration > 0 order by date_local desc limit 1;
+   id    |     date_local      |      date_utc       | duration
+---------+---------------------+---------------------+----------
+ 1367417 | 2023-04-19 00:00:00 | 2023-04-18 20:00:00 |        5
+
+
+select last_obs_date, last_extremes_date  from postes where meteor='MTG320';
+    last_obs_date    | last_extremes_date
+---------------------+---------------------
+ 2023-04-19 00:00:00 | 2023-04-19 00:00:00
+
+
+=============
+== Check DB =
+=============
+
+===============
+== full load ==
+===============
+select sum(barometer), count(barometer) from o_full;
+        sum         | count
+--------------------+--------
+ 344813871.69567484 | 339361
+
+select sum(max), count(max) from e_full;
+        sum        | count
+-------------------+-------
+ 4636431.110224936 | 25356
+
+select sum(min), count(min) from e_full;
+        sum        | count
+-------------------+-------
+ 4349361.782192613 | 21702
+
+==================
+== Parial loads ==
+==================
+select sum(barometer), count(barometer) from obs;
+        sum        | count
+-------------------+--------
+ 344813871.6956691 | 339361
+
+select sum(max), count(max) from extremes;
+        sum        | count
+-------------------+-------
+ 4636431.110224932 | 25356
+
+select sum(min), count(min) from extremes;
+        sum        | count
+-------------------+-------
+ 4349361.782192612 | 21702
+
+=========================
+Differences pour les max:
+=========================
+select e1.id as ex_id, e2.id as e320_id, e1.date_local as date, e1.mesure_id as mid, e1.max as ex_max, e1.max_time as ex_date, e2.max as e320_max, e2.max_time as e320_date from extremes e1 left join e_full e2 on e1.date_local = e2.date_local and e1.mesure_id = e2.mesure_id where e1.max != e2.max order by e1.date_local, e1.mesure_id;
+
+
+========================
+Differences pour les min:
+========================
+
+select e1.id as ex_id, e2.id as e320_id, e1.date_local as date, e1.mesure_id as mid, e1.min as ex_min, e1.min_time as ex_date, e2.min as e320_min, e2.min_time as e320_date from extremes e1 left join e_full e2 on e1.date_local = e2.date_local and e1.mesure_id = e2.mesure_id where e1.min != e2.min order by e1.date_local, e1.mesure_id;
+
+
+
+select * from extremes where date_local = ' 2019-08-31' and mesure_id = 1;
+
+
+select * from e_full where date_local = ' 2019-08-31' and mesure_id = 1;
+
