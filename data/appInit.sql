@@ -295,7 +295,7 @@ BEGIN
         v_soil_temp3, v_soil_temp4, v_uv, v_voltage, v_wind,
         v_wind_gust, v_wind10, v_wind10_omm, v_windchill
 
-    from obs where id = (select last_data_id from postes where id = pid);
+    from obs where id = (select last_obs_id from postes where id = pid);
 
     if v_barometer is not null then tmp_str = concat(tmp_str, ', "barometer", ', v_barometer); end if;        
     if v_dewpoint is not null then tmp_str = concat(tmp_str, ', "dewpoint", ', v_dewpoint); end if;

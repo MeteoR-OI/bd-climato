@@ -79,7 +79,8 @@ class MigrateDB:
             meteor = work_item['meteor']
             current_ts = datetime.now().timestamp() + 1
 
-            work_item['pid'], work_item['tz'], work_item['load_json'] = PosteMeteor.getPosteIdAndTzByMeteor(meteor)
+            work_item['pid'], work_item['tz'], work_item['load_json'], stop_local = PosteMeteor.getPosteIdAndTzByMeteor(meteor)
+            work_item['stop_date_utc'] = stop_local if stop_local is None else AsTimezone(stop_local, 0)
 
             if work_item['pid'] is None:
                 raise Exception('station ' + meteor + ' not found')
@@ -159,12 +160,22 @@ class MigrateDB:
 
             work_item['start_ts_archive_utc_day'] = int(AsTimezone((work_item['start_dt_archive_utc'] - timedelta(days=1)), work_item['tz']).timestamp())
 
+            if work_item['stop_date_utc'] is not None:
+                # do not process data if start_archive_utc is after postes.stop_date
+                if work_item['stop_date_utc'] < work_item['start_dt_archive_utc']:
+                    work_item['start_ts_archive_utc'] = max_ts
+                    return
+
             # if start_ts_archive_utc greater than end_ts_limit -> exit
             if work_item['start_ts_archive_utc'] > work_item['end_ts_limit']:
                 work_item['start_ts_archive_utc'] = max_ts
                 return
 
             work_item['end_dt_archive_utc'] = GetFirstDayNextMonth(FromTimestampToDate(work_item['start_ts_archive_utc']), work_item['tz'])
+            # Do not process data after postes.stop_date
+            if work_item['stop_date_utc'] is not None and work_item['stop_date_utc'] < work_item['end_dt_archive_utc']:
+                work_item['end_dt_archive_utc'] = work_item['stop_date_utc']
+
             work_item['end_ts_archive_utc'] = int(work_item['end_dt_archive_utc'].timestamp())
             work_item['end_date_extremes'] = AsTimezone((work_item['end_dt_archive_utc'] + timedelta(days=1)), work_item['tz']).date()
             work_item['end_ts_archive_utc_day'] = int(AsTimezone((work_item['end_dt_archive_utc'] + timedelta(days=1)), work_item['tz']).timestamp())
@@ -418,7 +429,6 @@ class MigrateDB:
     # generate max/min from WeeWX records
     # ------------------------------------
     def loadMaxminFromWeewx(self, work_item, new_records, my_span):
-        start_time = datetime.now()
         myconn = self.getMSQLConnection(work_item['meteor'])
         try:
             for a_mesure in self.measures:
@@ -592,11 +602,7 @@ class MigrateDB:
             nb_extremes_inserted += 1
             x_id = pg_cur.fetchone()[0]
 
-            if an_item[self.row_cache_obsid_min] is not None:
-                histo_x.append([an_item[self.row_cache_obsid_min], x_id])
-            if an_item[self.row_cache_obsid_max] is not None and an_item[self.row_cache_obsid_min] != an_item[self.row_cache_obsid_max]:
-                if an_item[self.row_cache_obsid_min] != an_item[self.row_cache_obsid_max]:
-                    histo_x.append([an_item[self.row_cache_obsid_max], x_id])
+            histo_x.append((x_id, an_item[self.row_cache_obsid_min], an_item[self.row_cache_obsid_max]))
 
         sort_length = datetime.now() - start_dt
         sort_len = sort_length.seconds * 1000 + sort_length.microseconds/1000
@@ -884,18 +890,20 @@ class MigrateDB:
     def storeHistoExtremeArray(self, pg_cur, data):
         if len(data) == 0:
             return
-        sql_str = "insert into histo_extreme (src_obs_id, target_x_id) values "
+        sql_str = "insert into histo_extreme (target_x_id, src_min_obs_id, src_max_obs_id) values "
         b_hasdata = False
-        data.sort(key=lambda x: (x[0], x[1]))
-        d0 = d1 = -1
+        data.sort(key=lambda x: (x[0]))
         for an_item in data:
-            if len(an_item) != 2 or an_item[0] is None or an_item[1] is None:
+            if len(an_item) != 3 or an_item[0] is None:
                 continue
-            if an_item[1] <= 0 or an_item[0] <= 0 or (d0 == an_item[0] and d1 == an_item[1]):
+            x_id = an_item[0] if (an_item[0] is not None or an_item[0] > 0) else None
+            min_obs_id = an_item[1] if an_item[1] is not None else None
+            max_obs_id = an_item[2] if an_item[2] is not None else None
+            if x_id is None or (min_obs_id is None and max_obs_id is None):
                 continue
-            sql_str += '(' + str(an_item[0]) + ', ' + str(an_item[1]) + '), '
-            d0 = an_item[0]
-            d1 = an_item[1]
+            sql_str += '(' + str(an_item[0]) + ', '
+            sql_str += (str(min_obs_id) if min_obs_id is not None else 'null') + ', '
+            sql_str += (str(max_obs_id) if max_obs_id is not None else 'null') + '), '
             b_hasdata = True
         if b_hasdata is True:
             pg_cur.execute(sql_str[0:-2])

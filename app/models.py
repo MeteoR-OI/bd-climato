@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Index, UniqueConstraint
+from django.db.models import Index, UniqueConstraint, Q
 
 
 class DateTimeFieldNoTZ(models.Field):
@@ -222,20 +222,21 @@ class HistoObs(models.Model):
 
 class HistoExtremes(models.Model):
     id = models.BigAutoField(primary_key=True)
-    src_obs_id = models.BigIntegerField(null=False, verbose_name="obs_id source")
+    target_x_id = models.BigIntegerField(null=False, verbose_name="extremes.id")
+    src_min_obs_id = models.BigIntegerField(null=True, verbose_name="obs_id source")
+    src_max_obs_id = models.BigIntegerField(null=True, verbose_name="obs_id source")
     target_x_id = models.BigIntegerField(null=False, verbose_name="extreme_id modifiée")
 
     def __str__(self):
-        return "HistoObs src_obs_id: " + str(self.src_obs_id) + ", extremes updated: " + str(self.target_x_id)
+        return "Extremes updated: " + str(self.target_x_id) + ", min obs.id: " + str(self.src_min_obs_id) + ", max obs.id: " + str(self.src_max_obs_id)
 
     class Meta:
         db_table = "histo_extreme"
-        constraints = [
-            UniqueConstraint(fields=['src_obs_id', 'target_x_id'], name='unique_histo_x_mapping'),
-        ]
         indexes = [
-            Index(name='histo_x_target', fields=['src_obs_id', 'target_x_id']),
-            Index(name='histo_x_src', fields=['target_x_id', 'src_obs_id'])
+            Index(name='histo_x_src', fields=['target_x_id', 'id']),
+            Index(name='histo_x_target_min', fields=['src_min_obs_id', 'target_x_id'], condition=Q(src_min_obs_id__isnull=False)),
+            Index(name='histo_x_target_max', fields=['src_max_obs_id', 'target_x_id'], condition=Q(src_max_obs_id__isnull=False))
+
         ]
 
 

@@ -11,18 +11,14 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunSQL("CREATE EXTENSION IF NOT EXISTS timescaledb;"),
-        migrations.RunSQL(
-            "ALTER TABLE obs DROP CONSTRAINT obs_pkey;"
-        ),
+        migrations.RunSQL("ALTER TABLE obs DROP CONSTRAINT obs_pkey;"),
         migrations.RunSQL("SELECT create_hypertable('obs', 'date_local');"),
-        migrations.RunSQL(
-            "SELECT set_chunk_time_interval('obs', 6048000000000);"
-        ),
-        migrations.RunSQL(
-            "ALTER TABLE extremes DROP CONSTRAINT extremes_pkey;"
-        ),
+        migrations.RunSQL("SELECT set_chunk_time_interval('obs', 6048000000000);"),
+        migrations.RunSQL("DROP index if exists obs_poste_id_7ed1db30;"),
+
+        migrations.RunSQL("ALTER TABLE extremes DROP CONSTRAINT extremes_pkey;"),
         migrations.RunSQL("SELECT create_hypertable('extremes', 'date_local');"),
-        migrations.RunSQL(
-            "SELECT set_chunk_time_interval('extremes', 25920000000000);"
-        )
+        migrations.RunSQL("SELECT set_chunk_time_interval('extremes', 25920000000000);"),
+        migrations.RunSQL("DROP index if exists extremes_poste_id_30b6dd59;"),
+        migrations.RunSQL("DROP index if exists extremes_mesure_id_f55bd2f4;")
     ]
