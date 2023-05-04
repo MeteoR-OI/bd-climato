@@ -57,11 +57,13 @@ class JsonLoader:
 
     def getNextWorkItem(self):
         file_names = []
+
         # get json file names
         filenames = os.listdir(self.base_dir)
         for filename in filenames:
             if str(filename).endswith('.json'):
                 file_names.append(filename)
+
         # stop processing
         if len(file_names) == 0:
             return None
@@ -105,10 +107,11 @@ class JsonLoader:
         except Exception:
             pass
 
+        tmp_prefix = ""
         if work_item.get('is_loaded') is not None and work_item['is_loaded'] is not False:
-            filename_prefix = self.archive_dir + "/" + meteor + "/toLoad/"
-        else:
-            filename_prefix = self.archive_dir + "/" + meteor + "/" + str_annee + "/" + str_mois + "/"
+            tmp_prefix = "/skipped/"
+
+        filename_prefix = self.archive_dir + "/" + meteor + tmp_prefix + "/" + str_annee + "/" + str_mois + "/"
         if not os.path.exists(filename_prefix):
             os.makedirs(filename_prefix)
 
@@ -123,28 +126,39 @@ class JsonLoader:
 
         t.logException(exc, my_span)
 
+        str_annee = 'inconnu'
+        str_mois = 'inconnu'
+        meteor = 'inconnu'
+        try:
+            str_annee = str(work_item['f']).split(".")[2].split("-")[0]
+            str_mois = str(work_item['f']).split(".")[2].split("-")[1]
+            meteor = str(work_item['f']).split(".")[1]
+        except Exception:
+            pass
+
+        tmp_prefix = "/failed"
+        filename_prefix = self.archive_dir + "/" + meteor + tmp_prefix + "/" + str_annee + "/" + str_mois + "/"
+        if not os.path.exists(filename_prefix):
+            os.makedirs(filename_prefix)
+        os.rename(self.base_dir + "/" + work_item['f'], filename_prefix + work_item['f'])
+
         j_info = {"filename": work_item['f'], "dest": self.archive_dir + "/" + meteor + "/failed/" + work_item['f']}
         t.logError('jsonloader', "file moved to fail directory", None, j_info)
         IncidentMeteor.new('_getJsonFileNameAndData', 'error', 'file ' + work_item['f'] + ' moved to failed directory', j_info)
 
-        if not os.path.exists(self.archive_dir + "/" + meteor + '/failed'):
-            os.makedirs(self.archive_dir + "/" + meteor + '/failed')
-        os.rename(self.base_dir + "/" + work_item['f'],  self.archive_dir + "/" + meteor + "/failed/" + work_item['f'])
-
     @transaction.atomic
     def processWorkItem(self, work_item: json, my_span):
-        work_item['is_loaded'] = True
+        work_item['is_loaded'] = False
         filename = work_item['f']
         jsons_to_load = work_item['json']
         idx_global = 0
         meteor = str(jsons_to_load[0].get("meteor"))
         if meteor == 'None':
-            raise Exception('invalid file ' + filename)
+            raise Exception('invalid format, unreadable meteor key ' + filename)
         pid = PosteMeteor.getPosteIdByMeteor(jsons_to_load[0]["meteor"])
         b_load = PosteMeteor(pid).data.load_json
         if b_load is False:
             my_span.add_event('jsonload', meteor + ' inactif json_load is False), skipping file ' + filename)
-            work_item['is_loaded'] = False
             return
         my_span.set_attribute('file', filename)
         my_span.set_attribute('meteor', meteor)
@@ -233,8 +247,11 @@ class JsonLoader:
 
                 finally:
                     idx_data += 1
+
             finally:
                 idx_global += 1
+
+        work_item['is_loaded'] = True
 
     def load_obs_data_j(self, pid, all_obs, valeurs, stop_dat, j_exclus, histo_x_list):
         keys_found = []

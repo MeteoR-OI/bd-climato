@@ -37,6 +37,7 @@ class Poste(models.Model):
     last_extremes_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Datetime locale de dernier record")
     last_extremes_id = models.BigIntegerField(null=True, default=0, verbose_name="ID du dernier record")
     load_json = models.BooleanField(null=True, default=False, verbose_name="load json status")
+    pause_json = models.BooleanField(null=True, default=False, verbose_name="Do not process Json file")
 
     def __str__(self):
         return self.meteor + ", id: " + str(self.id)

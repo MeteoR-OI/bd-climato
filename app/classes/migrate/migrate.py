@@ -72,7 +72,6 @@ class MigrateDB:
     # process our item
     # -----------------
     def processWorkItem(self, work_item, my_span):
-        work_item['old_json_load'] = None
         try:
             pgconn = self.getPGConnexion()
             pg_cur = pgconn.cursor()
@@ -80,6 +79,11 @@ class MigrateDB:
             current_ts = datetime.now().timestamp() + 1
 
             work_item['pid'], work_item['tz'], work_item['load_json'], stop_local = PosteMeteor.getPosteIdAndTzByMeteor(meteor)
+
+            if work_item['load_json'] is not False:
+                my_span.add_event(meteor, {'status': 'Migration stopped, station in auto_load mode'})
+                return
+
             work_item['stop_date_utc'] = stop_local if stop_local is None else AsTimezone(stop_local, 0)
 
             if work_item['pid'] is None:
@@ -104,8 +108,8 @@ class MigrateDB:
         finally:
             pg_cur.close()
             pgconn.close()
-            if work_item['old_json_load'] is not None and work_item['old_json_load'] is True:
-                self.updateLoadJsonValue(work_item)
+            # if work_item['old_json_load'] is not None and work_item['old_json_load'] is True:
+            #     self.updateLoadJsonValue(work_item)
 
     # ---------------------------------------
     # other methods specific to this service
@@ -180,10 +184,6 @@ class MigrateDB:
             work_item['end_date_extremes'] = AsTimezone((work_item['end_dt_archive_utc'] + timedelta(days=1)), work_item['tz']).date()
             work_item['end_ts_archive_utc_day'] = int(AsTimezone((work_item['end_dt_archive_utc'] + timedelta(days=1)), work_item['tz']).timestamp())
 
-            if work_item['old_json_load'] is True:
-                work_item['old_json_load'] = False
-                self.updateLoadJsonValue(work_item)
-
             t.myTools.logInfo(
                 'ts_archive (ts utc)    from: ' + str(work_item['start_ts_archive_utc']) + ' to ' + str(work_item['end_ts_archive_utc']),
                 my_span,
@@ -205,20 +205,20 @@ class MigrateDB:
         finally:
             myconn.close()
 
-    def updateLoadJsonValue(self, work_item):
-        pgconn = self.getPGConnexion()
-        pg_cur = pgconn.cursor()
+    # def updateLoadJsonValue(self, work_item):
+    #     pgconn = self.getPGConnexion()
+    #     pg_cur = pgconn.cursor()
 
-        try:
-            pg_cur.execute('update postes set load_json = ' + str(work_item['old_json_load']) + " where meteor = '" + work_item['meteor'] + "'")
-            pgconn.commit()
+    #     try:
+    #         pg_cur.execute('update postes set load_json = ' + str(work_item['old_json_load']) + " where meteor = '" + work_item['meteor'] + "'")
+    #         pgconn.commit()
 
-        except Exception as ex:
-            pgconn.rollback()
-            raise ex
+    #     except Exception as ex:
+    #         pgconn.rollback()
+    #         raise ex
 
-        finally:
-            pg_cur.close()
+    #     finally:
+    #         pg_cur.close()
 
     # ---------------------------------------------------
     # insert mesures from weewx archive in our obs table

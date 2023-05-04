@@ -73,13 +73,10 @@ class SpanMok:
             raise Exception("SpanMok", "Calling Mok while telemetry is active")
         self.name = name
         self.parent = parent_span
-        self.atts = []
-        self.events = []
-        self.child_data = []
         self._status = SpanStatus()
         self.ctx = ContextMok()
-        self.printed = False
         self.tracer = tracer
+        t.logInfo(f"--- New Span: {name}, parent: {str(parent_span)}", self)
 
     def end(self):
         """
@@ -87,21 +84,8 @@ class SpanMok:
 
         end of a with statement. print out data if no telemetry is used
         """
-        if self.printed is True:
-            return
-        self.printed = True
+        t.logInfo(f"----- Span closed -----", self)
         self.tracer.current_span = self.parent
-        if self.parent is not None:
-            self.parent.child_data.append({
-                'name': self.name,
-                'events': self.events,
-                'atts': self.atts,
-                'child_data': self.child_data,
-            })
-        else:
-            self.print_span("", self.name, self.atts, self.events)
-            self.print_childs(self.child_data)
-            self.a_child_data = []
 
     def __enter__(self):
         return self
@@ -118,39 +102,6 @@ class SpanMok:
         self.end()
         return
 
-    def print_childs(self, child_data, prefix="  "):
-        for a_child in child_data:
-            self.print_span(prefix, a_child['name'], a_child['atts'], a_child['events'])
-            if len(a_child['child_data']) > 0:
-                self.print_childs(a_child['child_data'], prefix + "  ")
-
-    def print_span(self, prefix, name, atts, events):
-        if len(prefix) == 0:
-            print(prefix + "Span: " + name)
-        else:
-            print(prefix + "Sub Span: " + name)
-            
-        if len(atts) > 0:
-            print_out = prefix + "  attributes:"
-            print(print_out)
-            sub_prefix = " " * len(print_out)
-            print_out = sub_prefix
-            count = 0
-            for an_att in atts:
-                count += 1
-                if count > 3:
-                    print(print_out)
-                    print_out = sub_prefix
-                    count = 0
-                print_out += str(an_att["k"]) + ": " + str(an_att["v"]) + ", "
-            print(print_out)
-        if len(events) > 0:
-            print_out = prefix + "  events:"
-            print(print_out)
-            sub_prefix = " " * len(print_out)
-            for an_att in events:
-                print(sub_prefix + str(an_att["en"]) + ": " + str(an_att["e"]))
-
     def record_exception(self, exc: Exception):
         """
         record_exception
@@ -166,14 +117,14 @@ class SpanMok:
         """
         if k == "file_processed":
             v = str(v).split("/")[-1::1][0]
-        self.atts.append({"k": k, "v": v})
+        t.logInfo(f"{k} = {str(v)}", self)
 
     def add_event(self, event_name: str, j_val: json):
         """
         add_event
             Add event in the span
         """
-        self.events.append({"en": event_name, "e": j_val})
+        t.logInfo(f"events: {event_name}, val: {str(j_val)}", self)
 
     def get_span_context(self):
         return self.ctx
@@ -209,7 +160,8 @@ class TracerMok:
         Parameter:
             name: span name (only used if a new span is started)
         """
-        self.current_span = SpanMok(name, self.current_span, self)
+        if self.current_span is None:
+            self.current_span = self.start_span(name)
         return self.current_span
 
     def start_as_current_span(self, span_name: str = "???") -> Span:
