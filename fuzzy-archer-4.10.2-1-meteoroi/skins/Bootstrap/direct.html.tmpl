@@ -1,0 +1,97 @@
+        <div class="col-md-4">
+          <!-- Station info -->
+          <div class="row">
+          <h1 class="h4"><font color="blue">Informations</font></h1>
+            <table class="table table-hover">
+              <tbody>
+                  <tr>
+                    <td style="width:60%;">Mat&eacute;riel</td>
+                    <td style="width:40%;">$station.hardware</td>
+                  </tr>
+                  <tr>
+                    <td style="width:60%;">$BootstrapLabels.status.latitude</td>
+                    <td style="width:40%;">$station.latitude[0]&deg; $station.latitude[1]' $station.latitude[2]</td>
+                  </tr>
+                  <tr>
+                    <td style="width:60%;">$BootstrapLabels.status.longitude</td>
+                    <td style="width:40%;" style="width:40%;">55&deg; $station.longitude[1]' $station.longitude[2]</td>
+                  </tr>
+                  <tr>
+                    <td style="width:60%;">$BootstrapLabels.status.altitude</td>
+                    <td style="width:40%;">$station.altitude</td>
+                  </tr>
+                </tbody>
+            </table>  
+          </div>
+
+        <!-- gauges -->
+          <div class="row">
+          <h1 class="h4"><font color="blue">Direct</font></h1>
+          <table class="table table-hover">
+              <tbody>
+                  <tr>
+                    <td style="width:60%;">$Labels.Generic.outTemp</td>
+                    <td style="width:40%;">$current.outTemp</td>
+                  </tr>
+                  <tr>
+                    <td style="width:60%;">$Labels.Generic.heatindex</td>
+                    <td style="width:40%;">$current.heatindex</td>
+                  </tr>
+                  <tr>
+                    <td style="width:60%;">$Labels.Generic.dewpoint</td>
+                    <td style="width:40%;">$current.dewpoint</td>
+                  </tr>
+                  <tr>
+                    <td style="width:60%;">$Labels.Generic.barometer</td>
+                    <td style="width:40%;">$current.barometer</td>
+                  </tr>
+                  <tr>
+                    <td style="width:60%;">$Labels.Generic.outHumidity</td>
+                    <td style="width:40%;">$current.outHumidity</td>
+                  </tr>
+                  <tr>
+                    <td style="width:60%;">$Labels.Generic.rain</td>
+                    <td style="width:40%;">$current.rain</td>
+                  </tr>
+                  <tr>
+                    <td style="width:60%;">$Labels.Generic.rainRate</td>
+                    <td style="width:40%;">$current.rainRate</td>
+                  </tr>
+                  <tr>
+                    <td style="width:60%;">Pr&eacute;cipitations du jour</td>
+                    <td style="width:40%;">$day.rain.sum</td>
+                  </tr>
+                  <tr>
+                    <td style="width:60%;">$Labels.Generic.windSpeed</td>
+                    <td style="width:40%;">	#if $current.windSpeed.raw > 0
+                    $current.windSpeed de $current.windDir.ordinal_compass
+                    #else
+                    $current.windSpeed
+                    #end if	</td>
+                  </tr>	
+                  <tr>
+                    <td style="width:60%;">$Labels.Generic.windGust</td>
+                    <td style="width:40%;">$current.windGust</td>
+                  </tr>
+#if $MeteoR_OI.Display.radiation == "enable"
+                  <tr>
+                    <td style="width:60%;">$Labels.Generic.radiation</td>
+                    <td style="width:40%;">$current.radiation</td>
+                  </tr>
+#end if
+#if $MeteoR_OI.Display.etp == "enable"
+                  <tr>
+                    <td style="width:60%;">$Labels.Generic.ET</td>
+                    <td style="width:40%;">$current.ET</td>
+                  </tr>
+#end if
+#if $MeteoR_OI.Display.uv == "enable"
+                  <tr>
+                    <td style="width:60%;">$Labels.Generic.UV</td>
+                    <td style="width:40%;">$current.UV</td>
+                  </tr>
+#end if
+                </tbody>
+            </table>
+        </div>
+</div> 
