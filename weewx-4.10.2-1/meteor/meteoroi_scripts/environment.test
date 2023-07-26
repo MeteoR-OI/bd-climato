@@ -1,0 +1,6 @@
+#!/bin/bash
+
+WEEWX_USER="weewx"
+STATION_ID="YYY111"
+# La ligne a été ajoutée dans /etc/bash.bashrc 
+# STATION_ID_LOWERC=`echo $STATION_ID | tr '[:upper:]' '[:lower:]'`

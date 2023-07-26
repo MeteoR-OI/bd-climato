@@ -1,0 +1,1031 @@
+# Ce fichier viminfo a été généré par Vim 8.1.
+# Vous pouvez l'éditer, mais soyez prudent.
+
+# Viminfo version
+|1,4
+
+# 'encoding' dans lequel ce fichier a été écrit
+*encoding=utf-8
+
+
+# hlsearch on (H) or off (h):
+~h
+# Dernier motif de recherche  :
+~MSle0~/FTP
+
+# Historique ligne de commande (chronologie décroissante) :
+:q!
+|2,0,1690313570,,"q!"
+:q
+|2,0,1593103759,,"q"
+:w
+|2,0,1593103752,,"w"
+:'<,'>q
+|2,0,1574512080,,"'<,'>q"
+:set paste
+|2,0,1574509820,,"set paste"
+:wq
+|2,0,1560526279,,"wq"
+:32
+|2,0,1549821365,,"32"
+:29
+|2,0,1549821356,,"29"
+:qq
+|2,0,1549205673,,"qq"
+
+# Historique chaîne de recherche (chronologie décroissante) :
+?/FTP
+|2,1,1574512052,47,"FTP"
+?/warning
+|2,1,1574496064,47,"warning"
+?/RSYNC
+|2,1,1570174769,47,"RSYNC"
+?/Time
+|2,1,1570174721,47,"Time"
+?/src
+|2,1,1570174695,47,"src"
+?/TimeF
+|2,1,1570174647,47,"TimeF"
+?/obs.
+|2,1,1560526982,47,"obs."
+?/stations
+|2,1,1560526285,47,"stations"
+?/WU
+|2,1,1549821929,47,"WU"
+? \<sed\>
+|2,1,1549811230,,"\\<sed\\>"
+?/fix_
+|2,1,1549718075,47,"fix_"
+?/target_u
+|2,1,1511723654,47,"target_u"
+?/target
+|2,1,1511723642,47,"target"
+?/port
+|2,1,1511723512,47,"port"
+?/week_s
+|2,1,1511723501,47,"week_s"
+?/title
+|2,1,1511723425,47,"title"
+
+# Historique expression (chronologie décroissante) :
+
+# Historique ligne de saisie (chronologie décroissante) :
+
+# Historique Ligne de débogage (chronologie décroissante) :
+
+# Registres :
+"0	LINE	0
+	output_cfg = tpl_weewxconf.render(conf)
+	
+	CFG_FILE = os.path.join(WEEWX_ROOT, CFG_FILE_NAME)
+	
+	with open(CFG_FILE, "w") as rendered_file:
+	#TEST_FILE = os.path.join(SCRIPT_PATH, 'test.conf')
+	#with open(TEST_FILE, "w") as rendered_file:
+	    rendered_file.write(output_cfg)
+	
+|3,0,0,1,9,0,1560526604,"output_cfg = tpl_weewxconf.render(conf)","","CFG_FILE = os.path.join(WEEWX_ROOT, CFG_FILE_NAME)","","with open(CFG_FILE, \"w\") as rendered_file:","#TEST_FILE = os.path.join(SCRIPT_PATH, 'test.conf')","#with open(TEST_FILE, \"w\") as rendered_file:","    rendered_file.write(output_cfg)",""
+"1	LINE	0
+	                ephem_year = %x %X
+|3,0,1,1,1,0,1570174726,"                ephem_year = %x %X"
+"2	LINE	0
+	                ephem_day = %X
+|3,0,2,1,1,0,1570174725,"                ephem_day = %X"
+"3	LINE	0
+	                current = %x %X
+|3,0,3,1,1,0,1570174725,"                current = %x %X"
+"4	LINE	0
+	                rainyear = %x %X
+|3,0,4,1,1,0,1570174724,"                rainyear = %x %X"
+"5	LINE	0
+	                year = %x %X
+|3,0,5,1,1,0,1570174724,"                year = %x %X"
+"6	LINE	0
+	                month = %x %X
+|3,0,6,1,1,0,1570174724,"                month = %x %X"
+"7	LINE	0
+	                week = %X (%A)
+|3,0,7,1,1,0,1570174724,"                week = %X (%A)"
+"8	LINE	0
+	                day = %X
+|3,0,8,1,1,0,1570174723,"                day = %X"
+"9	LINE	0
+	                hour = %Hh%M
+|3,0,9,1,1,0,1570174723,"                hour = %Hh%M"
+""-	CHAR	0
+	1
+|3,1,36,0,1,0,1593103725,"1"
+
+# Marques dans le fichier :
+'0  591  0  /srv/weewx/root/weewx.conf
+|4,48,591,0,1690313570,"/srv/weewx/root/weewx.conf"
+'1  1  0  /src/weewx/root/weewx.conf
+|4,49,1,0,1690313514,"/src/weewx/root/weewx.conf"
+'2  3  108  ~/.ssh/known_hosts
+|4,50,3,108,1689950116,"~/.ssh/known_hosts"
+'3  1  0  ~/.ssh/known_hosts
+|4,51,1,0,1689949069,"~/.ssh/known_hosts"
+'4  1  0  ~/.ssh/known_hosts
+|4,52,1,0,1689949069,"~/.ssh/known_hosts"
+'5  2  115  ~/.ssh/authorized_keys
+|4,53,2,115,1689949034,"~/.ssh/authorized_keys"
+'6  1  0  ~/meteoroi_scripts/station.json
+|4,54,1,0,1593103759,"~/meteoroi_scripts/station.json"
+'7  3  23  /srv/weewx/root/clone_data.sh
+|4,55,3,23,1574518652,"/srv/weewx/root/clone_data.sh"
+'8  4  22  /srv/weewx/root/clone_data.sh
+|4,56,4,22,1574516189,"/srv/weewx/root/clone_data.sh"
+'9  4  22  /srv/weewx/root/clone_data.sh
+|4,57,4,22,1574516189,"/srv/weewx/root/clone_data.sh"
+
+# Liste de sauts (le plus récent en premier) :
+-'  591  0  /srv/weewx/root/weewx.conf
+|4,39,591,0,1690313570,"/srv/weewx/root/weewx.conf"
+-'  303  14  /srv/weewx/root/weewx.conf
+|4,39,303,14,1690313528,"/srv/weewx/root/weewx.conf"
+-'  1  0  /src/weewx/root/weewx.conf
+|4,39,1,0,1690313514,"/src/weewx/root/weewx.conf"
+-'  1  0  /src/weewx/root/weewx.conf
+|4,39,1,0,1690313514,"/src/weewx/root/weewx.conf"
+-'  3  108  ~/.ssh/known_hosts
+|4,39,3,108,1689950116,"~/.ssh/known_hosts"
+-'  3  108  ~/.ssh/known_hosts
+|4,39,3,108,1689950116,"~/.ssh/known_hosts"
+-'  3  108  ~/.ssh/known_hosts
+|4,39,3,108,1689950116,"~/.ssh/known_hosts"
+-'  3  108  ~/.ssh/known_hosts
+|4,39,3,108,1689950116,"~/.ssh/known_hosts"
+-'  1  0  ~/.ssh/known_hosts
+|4,39,1,0,1689950097,"~/.ssh/known_hosts"
+-'  1  0  ~/.ssh/known_hosts
+|4,39,1,0,1689950097,"~/.ssh/known_hosts"
+-'  1  0  ~/.ssh/known_hosts
+|4,39,1,0,1689950097,"~/.ssh/known_hosts"
+-'  1  0  ~/.ssh/known_hosts
+|4,39,1,0,1689950097,"~/.ssh/known_hosts"
+-'  1  0  ~/.ssh/known_hosts
+|4,39,1,0,1689949069,"~/.ssh/known_hosts"
+-'  1  0  ~/.ssh/known_hosts
+|4,39,1,0,1689949069,"~/.ssh/known_hosts"
+-'  1  0  ~/.ssh/known_hosts
+|4,39,1,0,1689949069,"~/.ssh/known_hosts"
+-'  1  0  ~/.ssh/known_hosts
+|4,39,1,0,1689949069,"~/.ssh/known_hosts"
+-'  2  115  ~/.ssh/authorized_keys
+|4,39,2,115,1689949034,"~/.ssh/authorized_keys"
+-'  2  115  ~/.ssh/authorized_keys
+|4,39,2,115,1689949034,"~/.ssh/authorized_keys"
+-'  2  115  ~/.ssh/authorized_keys
+|4,39,2,115,1689949034,"~/.ssh/authorized_keys"
+-'  2  115  ~/.ssh/authorized_keys
+|4,39,2,115,1689949034,"~/.ssh/authorized_keys"
+-'  2  115  ~/.ssh/authorized_keys
+|4,39,2,115,1689949034,"~/.ssh/authorized_keys"
+-'  2  115  ~/.ssh/authorized_keys
+|4,39,2,115,1689949034,"~/.ssh/authorized_keys"
+-'  2  115  ~/.ssh/authorized_keys
+|4,39,2,115,1689949034,"~/.ssh/authorized_keys"
+-'  2  115  ~/.ssh/authorized_keys
+|4,39,2,115,1689949034,"~/.ssh/authorized_keys"
+-'  2  115  ~/.ssh/authorized_keys
+|4,39,2,115,1689949034,"~/.ssh/authorized_keys"
+-'  2  115  ~/.ssh/authorized_keys
+|4,39,2,115,1689949034,"~/.ssh/authorized_keys"
+-'  2  115  ~/.ssh/authorized_keys
+|4,39,2,115,1689949034,"~/.ssh/authorized_keys"
+-'  2  115  ~/.ssh/authorized_keys
+|4,39,2,115,1689949034,"~/.ssh/authorized_keys"
+-'  2  115  ~/.ssh/authorized_keys
+|4,39,2,115,1689949034,"~/.ssh/authorized_keys"
+-'  2  115  ~/.ssh/authorized_keys
+|4,39,2,115,1689949034,"~/.ssh/authorized_keys"
+-'  2  115  ~/.ssh/authorized_keys
+|4,39,2,115,1689949034,"~/.ssh/authorized_keys"
+-'  2  115  ~/.ssh/authorized_keys
+|4,39,2,115,1689949034,"~/.ssh/authorized_keys"
+-'  1  0  ~/.ssh/authorized_keys
+|4,39,1,0,1689945645,"~/.ssh/authorized_keys"
+-'  1  0  ~/.ssh/authorized_keys
+|4,39,1,0,1689945645,"~/.ssh/authorized_keys"
+-'  1  0  ~/.ssh/authorized_keys
+|4,39,1,0,1689945645,"~/.ssh/authorized_keys"
+-'  1  0  ~/.ssh/authorized_keys
+|4,39,1,0,1689945645,"~/.ssh/authorized_keys"
+-'  1  0  ~/.ssh/authorized_keys
+|4,39,1,0,1689945645,"~/.ssh/authorized_keys"
+-'  1  0  ~/.ssh/authorized_keys
+|4,39,1,0,1689945645,"~/.ssh/authorized_keys"
+-'  1  0  ~/.ssh/authorized_keys
+|4,39,1,0,1689945645,"~/.ssh/authorized_keys"
+-'  1  0  ~/.ssh/authorized_keys
+|4,39,1,0,1689945645,"~/.ssh/authorized_keys"
+-'  1  0  ~/.ssh/authorized_keys
+|4,39,1,0,1689945645,"~/.ssh/authorized_keys"
+-'  1  0  ~/.ssh/authorized_keys
+|4,39,1,0,1689945645,"~/.ssh/authorized_keys"
+-'  1  0  ~/.ssh/authorized_keys
+|4,39,1,0,1689945645,"~/.ssh/authorized_keys"
+-'  1  0  ~/.ssh/authorized_keys
+|4,39,1,0,1689945645,"~/.ssh/authorized_keys"
+-'  1  0  ~/.ssh/authorized_keys
+|4,39,1,0,1689945645,"~/.ssh/authorized_keys"
+-'  1  0  ~/.ssh/authorized_keys
+|4,39,1,0,1689945645,"~/.ssh/authorized_keys"
+-'  1  0  ~/.ssh/authorized_keys
+|4,39,1,0,1689945645,"~/.ssh/authorized_keys"
+-'  1  0  ~/.ssh/authorized_keys
+|4,39,1,0,1689945645,"~/.ssh/authorized_keys"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  1  0  ~/meteoroi_scripts/station.json
+|4,39,1,0,1593103759,"~/meteoroi_scripts/station.json"
+-'  8  21  ~/meteoroi_scripts/station.json
+|4,39,8,21,1593103534,"~/meteoroi_scripts/station.json"
+-'  8  21  ~/meteoroi_scripts/station.json
+|4,39,8,21,1593103534,"~/meteoroi_scripts/station.json"
+-'  8  21  ~/meteoroi_scripts/station.json
+|4,39,8,21,1593103534,"~/meteoroi_scripts/station.json"
+-'  8  21  ~/meteoroi_scripts/station.json
+|4,39,8,21,1593103534,"~/meteoroi_scripts/station.json"
+-'  8  21  ~/meteoroi_scripts/station.json
+|4,39,8,21,1593103534,"~/meteoroi_scripts/station.json"
+-'  8  21  ~/meteoroi_scripts/station.json
+|4,39,8,21,1593103534,"~/meteoroi_scripts/station.json"
+-'  8  21  ~/meteoroi_scripts/station.json
+|4,39,8,21,1593103534,"~/meteoroi_scripts/station.json"
+-'  8  21  ~/meteoroi_scripts/station.json
+|4,39,8,21,1593103534,"~/meteoroi_scripts/station.json"
+-'  8  21  ~/meteoroi_scripts/station.json
+|4,39,8,21,1593103534,"~/meteoroi_scripts/station.json"
+-'  8  21  ~/meteoroi_scripts/station.json
+|4,39,8,21,1593103534,"~/meteoroi_scripts/station.json"
+-'  8  21  ~/meteoroi_scripts/station.json
+|4,39,8,21,1593103534,"~/meteoroi_scripts/station.json"
+-'  8  21  ~/meteoroi_scripts/station.json
+|4,39,8,21,1593103534,"~/meteoroi_scripts/station.json"
+-'  8  21  ~/meteoroi_scripts/station.json
+|4,39,8,21,1593103534,"~/meteoroi_scripts/station.json"
+-'  8  21  ~/meteoroi_scripts/station.json
+|4,39,8,21,1593103534,"~/meteoroi_scripts/station.json"
+-'  8  21  ~/meteoroi_scripts/station.json
+|4,39,8,21,1593103534,"~/meteoroi_scripts/station.json"
+-'  8  21  ~/meteoroi_scripts/station.json
+|4,39,8,21,1593103534,"~/meteoroi_scripts/station.json"
+-'  8  21  ~/meteoroi_scripts/station.json
+|4,39,8,21,1593103534,"~/meteoroi_scripts/station.json"
+-'  8  21  ~/meteoroi_scripts/station.json
+|4,39,8,21,1593103534,"~/meteoroi_scripts/station.json"
+-'  8  21  ~/meteoroi_scripts/station.json
+|4,39,8,21,1593103534,"~/meteoroi_scripts/station.json"
+-'  8  21  ~/meteoroi_scripts/station.json
+|4,39,8,21,1593103534,"~/meteoroi_scripts/station.json"
+
+# Historique des marques dans les fichiers (les plus récentes en premier) :
+
+> /srv/weewx/root/weewx.conf
+	*	1690313568	0
+	"	591	0
+	^	288	23
+	.	288	22
+	+	51	17
+	+	191	0
+	+	194	0
+	+	192	31
+	+	196	32
+	+	205	37
+	+	208	31
+	+	278	23
+	+	300	14
+	+	246	34
+	+	247	51
+	+	248	30
+	+	306	24
+	+	375	31
+	+	393	46
+	+	398	46
+	+	420	19
+	+	415	33
+	+	420	19
+	+	247	40
+	+	167	23
+	+	165	25
+	+	389	0
+	+	380	34
+	+	388	40
+	+	288	22
+
+> /src/weewx/root/weewx.conf
+	*	1690313512	0
+	"	1	0
+
+> ~/.ssh/known_hosts
+	*	1689950114	0
+	"	3	108
+
+> ~/.ssh/authorized_keys
+	*	1689949032	0
+	"	2	115
+	^	2	750
+	.	2	749
+	+	2	749
+
+> ~/meteoroi_scripts/station.json
+	*	1593103759	0
+	"	1	0
+	^	7	28
+	.	7	27
+	+	4	0
+	+	2	27
+	+	3	0
+	+	2	17
+	+	3	4
+	+	2	4
+	+	3	4
+	+	2	16
+	+	3	15
+	+	2	16
+	+	3	19
+	+	2	17
+	+	3	13
+	+	22	4
+	+	22	23
+	+	37	0
+	+	24	0
+	+	23	32
+	+	26	5
+	+	24	5
+	+	26	20
+	+	30	0
+	+	27	29
+	+	28	29
+	+	29	23
+	+	28	29
+	+	27	29
+	+	14	28
+	+	13	38
+	+	32	17
+	+	33	1
+	+	29	7
+	+	33	36
+	+	34	22
+	+	33	13
+	+	35	35
+	+	36	4
+	+	4	27
+	+	34	31
+	+	33	33
+	+	35	33
+	+	33	31
+	+	35	27
+	+	34	29
+	+	35	28
+	+	33	29
+	+	4	27
+	+	5	42
+	+	5	41
+	+	8	23
+	+	13	26
+	+	14	26
+	+	13	34
+	+	14	33
+	+	27	26
+	+	28	26
+	+	27	26
+	+	28	26
+	+	29	29
+	+	6	27
+	+	7	27
+
+> /srv/weewx/root/clone_data.sh
+	*	1574518651	0
+	"	3	23
+	^	3	24
+	.	3	23
+	+	2	0
+	+	3	16
+	+	4	22
+	+	3	23
+
+> /srv/weewx/root/backup.sh
+	*	1574516143	0
+	"	3	20
+	^	3	21
+	.	3	20
+	+	1	11
+	+	13	103
+	+	3	20
+
+> /etc/cron.d/weewx
+	*	1574516134	0
+	"	1	0
+
+> ~/meteoroi_scripts/rasp10_weewx_cleanup_restart.sh
+	*	1574510596	0
+	"	8	0
+	^	8	0
+	.	7	43
+	+	1	11
+	+	2	0
+	+	10	51
+	+	5	0
+	+	4	24
+	+	10	52
+	+	16	28
+	+	3	19
+	+	6	28
+	+	12	35
+	+	15	18
+	+	18	4
+	+	7	43
+
+> /srv/weewx/root/util/systemd/weewx.service
+	*	1574505993	0
+	"	15	0
+	.	15	0
+	+	14	0
+	+	15	0
+
+> ~/meteoroi_scripts/templates/weewx.conf.tpl
+	*	1574501033	0
+	"	171	8
+	^	264	20
+	.	264	19
+	+	51	27
+	+	264	19
+
+> /usr/include/mariadb/mysql.h
+	*	1574496073	0
+	"	346	0
+	^	346	0
+	.	346	0
+	+	346	0
+
+> ~/weewx-3.9.2/setup.cfg
+	*	1574483474	0
+	"	9	21
+	^	9	22
+	.	9	21
+	+	9	21
+
+> ~/meteoroi_scripts/rasp06_setup_weewx.py
+	*	1570203099	0
+	"	45	0
+	^	32	0
+	.	31	0
+	+	36	0
+	+	38	0
+	+	34	10
+	+	34	1
+	+	34	0
+	+	35	0
+	+	34	48
+	+	25	26
+	+	26	0
+	+	28	0
+	+	10	65
+	+	28	56
+	+	25	18
+	+	19	61
+	+	20	54
+	+	37	0
+	+	42	0
+	+	41	0
+	+	42	0
+	+	44	0
+	+	45	0
+	+	31	0
+	+	32	0
+	+	33	0
+	+	34	0
+	+	35	0
+	+	36	0
+	+	37	0
+	+	38	0
+	+	39	0
+	+	27	0
+	+	20	4
+	+	42	20
+	+	43	59
+	+	44	17
+	+	43	4
+	+	44	14
+	+	45	0
+	+	46	0
+	+	44	0
+	+	45	0
+	+	46	0
+	+	44	0
+	+	31	0
+
+> ~/meteoroi_scripts/rasp00_bootstrap.py
+	*	1570202714	0
+	"	1	17
+	^	1	18
+	.	20	24
+	+	32	4
+	+	33	4
+	+	20	24
+
+> /srv/weewx/root/skins/Bootstrap/noaa_statistics.html.tmpl
+	*	1570174704	0
+	"	31	101
+	^	31	102
+	.	31	101
+	+	31	101
+
+> ~/meteoroi_scripts/test_skin.conf
+	*	1560526993	0
+	"	339	25
+
+> ~/meteoroi_scripts/templates/skin.conf.tpl
+	*	1560526934	0
+	"	331	24
+	^	334	10
+	.	331	24
+	+	332	83
+	+	333	50
+	+	331	49
+	+	332	30
+	+	336	55
+	+	337	54
+	+	338	55
+	+	339	37
+	+	338	40
+	+	339	58
+	+	340	62
+	+	341	0
+	+	334	0
+	+	331	24
+
+> /etc/openvpn/MeteoR_OI.conf
+	*	1560524105	0
+	"	130	0
+	^	130	1
+	.	130	0
+	+	130	0
+
+> ~/meteoroi_scripts/rasp05_init_db_access.sh
+	*	1560169358	0
+	"	1	1
+	^	1	2
+	.	1	1
+	+	2	0
+	+	3	42
+	+	7	0
+	+	6	0
+	+	7	0
+	+	6	67
+	+	1	1
+
+> ~/meteoroi_scripts/rasp02_get_vpn_files.sh
+	*	1560169212	0
+	"	4	12
+	^	8	0
+	.	5	12
+	+	3	32
+	+	5	9
+	+	8	0
+	+	5	12
+
+> ~/weewx-3.9.1/setup.cfg
+	*	1560078521	0
+	"	5	21
+	^	5	22
+	.	5	21
+	+	5	21
+
+> /etc/profile
+	*	1560065034	0
+	"	27	0
+
+> /etc/bash.bashrc
+	*	1560064726	0
+	"	6	0
+
+> /etc/environment
+	*	1560064705	0
+	"	1	0
+
+> ~/meteoroi_scripts/Makefile
+	*	1559922647	0
+	"	34	11
+	^	34	12
+	.	34	11
+	+	5	12
+	+	11	0
+	+	3	9
+	+	6	0
+	+	9	14
+	+	10	0
+	+	3	14
+	+	6	1
+	+	9	1
+	+	6	5
+	+	9	5
+	+	34	11
+	a	1	0
+
+> ~/Makefile
+	*	1559922399	0
+	"	1	0
+
+> ~/vp2_set_EU.py
+	*	1559764964	0
+	"	10	0
+
+> /etc/pip.conf
+	*	1552830321	0
+	"	1	0
+
+> ~/meteoroi_scripts/rasp06_setup_weewx.sh
+	*	1552828343	0
+	"	1	5
+	^	15	0
+	.	15	0
+	+	41	0
+	+	18	32
+	+	16	28
+	+	18	33
+	+	11	21
+	+	16	3
+	+	18	39
+	+	40	1
+	+	18	4
+	+	3	11
+	+	44	3
+	+	18	49
+	+	19	41
+	+	21	0
+	+	7	25
+	+	18	4
+	+	19	4
+	+	21	34
+	+	22	90
+	+	23	8
+	+	23	5
+	+	23	38
+	+	24	107
+	+	27	5
+	+	26	7
+	+	6	16
+	+	23	0
+	+	30	3
+	+	26	22
+	+	7	35
+	+	26	23
+	+	7	13
+	+	29	59
+	+	37	5
+	+	30	47
+	+	31	26
+	+	30	30
+	+	31	46
+	+	32	71
+	+	33	5
+	+	32	63
+	+	33	35
+	+	33	37
+	+	34	12
+	+	34	60
+	+	36	0
+	+	34	58
+	+	18	4
+	+	19	4
+	+	35	5
+	+	34	12
+	+	18	4
+	+	19	4
+	+	36	22
+	+	22	14
+	+	32	7
+	+	24	10
+	+	6	0
+	+	7	18
+	+	6	17
+	+	7	0
+	+	22	75
+	+	24	91
+	+	32	64
+	+	29	41
+	+	29	0
+	+	28	0
+	+	18	4
+	+	19	4
+	+	18	29
+	+	18	0
+	+	21	4
+	+	21	29
+	+	21	7
+	+	21	29
+	+	21	0
+	+	20	0
+	+	34	12
+	+	35	5
+	+	21	0
+	+	36	0
+	+	33	29
+	+	1	1
+	+	29	7
+	+	33	29
+	+	17	0
+	+	16	0
+	+	14	28
+	+	9	5
+	+	14	41
+	+	9	29
+	+	16	7
+	+	16	0
+	+	15	0
+
+> ~/meteoroi_scripts/rasp04_send_ssh_key.sh
+	*	1549823177	0
+	"	1	0
+
+> ~/meteoroi_scripts/rasp07_init_db_backup.sh
+	*	1549823160	0
+	"	1	1
+	^	1	2
+	.	1	1
+	+	1	1
+
+> ~/meteoroi_scripts/rasp00_change_password.sh
+	*	1549804779	0
+	"	5	0
+	^	5	0
+	.	5	0
+	+	1	11
+	+	2	0
+	+	9	60
+	+	6	17
+	+	9	39
+	+	7	31
+	+	9	56
+	+	10	59
+	+	6	0
+	+	3	19
+	+	4	0
+	+	3	0
+	+	4	20
+	+	9	17
+	+	9	5
+	+	3	0
+	+	4	0
+	+	9	0
+	+	10	0
+	+	9	15
+	+	6	2
+	+	3	0
+	+	4	0
+	+	6	0
+	+	9	0
+	+	8	0
+	+	9	0
+	+	10	1
+	+	9	0
+	+	10	0
+	+	7	0
+	+	5	0
+
+> /etc/nginx/nginx.conf
+	*	1549726109	0
+	"	46	1
+
+> /etc/nginx/fastcgi.conf
+	*	1549719500	0
+	"	1	0
+
+> /etc/nginx/snippets/fastcgi-php.conf
+	*	1549719482	0
+	"	1	0
+
+> /etc/php/7.0/fpm/php.ini
+	*	1549718087	0
+	"	760	5
+
+> ~/meteoroi_scripts/rasp06_init_db_backup.sh
+	*	1549254240	0
+	"	4	31
+	^	4	32
+	.	4	31
+	+	4	31
+
+> /etc/nginx/sites-available/weewx
+	*	1549253596	0
+	"	1	0
+	.	1	0
+	+	1	0
+
+> ~/fabfile.py
+	*	1549213234	0
+	"	23	19
+	^	23	20
+	.	23	19
+	+	36	8
+	+	6	11
+	+	7	11
+	+	32	7
+	+	6	11
+	+	7	0
+	+	44	0
+	+	6	0
+	+	31	4
+	+	5	11
+	+	1	30
+	+	2	0
+	+	1	0
+	+	5	17
+	+	32	9
+	+	37	25
+	+	29	0
+	+	27	22
+	+	10	18
+	+	27	26
+	+	12	3
+	+	11	4
+	+	20	7
+	+	19	0
+	+	17	16
+	+	11	4
+	+	12	11
+	+	17	0
+	+	19	9
+	+	17	54
+	+	19	0
+	+	16	45
+	+	17	0
+	+	13	31
+	+	16	51
+	+	15	16
+	+	14	45
+	+	15	28
+	+	16	26
+	+	17	4
+	+	17	12
+	+	13	32
+	+	19	4
+	+	16	15
+	+	17	4
+	+	19	4
+	+	19	0
+	+	18	0
+	+	19	0
+	+	18	4
+	+	19	0
+	+	17	0
+	+	19	0
+	+	35	45
+	+	21	20
+	+	23	33
+	+	16	11
+	+	18	7
+	+	17	18
+	+	23	0
+	+	24	0
+	+	23	39
+	+	22	10
+	+	23	3
+	+	22	14
+	+	23	76
+	+	20	4
+	+	23	19
+
+> ~/.fabric.yaml
+	*	1549211929	0
+	"	5	14
+	^	5	15
+	.	5	14
+	+	11	0
+	+	4	8
+	+	5	16
+	+	9	17
+	+	10	14
+	+	9	18
+	+	10	19
+	+	9	19
+	+	11	0
+	+	3	22
+	+	5	14
+
+> ~/.fabric.py
+	*	1549204510	0
+	"	1	0
+
+> ~/.fabric.json
+	*	1549204298	0
+	"	3	0
+	^	3	0
+	.	2	3
+	+	2	3
+
+> ~/setup.py
+	*	1549203107	0
+	"	1	0
+	^	1	0
+	.	1	0
+	+	1	79
+	+	19	0
+	+	14	0
+	+	15	0
+	+	19	44
+	+	12	20
+	+	1	0
+
+> /etc/openvpn/MeteorOI.conf
+	*	1549104116	0
+	"	1	0
+
+> /etc/passwd
+	*	1511758784	0
+	"	30	0
+
+> ~/meteoroi_scripts/rasp01_change_hostname.sh
+	*	1511755577	0
+	"	8	0
+	^	8	0
+	.	8	0
+	+	2	0
+	+	7	0
+	+	8	0
+
+> ~/.bashrc
+	*	1511754724	0
+	"	93	0
+	.	93	0
+	+	91	0
+	+	92	0
+	+	93	0
+
+> /srv/weewx/root/skins/Bootstrap/skin.conf
+	*	1511723481	0
+	"	327	28
+	^	313	32
+	.	314	53
+	+	314	53
+
+> ~/weewx-3.8.0/setup.cfg
+	*	1511722497	0
+	"	7	21
+	^	7	22
+	.	7	21
+	+	7	8
+	+	7	21

@@ -1,0 +1,11 @@
+debug: true
+sys_default:
+    station_id: 'YYY111'
+station:
+    id: 'XXX000'
+    altitude: 111
+    town: 'Town2'
+    locality: 'Locality2'
+    latitude: -21.77
+    longitude: 55.77
+

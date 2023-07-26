@@ -47,8 +47,10 @@ class MeteoROIInstaller(setup.ExtensionInstaller):
            ('skins/Json',
             ['skins/Json/skin.conf',
              'skins/Json/weewx.conf']),
-           ('skins/Json/json'
-             ['skins/Json/json/arch.MTG320.YYYY-MM-DDTHH-mm.json.tmpl']),
+           ('skins/Json/json',
+            ['skins/Json/json/arch.MTG320.YYYY-MM-DDTHH-mm.json.tmpl']),
+           ('bin',
+            ['bin/wee_json']),
            ('bin/user',
             ['bin/user/gaugeengine.py',
              'bin/user/gauges.py',

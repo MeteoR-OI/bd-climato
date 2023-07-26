@@ -1,0 +1,6 @@
+# Cron jobs of weewx program
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+ 
+3 0 * * * weewx /srv/weewx/root/backup.sh &>/srv/weewx/backups/cron.log
+

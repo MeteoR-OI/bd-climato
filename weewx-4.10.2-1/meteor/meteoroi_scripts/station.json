@@ -1,0 +1,37 @@
+{
+    "weewx_user"   : "weewx",
+
+    "station_id"   : "MTG320",
+    "location"     : "La Montagne / Brises",
+    "latitude"     : "-20.88",
+    "longitude"    : "55.428",
+    "altitude"     : 318,
+    "driver"       : "Vantage",
+
+    "Wunderground" : {
+        "enable"       : "true",
+        "station"      : "ISAINT168",
+        "password"     : "8J43uvhW"
+    },
+
+    "database"     : {
+        "user"         : "weewx",
+        "password"     : "J_Gs_irG_W"
+    },
+
+    "modules"      : {
+        "radiation"    : "FALSE"
+    },
+
+    "data_start" : {
+        "day"          : "9",
+        "month"        : "8",
+        "year"         : "2019"
+    },
+
+    "display" : {
+        "etp"          : "disable",
+        "radiation"    : "disable",
+        "uv"           : "disable"
+    }
+}
