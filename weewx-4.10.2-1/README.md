@@ -7,3 +7,8 @@ Historic data in colour coded html tables.
 Available in multiple languages.
 
 See it in action: [dajda.net](http://dajda.net/)
+
+Updated by MeteoR-OI 
+====================
+
+Project MeteoR-OI database
