@@ -288,12 +288,14 @@ LOW#slurp
        $CleVal("wind_max",$obs.windGust.meter_per_second.raw)
        $CleVal("wind_max_dir",$obs.windGustDir.raw)
        #if $final_obs
-       $CleDat("wind_max_time",$currentagg.windGust.maxtime.raw)
+       $CleDat("wind_max_time",$currentagg.windGust.maxtime.raw)    
        #end if
        $CleVal("rain",$obs.rain.mm.raw)
        $CleVal("rain_rate_max",$obs.rainRate.mm_per_hour.raw)
        #if $final_obs
+       #if $currentagg.rainRate.maxtime.raw is not None
        $CleDat("rain_rate_max_time",$currentagg.rainRate.maxtime.raw/10) ## bug bizarre !!!!
+       #end if
        $CleAvg("rain_rate_avg",$currentagg.rainRate.sum.mm_per_hour.raw,$currentagg.rainRate.count.raw)
        #end if
        #if $day.UV.has_data

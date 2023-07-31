@@ -293,7 +293,9 @@ LOW#slurp
        $CleVal("rain",$obs.rain.mm.raw)
        $CleVal("rain_rate_max",$obs.rainRate.mm_per_hour.raw)
        #if $final_obs
+       #if $currentagg.rainRate.maxtime.raw is not None
        $CleDat("rain_rate_max_time",$currentagg.rainRate.maxtime.raw/10) ## bug bizarre !!!!
+       #end if
        $CleAvg("rain_rate_avg",$currentagg.rainRate.sum.mm_per_hour.raw,$currentagg.rainRate.count.raw)
        #end if
        #if $day.UV.has_data

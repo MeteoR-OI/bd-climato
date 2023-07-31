@@ -76,12 +76,14 @@ Adding the section below to your skins.conf file will create these new tags:
 
 from datetime import datetime
 import time
-import syslog
 import os.path
+import logging
 
 from weewx.cheetahgenerator import SearchList
 from weewx.tags import TimespanBinder
 import weeutil.weeutil
+
+log = logging.getLogger(__name__)
 
 class MyXSearch(SearchList):
     def __init__(self, generator):
@@ -99,19 +101,19 @@ class MyXSearch(SearchList):
         if 'BootstrapLabels' in generator.skin_dict:
             self.search_list_extension['BootstrapLabels'] = generator.skin_dict['BootstrapLabels']
         else:
-            syslog.syslog(syslog.LOG_DEBUG, "%s: No bootstrap specific labels found" % os.path.basename(__file__))
+            log.debug("%s: No bootstrap specific labels found", os.path.basename(__file__))
 
         # Make MeteoR_OI specific labels in config file available to
         if 'MeteoR_OI' in generator.skin_dict:
             self.search_list_extension['MeteoR_OI'] = generator.skin_dict['MeteoR_OI']
         else:
-            syslog.syslog(syslog.LOG_DEBUG, "%s: No bootstrap specific labels found" % os.path.basename(__file__))
+            log.debug("%s: No bootstrap specific labels found", os.path.basename(__file__))
 
         # Make observation labels available to templates
         if 'Labels' in generator.skin_dict:
             self.search_list_extension['Labels'] = generator.skin_dict['Labels']
         else:
-            syslog.syslog(syslog.LOG_DEBUG, "%s: No observation labels found" % os.path.basename(__file__))
+            log.debug("%s: No observation labels found", os.path.basename(__file__))
 
     def get_extension_list(self, valid_timespan, db_lookup):
         """For weewx V3.x extensions. Should return a list
@@ -175,8 +177,8 @@ class MyXSearch(SearchList):
 
             t2 = time.time()
 
-            syslog.syslog(syslog.LOG_INFO, "%s: Generated %d tables in %.2f seconds" %
-                          (os.path.basename(__file__), ngen, t2 - t1))
+            log.info("%s: Generated %d tables in %.2f seconds",
+                          os.path.basename(__file__), ngen, t2 - t1)
 
         return [self.search_list_extension]
 
@@ -205,8 +207,8 @@ class MyXSearch(SearchList):
                 try:
                     threshold_value = float(table_options['aggregate_threshold'][0])
                 except KeyError:
-                    syslog.syslog(syslog.LOG_INFO, "%s: Problem with aggregate_threshold. Should be in the format: [value], [units]" %
-                                  (os.path.basename(__file__)))
+                    log.info("%s: Problem with aggregate_threshold. Should be in the format: [value], [units]",
+                                  os.path.basename(__file__))
                     return "Could not generate table %s" % table_name
 
                 threshold_units = table_options['aggregate_threshold'][1]
@@ -214,15 +216,15 @@ class MyXSearch(SearchList):
                 try:
                     reading = getattr(readingBinder, aggregate_type)((threshold_value, threshold_units))
                 except IndexError:
-                    syslog.syslog(syslog.LOG_INFO, "%s: Problem with aggregate_threshold units: %s" % (os.path.basename(__file__),
-                                                                                                       str(threshold_units)))
+                    log.info("%s: Problem with aggregate_threshold units: %s", os.path.basename(__file__),
+                                                                                                       str(threshold_units))
                     return "Could not generate table %s" % table_name
             else:
                 try:
                     reading = getattr(readingBinder, aggregate_type)
                 except KeyError:
-                    syslog.syslog(syslog.LOG_INFO, "%s: aggregate_type %s not found" % (os.path.basename(__file__),
-                                                                                        aggregate_type))
+                    log.info("%s: aggregate_type %s not found", os.path.basename(__file__),
+                                                                                        aggregate_type)
                     return "Could not generate table %s" % table_name
 
             unit_type = reading.converter.group_unit_dict[reading.value_t[2]]
