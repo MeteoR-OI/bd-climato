@@ -21,6 +21,7 @@ locale.setlocale(locale.LC_ALL, '')
 #  QUETELARD
 from datetime import datetime
 import os
+import logging
 # end added
 
 import weewx.manager
@@ -28,12 +29,20 @@ import weecfg
 
 # added by QUETELARD
 # when program start, in first get lastUpdate of database
+
+log = logging.getLogger(__name__)
+
 file_name = os.environ['HOME'] + "/root/weewx.conf"
 config_dict = weecfg.read_config(file_name)
 config_dict = config_dict[1]
 db_binding = 'wx_binding'
-dbm = weewx.manager.open_manager_with_config(config_dict,db_binding)
-last_update_stop = int(dbm._read_metadata('lastUpdate'))
-dbm.close
+try:
+    dbm = weewx.manager.open_manager_with_config(config_dict,db_binding)
+    last_update_stop = int(dbm._read_metadata('lastUpdate'))
+    log.info("last update before stop", last_update_stop)
+    dbm.close
+except:
+    last_update_stop = 0
+    log.info("no database: no possible to get last_update")
 # end added
 
