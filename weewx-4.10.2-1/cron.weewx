@@ -1,7 +1,0 @@
-# Cron jobs of weewx program
-SHELL=/bin/bash
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
- 
-3 0 * * * weewx /srv/weewx/root/backup.sh &>/srv/weewx/backups/cron.log
-8 0 * * * weewx /srv/weewx/root/clone_data.sh &>/srv/weewx/backups/cron_clone.log
-13 0 * * * weewx /srv/weewx/root/trans_json.sh &>/srv/weewx/backups/cron_trans.log
