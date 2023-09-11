@@ -170,25 +170,29 @@ class JsonLoader:
         while idx_global < jsons_to_load.__len__():
             try:
                 meteor = str(jsons_to_load[idx_global].get("meteor"))
-                pid, poste_tz = PosteMeteor.getPosteIdAndTzByMeteor(jsons_to_load[0]["meteor"])
+                pid, poste_tz = PosteMeteor.getPosteIdAndTzByMeteor(jsons_to_load[idx_global]["meteor"])
                 if pid is None:
-                    raise Exception("code meteor inconnu: " + meteor)
+                    raise Exception("code meteor inconnu: " + meteor + ', idx_global: ' + str(idx_global))
 
                 idx_data = 0
                 try:
                     a_work_item = jsons_to_load[idx_global]['data'][idx_data]
+
                     # get data from our json item
                     j_stop_dat = a_work_item["stop_dat"]
                     j_duration = a_work_item["duration"]
                     j_start_dat = j_stop_dat - timedelta(minutes=j_duration)
                     j_exclus = ExcluMeteor.getExclusForAPoste(pid, j_start_dat, j_stop_dat)
+
+                    # Load the obs we need in cache
                     all_obs = ObsMeteor.load_all_needed_obs(pid, self.decas, j_stop_dat, poste_tz)
 
                     # load attributes in our sub_spam
                     my_span.set_attribute("stop_dat", str(j_stop_dat))
 
-                    # check if json already loaded
                     # NCNC -> futur: check if stop_dat in range ]time-duration, time]
+
+                    # check if json already loaded on the main obs in cache
                     if all_obs[0]['obs'].data.duration != 0:
                         if a_work_item.__contains__("force_replace") is not True:
                             t.logInfo(
@@ -198,11 +202,13 @@ class JsonLoader:
                         else:
                             # delete our obs, and linked extremes and obs
                             all_obs[0]['obs'].data.delete()
+
                             # reload a new set of obs (first will be new now)
-                            all_obs = ObsMeteor.load_mesures(pid, self.decas, j_stop_dat)
+                            all_obs = ObsMeteor.load_all_needed_obs(pid, self.decas, j_stop_dat, poste_tz)
 
                     all_obs[0]['obs'].data.duration = j_duration
-                    all_obs[0]['obs'].data.save()
+                    # all_obs[0]['obs'].data.save()
+
                     histo_x_list = []
                     for an_obs in all_obs:
                         histo_x_list.append([])
@@ -237,7 +243,7 @@ class JsonLoader:
                     HistoExtreme.storeArray(pgconn, histo_x_new)
                     pgconn.commit()
                     pgconn.close()
-                    nico()
+
                     my_span.add_event('jsonload', "file: " + filename + " DONE")
                     my_span.add_event('obs', 'new rows: ' + str(len(histo_obs_new)))
                     # my_span.add_event('histo', "new rows: " + str(len(histo_x_new)))
