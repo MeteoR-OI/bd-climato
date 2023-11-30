@@ -179,8 +179,42 @@ class MigrateDB:
     # ---------------------------------------------------
     # insert mesures from weewx archive in our obs table
     # ---------------------------------------------------
-    def loadExistingObsAndFlushObs(self, pg_cur, work_item, start_dt, end_dt, last_ts_in_extreme, my_span):
-        new_records = {}
+    def getExistingRecord(self, pg_cur, work_item, my_span):
+        existing_records = {}
+
+        # store min/max in our cache
+        cache = []
+        sql = 'select id, mesure_id, date_local, min, min_time, max, max_time, max_dir from extremes ' +\
+            ' where poste_id = ' + str(work_item['pid']) +\
+            " and date_local >= '" + str(work_item['start_date_extremes'] - timedelta(days=1)) + "' " +\
+            " and date_local < '" + str(work_item['end_date_extremes'] + timedelta(days=1)) + "' " +\
+            ' order by mesure_id, date_local'
+
+        current_mid = -1
+        cache = []
+        pg_cur.execute(sql)
+        row = pg_cur.fetchone()
+        while row is not None:
+            if row[1] != current_mid:
+                cache = []
+                existing_records['m_' + str(row[1])] = {'mid': row[1], 'cache': cache}
+                current_mid = row[1]
+
+            cache.append([row[2], row[1], row[3], row[4], None, row[5], row[6], row[7], None, row[0], FromDateToLocalDateTime(row[2], work_item['tz']).timestamp(), False])
+
+            row = pg_cur.fetchone()
+
+        for a_mesure in self.measures:
+            if existing_records['m_' + str(a_mesure[self.mesure_id])] is None:
+                existing_records['m_' + str(a_mesure[self.mesure_id])] = {'mid': a_mesure[self.mesure_id], 'cache': []}
+
+        return existing_records
+
+    def loadExistingObsAndFlushObs(self, pg_cur, work_item, my_span):
+
+        # Nico => add dirty flag to not save duration = 0 with no data...
+
+        new_records = self.getExistingRecord(pg_cur, work_item, my_span)
         histo_o = []
 
         start_time = datetime.now()
@@ -229,9 +263,9 @@ class MigrateDB:
                     str_date = t.myTools.DateFromUTCTS(row2[self.row_archive_dt_local] + a_q['valdk'] * 3600).strftime('%Y-%m-%d %H:%M:%S')
                     str_utc_date = t.myTools.DateFromUTCTS(row2[self.row_archive_dt_local] - (work_item['tz'] + a_q['valdk']) * 3600).strftime('%Y-%m-%d %H:%M:%S')
                 a_q['args'] = [
-                    str(pid),
-                    str_date,
-                    str_utc_date,
+                    str(work_item['pid']),
+                    local_date.strftime('%Y-%m-%d %H:%M:%S'),           # local date including valdk
+                    utc_date.strftime('%Y-%m-%d %H:%M:%S'),             # utc date including valdk
                     str(row2[self.row_archive_interval] if a_q['valdk'] == 0 else 0)
                 ]
 
@@ -240,7 +274,11 @@ class MigrateDB:
             while idx < len(self.measures):
                 a_mesure = self.measures[idx]
 
-                row_mesure_value = row2[idx + 4]                        # row values are in same order as self.measures
+                row_mesure_value = row2[idx + 3]                        # row values are in same order as self.measures
+
+                # If zero not allowed, replace zero with None
+                if a_mesure['zero'] is False and row_mesure_value == 0:
+                    row_mesure_value = None
 
                 # load value in the right insert statement, depending on valdk
                 for a_q in query_args:

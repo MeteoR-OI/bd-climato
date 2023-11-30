@@ -41,4 +41,3 @@ class Command(BaseCommand):
             self.stderr.write('** ERROR **')
             for a_result in rj['result']:
                 self.stderr.write('   ' + a_result)
-

@@ -2,20 +2,13 @@
     "editor.guides.bracketPairs":true,
     "python.languageServer":"Default",
     "python.terminal.activateEnvironment":true,
-    "python.linting.pylintEnabled": false,
-    "python.linting.flake8Enabled": true,
-    "python.linting.enabled": true,
     "python.venvPath": "${workspaceFolder}/.venv",
     "python.terminal.activateEnvInCurrentTerminal": true,
     
     "python.testing.pytestEnabled": true,
     "python.testing.unittestEnabled": false,
     "python.testing.nosetestsEnabled": false,
-    "python.linting.mypyEnabled": false,
-    "python.linting.flake8Args": [
-        "--max-line-length=200",
-        // "--ignore=E402,F841,F401,E302,E305, W293",
-    ],
+
     "python.testing.pytestArgs": [
         "app/tests",
     ],
