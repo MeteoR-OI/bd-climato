@@ -28,6 +28,6 @@ from (
 		order by a.start_dat desc
 		limit 1
 	)
-	from poste p
+	from postes p
 	where p.id = 2
 ) t;
