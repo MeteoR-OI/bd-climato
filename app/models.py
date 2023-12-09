@@ -125,6 +125,7 @@ class Observation(models.Model):
     radiation = models.FloatField(null=True, verbose_name="radiation")
     rain = models.FloatField(null=True, verbose_name="pluie")
     rain_omm = models.FloatField(null=True, verbose_name="pluie OMM")
+    rain_omm_duration = models.SmallIntegerField(null=True, verbose_name='duration pluie OMM'),
     rain_rate = models.FloatField(null=True, verbose_name="rain_rate")
     rx = models.FloatField(null=True, verbose_name="taux reception station")
     soil_moist1 = models.FloatField(null=True, verbose_name="humidité du sol niveau du sol")
