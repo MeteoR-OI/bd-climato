@@ -638,13 +638,21 @@ class MigrateDB:
     # create a virtual row from an weewx record row
     # ----------------------------------------------
     def loadMinMaxFromExtremeRow(self, work_item, a_mesure, row, mesure_cached_item):
+        if row[self.row_extreme_min] is not None and row[self.row_extreme_mintime] is None:
+            x_mintime = row[self.row_extreme_dateTime]
+        else:
+            x_mintime = row[self.row_extreme_mintime]
+        if row[self.row_extreme_max] is not None and row[self.row_extreme_maxtime] is None:
+            x_maxtime = row[self.row_extreme_dateTime]
+        else:
+            x_maxtime = row[self.row_extreme_maxtime]
         row_virtual = [
-            None if row[self.row_extreme_min] is None else row[self.row_extreme_mintime] + a_mesure['mindk'] * 3600,
+            None if row[self.row_extreme_min] is None else x_mintime + a_mesure['mindk'] * 3600,
             row[self.row_extreme_min],
-            None if row[self.row_extreme_min] is None else row[self.row_extreme_mintime],
-            None if row[self.row_extreme_min] is None else row[self.row_extreme_maxtime] + a_mesure['maxdk'] * 3600,
+            None if row[self.row_extreme_min] is None else x_mintime,
+            None if row[self.row_extreme_min] is None else x_maxtime + a_mesure['maxdk'] * 3600,
             row[self.row_extreme_max],
-            None if row[self.row_extreme_max] is None else row[self.row_extreme_maxtime],
+            None if row[self.row_extreme_max] is None else x_maxtime,
             None if row[self.row_extreme_max] is None else row[self.row_extreme_maxdir],
             row[self.row_extreme_mid],
             -1
@@ -965,7 +973,7 @@ class MigrateDB:
             self.row_extreme_maxtime = 3
             self.row_extreme_maxdir = 4
             self.row_extreme_mid = 5
-            self.row_extreme_id = 6
+            self.row_extreme_dateTime = 6
 
             # row_id for virtual data
             self.row_virtual_min_utc_ts = 0
