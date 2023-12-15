@@ -73,7 +73,7 @@ class MigrateDB:
     def processWorkItem(self, work_item, my_span, op_tracer):
         try:
             meteor = work_item['meteor']
-            work_item['pid'], str_last_obs_ts, str_last_x_ts, load_json = self.get_poste_info(meteor, my_span)
+            work_item['pid'], str_last_obs_ts, str_last_x_ts, load_raw_data = self.get_poste_info(meteor, my_span)
             if work_item['pid'] is None:
                 raise Exception('station ' + meteor + ' not found')
 
@@ -81,8 +81,8 @@ class MigrateDB:
             work_item['last_x_ts'] = str_last_x_ts.timestamp() if str_last_x_ts is not None else 0
 
             # skipping postes with active updates
-            if load_json is True:
-                my_span.add_event('migrate', 'load_json is active, skipping')
+            if load_raw_data is True:
+                my_span.add_event('migrate', 'load_raw_data is active, skipping')
                 return
 
             cached_data = {}
@@ -684,13 +684,13 @@ class MigrateDB:
         try:
             pgconn = self.getPGConnexion()
             pg_cur = pgconn.cursor()
-            pg_cur.execute("select id, last_obs_date, last_extremes_date, load_json from postes where meteor = '" + meteor + "'")
+            pg_cur.execute("select id, last_obs_date, last_extremes_date, load_raw_data from postes where meteor = '" + meteor + "'")
             row = pg_cur.fetchone()
             if row is not None:
                 poste_id = row[0]
                 last_obs_ts = None if row[1] is None else row[1]
                 last_x_ts = None if row[2] is None else row[2]
-                load_json = row[3]
+                load_raw_data = row[3]
             # my_span.set_attribute('meteor', meteor)
             my_span.set_attribute('last_obs_ts', last_obs_ts.timestamp() if last_obs_ts is not None else 'None')
             my_span.set_attribute('last_extremes_ts', last_x_ts.timestamp() if last_x_ts is not None else 'None')
@@ -702,7 +702,7 @@ class MigrateDB:
         finally:
             pg_cur.close()
             pgconn.close()
-            return poste_id, last_obs_ts, last_x_ts, load_json
+            return poste_id, last_obs_ts, last_x_ts, load_raw_data
 
     def get_mesures(self, pgconn):
         mesures = []

@@ -55,7 +55,7 @@ z = """
 
 
 @pytest.mark.unit
-def test_load_json_from_string():
+def test_load_raw_data_from_string():
     # load a json, with date as a str
     jj = jp.loads(z)
     # all dates are datetime after loads

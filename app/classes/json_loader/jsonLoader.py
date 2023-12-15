@@ -155,7 +155,7 @@ class JsonLoader:
         if meteor == 'None':
             raise Exception('invalid format, unreadable meteor key ' + filename)
         pid = PosteMeteor.getPosteIdByMeteor(jsons_to_load[0]["meteor"])
-        b_load = PosteMeteor(pid).data.load_json
+        b_load = PosteMeteor(pid).data.load_raw_data
         if b_load is False:
             my_span.add_event('jsonload', meteor + ' inactif json_load is False), skipping file ' + filename)
             return

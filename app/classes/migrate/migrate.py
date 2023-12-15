@@ -78,9 +78,9 @@ class MigrateDB:
             meteor = work_item['meteor']
             current_ts = datetime.now().timestamp() + 1
 
-            work_item['pid'], work_item['tz'], work_item['load_json'], stop_local = PosteMeteor.getPosteIdAndTzByMeteor(meteor)
+            work_item['pid'], work_item['tz'], work_item['load_raw_data'], stop_local = PosteMeteor.getPosteIdAndTzByMeteor(meteor)
 
-            if work_item['load_json'] is not False:
+            if work_item['load_raw_data'] is not False:
                 my_span.add_event(meteor, {'status': 'Migration stopped, station in auto_load mode'})
                 return
 
@@ -123,7 +123,7 @@ class MigrateDB:
         pgconn = self.getPGConnexion()
         pg_cur = pgconn.cursor()
 
-        work_item['old_load_json'] = False
+        work_item['old_load_raw_data'] = False
 
         # 1/1/2100 00:00 UTC
         max_date = AsTimezone(datetime(2100, 1, 1, 4), 0)
@@ -210,7 +210,7 @@ class MigrateDB:
     #     pg_cur = pgconn.cursor()
 
     #     try:
-    #         pg_cur.execute('update postes set load_json = ' + str(work_item['old_json_load']) + " where meteor = '" + work_item['meteor'] + "'")
+    #         pg_cur.execute('update postes set load_raw_data = ' + str(work_item['old_json_load']) + " where meteor = '" + work_item['meteor'] + "'")
     #         pgconn.commit()
 
     #     except Exception as ex:
@@ -795,13 +795,13 @@ class MigrateDB:
     #     try:
     #         pgconn = self.getPGConnexion()
     #         pg_cur = pgconn.cursor()
-    #         pg_cur.execute("select id, last_obs_date, last_extremes_date, load_json from postes where meteor = '" + meteor + "'")
+    #         pg_cur.execute("select id, last_obs_date, last_extremes_date, load_raw_data from postes where meteor = '" + meteor + "'")
     #         row = pg_cur.fetchone()
     #         if row is not None:
     #             poste_id = row[0]
     #             last_obs_ts = datetime.now() if row[1] is None else row[1]
     #             last_x_ts = datetime.now() if row[2] is None else row[2]
-    #             load_json = row[3]
+    #             load_raw_data = row[3]
     #         # my_span.set_attribute('meteor', meteor)
     #         my_span.set_attribute('last_obs_ts', t.myTools.ToLocalTS(last_obs_ts) if last_obs_ts is not None else 'None')
     #         my_span.set_attribute('last_extremes_ts', t.myTools.ToLocalTS(last_x_ts) if last_x_ts is not None else 'None')
@@ -809,7 +809,7 @@ class MigrateDB:
     #     finally:
     #         pg_cur.close()
     #         pgconn.close()
-    #         return poste_id, last_obs_ts, last_x_ts, load_json
+    #         return poste_id, last_obs_ts, last_x_ts, load_raw_data
 
     def getMeasures(self, pgconn):
         mesures = []

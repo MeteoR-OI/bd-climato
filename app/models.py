@@ -14,29 +14,32 @@ class Poste(models.Model):
     meteor = models.CharField(null=False, max_length=10, verbose_name="Code station")
     delta_timezone = models.SmallIntegerField(null=False, verbose_name="delta heure locale et UTC")
     data_source = models.SmallIntegerField(null=False, verbose_name="Data Source: 0 meteoire, 1 meteofr,..")
+    type = models.CharField(null=True, max_length=50, default="", verbose_name="Type de station")
 
     # optional fields
-    info = models.JSONField(null=True, default=dict, verbose_name="autre info station")
+    altitude = models.FloatField(null=True, default=0, verbose_name="Altitude")
     lat = models.FloatField(null=True, default=0, verbose_name="Latitude")
     long = models.FloatField(null=True, default=0, verbose_name="Longitude")
+    info = models.JSONField(null=True, default=dict, verbose_name="autre info station")
+    load_dump = models.BooleanField(null=True, default=False, verbose_name="Charge les donnees a partir des dumps")
+    load_raw_data = models.BooleanField(null=True, default=False, verbose_name="Charge les donnees a partir des donnees brutes")
+    pause_raw_data = models.BooleanField(null=True, default=False, verbose_name="Ne traite pas les fichiers Jsde donnees brutes")
+
+    # la suite n'est pas utilise par climato - a revoir pour pages html...
+    other_code = models.CharField(null=True, max_length=50, default="", verbose_name="Nom clair de la station")
+    owner = models.CharField(null=True, max_length=50, default="", verbose_name="Propriétaire")
+    email = models.CharField(null=True, max_length=50, default="", verbose_name="E-Mail")
+    phone = models.CharField(null=True, max_length=50, default="", verbose_name="Téléphone")
+    quartier = models.CharField(null=True, max_length=50, default="", verbose_name="Addresse")
+    city = models.CharField(null=True, max_length=50, default="", verbose_name="Ville")
+    country = models.CharField(null=True, max_length=50, default="", verbose_name="Payse")
+    comment = models.TextField(null=True, default="")
+
+    # reception donnees
     last_obs_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Datetime locale de derniere reception de donnees")
     last_obs_id = models.BigIntegerField(null=True, default=0, verbose_name="ID obs de la derniere reception de donnees")
     last_extremes_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Datetime locale de dernier record")
     last_extremes_id = models.BigIntegerField(null=True, default=0, verbose_name="ID du dernier record")
-    load_json = models.BooleanField(null=True, default=False, verbose_name="load fichier Json")
-    pause_json = models.BooleanField(null=True, default=False, verbose_name="Do not process Json file")
-
-    # la suite n'est pas utilise par climato - a revoir pour pages html...
-    title = models.CharField(null=True, max_length=50, default="", verbose_name="Nom clair de la station")
-    owner = models.CharField(null=True, max_length=50, default="", verbose_name="Propriétaire")
-    email = models.CharField(null=True, max_length=50, default="", verbose_name="E-Mail")
-    phone = models.CharField(null=True, max_length=50, default="", verbose_name="Téléphone")
-    address = models.CharField(null=True, max_length=50, default="", verbose_name="Addresse")
-    zip = models.CharField(null=True, default="", max_length=10, verbose_name="Code Postal")
-    city = models.CharField(null=True, max_length=50, default="", verbose_name="Ville")
-    country = models.CharField(null=True, max_length=50, default="", verbose_name="Payse")
-    altitude = models.FloatField(null=True, default=0, verbose_name="Altitude")
-    comment = models.TextField(null=True, default="")
 
     def __str__(self):
         return self.meteor + ", id: " + str(self.id) + ', data_source: ' + str(self.data_source) + ', TZ: ' + str(self.delta_timezone)
