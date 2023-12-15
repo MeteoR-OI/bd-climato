@@ -13,7 +13,6 @@
 from app.classes.repository.mesureMeteor import MesureMeteor
 from app.classes.repository.posteMeteor import PosteMeteor
 from app.classes.repository.incidentMeteor import IncidentMeteor
-from app.classes.repository.excluMeteor import ExcluMeteor
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.extremeMeteor import ExtremeMeteor
 from app.classes.repository.histoExtreme import HistoExtreme
@@ -181,8 +180,6 @@ class JsonLoader:
                     # get data from our json item
                     j_stop_dat = a_work_item["stop_dat"]
                     j_duration = a_work_item["duration"]
-                    j_start_dat = j_stop_dat - timedelta(minutes=j_duration)
-                    j_exclus = ExcluMeteor.getExclusForAPoste(pid, j_start_dat, j_stop_dat)
 
                     # Load the obs we need in cache
                     all_obs = ObsMeteor.load_all_needed_obs(pid, self.decas, j_stop_dat, poste_tz)
@@ -213,7 +210,7 @@ class JsonLoader:
                     for an_obs in all_obs:
                         histo_x_list.append([])
 
-                    keys_found = self.load_obs_data_j(pid, all_obs, a_work_item['valeurs'], j_stop_dat, j_exclus, histo_x_list)
+                    keys_found = self.load_obs_data_j(pid, all_obs, a_work_item['valeurs'], j_stop_dat, histo_x_list)
                     if keys_found is not None:
                         # t.logInfo("keys loaded from json: " + str(keys_found), my_span)
                         pass
@@ -259,17 +256,17 @@ class JsonLoader:
 
         work_item['is_loaded'] = True
 
-    def load_obs_data_j(self, pid, all_obs, valeurs, stop_dat, j_exclus, histo_x_list):
+    def load_obs_data_j(self, pid, all_obs, valeurs, stop_dat, histo_x_list):
         keys_found = []
         for a_mesure in self.mesures:
-            cur_vals = self.get_valeurs(a_mesure, valeurs, stop_dat, j_exclus)
+            cur_vals = self.get_valeurs(a_mesure, valeurs, stop_dat)
             cur_obs_idx = self.get_cur_obs_idx(all_obs, a_mesure)
             cur_obs = all_obs[cur_obs_idx]
 
             # if current value is None, try with the second input key
             if cur_vals[0] is None:
                 if a_mesure.get("col2") is not None and a_mesure['col2'] is not None:
-                    cur_vals = self.get_valeurs(a_mesure, valeurs, stop_dat, j_exclus, False, True)
+                    cur_vals = self.get_valeurs(a_mesure, valeurs, stop_dat, False, True)
 
             # store the value in the observation data
             if cur_vals[0] is not None:
@@ -290,13 +287,13 @@ class JsonLoader:
             )
         return None if keys_found.__len__ == 0 else keys_found
 
-    def get_valeurs(self, a_mesure, valeurs, stop_dat, j_exclus, force_abs=False, use_second_input_key=False):
+    def get_valeurs(self, a_mesure, valeurs, stop_dat, force_abs=False, use_second_input_key=False):
         #  [0]   [1]       [2]     [3]      [4]      [5]       [6]
         # val, dir|None, valmin, min_time, valmax, max_time, max_dir
 
         # for omm values, get the underlying data
         if a_mesure['ommidx'] is not None:
-            return self.get_valeurs(self.mesures[a_mesure['ommidx']], valeurs, stop_dat, j_exclus, True, use_second_input_key)
+            return self.get_valeurs(self.mesures[a_mesure['ommidx']], valeurs, stop_dat, True, use_second_input_key)
 
         # if a_mesure['col'] == 'rain':
         #     print('rain')

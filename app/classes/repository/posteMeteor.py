@@ -13,13 +13,13 @@ class PosteMeteor:
 
     def __init__(self, key):
         if 'int' in str(type(key)):
-            """ load our instance from db, load exclusions at date_histo """
+            """ load our instance from db """
             if Poste.objects.filter(id=key).exists():
                 self.data = Poste.objects.get(id=key)
             else:
                 self.data = Poste()
         else:
-            """ load our instance from db, load exclusions at date_histo """
+            """ load our instance from db """
             if Poste.objects.filter(meteor=key).exists():
                 self.data = Poste.objects.get(meteor=key)
             else:

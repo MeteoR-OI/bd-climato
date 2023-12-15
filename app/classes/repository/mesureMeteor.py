@@ -19,13 +19,13 @@ class MesureMeteor():
             self.loadMesureDefs()
 
         if 'int' in str(type(key)):
-            """ load our instance from db, load exclusions at date_histo """
+            """ load our instance from db """
             if Mesure.objects.filter(id=key).exists():
                 self.data = Mesure.objects.get(id=key)
             else:
                 self.data = Mesure()
         else:
-            """ load our instance from db, load exclusions at date_histo """
+            """ load our instance from db """
             if Mesure.objects.filter(json_input=key).exists():
                 self.data = Mesure.objects.get(json_input=key)
             else:
@@ -33,7 +33,7 @@ class MesureMeteor():
                 self.data.json_input = key
 
     def save(self):
-        """ save Poste and Exclusions """
+        """ save Poste """
         self.data.save()
 
     @staticmethod

@@ -14,15 +14,6 @@
     meteor: {{ poste_data.data.meteor }} <p>
     long: {{ poste_data.data.long }} <p>
     lat: {{poste_data.data.lat }} <p>
-    {% if poste_data.exclus %}
-        <ul>
-        {% for an_exclu in poste_data.exclus %}
-            <li>{{an_exclu.type_instrumen}}: {{an_exclu.value}}</li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        No Exclusions<p>
-    {% endif %}
 {% else %}
     <p>No data are available.</p>
 {% endif %}

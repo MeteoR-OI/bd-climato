@@ -11,11 +11,20 @@ class DateTimeFieldNoTZ(models.Field):
 class Poste(models.Model):
     # mandatory fields
     id = models.SmallAutoField(primary_key=True)
-    meteor = models.CharField(null=False, max_length=10, verbose_name="Code MeteoR.OI")
+    meteor = models.CharField(null=False, max_length=10, verbose_name="Code station")
+    delta_timezone = models.SmallIntegerField(null=False, verbose_name="delta heure locale et UTC")
+    data_source = models.SmallIntegerField(null=False, verbose_name="Data Source: 0 meteoire, 1 meteofr,..")
 
-    # optional fields - will be used
-    delta_timezone = models.SmallIntegerField(null=True, default=0, verbose_name="delta heure locale et UTC")
-    meteofr = models.CharField(null=True, default='', max_length=10, verbose_name="Code Meteo France")
+    # optional fields
+    info = models.JSONField(null=True, default=dict, verbose_name="autre info station")
+    lat = models.FloatField(null=True, default=0, verbose_name="Latitude")
+    long = models.FloatField(null=True, default=0, verbose_name="Longitude")
+    last_obs_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Datetime locale de derniere reception de donnees")
+    last_obs_id = models.BigIntegerField(null=True, default=0, verbose_name="ID obs de la derniere reception de donnees")
+    last_extremes_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Datetime locale de dernier record")
+    last_extremes_id = models.BigIntegerField(null=True, default=0, verbose_name="ID du dernier record")
+    load_json = models.BooleanField(null=True, default=False, verbose_name="load fichier Json")
+    pause_json = models.BooleanField(null=True, default=False, verbose_name="Do not process Json file")
 
     # la suite n'est pas utilise par climato - a revoir pour pages html...
     title = models.CharField(null=True, max_length=50, default="", verbose_name="Nom clair de la station")
@@ -27,20 +36,10 @@ class Poste(models.Model):
     city = models.CharField(null=True, max_length=50, default="", verbose_name="Ville")
     country = models.CharField(null=True, max_length=50, default="", verbose_name="Payse")
     altitude = models.FloatField(null=True, default=0, verbose_name="Altitude")
-    lat = models.FloatField(null=True, default=0, verbose_name="Latitude")
-    long = models.FloatField(null=True, default=0, verbose_name="Longitude")
-    start_dat = DateTimeFieldNoTZ(null=True, default="1900-01-01T00:00:00", verbose_name="Datetime locale d'activation")
-    stop_dat = DateTimeFieldNoTZ(null=True, default="2100-12-31T23:59:59", verbose_name="Datetime locale de désactivation")
     comment = models.TextField(null=True, default="")
-    last_obs_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Datetime locale de derniere reception de donnees")
-    last_obs_id = models.BigIntegerField(null=True, default=0, verbose_name="ID obs de la derniere reception de donnees")
-    last_extremes_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Datetime locale de dernier record")
-    last_extremes_id = models.BigIntegerField(null=True, default=0, verbose_name="ID du dernier record")
-    load_json = models.BooleanField(null=True, default=False, verbose_name="load json status")
-    pause_json = models.BooleanField(null=True, default=False, verbose_name="Do not process Json file")
 
     def __str__(self):
-        return self.meteor + ", id: " + str(self.id)
+        return self.meteor + ", id: " + str(self.id) + ', data_source: ' + str(self.data_source) + ', TZ: ' + str(self.delta_timezone)
 
     class Meta:
         db_table = "postes"
@@ -71,21 +70,6 @@ class Mesure(models.Model):
 
     class Meta:
         db_table = "mesures"
-
-
-# class Exclusion(ExportModelOperationsMixin('exclusion'), models.Model):
-class Exclusion(models.Model):
-    id = models.AutoField(primary_key=True)
-    poste = models.ForeignKey(null=False, to="Poste", on_delete=models.CASCADE)
-    start_dat = DateTimeFieldNoTZ(null=False, max_length=20, default="1900-01-01T00:00:00", verbose_name="Datetime locale début exclusion")
-    stop_dat = DateTimeFieldNoTZ(null=False, max_length=20, default="2100-12-31T23:59:59", verbose_name="Datetime locale fin exclusion")
-    value = models.JSONField(null=False, default=dict, verbose_name="Exclusion")
-
-    def __str__(self):
-        return "exclusion id: " + str(self.id) + ", poste: " + str(self.poste) + ", start: " + str(self.start_dat) + ", stop: " + str(self.stop_dat)
-
-    class Meta:
-        db_table = "exclusions"
 
 
 # class Observation(ExportModelOperationsMixin('obs'), models.Model):

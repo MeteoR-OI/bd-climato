@@ -20,7 +20,7 @@ class ExtremeMeteor():
             self.data = Extreme()
 
     def save(self):
-        """ save Poste and Exclusions """
+        """ save Poste """
         # we only save if there is some data
         self.data.save()
 

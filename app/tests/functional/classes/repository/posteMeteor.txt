@@ -1,10 +1,9 @@
 # do not use db object, but xxxMeteor objects
-from app.models import Poste, Observation, AggHour, AggDay, AggMonth, AggYear, AggAll, Exclusion, TypeInstrument   #
+from app.models import Poste, Observation, AggHour, AggDay, AggMonth, AggYear, AggAll, TypeInstrument   #
 import datetime
 from dateutil.relativedelta import relativedelta
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.metier.posteMetier import PosteMetier
-from app.classes.repository.excluMeteor import ExcluMeteor
 from app.tools.aggTools import get_agg_object
 from app.tools.jsonPlus import JsonPlus
 jp = JsonPlus()

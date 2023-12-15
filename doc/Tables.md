@@ -8,7 +8,6 @@
 - [1.	Historique mises à jour](#1historique-mises-à-jour)
 - [2.    Poste](#2----poste)
 - [3. Type instrument (table type_instrument)](#3-type-instrument-table-type_instrument)
-- [4. Exclusion (table exclusion)](#4-exclusion-table-exclusion)
 - [5. Observation (table obs)](#5-observation-table-obs)
 - [6. aggTodo (table agg_todo)](#6-aggtodo-table-agg_todo)
 - [7. Extreme todo (extreme_todo)](#7-extreme-todo-extreme_todo)
@@ -73,20 +72,8 @@ model_value: Json specifiant les clés possibles pour les exclusions (futur deve
         value: type (float, int, string)
 ```
 
-# 4. Exclusion (table exclusion)
 
-```
-id: no chronologique
-poste: id de la station
-type_instrument: cle du type instrument
-start_dat: date debut de l'exclusion (inclue dans l'exclusion)
-stop_dat: date fin de l'exclusion (inclue)
-value: pour chaque "key"
-    valeur du type defini dans model_value -> force une valeur
-    "null": ne pas tenir compte des observations
-```
-
-# 5. Observation (table obs)
+# 4. Observation (table obs)
 
 ```
 id: no chronologique
@@ -103,20 +90,8 @@ j: json. Les clés utilisées sont decrite dans le document doc/bd_schema/specif
 j_agg: données d'aggrégation pré-calculé par weeWX
 ```
 
-# 6. aggTodo (table agg_todo)
 
-```
-Table contenant les delta de données provenant d'une observation, en attente d'intégration dans les aggrégations. Est supprimé quand l'intégration a ete faite.
-
-id: no chronologique
-priority:
-status: 0: wait pour integration, 9: error-non intégré, 999 intégré non supprimé (mode debug)
-j_dv: delta des valeurs a intégrer dans les aggrégations
-j_agg: aggrégation pré-calculé par weeWX
-j_error: error information, quand le status est = 9
-```
-
-# 7. Extreme todo (extreme_todo)
+# 5. Extreme todo (extreme_todo)
 
 ```
 Liste des extreme a recalculer, suite a certaines mise a jour
@@ -133,45 +108,7 @@ status:
 j_recompute:
 ```
 
-# 8. Aggregation horaire (table: agg_hour)
-
-```
-Aggrégations horaire pré-calculées
--> La structure est la même dans les niveaux supérieurs
-
-id: no chronologique
-poste: id de la station
-start_dat: date/heure du debut de l'aggrégation (heure ronde pour aggrégation horaire)
-duration_sum: somme des duration des observations aggrégées
-duration_max: somme totale des durations pour que l'aggrégation soit complétement chargée
-
-qa_modifications: futur
-qa_incidents: futur
-qa_check_done: boolean si le check qualité a ete fait sur cette donnée
-
-j: json contenant les données aggrégées. Spécifié dans le document: doc/bd_schema/specification_json.doc
-```
-
-# 9. Aggrégation de niveau supérieur (tables: agg_day, agg_month, agg_year, agg_all)
-
-```
-Même structure que celle de l'aggrêgation horaire
-```
-
-# 10. Historique Aggrégation (table: agg_histo)
-
-```
-Table gardant trace de quelles observations ont mis à jour quelles aggrégations horaires et journalières
-
-id: no chronologique
-obs_id: id de l'observation
-agg_id: id de l'aggrégation (agg_hour ou agg_day)
-agg_level: 'H' ou 'D'
-delta_duration: delta de duration pour l'aggrégation
-j: delta de valeurs mis à jour
-```
-
-# 11. Incident (table: incident)
+# 6. Incident (table: incident)
 
 ```
 Table des incidents
@@ -185,7 +122,7 @@ j: json data
 active: defaut True, mis à False quand l'incident a ete corrigé
 ```
 
-# 12. Creation de la base de données
+# 7. Creation de la base de données
 Dans psql, supprimer la base si elle existe.
 Executer le script suivant:
 
