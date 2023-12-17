@@ -138,7 +138,7 @@ MEDIA_ROOT = "/srv/beta_data/meteor_oi/bd_climato/bd-climato/media"
 DATA_FS_PATH = os.path.join(MEDIA_ROOT, 'data')
 
 # App settings
-AUTOLOAD_DIR = "./data/json_auto_load"          # in symc with dc-telemetry.yaml
+JSON_AUTOLOAD = "./data/json_auto_load"          # in symc with dc-telemetry.yaml
 ARCHIVE_DIR = "./data/json_archive"             # in symc with dc-telemetry.yaml
 
 

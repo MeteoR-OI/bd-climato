@@ -1,6 +1,6 @@
-# JsonLoader process
+# CsvLoader process
 #   addNewWorkItem(self, work_item)
-#       not supported in jsonLoader
+#       not supported in CsvLoader
 #   work_item = class.getNextWorkItem()
 #       return None -> no more work for now
 #       return a work_item data, which should include enought info for other calls
@@ -15,33 +15,37 @@ from app.classes.repository.posteMeteor import PosteMeteor
 from app.classes.repository.incidentMeteor import IncidentMeteor
 from app.classes.repository.obsMeteor import ObsMeteor
 from app.classes.repository.extremeMeteor import ExtremeMeteor
-from app.classes.repository.histoExtreme import HistoExtreme
-from app.classes.repository.histoObs import HistoObsMeteor
 from app.tools.jsonValidator import checkJson
 import psycopg2
 from datetime import timedelta
 import app.tools.myTools as t
 from app.tools.jsonPlus import JsonPlus
+from app.tools.dateTools import str_to_date
 from django.db import transaction
 from django.conf import settings
 import json
+import csv
 import os
 
 
-class JsonLoader:
+class CsvLoader:
     def __init__(self):
         # save mesures definition
-        self.mesures = MesureMeteor.getDefinitions()
+        self.mesures = []
+        for a_mesure in MesureMeteor.getDefinitions():
+            if a_mesure['csv_field'] is not None:
+                self.mesures.append(a_mesure)
+
         self.decas = MesureMeteor.getAllDecas()
 
         # boolean to stop processing files
         self.stopRequested = False
 
         # get directories settings
-        if hasattr(settings, "JSON_AUTOLOAD") is True:
-            self.base_dir = settings.JSON_AUTOLOAD
+        if hasattr(settings, "CSV_AUTOLOAD") is True:
+            self.base_dir = settings.CSV_AUTOLOAD
         else:
-            self.base_dir = (os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/../../data/json_auto_load")
+            self.base_dir = (os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/../../data/csv_auto_load")
 
         if hasattr(settings, "ARCHIVE_DIR") is True:
             self.archive_dir = settings.ARCHIVE_DIR
@@ -60,7 +64,7 @@ class JsonLoader:
         # get json file names
         filenames = os.listdir(self.base_dir)
         for filename in filenames:
-            if str(filename).endswith('.json'):
+            if str(filename).endswith('.csv'):
                 file_names.append(filename)
 
         # stop processing
@@ -70,25 +74,19 @@ class JsonLoader:
         file_names = sorted(file_names)
         a_filename = file_names[0]
         # load our json file
-        texte = ""
+        my_csv = []
 
-        with open(self.base_dir + '/' + a_filename, "r") as f:
-            lignes = f.readlines()
-            for aligne in lignes:
-                texte += str(aligne)
-        my_json = JsonPlus().loads(texte)
-        if 'dict' in str(type(my_json)):
-            my_json = [my_json]
-
+        with open(self.base_dir + '/' + a_filename, newline='') as csvfile:
+            reader = csv.DictReader(csvfile, delimiter=';')
+            for row in reader:
+                print(str(row))
+                my_csv.append(row)
+                
         meteor = 'inconnu'
-        try:
-            meteor = str(a_filename).split(".")[1]
-        except Exception:
-            pass
 
         return {
             'f': a_filename,
-            'json': my_json,
+            'csv': my_csv,
             'spanID': 'load of ' + a_filename,
             'meteor': meteor,
             'info': a_filename
@@ -142,124 +140,61 @@ class JsonLoader:
         os.rename(self.base_dir + "/" + work_item['f'], filename_prefix + work_item['f'])
 
         j_info = {"filename": work_item['f'], "dest": self.archive_dir + "/" + meteor + "/failed/" + work_item['f']}
-        t.logError('jsonloader', "file moved to fail directory", None, j_info)
+        t.logError('CsvLoader', "file moved to fail directory", None, j_info)
         IncidentMeteor.new('_getJsonFileNameAndData', 'error', 'file ' + work_item['f'] + ' moved to failed directory', j_info)
 
     @transaction.atomic
     def processWorkItem(self, work_item: json, my_span):
         work_item['is_loaded'] = False
         filename = work_item['f']
-        jsons_to_load = work_item['json']
-        idx_global = 0
-        meteor = str(jsons_to_load[0].get("meteor"))
-        if meteor == 'None':
-            raise Exception('invalid format, unreadable meteor key ' + filename)
-        pid = PosteMeteor.getPosteIdByMeteor(jsons_to_load[0]["meteor"])
-        b_load = PosteMeteor(pid).data.load_raw_data
-        if b_load is False:
-            my_span.add_event('jsonload', meteor + ' inactif json_load is False), skipping file ' + filename)
-            return
+        csvs_to_load = work_item['csv']
+        idx_global = 1  # skip first line
+        last_meteor = "??? Not Set ???"
         my_span.set_attribute('file', filename)
-        my_span.set_attribute('meteor', meteor)
-        check_result = checkJson(jsons_to_load, pid, filename)
-        if check_result is not None:
-            my_span.set_event('check_json', check_result)
-            raise Exception("Invalid Json file: " + filename + ": " + check_result)
+        cur_poste = None
 
-        while idx_global < jsons_to_load.__len__():
+        while idx_global < csvs_to_load.__len__():
             try:
-                meteor = str(jsons_to_load[idx_global].get("meteor"))
-                pid, poste_tz = PosteMeteor.getPosteIdAndTzByMeteor(jsons_to_load[idx_global]["meteor"])
-                if pid is None:
-                    raise Exception("code meteor inconnu: " + meteor + ', idx_global: ' + str(idx_global))
+                cur_csv = csvs_to_load[idx_global]
+                meteor = cur_csv["NOM_USUEL"]
+                if meteor != last_meteor:
+                    cur_poste = PosteMeteor.getPosteIdByMeteor(meteor)
+                    if cur_poste is None:
+                        # Create on the flight a new poste
+                        cur_poste = PosteMeteor(meteor)
+                        cur_poste.data.data_source = 1
+                        cur_poste.data.type = "inconnu"
+                        cur_poste.data.altitude = cur_csv["ALTI"]
+                        cur_poste.data.lat = cur_csv["LAT"]
+                        cur_poste.data.long = cur_csv["LON"]
+                        cur_poste.data.other_code = cur_csv["NUM_POSTE"]
+                        cur_poste.data.owner = "Meteo France"
+                        cur_poste.data.delta_timezone = 4
+                        cur_poste.data.save()
+                        cur_poste = PosteMeteor.getPosteIdByMeteor(meteor)
+                    last_meteor = meteor
+                    my_span.event('load CSV for', last_meteor)
+                    my_span.set_attribute('meteor', meteor)
 
-                idx_data = 0
-                try:
-                    a_work_item = jsons_to_load[idx_global]['data'][idx_data]
+                tmp_dt = cur_csv["AAAAMMJJHHMM"]
+                j_stop_dat = str_to_date(tmp_dt[0:4] + '-' + tmp_dt[4:6] + '-' + tmp_dt[6:8] + 'T' + tmp_dt[8:10] + ':' + tmp_dt[10:12] + ':00')
 
-                    # get data from our json item
-                    j_stop_dat = a_work_item["stop_dat"]
-                    j_duration = a_work_item["duration"]
+                # -> check if data already loaded for this poste+date
+                if ObsMeteor.count_obs_poste_date(cur_poste.data.id, j_stop_dat) > 0:
+                    # data already loaded
+                    continue
 
-                    # Load the obs we need in cache
-                    all_obs = ObsMeteor.load_all_needed_obs(pid, self.decas, j_stop_dat, poste_tz)
-
-                    # load attributes in our sub_spam
-                    my_span.set_attribute("stop_dat", str(j_stop_dat))
-
-                    # NCNC -> futur: check if stop_dat in range ]time-duration, time]
-
-                    # check if json already loaded on the main obs in cache
-                    if all_obs[0]['obs'].data.duration != 0:
-                        if a_work_item.__contains__("force_replace") is not True:
-                            t.logInfo(
-                                    'already loaded', my_span,
-                                    {'meteor': meteor, 'file': filename, 'idx': idx_data, 'stop_dat': str(j_stop_dat)})
-                            continue
-                        else:
-                            # delete our obs, and linked extremes and obs
-                            all_obs[0]['obs'].data.delete()
-
-                            # reload a new set of obs (first will be new now)
-                            all_obs = ObsMeteor.load_all_needed_obs(pid, self.decas, j_stop_dat, poste_tz)
-
-                    all_obs[0]['obs'].data.duration = j_duration
-                    # all_obs[0]['obs'].data.save()
-
-                    histo_x_list = []
-                    for an_obs in all_obs:
-                        histo_x_list.append([])
-
-                    keys_found = self.load_obs_data_j(pid, all_obs, a_work_item['valeurs'], j_stop_dat, histo_x_list)
-                    if keys_found is not None:
-                        # t.logInfo("keys loaded from json: " + str(keys_found), my_span)
-                        pass
-                    else:
-                        t.logError("jsonloder", "no keys loaded !!!", my_span)
-
-                    # save obs, store dependencies in histoObs
-                    id_obs_main = 0
-                    histo_obs_new = []
-                    histo_x_new = []
-                    idx_obs_all = 0
-                    while idx_obs_all < len(all_obs):
-                        an_obs = all_obs[idx_obs_all]
-                        an_obs['obs'].data.save()
-
-                        if id_obs_main == 0 and an_obs['obs'].data.duration != 0:
-                            id_obs_main = an_obs['obs'].data.id
-
-                        if id_obs_main != 0:
-                            for an_histo_x in histo_x_list[idx_obs_all]:
-                                histo_x_new.append([id_obs_main, an_histo_x])
-                        idx_obs_all += 1
-
-                    pgconn = self.getPGConnexion()
-                    HistoObsMeteor.storeArray(pgconn, histo_obs_new)
-                    pgconn.commit()
-                    HistoExtreme.storeArray(pgconn, histo_x_new)
-                    pgconn.commit()
-                    pgconn.close()
-
-                    my_span.add_event('jsonload', "file: " + filename + " DONE")
-                    my_span.add_event('obs', 'new rows: ' + str(len(histo_obs_new)))
-                    # my_span.add_event('histo', "new rows: " + str(len(histo_x_new)))
-                    my_span.add_event('histo_extreme', "new rows: " + str(len(histo_x_new)))
-                    histo_obs_new = []
-                    histo_x_new = []
-
-                finally:
-                    idx_data += 1
+                self.load_obs_data_j(cur_poste, cur_csv, j_stop_dat)
 
             finally:
                 idx_global += 1
 
         work_item['is_loaded'] = True
 
-    def load_obs_data_j(self, pid, all_obs, valeurs, stop_dat, histo_x_list):
-        keys_found = []
+    def load_obs_data_j(self, cur_poste, cur_csv, stop_dat):
         for a_mesure in self.mesures:
-            cur_vals = self.get_valeurs(a_mesure, valeurs, stop_dat)
+            NICO
+            cur_vals = self.get_valeurs(a_mesure, cur_csv, stop_dat)
             cur_obs_idx = self.get_cur_obs_idx(all_obs, a_mesure)
             cur_obs = all_obs[cur_obs_idx]
 
@@ -347,13 +282,6 @@ class JsonLoader:
 
         return [my_val, my_val_dir, my_val_min, my_val_min_time, my_val_max, my_val_max_time, my_val_max_dir]
 
-    def get_cur_obs_idx(self, all_obs, a_mesure):
-        idx = 0
-        while idx < all_obs.__len__():
-            if all_obs[idx]['deca'] == a_mesure['valdk']:
-                return idx
-            idx += 1
-        raise Exception("obs not in cache for dk: " + str(a_mesure['valdk']))
 
     def insert_extremes(self, pid, x_histo_array, a_mesure, x_data):
         x_row = None

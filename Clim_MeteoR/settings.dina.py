@@ -138,7 +138,7 @@ MEDIA_ROOT = "/home/meteor/climato/media"
 DATA_FS_PATH = os.path.join(MEDIA_ROOT, 'data')
 
 # App settings
-AUTOLOAD_DIR = "/home/meteor/data/auto_load"          # in symc with dc-telemetry.yaml
+JSON_AUTOLOAD = "/home/meteor/data/auto_load"          # in symc with dc-telemetry.yaml
 ARCHIVE_DIR = "/home/meteor/data/archive"             # in symc with dc-telemetry.yaml
 
 

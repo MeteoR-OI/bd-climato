@@ -17,7 +17,7 @@ class ObsMeteor():
     """
 
     def __init__(self, obs_id: int):
-        if Observation.objects.filter(id=obs_id).exists():
+        if 'int' in str(type(obs_id)) and Observation.objects.filter(id=obs_id).exists():
             self.data = Observation.objects.filter(id=obs_id).first()
         else:
             self.data = Observation()
@@ -51,6 +51,10 @@ class ObsMeteor():
             all_obs.append({'deca': a_deca, 'obs': new_obs})
         return all_obs
 
+    @staticmethod
+    def count_obs_poste_date(self, poste_id: int, dt_obs: datetime):
+        return Observation.objects.filter(poste_id=poste_id).filter(dt_local=dt_obs).count()
+    
     def __str__(self):
         """print myself"""
         return "ObsMeteor id: " + str(self.data.id) + ", poste_id: " + str(self.data.poste_id) + ", time: " + str(self.data.time)

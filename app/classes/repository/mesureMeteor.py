@@ -58,6 +58,8 @@ class MesureMeteor():
                 'col': a_data['json_input'],
                 'col2': a_data['json_input_bis'],
                 'field': a_data['archive_col'],
+                "csv_field": a_data['csv_field'],
+                "csv_minmax": a_data['csv_minmax'],
                 'valdk': a_data['val_deca'],
                 'min': a_data['min'],
                 'mindk': a_data['min_deca'],
