@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Index, UniqueConstraint, Q
+# from django.db.models import Index, UniqueConstraint, Q
 
 
 class DateTimeFieldNoTZ(models.Field):
@@ -11,7 +11,7 @@ class DateTimeFieldNoTZ(models.Field):
 class Poste(models.Model):
     # mandatory fields
     id = models.SmallAutoField(primary_key=True)
-    meteor = models.CharField(null=False, max_length=10, verbose_name="Code station")
+    meteor = models.CharField(null=False, max_length=50, verbose_name="Code station")
     delta_timezone = models.SmallIntegerField(null=False, verbose_name="delta heure locale et UTC")
     data_source = models.SmallIntegerField(null=False, verbose_name="Data Source: 0 meteoire, 1 meteofr,..")
     type = models.CharField(null=True, max_length=50, default="", verbose_name="Type de station")
@@ -24,6 +24,7 @@ class Poste(models.Model):
     load_dump = models.BooleanField(null=True, default=False, verbose_name="Charge les donnees a partir des dumps")
     load_raw_data = models.BooleanField(null=True, default=False, verbose_name="Charge les donnees a partir des donnees brutes")
     pause_raw_data = models.BooleanField(null=True, default=False, verbose_name="Ne traite pas les fichiers Jsde donnees brutes")
+    stop_date = DateTimeFieldNoTZ(null=True, verbose_name="Datetime local de stop de la station")
 
     # la suite n'est pas utilise par climato - a revoir pour pages html...
     other_code = models.CharField(null=True, max_length=50, default="", verbose_name="Nom clair de la station")
@@ -52,13 +53,13 @@ class Poste(models.Model):
 class Mesure(models.Model):
     id = models.SmallAutoField(primary_key=True)
     name = models.CharField(null=False, max_length=100, verbose_name="Nom de la mesure")
-    json_input = models.CharField(null=False, max_length=20, verbose_name="Clé utilisée dans le json")
+    json_input = models.CharField(null=True, max_length=20, verbose_name="Clé utilisée dans le json")
     json_input_bis = models.CharField(null=True, max_length=20, verbose_name="Autre clé utilisée dans le json")
-    archive_col = models.CharField(null=False, max_length=20, verbose_name="nom colonne table weewx.archive")
+    archive_col = models.CharField(null=True, max_length=20, verbose_name="nom colonne table weewx.archive")
     archive_table = models.CharField(null=True, default=None, max_length=20, verbose_name="nom table weewx.archive")
     field_dir = models.SmallIntegerField(null=True, verbose_name="id de la mesure wind dans table weewx.archive")
     csv_field = models.CharField(null=True, default=None, max_length=20, verbose_name="nom colonne csv")
-    csv_minmax = models.JSONField(null=False, default=dict, verbose_name="Nom champs min, minTime, max, maxTime maxDir")
+    csv_minmax = models.JSONField(null=True, default=dict, verbose_name="Nom champs min, minTime, max, maxTime maxDir")
     val_deca = models.SmallIntegerField(null=True, default=0, verbose_name="Décalage mesure")
     max = models.BooleanField(null=True, default=True, verbose_name="Calcul des max")
     max_deca = models.SmallIntegerField(null=True, default=0, verbose_name="Décalage du max")
@@ -79,45 +80,54 @@ class Mesure(models.Model):
 
 # class Observation(ExportModelOperationsMixin('obs'), models.Model):
 class Observation(models.Model):
-    id = models.BigAutoField(primary_key=True, verbose_name="id de l'observation")
+    id = models.BigAutoField(primary_key=True, null=False, verbose_name="id de l'observation")
     date_local = DateTimeFieldNoTZ(null=False, verbose_name="datetime locale fin période observation")
     date_utc = DateTimeFieldNoTZ(null=False, verbose_name="datetime UTC fin période observation")
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.PROTECT)
     mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.PROTECT)
-
-    duration = models.SmallIntegerField(null=True, default=0, verbose_name="durée mesure")
-    value = models.FloatField(null=False, verbose_name="pression niveau mer")
-    qa_value = models.SmallIntegerField(null=True, default=0, verbose_name="pression niveau mer")
+    duration = models.SmallIntegerField(null=False, verbose_name="durée mesure")
+    value = models.FloatField(null=False, verbose_name="valeur")
+    qa_value = models.SmallIntegerField(null=True, default=0, verbose_name="Qualite de la valeur")
 
     def __str__(self):
         return "Observation id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.time) + ", mesure: " + str(self.mesure.name)
 
     class Meta:
         db_table = "obs"
-        indexes = [
-            Index(name='obs_pid', fields=['poste_id', '-date_local', 'mesure_id']),
-        ]
+        unique_together = (['id', 'date_local'],)
 
 
-class Extreme(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    date_local = models.DateField(null=False, verbose_name="date locale de l'extrême")
+class XMin(models.Model):
+    id = models.BigAutoField(primary_key=True, null=False, verbose_name="id du minimum")
+    obs_id = models.BigIntegerField(null=True, verbose_name="id de l'observation")
+    date_local = DateTimeFieldNoTZ(null=False, verbose_name="date locale de l'extrême")
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.PROTECT)
     mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.PROTECT)
     min = models.FloatField(null=True, verbose_name="valeur minimum")
     min_time = DateTimeFieldNoTZ(null=True, verbose_name="date du minimum")
+
+    def __str__(self):
+        return "Extreme Min id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.date_local) + ", mesure: " + str(self.mesure)
+
+    class Meta:
+        db_table = "x_min"
+
+
+class XMax(models.Model):
+    id = models.BigAutoField(primary_key=True, null=False, verbose_name="id du maximum")
+    obs_id = models.BigIntegerField(null=True, verbose_name="id de l'observation")
+    date_local = DateTimeFieldNoTZ(null=False, verbose_name="date locale de l'extrême")
+    poste = models.ForeignKey(null=False, to="Poste", on_delete=models.PROTECT)
+    mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.PROTECT)
     max = models.FloatField(null=True, verbose_name="valeur maximum")
     max_time = DateTimeFieldNoTZ(null=True, verbose_name="date du maximum")
     max_dir = models.SmallIntegerField(null=True, verbose_name="direction du maximum")
 
     def __str__(self):
-        return "Extreme id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.date_local) + ", mesure: " + str(self.mesure)
+        return "Extreme Max id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.date_local) + ", mesure: " + str(self.mesure)
 
     class Meta:
-        db_table = "extremes"
-        indexes = [
-            Index(name='extremes_pid', fields=['poste_id', '-date_local']),
-        ]
+        db_table = "x_max"
 
 
 class Incident(models.Model):
@@ -139,45 +149,6 @@ class Incident(models.Model):
         db_table = "incidents"
 
 
-class HistoObs(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    src_obs_id = models.BigIntegerField(null=False, verbose_name="obs_id source")
-    target_obs_id = models.BigIntegerField(null=False, verbose_name="obs_id modifiée")
-
-    def __str__(self):
-        return "HistoObs src_obs_id: " + str(self.src_obs_id) + ", target: " + str(self.target_obs_id)
-
-    class Meta:
-        db_table = "histo_obs"
-        constraints = [
-            UniqueConstraint(fields=['src_obs_id', 'target_obs_id'], name='unique_histo_obs_mapping'),
-        ]
-        indexes = [
-            Index(name='histo_obs_target', fields=['src_obs_id', 'target_obs_id']),
-            Index(name='histo_obs_src', fields=['target_obs_id', 'src_obs_id'])
-        ]
-
-
-class HistoExtremes(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    target_x_id = models.BigIntegerField(null=False, verbose_name="extremes.id")
-    src_min_obs_id = models.BigIntegerField(null=True, verbose_name="obs_id source")
-    src_max_obs_id = models.BigIntegerField(null=True, verbose_name="obs_id source")
-    target_x_id = models.BigIntegerField(null=False, verbose_name="extreme_id modifiée")
-
-    def __str__(self):
-        return "Extremes updated: " + str(self.target_x_id) + ", min obs.id: " + str(self.src_min_obs_id) + ", max obs.id: " + str(self.src_max_obs_id)
-
-    class Meta:
-        db_table = "histo_extreme"
-        indexes = [
-            Index(name='histo_x_src', fields=['target_x_id', 'id']),
-            Index(name='histo_x_target_min', fields=['src_min_obs_id', 'target_x_id'], condition=Q(src_min_obs_id__isnull=False)),
-            Index(name='histo_x_target_max', fields=['src_max_obs_id', 'target_x_id'], condition=Q(src_max_obs_id__isnull=False))
-
-        ]
-
-
 class Annotation(models.Model):
     id = models.AutoField(primary_key=True)
     time = DateTimeFieldNoTZ(null=False, max_length=30, verbose_name="date'")
@@ -195,28 +166,36 @@ class Annotation(models.Model):
     # First migration to execute to initialize timescaleDB features
     # -------------------------------------------------------------
 
-    # from django.db import migrations
+    # Generated by Django 3.2.9 on 2022-05-01 20:32
 
-    # class Migration(migrations.Migration):
+# from django.db import migrations
 
-    #     dependencies = [
-    #         ('app', '0001_initial'),
-    #     ]
 
-    #     operations = [
-    #         migrations.RunSQL("CREATE EXTENSION timescaledb;"),
-    #         migrations.RunSQL(
-    #             "ALTER TABLE obs DROP CONSTRAINT obs_pkey;"
-    #         ),
-    #         migrations.RunSQL("SELECT create_hypertable('obs', 'date_local');"),
-    #         migrations.RunSQL(
-    #             "SELECT set_chunk_time_interval('obs', 6048000000000);"
-    #         ),
-    #         migrations.RunSQL(
-    #             "ALTER TABLE extremes DROP CONSTRAINT extremes_pkey;"
-    #         ),
-    #         migrations.RunSQL("SELECT create_hypertable('extremes', 'date_local');"),
-    #         migrations.RunSQL(
-    #             "SELECT set_chunk_time_interval('extremes', 25920000000000);"
-    #         )
-    #     ]
+# class Migration(migrations.Migration):
+
+#     dependencies = [
+#         ('app', '0001_initial'),
+#     ]
+
+#     operations = [
+#         migrations.RunSQL("CREATE EXTENSION IF NOT EXISTS timescaledb;"),
+#         migrations.RunSQL("ALTER TABLE obs DROP CONSTRAINT obs_pkey;"),
+#         migrations.RunSQL("SELECT create_hypertable('obs', 'date_local');"),
+#         migrations.RunSQL("SELECT set_chunk_time_interval('obs', 6048000000000);"),
+#         migrations.RunSQL("DROP index if exists obs_poste_id_7ed1db30;"),
+#         migrations.RunSQL("DROP index if exists obs_mesure_id_2198080c;"),
+
+
+#         migrations.RunSQL("ALTER TABLE x_min DROP CONSTRAINT x_min_pkey;"),
+#         migrations.RunSQL("SELECT create_hypertable('x_min', 'date_local');"),
+#         migrations.RunSQL("SELECT set_chunk_time_interval('x_min', 25920000000000);"),
+#         migrations.RunSQL("DROP index if exists x_min_mesure_id_915a2d2e;"),
+#         migrations.RunSQL("DROP index if exists x_min_poste_id_a7ee3864;"),
+
+#         migrations.RunSQL("ALTER TABLE x_max DROP CONSTRAINT x_max_pkey;"),
+#         migrations.RunSQL("SELECT create_hypertable('x_max', 'date_local');"),
+#         migrations.RunSQL("SELECT set_chunk_time_interval('x_max', 25920000000000);"),
+#         migrations.RunSQL("DROP index if exists x_max_mesure_id_a633699c;"),
+#         migrations.RunSQL("DROP index if exists x_max_poste_id_529ea905;")
+
+#     ]

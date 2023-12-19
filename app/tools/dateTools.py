@@ -38,6 +38,22 @@ def str_to_date(dt_str: str) -> datetime.datetime:
     return tmp_dt
 
 
+def change_tz(dt: datetime.datetime, tz: int) -> datetime.datetime:
+    """
+    change_tz
+        change timezone of a datetime
+
+    Parameters:
+        datetime data
+        timezone string
+    """
+    if isinstance(dt, datetime.datetime) is False:
+        raise Exception('change_tz', 'bad param, type: ' + str(type(dt)))
+    if isinstance(tz, int) is False:
+        raise Exception('change_tz', 'bad param, type: ' + str(type(tz)))
+    return dt + datetime.timedelta(hours=tz)
+
+
 def isRoundedHourInDuration(start_datetime, duration_seconds):
     if start_datetime == start_datetime.replace(minute=0, second=0, microsecond=0):
         end_datetime = start_datetime

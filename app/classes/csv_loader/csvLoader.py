@@ -14,12 +14,10 @@ from app.classes.repository.mesureMeteor import MesureMeteor
 from app.classes.repository.posteMeteor import PosteMeteor
 from app.classes.repository.incidentMeteor import IncidentMeteor
 from app.classes.repository.obsMeteor import ObsMeteor
-from app.classes.repository.extremeMeteor import ExtremeMeteor
-from app.tools.jsonValidator import checkJson
-import psycopg2
+from app.classes.repository.xMaxMeteor import xMaxMeteor
+from app.classes.repository.xMinMeteor import xMinMeteor
 from datetime import timedelta
 import app.tools.myTools as t
-from app.tools.jsonPlus import JsonPlus
 from app.tools.dateTools import str_to_date
 from django.db import transaction
 from django.conf import settings
@@ -31,12 +29,7 @@ import os
 class CsvLoader:
     def __init__(self):
         # save mesures definition
-        self.mesures = []
-        for a_mesure in MesureMeteor.getDefinitions():
-            if a_mesure['csv_field'] is not None:
-                self.mesures.append(a_mesure)
-
-        self.decas = MesureMeteor.getAllDecas()
+        self.mesures = MesureMeteor.getCsvDefinitions()
 
         # boolean to stop processing files
         self.stopRequested = False
@@ -79,249 +72,214 @@ class CsvLoader:
         with open(self.base_dir + '/' + a_filename, newline='') as csvfile:
             reader = csv.DictReader(csvfile, delimiter=';')
             for row in reader:
-                print(str(row))
                 my_csv.append(row)
-                
-        meteor = 'inconnu'
 
         return {
             'f': a_filename,
             'csv': my_csv,
             'spanID': 'load of ' + a_filename,
-            'meteor': meteor,
             'info': a_filename
         }
 
     def succeedWorkItem(self, work_item, my_span):
         # move the file to archive
-        str_annee = 'inconnu'
-        str_mois = 'inconnu'
-        meteor = 'inconnu'
-        try:
-            str_annee = str(work_item['f']).split(".")[2].split("-")[0]
-            str_mois = str(work_item['f']).split(".")[2].split("-")[1]
-            meteor = str(work_item['f']).split(".")[1]
-        except Exception:
-            pass
 
-        tmp_prefix = ""
-        if work_item.get('is_loaded') is not None and work_item['is_loaded'] is not False:
-            tmp_prefix = "/skipped/"
+        target_dir = self.archive_dir + "/meteoFR/"
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir)
 
-        filename_prefix = self.archive_dir + "/" + meteor + tmp_prefix + "/" + str_annee + "/" + str_mois + "/"
-        if not os.path.exists(filename_prefix):
-            os.makedirs(filename_prefix)
-
-        os.rename(self.base_dir + "/" + work_item['f'], filename_prefix + work_item['f'])
+        os.rename(self.base_dir + "/" + work_item['f'], target_dir + work_item['f'])
 
     def failWorkItem(self, work_item, exc, my_span):
-        meteor = 'inconnu'
-        try:
-            meteor = str(work_item['f']).split(".")[1]
-        except Exception:
-            pass
-
         t.logException(exc, my_span)
+        target_dir = self.archive_dir + "/meteoFR/failed/"
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir)
 
-        str_annee = 'inconnu'
-        str_mois = 'inconnu'
-        meteor = 'inconnu'
-        try:
-            str_annee = str(work_item['f']).split(".")[2].split("-")[0]
-            str_mois = str(work_item['f']).split(".")[2].split("-")[1]
-            meteor = str(work_item['f']).split(".")[1]
-        except Exception:
-            pass
+        os.rename(self.base_dir + "/" + work_item['f'], target_dir + work_item['f'])
 
-        tmp_prefix = "/failed"
-        filename_prefix = self.archive_dir + "/" + meteor + tmp_prefix + "/" + str_annee + "/" + str_mois + "/"
-        if not os.path.exists(filename_prefix):
-            os.makedirs(filename_prefix)
-        os.rename(self.base_dir + "/" + work_item['f'], filename_prefix + work_item['f'])
-
-        j_info = {"filename": work_item['f'], "dest": self.archive_dir + "/" + meteor + "/failed/" + work_item['f']}
-        t.logError('CsvLoader', "file moved to fail directory", None, j_info)
+        j_info = {"filename": work_item['f'], "dest": target_dir}
+        t.logError('CsvLoader', "file moved to failed directory", None, j_info)
         IncidentMeteor.new('_getJsonFileNameAndData', 'error', 'file ' + work_item['f'] + ' moved to failed directory', j_info)
 
-    @transaction.atomic
+    # Commit ttx every 1000 insert
     def processWorkItem(self, work_item: json, my_span):
+        my_span.set_attribute('file', work_item['f'])
         work_item['is_loaded'] = False
-        filename = work_item['f']
+
+        idx_global = 1
+        while idx_global > 0:
+            idx_global = self.processWorkItemTtx(work_item, my_span, idx_global)
+
+    @transaction.atomic
+    def processWorkItemTtx(self, work_item: json, my_span, idx_global):
         csvs_to_load = work_item['csv']
-        idx_global = 1  # skip first line
         last_meteor = "??? Not Set ???"
-        my_span.set_attribute('file', filename)
         cur_poste = None
+        ttx_count = 0
 
         while idx_global < csvs_to_load.__len__():
             try:
                 cur_csv = csvs_to_load[idx_global]
+                tmp_dt = cur_csv["AAAAMMJJHH"]
+                j_stop_dat_utc = str_to_date(tmp_dt[0:4] + '-' + tmp_dt[4:6] + '-' + tmp_dt[6:8] + 'T' + tmp_dt[8:10] + ':00:00')
                 meteor = cur_csv["NOM_USUEL"]
                 if meteor != last_meteor:
-                    cur_poste = PosteMeteor.getPosteIdByMeteor(meteor)
-                    if cur_poste is None:
+                    cur_poste = PosteMeteor(meteor)
+                    if cur_poste.data.id is None:
                         # Create on the flight a new poste
                         cur_poste = PosteMeteor(meteor)
                         cur_poste.data.data_source = 1
                         cur_poste.data.type = "inconnu"
-                        cur_poste.data.altitude = cur_csv["ALTI"]
-                        cur_poste.data.lat = cur_csv["LAT"]
-                        cur_poste.data.long = cur_csv["LON"]
+                        cur_poste.data.altitude = float(cur_csv["ALTI"])
+                        cur_poste.data.lat = float(cur_csv["LAT"])
+                        cur_poste.data.long = float(cur_csv["LON"])
                         cur_poste.data.other_code = cur_csv["NUM_POSTE"]
                         cur_poste.data.owner = "Meteo France"
                         cur_poste.data.delta_timezone = 4
                         cur_poste.data.save()
-                        cur_poste = PosteMeteor.getPosteIdByMeteor(meteor)
+                    event_displayed = False
                     last_meteor = meteor
-                    my_span.event('load CSV for', last_meteor)
-                    my_span.set_attribute('meteor', meteor)
-
-                tmp_dt = cur_csv["AAAAMMJJHHMM"]
-                j_stop_dat = str_to_date(tmp_dt[0:4] + '-' + tmp_dt[4:6] + '-' + tmp_dt[6:8] + 'T' + tmp_dt[8:10] + ':' + tmp_dt[10:12] + ':00')
 
                 # -> check if data already loaded for this poste+date
-                if ObsMeteor.count_obs_poste_date(cur_poste.data.id, j_stop_dat) > 0:
+                if ObsMeteor.count_obs_poste_utc(cur_poste.data.id, j_stop_dat_utc) > 0:
                     # data already loaded
                     continue
 
-                self.load_obs_data_j(cur_poste, cur_csv, j_stop_dat)
+                if self.load_data_indb(cur_poste, cur_csv, j_stop_dat_utc) is True:
+                    ttx_count += 1
+                    if event_displayed is False:
+                        event_displayed = True
+                        my_span.add_event('loading data from CSV for ' + meteor + ' starting at ', str(j_stop_dat_utc))
 
             finally:
                 idx_global += 1
+                if ttx_count >= 1000:
+                    return idx_global
 
         work_item['is_loaded'] = True
+        return -1
 
-    def load_obs_data_j(self, cur_poste, cur_csv, stop_dat):
+    def load_data_indb(self, cur_poste, cur_csv, stop_dat_utc):
+        b_one_insert = False
         for a_mesure in self.mesures:
-            NICO
-            cur_vals = self.get_valeurs(a_mesure, cur_csv, stop_dat)
-            cur_obs_idx = self.get_cur_obs_idx(all_obs, a_mesure)
-            cur_obs = all_obs[cur_obs_idx]
+            cur_val, cur_q_val, date_obs = self.get_valeurs(cur_poste, a_mesure, cur_csv, stop_dat_utc)
+            if cur_val is None:
+                continue
+            stop_dat_local = stop_dat_utc + timedelta(hours=cur_poste.data.delta_timezone)
 
-            # if current value is None, try with the second input key
-            if cur_vals[0] is None:
-                if a_mesure.get("col2") is not None and a_mesure['col2'] is not None:
-                    cur_vals = self.get_valeurs(a_mesure, valeurs, stop_dat, False, True)
+            new_obs = ObsMeteor(-1)
+            new_obs.data.poste_id = cur_poste.data.id
+            new_obs.data.mesure_id = a_mesure['id']
+            new_obs.data.duration = 60
+            new_obs.data.value = cur_val
+            new_obs.data.qa_value = cur_q_val
+            new_obs.data.date_utc = stop_dat_utc
+            new_obs.data.date_local = stop_dat_local
+            b_one_insert = True
+            new_obs.save()
 
-            # store the value in the observation data
-            if cur_vals[0] is not None:
-                cur_obs['obs'].data.__setattr__(a_mesure['col'], cur_vals[0])
-                if a_mesure['iswind'] is True and cur_vals[1] is not None:
-                    cur_obs['obs'].data.__setattr__(a_mesure['col'] + '_dir', cur_vals[1])
-                keys_found.append(a_mesure['col'])
+            cur_min, cur_min_time, cur_min_obs_id = self.get_valeur_min(a_mesure, cur_csv, cur_val, stop_dat_local, new_obs.data.id)
+            cur_max, cur_max_time, cur_max_dir, cur_max_obs_id = self.get_valeur_max(a_mesure, cur_csv, cur_val, stop_dat_local, new_obs.data.id)
 
-            # store min/max
-            self.insert_extremes(
-                pid,
-                histo_x_list[cur_obs_idx],
-                a_mesure,
-                [
-                    {'col': 'min', 'v': cur_vals[2], 't': cur_vals[3], 'd': None},
-                    {'col': 'max', 'v': cur_vals[4], 't': cur_vals[5], 'd': cur_vals[6]}
-                ]
-            )
-        return None if keys_found.__len__ == 0 else keys_found
+            if cur_min is not None:
+                new_min = xMinMeteor(-1)
+                new_min.data.poste_id = cur_poste.data.id
+                new_min.data.mesure_id = a_mesure['id']
+                new_min.data.date_local = cur_min_time + timedelta(hours=cur_poste.data.delta_timezone)
+                new_min.data.date_utc = cur_min_time
+                new_min.data.min = cur_min
+                new_min.data.min_time = cur_min_time
+                new_min.data.obs_id = cur_min_obs_id
+                new_min.data.save()
 
-    def get_valeurs(self, a_mesure, valeurs, stop_dat, force_abs=False, use_second_input_key=False):
-        #  [0]   [1]       [2]     [3]      [4]      [5]       [6]
-        # val, dir|None, valmin, min_time, valmax, max_time, max_dir
+            if cur_max is not None:
+                new_max = xMaxMeteor(-1)
+                new_max.data.poste_id = cur_poste.data.id
+                new_max.data.mesure_id = a_mesure['id']
+                new_max.data.date_local = cur_max_time + timedelta(hours=cur_poste.data.delta_timezone)
+                new_max.data.date_utc = cur_max_time
+                new_max.data.max = cur_max
+                new_max.data.max_time = cur_max_time
+                new_max.data.max_dir = cur_max_dir
+                new_max.data.obs_id = cur_max_obs_id
+                new_max.data.save()
 
+        return b_one_insert
+
+    def get_valeurs(self, cur_poste, a_mesure, cur_csv, stop_dat, a_mesure_ori=None):
         # for omm values, get the underlying data
-        if a_mesure['ommidx'] is not None:
-            return self.get_valeurs(self.mesures[a_mesure['ommidx']], valeurs, stop_dat, True, use_second_input_key)
+        if a_mesure['ommidx_csv'] is not None:
+            return self.get_valeurs(cur_poste, self.mesures[a_mesure['ommidx_csv']], cur_csv, stop_dat, a_mesure)
 
-        # if a_mesure['col'] == 'rain':
-        #     print('rain')
+        cur_val = cur_csv.get(' ' + a_mesure['csv_field']) if cur_csv.get(a_mesure['csv_field']) is None else cur_csv.get(a_mesure['csv_field'])
+        if cur_val is None or cur_val == '':
+            return None, None, None
+        cur_qa = cur_csv.get(' Q' + a_mesure['csv_field']) if cur_csv.get(' Q' + a_mesure['csv_field']) is None else cur_csv.get(' Q' + a_mesure['csv_field'])
 
-        suffix_key1 = '_avg'
-        suffix_key2 = '_s'
+        obs_date = stop_dat + timedelta(hours=a_mesure['valdk'] if a_mesure_ori is None else a_mesure_ori['valdk'])
 
-        mesure_key = a_mesure['col']
-        if use_second_input_key is True and a_mesure.get('col2') is not None and a_mesure['col2'] is not None:
-            mesure_key = a_mesure['col2']
+        return cur_val, cur_qa, obs_date
 
-        # load keys used to look for our value in order of importance
-        if force_abs is True or a_mesure['isavg'] is False:
-            j_keys = [mesure_key + suffix_key2, mesure_key, mesure_key + suffix_key1]
-        else:
-            j_keys = [mesure_key + suffix_key1, mesure_key, mesure_key + suffix_key2]
+    def get_valeur_min(self, a_mesure, cur_csv, cur_val, stop_dat, obs_id):
+        # for omm values, get the underlying data
+        if a_mesure['min'] is not True:
+            return None, None, None
 
-        my_val = None
-        my_val_dir = None
-        my_val_min = my_val_min_time = None
-        my_val_max = my_val_max_time = my_val_max_dir = None
+        cur_min = cur_val
+        cur_min_time = stop_dat
+        cur_min_field = a_mesure['csv_minmax'].get("min")
+        cur_min_time_field = a_mesure['csv_minmax'].get("minTime")
+        cur_min_obs_id = obs_id
 
-        # get our value
-        for a_key in j_keys:
-            if valeurs.get(a_key) is not None:
-                my_val = valeurs[a_key]
-                if a_mesure['iswind'] is True and valeurs.get(a_key + '_dir') is not None:
-                    my_val_dir = valeurs[a_key + '_dir']
-                break
+        if cur_min_field is not None and cur_min_field != '':
+            tmp_min = cur_csv[cur_min_field]
+            if tmp_min != '' and tmp_min is not None:
+                cur_min = float(tmp_min)
+                cur_min_obs_id = None
 
-        # get our min
-        if valeurs.get(mesure_key + '_min') is not None:
-            my_val_min = valeurs[mesure_key + '_min']
-            my_val_min_time = valeurs[mesure_key + '_min_time']
-        else:
-            if my_val is not None:
-                my_val_min = my_val
-                my_val_min_time = stop_dat
+        if cur_min_time_field is not None and cur_min_time_field != '':
+            tmp_min_time = cur_csv[cur_min_time_field]
+            if tmp_min_time != '' and tmp_min_time is not None:
+                while len(tmp_min_time) < 4:
+                    tmp_min_time = '0' + tmp_min_time
+                tmp_dt = cur_csv["AAAAMMJJHH"]
+                cur_min_time = str_to_date(tmp_dt[0:4] + '-' + tmp_dt[4:6] + '-' + tmp_dt[6:8] + 'T' + tmp_dt[8:10] + ':' + tmp_min_time[0:2] + ':' + tmp_min_time[2:4])
+                cur_min_time = cur_min_time + timedelta(hours=a_mesure['mindk'])
 
-        # get our max
-        if valeurs.get(mesure_key + '_max') is not None:
-            my_val_max = valeurs[mesure_key + '_max']
-            my_val_max_time = valeurs[mesure_key + '_max_time']
-            if a_mesure['iswind'] is True and valeurs.get(mesure_key + '_max_dir') is not None:
-                my_val_max_dir = valeurs[mesure_key + '_max_dir']
-        else:
-            if my_val is not None:
-                my_val_max = my_val
-                my_val_max_time = stop_dat
-                my_val_max_dir = my_val_dir
+        return cur_min, cur_min_time, cur_min_obs_id
 
-        return [my_val, my_val_dir, my_val_min, my_val_min_time, my_val_max, my_val_max_time, my_val_max_dir]
+    def get_valeur_max(self, a_mesure, cur_csv, cur_val, stop_dat, obs_id):
+        # for omm values, get the underlying data
+        if a_mesure['max'] is not True:
+            return None, None, None, None
 
+        cur_max = cur_val
+        cur_max_time = stop_dat
+        cur_max_dir = None
+        cur_max_field = a_mesure['csv_minmax'].get("max")
+        cur_max_time_field = a_mesure['csv_minmax'].get("maxTime")
+        cur_max_dir_field = a_mesure['csv_minmax'].get("maxDir")
+        cur_max_obs_id = obs_id
 
-    def insert_extremes(self, pid, x_histo_array, a_mesure, x_data):
-        x_row = None
-        b_insert_histo = False
-        for a_data in x_data:
-            if a_mesure[a_data['col']] is True and (a_data['v'] is not None and a_data['t'] is not None):
-                x_date_key = a_data['t'] + timedelta(hours=a_mesure[a_data['col'] + 'dk'])
-                x_date_key = x_date_key.date()
-                if x_row is None or x_row.data.date != x_date_key:
-                    if x_row is not None:
-                        x_row.data.save()
-                        if b_insert_histo is True:
-                            x_histo_array.append(x_row.data.id)
-                            b_insert_histo = False
-                    x_row = ExtremeMeteor.get_extreme(pid, a_mesure['id'], x_date_key)
-                if (a_data['col'] == 'min' and
-                        (hasattr(x_row.data, a_data['col']) is False or
-                         x_row.data.__getattribute__(a_data['col']) is None or
-                         a_data['v'] < x_row.data.__getattribute__(a_data['col']))) or \
-                   (a_data['col'] == 'max' and
-                        (hasattr(x_row.data, a_data['col']) is False or
-                         x_row.data.__getattribute__(a_data['col']) is None or
-                         a_data['v'] > x_row.data.__getattribute__(a_data['col']))):
-                    # set the new value for the extreme
-                    b_insert_histo = True
-                    x_row.data.__setattr__(a_data['col'], a_data['v'])
-                    x_row.data.__setattr__(a_data['col'] + '_time', a_data['t'])
-                    if a_data['d'] is not None:
-                        x_row.data.__setattr__(a_data['col'] + '_dir', a_data['d'])
+        if cur_max_field is not None:
+            tmp_max = cur_csv[cur_max_field]
+            if tmp_max != '' and tmp_max is not None:
+                cur_max_obs_id = None
+                cur_max = float(tmp_max)
 
-        if x_row is not None:
-            x_row.data.save()
-            if b_insert_histo is True:
-                x_histo_array.append(x_row.data.id)
-                b_insert_histo = False
+        if cur_max_time_field is not None:
+            tmp_max_time = cur_csv[cur_max_time_field]
+            if tmp_max_time != '' and tmp_max_time is not None:
+                while len(tmp_max_time) < 4:
+                    tmp_max_time = '0' + tmp_max_time
+                tmp_dt = cur_csv["AAAAMMJJHH"]
+                cur_max_time = str_to_date(tmp_dt[0:4] + '-' + tmp_dt[4:6] + '-' + tmp_dt[6:8] + 'T' + tmp_dt[8:10] + ':' + tmp_max_time[0:2] + ':' + tmp_max_time[2:4])
+                cur_max_time = cur_max_time + timedelta(hours=a_mesure['maxdk'])
 
-    def getPGConnexion(self):
-        return psycopg2.connect(
-            host="localhost",
-            user="postgres",
-            password="Funiculi",
-            database="climato"
-        )
+        if cur_max_dir_field is not None:
+            tmp_dir = cur_csv[cur_max_dir_field]
+            if tmp_dir != '' and tmp_dir is not None:
+                cur_max_dir = float(tmp_dir)
+
+        return cur_max, cur_max_time, cur_max_dir, cur_max_obs_id

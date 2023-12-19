@@ -14,7 +14,7 @@ from app.classes.repository.mesureMeteor import MesureMeteor
 from app.classes.repository.posteMeteor import PosteMeteor
 from app.classes.repository.incidentMeteor import IncidentMeteor
 from app.classes.repository.obsMeteor import ObsMeteor
-from app.classes.repository.extremeMeteor import ExtremeMeteor
+from app.classes.repository.xMaxMeteor import ExtremeMeteor
 from app.classes.repository.histoExtreme import HistoExtreme
 from app.classes.repository.histoObs import HistoObsMeteor
 from app.tools.jsonValidator import checkJson
@@ -32,7 +32,6 @@ class JsonLoader:
     def __init__(self):
         # save mesures definition
         self.mesures = MesureMeteor.getDefinitions()
-        self.decas = MesureMeteor.getAllDecas()
 
         # boolean to stop processing files
         self.stopRequested = False
@@ -169,10 +168,12 @@ class JsonLoader:
         while idx_global < jsons_to_load.__len__():
             try:
                 meteor = str(jsons_to_load[idx_global].get("meteor"))
-                pid, poste_tz = PosteMeteor.getPosteIdAndTzByMeteor(jsons_to_load[idx_global]["meteor"])
+                cur_poste = PosteMeteor.getPosteIdAndTzByMeteor(jsons_to_load[idx_global]["meteor"])
+                pid = cur_poste.data.id
                 if pid is None:
                     raise Exception("code meteor inconnu: " + meteor + ', idx_global: ' + str(idx_global))
-
+                poste_tz = cur_poste.data.delta_timezone
+                
                 idx_data = 0
                 try:
                     a_work_item = jsons_to_load[idx_global]['data'][idx_data]

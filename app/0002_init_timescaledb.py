@@ -15,10 +15,19 @@ class Migration(migrations.Migration):
         migrations.RunSQL("SELECT create_hypertable('obs', 'date_local');"),
         migrations.RunSQL("SELECT set_chunk_time_interval('obs', 6048000000000);"),
         migrations.RunSQL("DROP index if exists obs_poste_id_7ed1db30;"),
+        migrations.RunSQL("DROP index if exists obs_mesure_id_2198080c;"),
 
-        migrations.RunSQL("ALTER TABLE extremes DROP CONSTRAINT extremes_pkey;"),
-        migrations.RunSQL("SELECT create_hypertable('extremes', 'date_local');"),
-        migrations.RunSQL("SELECT set_chunk_time_interval('extremes', 25920000000000);"),
-        migrations.RunSQL("DROP index if exists extremes_poste_id_30b6dd59;"),
-        migrations.RunSQL("DROP index if exists extremes_mesure_id_f55bd2f4;")
+
+        migrations.RunSQL("ALTER TABLE x_min DROP CONSTRAINT x_min_pkey;"),
+        migrations.RunSQL("SELECT create_hypertable('x_min', 'date_local');"),
+        migrations.RunSQL("SELECT set_chunk_time_interval('x_min', 25920000000000);"),
+        migrations.RunSQL("DROP index if exists x_min_mesure_id_915a2d2e;"),
+        migrations.RunSQL("DROP index if exists x_min_poste_id_a7ee3864;"),
+
+        migrations.RunSQL("ALTER TABLE x_max DROP CONSTRAINT x_max_pkey;"),
+        migrations.RunSQL("SELECT create_hypertable('x_max', 'date_local');"),
+        migrations.RunSQL("SELECT set_chunk_time_interval('x_max', 25920000000000);"),
+        migrations.RunSQL("DROP index if exists x_max_mesure_id_a633699c;"),
+        migrations.RunSQL("DROP index if exists x_max_poste_id_529ea905;")
+
     ]

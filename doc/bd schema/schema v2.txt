@@ -1,0 +1,41 @@
+obs
+===
+- cle: id, poste, date_utc, date_local, mesure
+- valeur (float) ? besoin autre type ?
+- qa_valeur:
+    +---------------------------------I------------------------------------------------------+
+    +      Q Value Meteo France       I                 QA value Meteo-OI                    I
+    +---------------------------------I------------------------------------------------------I
+    I 0-> protégé (filtrée + validée) I 0 Protégée (0, 1, 9 de meteoFR, ou validée par nous) I
+    I 1-> validée                     I                                                      I
+    I 2-> douteuse                    I 2-> douteuse (ok, mais a verifier)                   I
+    I 9-> filtrée (OK)                I 8-> A ignorer                                        I
+    +---------------------------------I------------------------------------------------------+
++ triggers:
+- si qa_value = 8 -> supprime le x_min/x_max associe s'il existe
+- nouvelle valeur, met a jour les date_last_obs et id sur poste
+
+un enregistrement par poste/date/mesure.
+
+x_max/x_min
+===========
+- cle: is, date_local, poste, mesure
+- obs_id (pas FK) si valeur vient d'un obs, pas de min/max donné
+- min,min_time ou max,max_time, max_dir
+
+triggers
+- si nouvelle valeur, met a jour les date_last_extreme et id sur poste
+
+un enregistrement par obs (avec eventuellement la valeur min/max fournie)
+
+Materialized views
+==================
+- obs_day_ok
+  regroupement par jour, sauf donnees qa=8
+
+- Voir si possible de fournir une vue wide avec toutes les donnees
+
+- x_min/x_max_day
+  regroupement par jour en ne prenant que les min/max
+
+- Voir comment trouver les dernieres donnees de facon optimisee (cache...)

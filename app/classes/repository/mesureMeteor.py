@@ -39,6 +39,7 @@ class MesureMeteor():
     @staticmethod
     def getAllDecas():
         if hasattr(MesureMeteor, "all_decas") is False:
+            # Dummy call to load mesures in cache
             MesureMeteor('out_temp')
         return MesureMeteor.all_decas
 
@@ -48,13 +49,21 @@ class MesureMeteor():
             MesureMeteor('out_temp')
         return MesureMeteor.all_defs
 
+    @staticmethod
+    def getCsvDefinitions():
+        if hasattr(MesureMeteor, "csv_defs") is False:
+            MesureMeteor('out_temp')
+        return MesureMeteor.csv_defs
+
     def loadMesureDefs(self):
         def_mesures = []
+        def_csv = []
         m_data = Mesure.objects.order_by('id').values()
         for a_data in m_data:
             m_item = {
                 'id': a_data['id'],
                 'name': a_data['name'],
+                'data_source': a_data['data_source'],
                 'col': a_data['json_input'],
                 'col2': a_data['json_input_bis'],
                 'field': a_data['archive_col'],
@@ -68,7 +77,8 @@ class MesureMeteor():
                 'isavg': a_data['is_avg'],
                 'iswind': a_data['is_wind'],
                 'zero': a_data['allow_zero'],
-                'ommidx': None
+                'ommidx': None,
+                'ommidx_csv': None
             }
             if a_data['omm_link'] is not None and a_data['omm_link'] != 0:
                 idx_mesure = len(def_mesures) - 1
@@ -78,19 +88,21 @@ class MesureMeteor():
                         idx_mesure = 0
                     idx_mesure -= 1
             def_mesures.append(m_item)
-        self.load_all_decas(def_mesures)
-        MesureMeteor.all_defs = def_mesures
 
-    def load_all_decas(self, def_mesures):
-        decas = [0]
-        for a_mesure in def_mesures:
-            if a_mesure['valdk'] not in decas:
-                decas.append(a_mesure['valdk'])
-            # if a_mesure['mindk'] != 0 and a_mesure['mindk'] not in decas:
-            #     decas.append(a_mesure['mindk'])
-            # if a_mesure['maxdk'] != 0 and a_mesure['maxdk'] not in decas:
-            #     decas.append(a_mesure['maxdk'])
-        MesureMeteor.all_decas = decas
+            if m_item['csv_field'] is None and a_data['omm_link'] is None:
+                continue
+
+            if a_data['omm_link'] is not None and a_data['omm_link'] != 0:
+                idx_mesure = len(def_csv) - 1
+                while idx_mesure >= 0:
+                    if def_csv[idx_mesure]['id'] == a_data['omm_link']:
+                        m_item['ommidx_csv'] = idx_mesure
+                        idx_mesure = 0
+                    idx_mesure -= 1
+            def_csv.append(m_item)
+
+        MesureMeteor.all_defs = def_mesures
+        MesureMeteor.csv_defs = def_csv
 
     def __str__(self):
         """print myself"""
