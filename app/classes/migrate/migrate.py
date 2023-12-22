@@ -283,6 +283,9 @@ class MigrateDB:
                 date_obs_local = date_obs_utc + timedelta(hours=work_item['tz'])
                 data_args.append((work_item['pid'], date_obs_utc, date_obs_local, a_mesure['id'], row2[self.row_archive_interval], cur_val))
 
+                if a_mesure['valdk'] != 0:
+                    date_obs_local = row2[self.row_archive_dt_utc] + timedelta(hours=work_item['tz'])
+
                 if a_mesure['iswind'] is True:
                     max_dir = None
                     if a_mesure['diridx'] is not None:
@@ -310,6 +313,15 @@ class MigrateDB:
             idx += 1
 
         return minmax_values
+
+    def get_valeurs(self, a_mesure, row2):
+        if a_mesure['ommidx'] is not None:
+            return self.get_valeurs(self.measures[a_mesure['ommidx']], row2)
+        
+        if row2.get(a_mesure['archive_col']) is None:
+            return None, None
+        
+        return row2[a_mesure['archive_col']], row2[self.row_archive_dt_utc] + timedelta(hours=a_mesure['valdk'])
 
     # ------------------------------------
     # generate max/min from WeeWX records
