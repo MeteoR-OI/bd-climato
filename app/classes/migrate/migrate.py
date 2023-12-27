@@ -94,18 +94,33 @@ class MigrateDB:
             # loop per year
             while work_item['start_ts_archive_utc'] < current_ts:
 
+                start_dt = datetime.now()
+
                 # Load obs, records from archive
                 new_extremes = self.loadExistingArchive(pg_cur, work_item, my_span)
+                print('new_extremes from archive: ' + str(len(new_extremes)) + ', time: ' + str(datetime.now() - start_dt))
+                start_dt = datetime.now()
+                pgconn.commit()
+                print("     after commit" + ', time: ' + str(datetime.now() - start_dt))
+                start_dt = datetime.now()
 
                 # Add data from WeeWx record tables
                 new_extremes = self.loadMaxminFromWeewx(work_item, new_extremes, my_span)
+                print('new_extremes with extremes: ' + str(len(new_extremes)) + ', time: ' + str(datetime.now() - start_dt))
+                start_dt = datetime.now()
+                pgconn.commit()
+                print("     after commit" + ', time: ' + str(datetime.now() - start_dt))
+                start_dt = datetime.now()
 
                 # Merge list in db
                 self.storeMaxMinInDB(pg_cur, work_item['pid'], new_extremes, my_span)
+                print("before commit" + ', time: ' + str(datetime.now() - start_dt))
+                start_dt = datetime.now()
 
                 new_extremes = []
 
                 pgconn.commit()
+                print("     after commit" + ', time: ' + str(datetime.now() - start_dt))
                 self.getNewDateBraket(work_item, my_span)
 
         finally:
@@ -381,9 +396,9 @@ class MigrateDB:
                         row = my_cur.fetchone()
                 finally:
                     my_cur.close()
-                    return new_records
         finally:
             myconn.close()
+            return new_records
 
     def storeMaxMinInDB(self, pg_cur, pid, new_records, my_span):
         # check: nico use: last_in_db for insert-update or insert..

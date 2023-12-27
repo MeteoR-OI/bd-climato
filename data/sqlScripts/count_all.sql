@@ -34,5 +34,5 @@ SELECT table_name,
 FROM information_schema.tables
 WHERE table_schema NOT IN ('pg_catalog', 'information_schema') 
     AND table_type='BASE TABLE'
-    AND table_name in ('obs', 'extremes', 'histo_obs', 'histo_extreme', 'incidents')
+    AND table_name in ('obs', 'x_min', 'x_max', 'incidents')
 ORDER by 1;
