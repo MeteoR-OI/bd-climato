@@ -149,11 +149,13 @@ def FromAwareDtToTimestamp(dt):
     return int(AsTimezone(dt).timestamp())
 
 
-def AsTimezone(dt, delta_hours=0):
+def AsTimezone(dt, delta_hours=0, no_tz=False):
     if type(dt) is datetime.date:
         return dt
     tz = datetime.timezone(datetime.timedelta(hours=delta_hours), 'UTC' + str('{:+03d}:00'.format(delta_hours)))
-    return dt.astimezone(tz)
+    if no_tz is False:
+        return dt.astimezone(tz)
+    return dt.astimezone(tz).replace(tzinfo=None)
 
 
 def FromTsToLocalDateTime(ts, tz):

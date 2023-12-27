@@ -185,6 +185,10 @@ BEGIN
   if new.duration > 0 and (obs_dat is null or new.date_local > obs_dat) then
     update postes set last_obs_date = NEW.date_local, last_obs_id = NEW.id where id = NEW.poste_id;
   end if;
+  if NEW.qa_value <> OLD.qa_value then
+    update x_min set qa_min = NEW.qa_value where obs_id = NEW.id;
+    update x_max set qa_max = NEW.qa_value where obs_id = NEW.id;
+  end if;
   return NEW;
 END
 $BODY$;

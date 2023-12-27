@@ -3,14 +3,15 @@ obs
 - cle: id, poste, date_utc, date_local, mesure
 - valeur (float) ? besoin autre type ?
 - qa_valeur:
-    +---------------------------------I------------------------------------------------------+
-    +      Q Value Meteo France       I                 QA value Meteo-OI                    I
-    +---------------------------------I------------------------------------------------------I
-    I 0-> protégé (filtrée + validée) I 0 Protégée (0, 1, 9 de meteoFR, ou validée par nous) I
-    I 1-> validée                     I                                                      I
-    I 2-> douteuse                    I 2-> douteuse (ok, mais a verifier)                   I
-    I 9-> filtrée (OK)                I 8-> A ignorer                                        I
-    +---------------------------------I------------------------------------------------------+
+    +----------------------------------I---------------------------------------------------------+
+    +      Q Value Meteo France        I                    QA value Meteo-OI                    I
+    +----------------------------------I---------------------------------------------------------I
+    I null -> inconnu                  I 0 -> inconnu                                            I
+    I 0 -> protégé (filtrée + validée) I 1 -> Validé (0, 1, 9 de meteoFR, ou validée par nous)   I
+    I 1 -> validée                     I                                                         I
+    I 2 -> douteuse                    I 9 -> Invalide (ok, mais a verifier)                     I
+    I 9 -> filtrée (OK)                I                                                         I
+    +----------------------------------I---------------------------------------------------------+
 + triggers:
 - si qa_value = 8 -> supprime le x_min/x_max associe s'il existe
 - nouvelle valeur, met a jour les date_last_obs et id sur poste

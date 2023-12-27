@@ -1,5 +1,6 @@
 from django.db import models
-# from django.db.models import Index, UniqueConstraint, Q
+from django.db.models import Index
+# , UniqueConstraint, Q
 
 
 class DateTimeFieldNoTZ(models.Field):
@@ -103,14 +104,18 @@ class XMin(models.Model):
     date_local = DateTimeFieldNoTZ(null=False, verbose_name="date locale de l'extrême")
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.PROTECT)
     mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.PROTECT)
-    min = models.FloatField(null=True, verbose_name="valeur minimum")
+    min = models.FloatField(null=False, verbose_name="valeur minimum")
     min_time = DateTimeFieldNoTZ(null=True, verbose_name="date du minimum")
+    qa_min = models.SmallIntegerField(null=False, default=0, verbose_name="Qualite du min")
 
     def __str__(self):
         return "Extreme Min id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.date_local) + ", mesure: " + str(self.mesure)
 
     class Meta:
         db_table = "x_min"
+        indexes = [
+            Index(name='x_min_obs_id', fields=['obs_id', 'date_local'])
+        ]
 
 
 class XMax(models.Model):
@@ -119,15 +124,19 @@ class XMax(models.Model):
     date_local = DateTimeFieldNoTZ(null=False, verbose_name="date locale de l'extrême")
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.PROTECT)
     mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.PROTECT)
-    max = models.FloatField(null=True, verbose_name="valeur maximum")
-    max_time = DateTimeFieldNoTZ(null=True, verbose_name="date du maximum")
+    max = models.FloatField(null=False, verbose_name="valeur maximum")
+    max_time = DateTimeFieldNoTZ(null=False, verbose_name="date du maximum")
     max_dir = models.SmallIntegerField(null=True, verbose_name="direction du maximum")
+    qa_max = models.SmallIntegerField(null=False, default=0, verbose_name="Qualite du max")
 
     def __str__(self):
         return "Extreme Max id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.date_local) + ", mesure: " + str(self.mesure)
 
     class Meta:
         db_table = "x_max"
+        indexes = [
+            Index(name='x_max_obs_id', fields=['obs_id', 'date_local'])
+        ]
 
 
 class Incident(models.Model):
