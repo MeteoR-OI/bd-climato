@@ -19,7 +19,7 @@ def date_to_str(my_date: datetime.datetime) -> str:
     return tmp_str
 
 
-def str_to_date(dt_str: str) -> datetime.datetime:
+def str_to_datetime(dt_str: str) -> datetime.datetime:
     """
     str_to_date
         convert string to datetime

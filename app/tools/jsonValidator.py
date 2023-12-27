@@ -1,4 +1,4 @@
-from app.tools.dateTools import str_to_date
+from app.tools.dateTools import str_to_datetime
 import json
 
 
@@ -97,7 +97,7 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
                     valeurs_to_add.append(new_val)
                 else:
                     try:
-                        str_to_date(j_valeurs.get(key + '_time'))
+                        str_to_datetime(j_valeurs.get(key + '_time'))
                     except Exception:
                         return 'Invalid date format for "' + key + '": "' + str(j_value) + '"'
                 if isinstance(j_valeurs[key], float) is False and isinstance(j_valeurs[key], int) is False:
@@ -133,7 +133,7 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
             # check date format
             if key.endswith("_time"):
                 try:
-                    str_to_date(j_value)
+                    str_to_datetime(j_value)
                 except Exception:
                     return 'Invalid date format for "' + key + '": "' + str(j_value) + '"'
         idx += 1
@@ -172,7 +172,7 @@ def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
             # check date format
             if key.endswith("_time"):
                 try:
-                    str_to_date(j_value)
+                    str_to_datetime(j_value)
                 except Exception:
                     return 'Invalid date format for "' + key + '": "' + str(j_value) + '"'
 

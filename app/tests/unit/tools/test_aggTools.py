@@ -1,6 +1,6 @@
 import datetime
 from app.tools.aggTools import addJson, calcAggDate
-from app.tools.dateTools import str_to_date
+from app.tools.dateTools import str_to_datetime
 import pytest
 
 
@@ -38,7 +38,7 @@ def test_calcRealAggHourDate():
         {'t': 140, 'h': '2021-01-01 01:00:00+04:00', 'd': '2021-01-01 00:00:00+04:00', 'm': '2021-01-01 00:00:00+04:00', 'y': '2021-01-01 00:00:00+04:00'}
     ]
 
-    dt = str_to_date('2020-12-31T22:45:00')
+    dt = str_to_datetime('2020-12-31T22:45:00')
     sum_duration = 0
     for result in results:
         # compute the delta of duration

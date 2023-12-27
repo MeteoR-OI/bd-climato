@@ -32,8 +32,8 @@ class ObsMeteor():
         self.data.delete()
 
     @staticmethod
-    def count_obs_poste_utc(poste_id: int, dt_obs: datetime):
-        return Observation.objects.filter(poste_id=poste_id).filter(date_utc=dt_obs).count()
+    def countObsForAMesure(poste_id: int, dt_obs: datetime, mid):
+        return Observation.objects.filter(poste_id=poste_id).filter(mesure_id=mid).filter(date_utc=dt_obs).count()
 
     @staticmethod
     def count_obs_poste_local(poste_id: int, dt_obs: datetime):

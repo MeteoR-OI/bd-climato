@@ -1,4 +1,4 @@
-from app.tools.dateTools import date_to_str, str_to_date
+from app.tools.dateTools import date_to_str, str_to_datetime
 import datetime
 import json
 
@@ -55,7 +55,7 @@ class JsonPlus():
         if isinstance(j, dict) or isinstance(j, JsonPlus):
             for k, v in j.items():
                 if 'start_dat' == k or 'stop_dat' == k or 'dat' == k or k.endswith('_time'):
-                    j[k] = str_to_date(j[k])
+                    j[k] = str_to_datetime(j[k])
                 if isinstance(j[k], list):
                     for akey in j[k]:
                         if isinstance(akey, dict) or isinstance(akey, JsonPlus):

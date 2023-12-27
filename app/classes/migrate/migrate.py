@@ -98,29 +98,20 @@ class MigrateDB:
 
                 # Load obs, records from archive
                 new_extremes = self.loadExistingArchive(pg_cur, work_item, my_span)
-                print('new_extremes from archive: ' + str(len(new_extremes)) + ', time: ' + str(datetime.now() - start_dt))
-                start_dt = datetime.now()
                 pgconn.commit()
-                print("     after commit" + ', time: ' + str(datetime.now() - start_dt))
-                start_dt = datetime.now()
 
                 # Add data from WeeWx record tables
                 new_extremes = self.loadMaxminFromWeewx(work_item, new_extremes, my_span)
-                print('new_extremes with extremes: ' + str(len(new_extremes)) + ', time: ' + str(datetime.now() - start_dt))
-                start_dt = datetime.now()
                 pgconn.commit()
-                print("     after commit" + ', time: ' + str(datetime.now() - start_dt))
-                start_dt = datetime.now()
 
                 # Merge list in db
                 self.storeMaxMinInDB(pg_cur, work_item['pid'], new_extremes, my_span)
-                print("before commit" + ', time: ' + str(datetime.now() - start_dt))
-                start_dt = datetime.now()
 
                 new_extremes = []
 
                 pgconn.commit()
-                print("     after commit" + ', time: ' + str(datetime.now() - start_dt))
+                # print("     after commit" + ', time: ' + str(datetime.now() - start_dt))
+                print("     Done in : " + str(datetime.now() - start_dt) + " for " + str(work_item['start_dt_archive_utc']))
                 self.getNewDateBraket(work_item, my_span)
 
         finally:
@@ -209,10 +200,10 @@ class MigrateDB:
 
             print('-------------------------------------------------')
             print('Archive (dt utc)       from: ' + str(work_item['start_dt_archive_utc']) + ' to ' + str(work_item['end_dt_archive_utc']))
-            print('ts_archive (ts utc)    from: ' + str(work_item['start_ts_archive_utc']) + ' to ' + str(work_item['end_ts_archive_utc']))
-            print('ts_arch_day (date utc) from: ' + str(work_item['start_ts_archive_utc_day']) + ' to ' + str(work_item['end_ts_archive_utc_day']))
-            print('X_Days  (date local)   from: ' + str(work_item['start_date_extremes']) + ' to ' + str(work_item['end_date_extremes']))
-            print('-------------------------------------------------')
+            # print('ts_archive (ts utc)    from: ' + str(work_item['start_ts_archive_utc']) + ' to ' + str(work_item['end_ts_archive_utc']))
+            # print('ts_arch_day (date utc) from: ' + str(work_item['start_ts_archive_utc_day']) + ' to ' + str(work_item['end_ts_archive_utc_day']))
+            # print('X_Days  (date local)   from: ' + str(work_item['start_date_extremes']) + ' to ' + str(work_item['end_date_extremes']))
+            # print('-------------------------------------------------')
 
             return
 

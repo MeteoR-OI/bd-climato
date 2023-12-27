@@ -59,8 +59,6 @@ class Mesure(models.Model):
     archive_col = models.CharField(null=True, max_length=20, verbose_name="nom colonne table weewx.archive")
     archive_table = models.CharField(null=True, default=None, max_length=20, verbose_name="nom table weewx.archive")
     field_dir = models.SmallIntegerField(null=True, verbose_name="id de la mesure wind dans table weewx.archive")
-    csv_field = models.CharField(null=True, default=None, max_length=20, verbose_name="nom colonne csv")
-    csv_minmax = models.JSONField(null=True, default=dict, verbose_name="Nom champs min, minTime, max, maxTime maxDir")
     val_deca = models.SmallIntegerField(null=True, default=0, verbose_name="Décalage mesure")
     max = models.BooleanField(null=True, default=True, verbose_name="Calcul des max")
     max_deca = models.SmallIntegerField(null=True, default=0, verbose_name="Décalage du max")
