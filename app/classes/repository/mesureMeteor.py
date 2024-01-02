@@ -56,12 +56,13 @@ class MesureMeteor():
             m_item = {
                 'id': a_data['id'],
                 'name': a_data['name'],
-                'data_source': a_data['data_source'],
                 'col': a_data['json_input'],
                 'col2': a_data['json_input_bis'],
                 'field': a_data['archive_col'],
                 "csv_field": None,
-                "csv_idx": -1,
+                "csv_row_idx": -1,
+                "idx_mesure": -1,
+                "idx_value": -1,
                 "csv_minmax": {},
                 'valdk': a_data['val_deca'],
                 'min': a_data['min'],
@@ -74,15 +75,15 @@ class MesureMeteor():
                 'ommidx': None,
                 'ommidx_csv': None
             }
-            if a_data['omm_link'] is not None and a_data['omm_link'] != 0:
-                idx_mesure = len(def_mesures) - 1
-                while idx_mesure >= 0:
-                    if def_mesures[idx_mesure]['id'] == a_data['omm_link']:
-                        m_item['ommidx'] = idx_mesure
-                        idx_mesure = 0
-                    idx_mesure -= 1
-            def_mesures.append(m_item)
+            # if a_data['omm_link'] is not None and a_data['omm_link'] != 0:
+            #     idx_mesure = len(def_mesures) - 1
+            #     while idx_mesure >= 0:
+            #         if def_mesures[idx_mesure]['id'] == a_data['omm_link']:
+            #             m_item['ommidx'] = idx_mesure
+            #             idx_mesure = 0
+            #         idx_mesure -= 1
 
+            def_mesures.append(m_item)
         MesureMeteor.all_defs = def_mesures
 
     def __str__(self):

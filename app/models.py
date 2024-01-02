@@ -103,7 +103,7 @@ class XMin(models.Model):
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.PROTECT)
     mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.PROTECT)
     min = models.FloatField(null=False, verbose_name="valeur minimum")
-    min_time = DateTimeFieldNoTZ(null=True, verbose_name="date du minimum")
+    # min_time = DateTimeFieldNoTZ(null=True, verbose_name="date du minimum")
     qa_min = models.SmallIntegerField(null=False, default=0, verbose_name="Qualite du min")
 
     def __str__(self):
@@ -123,7 +123,7 @@ class XMax(models.Model):
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.PROTECT)
     mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.PROTECT)
     max = models.FloatField(null=False, verbose_name="valeur maximum")
-    max_time = DateTimeFieldNoTZ(null=False, verbose_name="date du maximum")
+    # max_time = DateTimeFieldNoTZ(null=False, verbose_name="date du maximum")
     max_dir = models.SmallIntegerField(null=True, verbose_name="direction du maximum")
     qa_max = models.SmallIntegerField(null=False, default=0, verbose_name="Qualite du max")
 

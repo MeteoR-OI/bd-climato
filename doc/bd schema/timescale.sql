@@ -1,3 +1,38 @@
+Install timescaledb on mac with postgres appl:
+=============================================
+(install timescaledb 2.13.0 with postgres 15)
+=============================================
+brew tap timescale/tap
+brew install timescaledb
+
+timescaledb-tune --yes --conf-path=/Users/nico/Library/Application\ Support/Postgres/var-15/postgresql.conf
+
+/usr/bin/install -c -m 755 /opt/homebrew/Cellar/timescaledb/2.13.0/lib/timescaledb/postgresql/timescaledb-2.13.0.so  /Applications/Postgres.app/Contents/Versions/15/lib/postgresql/
+/usr/bin/install -c -m 755 /opt/homebrew/Cellar/timescaledb/2.13.0/lib/timescaledb/postgresql/timescaledb-tsl-2.13.0.so  /Applications/Postgres.app/Contents/Versions/15/lib/postgresql/
+/usr/bin/install -c -m 755 /opt/homebrew/Cellar/timescaledb/2.13.0/lib/timescaledb/postgresql/timescaledb.so  /Applications/Postgres.app/Contents/Versions/15/lib/postgresql/
+
+/usr/bin/install -c -m 644 /opt/homebrew/Cellar/timescaledb/2.13.0/share/timescaledb/* /Applications/Postgres.app/Contents/Versions/15/share/postgresql/extension/
+
+*/
+============================================
+(install timescaledb 2.13.0 with postgres 16)
+=============================================
+
+Do not work yet.... ???
+
+brew tap timescale/tap
+brew install timescaledb
+
+timescaledb-tune --yes --conf-path=/Users/nico/Library/Application\ Support/Postgres/var-16/postgresql.conf
+
+/usr/bin/install -c -m 755 /opt/homebrew/Cellar/timescaledb/2.13.0/lib/timescaledb/postgresql/timescaledb-2.13.0.so  /Applications/Postgres.app/Contents/Versions/16/lib/postgresql/
+/usr/bin/install -c -m 755 /opt/homebrew/Cellar/timescaledb/2.13.0/lib/timescaledb/postgresql/timescaledb-tsl-2.13.0.so  /Applications/Postgres.app/Contents/Versions/16/lib/postgresql/
+/usr/bin/install -c -m 755 /opt/homebrew/Cellar/timescaledb/2.13.0/lib/timescaledb/postgresql/timescaledb.so  /Applications/Postgres.app/Contents/Versions/16/lib/postgresql/
+
+/usr/bin/install -c -m 644 /opt/homebrew/Cellar/timescaledb/2.13.0/share/timescaledb/* /Applications/Postgres.app/Contents/Versions/16/share/postgresql/extension/
+
+*/
+
 -- Display chunck-name, and date range
 select  hypertable_name, chunk_name, primary_dimension, primary_dimension_type, range_start, range_end from timescaledb_information.chunks order by 1, 5;
 

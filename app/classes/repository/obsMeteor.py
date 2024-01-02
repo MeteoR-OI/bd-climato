@@ -2,6 +2,13 @@
 #
 from app.models import Observation
 from datetime import datetime
+from enum import Enum
+
+
+class QA(Enum):
+    UNSET = 0
+    VALIDATED = 1
+    UNVALIDATED = 9
 
 
 class ObsMeteor():

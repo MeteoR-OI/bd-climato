@@ -11,21 +11,5 @@ Table spec_csv
     . 2 -> dans les premieres lignes (a peaufinner)
 - nombre de lignes a ignorer pour arriver a l'entete
 
-load_csv:
-=========
-- si strategie 2 : retrouve les infos stations
-- saute les lignes
-- chargement de l'entete, et fabrication d'un self.mesures optimisé
-- pour chaque ligne
-    . si strategie = 1: check rupture
-    . charge station si necessaire
-    . check si obs a cette datetime
-        * si oui charge les mesures a ignorer
-    . split ligne
-    . a partir du self.mesure, ajout a la commande insert obs/x_max/x_min, pour les donnees a ne pas ignorer
-        * Eventuellement conversion
-    . tous les 100 donnees chargées -> insert + commit
-- en fin de ttx deplacement du fichier dans archive
-
 Voir les fichier de meteo France, et quelles mesures on stocke.
 Voir le mapping des donnees entre nos mesures, et meteoFR (entre tous les fichiers qui nous interressent...)
