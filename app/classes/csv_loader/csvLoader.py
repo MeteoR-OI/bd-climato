@@ -125,6 +125,9 @@ class CsvLoader:
         pg_conn.close()
 
     def flush_data(self, pg_conn, data_to_flush):
+        if len(data_to_flush['obs_data']) == 0:
+            return
+
         sql_obs_insert = "insert into obs(poste_id, date_utc, date_local, mesure_id, duration, value, qa_value) values "
         pg_cur = pg_conn.cursor()
 
@@ -155,7 +158,7 @@ class CsvLoader:
                      cur_min_data[2],
                      cur_min_data[3],
                      cur_min_data[4],
-                     new_ids[idx][0]) if cur_min_data[5] is False else None)
+                     (new_ids[idx][0]) if cur_min_data[5] is False else None))
 
             if cur_max_data[4] is not None:
                 # max_data_shrink = [(poste_id, date_local, mesure_id, max, qa_max, max_dir, obs_id)]
@@ -166,20 +169,22 @@ class CsvLoader:
                      cur_max_data[3],
                      cur_max_data[4],
                      cur_max_data[5],
-                     new_ids[idx][0] if cur_max_data[6] is False else None))
+                     (new_ids[idx][0] if cur_max_data[6] is False else None)))
             idx += 1
         data_to_flush = []
 
         # insert min/max
-        sql_min_insert = "insert into x_min(poste_id, date_local, mesure_id, min, qa_min, obs_id) values "
-        args_min = ','.join(pg_cur.mogrify("( %s, %s, %s, %s, %s, %s )", i).decode('utf-8')
-                            for i in data_to_flush['min_data_shrinked'])
-        pg_cur.execute(sql_min_insert + args_min)
+        if len(min_data_shrinked) > 0:
+            sql_min_insert = "insert into x_min(poste_id, date_local, mesure_id, min, qa_min, obs_id) values "
+            args_min = ','.join(pg_cur.mogrify("(%s, %s, %s, %s, %s, %s)", i).decode('utf-8')
+                                for i in min_data_shrinked)
+            pg_cur.execute(sql_min_insert + args_min)
 
-        sql_max_insert = "insert into x_max(poste_id, date_local, mesure_id, max, max_time, qa_max, max_dir, obs_id) values "
-        args_max = ','.join(pg_cur.mogrify("( %s, %s, %s, %s, %s, %s, %s, %s )", i).decode('utf-8')
-                            for i in data_to_flush['max_data_shrinked'])
-        pg_cur.execute(sql_max_insert + args_max)
+        if len(max_data_shrinked) > 0:
+            sql_max_insert = "insert into x_max(poste_id, date_local, mesure_id, max, qa_max, max_dir, obs_id) values "
+            args_max = ','.join(pg_cur.mogrify("( %s, %s, %s, %s, %s, %s, %s)", i).decode('utf-8')
+                                for i in max_data_shrinked)
+            pg_cur.execute(sql_max_insert + args_max)
 
     def getPGConnexion(self):
         return psycopg2.connect(
