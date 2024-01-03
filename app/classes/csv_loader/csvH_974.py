@@ -216,6 +216,7 @@ class CsvH_974(CsvFileSpec):
         super().__init__({
                 'pattern': [
                     r'H_974_\d{4}-\d{4}\.csv',
+                    r'H_974_previous-\d{4}-\d{4}\.csv',
                     r'H_974_latest-\d{4}-\d{4}\.csv'
                 ],
                 'mappings': [
@@ -226,7 +227,7 @@ class CsvH_974(CsvFileSpec):
                         {"max": RowsId.FXI2.value, "qmax": RowsId.QFXI2.value, "maxDir": RowsId.DXI2.value, "maxTime": RowsId.HXI2.value}},
                     {'csv_field': 'GLO',       'csv_idx': RowsId.GLO.value, 'qa_idx': RowsId.QGLO.value,    'mesure': 'radiation',        'minmax': {}},
                     {'csv_field': 'PMER',      'csv_idx': RowsId.PMER.value, 'qa_idx': RowsId.QPMER.value,    'mesure': 'barometer',        'minmax':
-                        {"min": RowsId.PMER.value, "qmin": RowsId.QPMER.value, "minTime": RowsId.PMERMIN.value}},
+                        {"min": RowsId.PMERMIN.value, "qmin": RowsId.QPMER.value}},
                     {'csv_field': 'PSTAT',     'csv_idx': RowsId.PSTAT.value, 'qa_idx': RowsId.QPSTAT.value,    'mesure': 'pressure',         'minmax': {}},
                     {'csv_field': 'RR1',       'csv_idx': RowsId.RR1.value, 'qa_idx': RowsId.QRR1.value,    'mesure': 'rain',             'minmax': {}},
                     {'csv_field': 'T',         'csv_idx': RowsId.T.value, 'qa_idx': RowsId.QT.value,    'mesure': 'temperature',      'minmax':

@@ -37,6 +37,7 @@ class CsvFileSpec(ABC):
         obs_data = []
         min_data = []
         max_data = []
+        total_line = 0
 
         cur_poste = None
         obs_data_in_db = {}
@@ -51,6 +52,7 @@ class CsvFileSpec(ABC):
                     if line_count == self.__spec['skip_lines'] - 1:
                         self.decodeHeader(my_fields)
                     line_count += 1
+                    total_line += 1
                     row = file.readline()
                     continue
 
@@ -65,7 +67,7 @@ class CsvFileSpec(ABC):
 
                 # is it time to flush our buffers ?
                 if cur_poste is None or line_count > 500:
-                    print('yielding data: ' + str(len(obs_data)) + ' obs, ' + 'line_cout: ' + str(line_count))
+                    print('yielding data: ' + str(len(obs_data)) + ' obs, ' + 'line_cout: ' + str(line_count) + '/' + str(total_line))
                     yield {'obs_data': obs_data, 'min_data': min_data, 'max_data': max_data}
                     obs_data = []
                     min_data = []
@@ -95,6 +97,7 @@ class CsvFileSpec(ABC):
 
                 # get next line
                 line_count += 1
+                total_line += 1
                 row = file.readline()
 
             if len(obs_data) > 0:
@@ -200,6 +203,15 @@ class CsvFileSpec(ABC):
                 while len(tmp_min_time) < 4:
                     tmp_min_time = '0' + tmp_min_time
                 tmp_dt = str(obs_date_local)
+                if tmp_min_time[0:2] > '24' or tmp_min_time[0:2] < '00':
+                    print('erreur dans les minutes pour mid: ' + str(a_mesure['name']) + ' date obs: ' + str(obs_date_local) + ' hhmm: ' + tmp_min_time)
+                    tmp_min_time = str(obs_date_local.hour) + tmp_min_time[2:4]
+                    while len(tmp_min_time) < 4:
+                        tmp_min_time = '0' + tmp_min_time
+                if tmp_min_time[2:4] > '59' or tmp_min_time[2:4] < '00':
+                    print('error dans les heures pour mid: ' + str(a_mesure['name']) + ' date obs: ' + str(obs_date_local) + ' hhmm: ' + tmp_min_time)
+                    tmp_dt = str(obs_date_local)
+
                 cur_min_time = str_to_datetime(tmp_dt[0:4] + '-' + tmp_dt[5:7] + '-' + tmp_dt[8:10] + 'T' + tmp_dt[11:13] + ':' + tmp_min_time[0:2] + ':' + tmp_min_time[2:4]) +\
                     timedelta(hours=cur_poste.data.delta_timezone)
                 is_it_obs_data = False
@@ -235,6 +247,15 @@ class CsvFileSpec(ABC):
                 while len(tmp_max_time) < 4:
                     tmp_max_time = '0' + tmp_max_time
                 tmp_dt = str(obs_date_local)
+                if tmp_max_time[0:2] > '24' or tmp_max_time[0:2] < '00':
+                    print('erreur dans les minutes pour mid: ' + str(a_mesure['name']) + ' date obs: ' + str(obs_date_local) + ' hhmm: ' + tmp_max_time)
+                    tmp_max_time = str(obs_date_local.hour) + tmp_max_time[2:4]
+                    while len(tmp_max_time) < 4:
+                        tmp_max_time = '0' + tmp_max_time
+                if tmp_max_time[2:4] > '59' or tmp_max_time[2:4] < '00':
+                    print('error dans les heures pour mid: ' + str(a_mesure['name']) + ' date obs: ' + str(obs_date_local) + ' hhmm: ' + tmp_max_time)
+                    tmp_dt = str(obs_date_local)
+
                 cur_max_time = str_to_datetime(tmp_dt[0:4] + '-' + tmp_dt[5:7] + '-' + tmp_dt[8:10] + 'T' + tmp_dt[11:13] + ':' + tmp_max_time[0:2] + ':' + tmp_max_time[2:4]) +\
                     timedelta(hours=cur_poste.data.delta_timezone)
                 is_it_obs_data = False
