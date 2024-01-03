@@ -137,34 +137,36 @@ class CsvLoader:
         # get new obd.id => and inject them in min/max
         new_ids = pg_cur.fetchall()
 
+        data_to_flush['obs_data'] = []
         min_data_shrinked = []
         max_data_shrinked = []
 
         idx = 0
         while idx < len(new_ids):
             # load min/max_data_shrinked, add obs_id
-            cur_odata = data_to_flush['obs_data'][idx]
+            cur_min_data = data_to_flush['min_data'][idx]
+            cur_max_data = data_to_flush['max_data'][idx]
 
-            if data_to_flush['min_data'][3] is not None and data_to_flush['min_data'][4] is not None:
+            if cur_min_data[4] is not None:
                 # min_data_shrink = [(poste_id, date_local, mesure_id, min, qa_min, obs_id)]
                 min_data_shrinked.append(
-                    (cur_odata[0],
-                     cur_odata[1],
-                     cur_odata[2],
-                     cur_odata[3],
-                     cur_odata[4],
-                     new_ids[idx][0]))
+                    (cur_min_data[0],
+                     cur_min_data[1],
+                     cur_min_data[2],
+                     cur_min_data[3],
+                     cur_min_data[4],
+                     new_ids[idx][0]) if cur_min_data[5] is False else None)
 
-            if data_to_flush['max_data'][3] is not None and data_to_flush['max_data'][4] is not None:
+            if cur_max_data[4] is not None:
                 # max_data_shrink = [(poste_id, date_local, mesure_id, max, qa_max, max_dir, obs_id)]
                 max_data_shrinked.append(
-                    (cur_odata[0],
-                     cur_odata[1],
-                     cur_odata[2],
-                     cur_odata[3],
-                     cur_odata[4],
-                     cur_odata[5],
-                     new_ids[idx][0]))
+                    (cur_max_data[0],
+                     cur_max_data[1],
+                     cur_max_data[2],
+                     cur_max_data[3],
+                     cur_max_data[4],
+                     cur_max_data[5],
+                     new_ids[idx][0] if cur_max_data[6] is False else None))
             idx += 1
         data_to_flush = []
 
