@@ -4,7 +4,7 @@ from app.classes.repository.mesureMeteor import MesureMeteor
 from app.classes.repository.posteMeteor import PosteMeteor
 from app.classes.repository.obsMeteor import QA
 import re
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 
 class CsvFileSpec(ABC):
@@ -31,7 +31,7 @@ class CsvFileSpec(ABC):
             match = re.match(a_pattern, file_name)
             if match:
                 return True
-        return False
+        return True
 
     def nextBlockLines(self):
         obs_data = []
@@ -51,8 +51,8 @@ class CsvFileSpec(ABC):
                     self.__header.append(row)
                     if line_count == self.__spec['skip_lines'] - 1:
                         self.decodeHeader(my_fields)
-                    line_count += 1
                     total_line += 1
+                    line_count += 1
                     row = file.readline()
                     continue
 
@@ -74,29 +74,32 @@ class CsvFileSpec(ABC):
                     max_data = []
                     line_count = 0
 
+                if (total_line % 1000) == 0:
+                    print('total line processed: ' + str(total_line))
+
                 # get new poste if needed
                 if self.__poste_info['meteor'] != last_meteor:
                     cur_poste = PosteMeteor(self.__poste_info['meteor'])
                     if cur_poste.data.id is None:
                         # Create on the flight a new poste
                         cur_poste.data.type = "???"
-                        cur_poste.data.altitude = float(self.__poste_info["ALTI"])
-                        cur_poste.data.lat = float(self.__poste_info["LAT"])
-                        cur_poste.data.long = float(self.__poste_info["LON"])
-                        cur_poste.data.other_code = self.__poste_info["CODE"]
+                        cur_poste.data.altitude = float(self.__poste_info["ALTI"]) if self.__poste_info["ALTI"] != '' else None
+                        cur_poste.data.lat = float(self.__poste_info["LAT"]) if self.__poste_info["LAT"] != '' else None
+                        cur_poste.data.long = float(self.__poste_info["LON"]) if self.__poste_info["LON"] != '' else None
+                        cur_poste.data.other_code = self.__poste_info["CODE"] if self.__poste_info["CODE"] != '' else None
                         cur_poste.data.owner = "Meteo France"
                         cur_poste.data.data_source = 1
                         cur_poste.data.delta_timezone = 4       # assume all meteo france data are in UTC+4
                         cur_poste.data.save()
-#  -> Load obs_data_in_db [{date_utc, mids:[..]]}]
-
                     last_meteor = self.__poste
+                    date_already_loaded = str_to_datetime(cur_poste.data.last_obs_date)
 
-                #  process row
-                self.processRow(my_fields, cur_poste, obs_data, min_data, max_data, b_check_obs_data_in_db, obs_data_in_db)
+                if j_stop_dat_utc > date_already_loaded:
+                    #  process row
+                    self.processRow(my_fields, cur_poste, obs_data, min_data, max_data, b_check_obs_data_in_db, obs_data_in_db)
+                    line_count += 1
 
                 # get next line
-                line_count += 1
                 total_line += 1
                 row = file.readline()
 
@@ -118,23 +121,22 @@ class CsvFileSpec(ABC):
                         if a_mid == a_mesure['id']:
                             continue
 
-            # 'obs_data': [(poste_id, date_utc, date_local, mesure_id, duration, value, qa_value)],
-            #     'max_data': [(poste_id, date_utc, date_local, mesure_id, max, max_time, max_dir)],
             obs_date_local = obs_date_utc + timedelta(hours=cur_poste.data.delta_timezone)
             data_args = (poste_id, obs_date_utc, obs_date_local, a_mesure['id'], 60, cur_val, cur_q_val)
+            # 'obs_data': [(poste_id, date_utc, date_local, mesure_id, duration, value, qa_value)],
             obs_data.append(data_args)
 
             if a_mesure['min'] is True:
                 cur_min, cur_min_qa, cur_min_time_local, is_it_obs_data = self.get_valeur_min(cur_poste, a_mesure, my_fields, cur_val, obs_date_local)
-                # 'min_data': [(poste_id, date_local, mesure_id, min, qa_min, obs_id)],
-                min_data.append((poste_id, cur_min_time_local, a_mesure['id'], cur_min, cur_min_qa, is_it_obs_data))
+                # 'min_data': [(poste_id, date_local, mesure_id, min, min_time, qa_min, is_it_obs_data)],
+                min_data.append((poste_id, obs_date_local, a_mesure['id'], cur_min, cur_min_time_local, cur_min_qa, is_it_obs_data))
             else:
                 min_data.append((poste_id, obs_date_local, a_mesure['id'], None, None, None, False))
 
             if a_mesure['max'] is True:
                 cur_max, cur_max_qa, cur_max_time_local, cur_max_dir, is_it_obs_data = self.get_valeur_max(cur_poste, a_mesure, my_fields, cur_val, obs_date_local)
-                # 'max_data': [poste_id, date_local, mesure_id, max, qa_max, max_dir, obs_id)],
-                max_data.append((poste_id, cur_max_time_local, a_mesure['id'], cur_max, cur_max_qa, cur_max_dir, is_it_obs_data))
+                # 'max_data': [poste_id, date_local, mesure_id, max, qa_max, max_time, max_dir, is_it_obs_data)],
+                max_data.append((poste_id, obs_date_local, a_mesure['id'], cur_max, cur_max_time_local, cur_max_qa, cur_max_dir, is_it_obs_data))
             else:
                 max_data.append((poste_id, obs_date_local, a_mesure['id'], None, None, None, None, False))
 
@@ -200,20 +202,7 @@ class CsvFileSpec(ABC):
         if cur_min_time_field is not None and cur_min_time_field != '':
             tmp_min_time = fields_array[cur_min_time_field]
             if tmp_min_time != '' and tmp_min_time is not None:
-                while len(tmp_min_time) < 4:
-                    tmp_min_time = '0' + tmp_min_time
-                tmp_dt = str(obs_date_local)
-                if tmp_min_time[0:2] > '24' or tmp_min_time[0:2] < '00':
-                    print('erreur dans les minutes pour mid: ' + str(a_mesure['name']) + ' date obs: ' + str(obs_date_local) + ' hhmm: ' + tmp_min_time)
-                    tmp_min_time = str(obs_date_local.hour) + tmp_min_time[2:4]
-                    while len(tmp_min_time) < 4:
-                        tmp_min_time = '0' + tmp_min_time
-                if tmp_min_time[2:4] > '59' or tmp_min_time[2:4] < '00':
-                    print('error dans les heures pour mid: ' + str(a_mesure['name']) + ' date obs: ' + str(obs_date_local) + ' hhmm: ' + tmp_min_time)
-                    tmp_dt = str(obs_date_local)
-
-                cur_min_time = str_to_datetime(tmp_dt[0:4] + '-' + tmp_dt[5:7] + '-' + tmp_dt[8:10] + 'T' + tmp_dt[11:13] + ':' + tmp_min_time[0:2] + ':' + tmp_min_time[2:4]) +\
-                    timedelta(hours=cur_poste.data.delta_timezone)
+                cur_min_time = self.adjustTime(cur_poste, obs_date_local, tmp_min_time)
                 is_it_obs_data = False
 
         return cur_min, cur_min_qa, cur_min_time, is_it_obs_data
@@ -244,25 +233,21 @@ class CsvFileSpec(ABC):
         if cur_max_time_field is not None and cur_max_time_field != '':
             tmp_max_time = fields_array[cur_max_time_field]
             if tmp_max_time != '' and tmp_max_time is not None:
-                while len(tmp_max_time) < 4:
-                    tmp_max_time = '0' + tmp_max_time
-                tmp_dt = str(obs_date_local)
-                if tmp_max_time[0:2] > '24' or tmp_max_time[0:2] < '00':
-                    print('erreur dans les minutes pour mid: ' + str(a_mesure['name']) + ' date obs: ' + str(obs_date_local) + ' hhmm: ' + tmp_max_time)
-                    tmp_max_time = str(obs_date_local.hour) + tmp_max_time[2:4]
-                    while len(tmp_max_time) < 4:
-                        tmp_max_time = '0' + tmp_max_time
-                if tmp_max_time[2:4] > '59' or tmp_max_time[2:4] < '00':
-                    print('error dans les heures pour mid: ' + str(a_mesure['name']) + ' date obs: ' + str(obs_date_local) + ' hhmm: ' + tmp_max_time)
-                    tmp_dt = str(obs_date_local)
-
-                cur_max_time = str_to_datetime(tmp_dt[0:4] + '-' + tmp_dt[5:7] + '-' + tmp_dt[8:10] + 'T' + tmp_dt[11:13] + ':' + tmp_max_time[0:2] + ':' + tmp_max_time[2:4]) +\
-                    timedelta(hours=cur_poste.data.delta_timezone)
+                cur_max_time = self.adjustTime(cur_poste, obs_date_local, tmp_max_time)
                 is_it_obs_data = False
 
         cur_max_dir = fields_array[cur_max_dir_field] if cur_max_dir is not None else None
 
         return cur_max, cur_max_qa, cur_max_time, cur_max_qa, is_it_obs_data
+
+    def adjustTime(self, cur_poste, obs_date_local: datetime, time_str):
+        if time_str is None or time_str == '':
+            return obs_date_local + timedelta(hours=cur_poste.data.delta_timezone)
+        obs_date_local = obs_date_local - timedelta(hours=1)
+        while len(time_str) < 4:
+            time_str = '0' + time_str
+        tmp_dt = str(obs_date_local)
+        return str_to_datetime(tmp_dt[0:4] + '-' + tmp_dt[5:7] + '-' + tmp_dt[8:10] + 'T' + tmp_dt[11:13] + ':' + time_str[0:2] + ':' + time_str[2:4])
 
     def transcodeQAMeteoFrance(self, qa_meteoFR):
         if qa_meteoFR is None or qa_meteoFR == 0:

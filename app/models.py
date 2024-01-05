@@ -99,10 +99,11 @@ class Observation(models.Model):
 class XMin(models.Model):
     id = models.BigAutoField(primary_key=True, null=False, verbose_name="id du minimum")
     obs_id = models.BigIntegerField(null=True, verbose_name="id de l'observation")
-    date_local = DateTimeFieldNoTZ(null=False, verbose_name="date locale de l'extrême")
+    date_local = DateTimeFieldNoTZ(null=False, verbose_name="date locale de la fin de la periode d'observation")
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.PROTECT)
     mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.PROTECT)
     min = models.FloatField(null=False, verbose_name="valeur minimum")
+    min_time = DateTimeFieldNoTZ(null=False, verbose_name="date locale de l'extrême")
     qa_min = models.SmallIntegerField(null=False, default=0, verbose_name="Qualite du min")
 
     def __str__(self):
@@ -118,10 +119,11 @@ class XMin(models.Model):
 class XMax(models.Model):
     id = models.BigAutoField(primary_key=True, null=False, verbose_name="id du maximum")
     obs_id = models.BigIntegerField(null=True, verbose_name="id de l'observation")
-    date_local = DateTimeFieldNoTZ(null=False, verbose_name="date locale de l'extrême")
+    date_local = DateTimeFieldNoTZ(null=False, verbose_name="date locale de la fin de la periode d'observation")
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.PROTECT)
     mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.PROTECT)
     max = models.FloatField(null=False, verbose_name="valeur maximum")
+    max_time = DateTimeFieldNoTZ(null=False, verbose_name="date locale de l'extrême")
     max_dir = models.SmallIntegerField(null=True, verbose_name="direction du maximum")
     qa_max = models.SmallIntegerField(null=False, default=0, verbose_name="Qualite du max")
 

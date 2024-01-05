@@ -110,8 +110,8 @@ class CsvLoader:
         for data_to_flush in cur_spec.nextBlockLines():
             # data_to_flush = {
             #     'obs_data': [(poste_id, date_utc, date_local, mesure_id, duration, value, qa_value)],
-            #     'min_data': [(poste_id, date_utc, date_local, mesure_id, min, min_time)],
-            #     'max_data': [(poste_id, date_utc, date_local, mesure_id, max, max_time, max_dir)],
+            #     'min_data': [(poste_id, date_utc, date_local, mesure_id, min, min_time, is_it_obs_data)],
+            #     'max_data': [(poste_id, date_utc, date_local, mesure_id, max, max_time, max_dir, is_it_obs_data)],
             # }
 
             if data_to_flush is None:
@@ -151,17 +151,18 @@ class CsvLoader:
             cur_max_data = data_to_flush['max_data'][idx]
 
             if cur_min_data[4] is not None:
-                # min_data_shrink = [(poste_id, date_local, mesure_id, min, qa_min, obs_id)]
+                # min_data_shrink = [(poste_id, date_local, mesure_id, min, min_time, qa_min, obs_id)]
                 min_data_shrinked.append(
                     (cur_min_data[0],
                      cur_min_data[1],
                      cur_min_data[2],
                      cur_min_data[3],
                      cur_min_data[4],
+                     cur_min_data[5],
                      (new_ids[idx][0]) if cur_min_data[5] is False else None))
 
             if cur_max_data[4] is not None:
-                # max_data_shrink = [(poste_id, date_local, mesure_id, max, qa_max, max_dir, obs_id)]
+                # max_data_shrink = [(poste_id, date_local, mesure_id, max, max_time, qa_max, max_dir, obs_id)]
                 max_data_shrinked.append(
                     (cur_max_data[0],
                      cur_max_data[1],
@@ -169,20 +170,21 @@ class CsvLoader:
                      cur_max_data[3],
                      cur_max_data[4],
                      cur_max_data[5],
+                     cur_max_data[6],
                      (new_ids[idx][0] if cur_max_data[6] is False else None)))
             idx += 1
         data_to_flush = []
 
         # insert min/max
         if len(min_data_shrinked) > 0:
-            sql_min_insert = "insert into x_min(poste_id, date_local, mesure_id, min, qa_min, obs_id) values "
-            args_min = ','.join(pg_cur.mogrify("(%s, %s, %s, %s, %s, %s)", i).decode('utf-8')
+            sql_min_insert = "insert into x_min(poste_id, date_local, mesure_id, min, min_time, qa_min, obs_id) values "
+            args_min = ','.join(pg_cur.mogrify("(%s, %s, %s, %s, %s, %s, %s)", i).decode('utf-8')
                                 for i in min_data_shrinked)
             pg_cur.execute(sql_min_insert + args_min)
 
         if len(max_data_shrinked) > 0:
-            sql_max_insert = "insert into x_max(poste_id, date_local, mesure_id, max, qa_max, max_dir, obs_id) values "
-            args_max = ','.join(pg_cur.mogrify("( %s, %s, %s, %s, %s, %s, %s)", i).decode('utf-8')
+            sql_max_insert = "insert into x_max(poste_id, date_local, mesure_id, max, max_time, qa_max, max_dir, obs_id) values "
+            args_max = ','.join(pg_cur.mogrify("( %s, %s, %s, %s, %s, %s, %s, %s)", i).decode('utf-8')
                                 for i in max_data_shrinked)
             pg_cur.execute(sql_max_insert + args_max)
 

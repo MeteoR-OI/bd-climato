@@ -13,8 +13,9 @@ obs
     I 9 -> filtrée (OK)                I                                                         I
     +----------------------------------I---------------------------------------------------------+
 + triggers:
-- si qa_value = 8 -> supprime le x_min/x_max associe s'il existe
-- nouvelle valeur, met a jour les date_last_obs et id sur poste
+- si qa_value = 9 -> supprime la donnees des vues materialized
+- modif de qa_value, met a jour les qa_value dnas x_min/x_max associé
+- nouvelle ligne, met a jour les date_last_obs et id sur poste
 
 un enregistrement par poste/date/mesure.
 
@@ -25,8 +26,6 @@ x_max/x_min
 - min,min_time ou max,max_time, max_dir
 
 triggers
-- si nouvelle valeur, met a jour les date_last_extreme et id sur poste
-
 un enregistrement par obs (avec eventuellement la valeur min/max fournie)
 
 Materialized views

@@ -73,7 +73,7 @@ insert into postes
 insert into mesures
 (id,    name,            json_input,         archive_col,   archive_table, field_dir, val_deca, min, min_deca, max,  max_deca, is_avg, is_wind, omm_link, allow_zero,     json_input_bis, is_hourly) values
 ( 1, 'barometer',       'barometer',        'barometer',          null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
-( 4, 'barometer omm',   'barometer_omm',    'barometer',          null,        null,     0,   true,    0,     true,    0,      true,   false,       1,      true,            null,        False),
+-- ( 4, 'barometer omm',   'barometer_omm',    'barometer',          null,        null,     0,   true,    0,     true,    0,      true,   false,       1,      true,            null,        False),
 ( 6, 'dewpoint',        'dewpoint',         'dewpoint',           null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
 ( 8, 'etp',             'etp',              'ET',                 null,        null,     0,   true,    0,     true,    0,      false,  false,    null,      true,            null,         True),
 (10, 'extra_temp1',     'extra_temp1',      'extraTemp1',         null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
@@ -89,7 +89,7 @@ insert into mesures
 (30, 'heating temp',    'heating_temp',     'heatingTemp',        null,        null,     0,   false,   0,     true,    0,      true,   false,    null,      true,            null,        False),
 (32, 'humidity inside', 'in_humidity',      'inHumidity',         null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
 (34, 'humidity',        'out_humidity',     'outHumidity',        null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,      'humidity',        False),
-(36, 'humidity omm',    'out_humidity_omm', 'outHumidity',        null,        null,     0,   true,    0,     true,    0,      true,   false,      34,      true,  'humidity_omm',        False),
+-- (36, 'humidity omm',    'out_humidity_omm', 'outHumidity',        null,        null,     0,   true,    0,     true,    0,      true,   false,      34,      true,  'humidity_omm',        False),
 (38, 'leaftemp1',       'leaf_temp1',       'leafTemp1',          null,        null,     0,  false,   0,     false,   0,      true,   false,    null,      true,      'leaftemp',        False),
 (40, 'leaftemp2',       'leaf_temp2',       'leafTemp2',          null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
 (42, 'leafwet1',        'leaf_wet1',        'leafWet1',           null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,       'leafwet',        False),
@@ -98,7 +98,7 @@ insert into mesures
 (48, 'radiation',       'radiation',        'radiation',          null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
 (50, 'rain rate',       'rain_rate',        'rainRate',           null,        null,     0,   false,   0,     true,    0,      true,   false,    null,      true,            null,        False),
 (52, 'rain',            'rain',             'rain',               null,        null,     0,   false,   0,     true,    0,      false,  false,    null,      true,            null,        False),
-(54, 'rain omm',        'rain_omm',         'rain',               null,        null,    -7,   false,   0,     true,    7,      false,  false,      52,      true,            null,        False),
+-- (54, 'rain omm',        'rain_omm',         'rain',               null,        null,    -7,   false,   0,     true,    7,      false,  false,      52,      true,            null,        False),
 (56, 'rx',              'rx',               'rxCheckPercent',     null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
 (58, 'soilmoist1',      'soil_moist1',      'soilMoist1',         null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,     'soilmoist',        False),
 (60, 'soilmoist2',      'soil_moist2',      'soilMoist2',         null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
@@ -110,80 +110,140 @@ insert into mesures
 (72, 'soiltemp4',       'soil_temp4',       'soilTemp4',          null,        null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
 (74, 'temp inside',     'in_temp',          'inTemp',             null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
 (76, 'temperature',     'out_temp',         'outTemp',            null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
-(78, 'temp omm',        'out_temp_omm',     'outTemp',            null,        null,     0,   true,    5,     true,   -7,      true,   false,      76,      true,            null,        False),
+-- (78, 'temp omm',        'out_temp_omm',     'outTemp',            null,        null,     0,   true,    5,     true,   -7,      true,   false,      76,      true,            null,        False),
 (80, 'uv_indice',       'uv',               'UV',                 null,        null,     0,   false,   0,     true,    0,      true,   false,    null,      true,            null,        False),
 (82, 'voltage',         'voltage',          'consBatteryVoltage', null,        null,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
-(84, 'wind 10',         'wind10',           'windSpeed',          'wind',        90,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
-(86, 'wind 10 omm',     'wind10_omm',       'windSpeed',          'wind',      null,     0,   true,    0,     true,    0,      true,   false,      84,      true,            null,        False),
-(88, 'wind',            'wind',             'windSpeed',          'wind',        90,     0,   true,    0,     true,    0,      true,   false,    null,      true,            null,        False),
-(90, 'wind dir',        'wind_dir',         'windDir',            'skip',      null,     0,   false,   0,     false,   0,      true,   false,    null,      true,            null,        False),
-(92, 'windchill',       'windchill',        'windchill',          null,        null,     0,   true,    0,     false,   0,      true,   false,    null,      true,            null,        False)
+(84, 'wind 10',         'wind10',           'windSpeed',          'wind',        86,     0,  false,    0,     true,    0,      true,   false,    null,      true,            null,        False),
+(86, 'wind 10 dir',     'wind10_dir',       'windSpeed',          'skip',      null,     0,  false,    0,    false,    0,      true,   false,    null,      true,            null,        False),
+-- (87, 'wind 10 omm',     'wind10_omm',       'windSpeed',          'wind',      null,     0,   true,    0,     true,    0,      true,   false,      84,      true,            null,        False),
+(88, 'wind',            'wind',             'windSpeed',          'wind',        90,     0,   false,   0,     true,    0,      true,   false,    null,      true,            null,        False),
+(90, 'wind dir',        'wind_dir',         'windDir',            'skip',      null,     0,   false,   0,    false,    0,      true,   false,    null,      true,            null,        False),
+(92, 'windchill',       'windchill',        'windchill',          null,        null,     0,   true,    0,    false,    0,      true,   false,    null,      true,            null,        False)
 ; 
 
 select 'nb postes: ' || count(*) from postes;
 select 'nb mesures: ' || count(*) from mesures;
 
--- create materialized view obs_day WITH (timescaledb.continuous) as
---     select
---         timescaledb_experimental.time_bucket_ng('1 day', date_local) as date_local,
---         poste_id,
---         avg(barometer) as barometer,
---         avg(barometer_omm) as barometer_omm,
---         avg(dewpoint) as dewpoint,
---         sum(etp) as etp,
---         avg(extra_humid1) as extra_humid1,
---         avg(extra_humid2) as extra_humid2,
---         avg(extra_temp1) as extra_temp1,
---         avg(extra_temp2) as extra_temp2,
---         avg(extra_temp3) as extra_temp3,
---         avg(hail) as hail,
---         avg(hail_rate) as hail_rate,
---         avg(heatindex) as heatindex,
---         avg(heating_temp) as heating_temp,
---         avg(in_humidity) as in_humidity,
---         avg(in_temp) as in_temp,
---         avg(leaf_temp1) as leaf_temp1,
---         avg(leaf_temp2) as leaf_temp2,
---         avg(leaf_wet1) as leaf_wet1,
---         avg(leaf_wet2) as leaf_wet2,
---         avg(out_humidity) as out_humidity,
---         avg(out_humidity_omm) as out_humidity_omm,
---         avg(out_temp) as out_temp,
---         avg(out_temp_omm) as out_temp_omm,
---         avg(pressure) as pressure,
---         max(radiation) as radiation,
---         sum(rain) as rain,
---         sum(rain_omm) as rain_omm,
---         avg(rain_rate) as rain_rate,
---         avg(rx) as rx,
---         avg(soil_moist1) as soil_moist1,
---         avg(soil_moist2) as soil_moist2,
---         avg(soil_moist3) as soil_moist3,
---         avg(soil_moist4) as soil_moist4,
---         avg(soil_temp1) as soil_temp1,
---         avg(soil_temp2) as soil_temp2,
---         avg(soil_temp3) as soil_temp3,
---         avg(soil_temp4) as soil_temp4,
---         max(uv) as uv,
---         avg(voltage) as voltage,
---         avg(wind) as wind,
---         max(wind_gust) as wind_gust,
---         avg(wind10) as wind10,
---         avg(wind10_omm) as wind10_omm,
---         avg(windchill) as windchill
---     from obs
+-- get last values
+-- select poste_id, name, last(date_local, mesure_id), last(avg, mesure_id)  from obs_month join mesures on mesures.id = mesure_id group by 1,2 order by 1,2;
+
+create materialized view obs_hour WITH (timescaledb.continuous) as
+  select
+        timescaledb_experimental.time_bucket_ng('1 hour', date_local, origin => '1950-01-01') as date_local,
+        poste_id as poste_id,
+        mesure_id as mesure_id,
+        sum(duration) as duration,
+        avg(value) as value
+  from obs
+  where qa_value != 9
+  group by 1,2,3;
+
+create materialized view obs_day WITH (timescaledb.continuous) as
+  select
+        timescaledb_experimental.time_bucket_ng('1 day', date_local, origin => '1950-01-01') as date_local,
+        poste_id as poste_id,
+        mesure_id as mesure_id,
+        sum(duration) as duration,
+        avg(value) as value
+  from obs_hour
+  group by 1,2,3;
+
+create materialized view obs_month WITH (timescaledb.continuous) as
+  select
+        timescaledb_experimental.time_bucket_ng('1 month', date_local, origin => '1950-01-01') as date_local,
+        poste_id,
+        mesure_id,
+        sum(duration) as duration,
+        avg(value) as value
+  from obs_day
+  group by 1,2,3;
+
+create materialized view x_min_day WITH (timescaledb.continuous) as
+  select
+        timescaledb_experimental.time_bucket_ng('1 day', date_local, origin => '1950-01-01') as date_local,
+        poste_id as poste_id,
+        mesure_id as mesure_id,
+        min(min) as min,
+        first(min_time, min) as min_time
+  from x_min
+  where qa_min != 9
+  group by 1,2,3;
+
+create materialized view x_min_month WITH (timescaledb.continuous) as
+  select
+        timescaledb_experimental.time_bucket_ng('1 month', date_local, origin => '1950-01-01') as date_local,
+        poste_id as poste_id,
+        mesure_id as mesure_id,
+        min(min) as min,
+        first(min_time, min) as min_time
+  from x_min_day
+ group by 1,2,3;
+
+create materialized view x_max_day WITH (timescaledb.continuous) as
+  select
+        timescaledb_experimental.time_bucket_ng('1 day', date_local, origin => '1950-01-01') as date_local,
+        poste_id as poste_id,
+        mesure_id as mesure_id,
+        max(max) as max,
+        last(max_time, max) as max_time
+  from x_max
+  where qa_max != 9
+  group by 1,2,3;
+
+create materialized view x_max_month WITH (timescaledb.continuous) as
+  select
+        timescaledb_experimental.time_bucket_ng('1 month', date_local, origin => '1950-01-01') as date_local,
+        poste_id as poste_id,
+        mesure_id as mesure_id,
+        max(max) as max,
+        last(max_time, max) as max_time
+  from x_max_day
+  group by 1,2,3;
+
+-- create materialized view compare_month WITH (timescaledb.continuous) as
+-- materialized view does not support left join...
+
+--  select
+--         timescaledb_experimental.time_bucket_ng('1 month', o.date_local, origin => '1950-01-01') as date_local,
+--         o.poste_id,
+--         avg(o.value) as avg_value,
+--         min(mi.min),
+--         first(mi.min_time, mi.min) as min_time,
+--         max(ma.max),
+--         last(ma.max_time, ma.max) as max_time
+--     from obs_month o 
+--       left join x_min_month mi on 
+--         o.poste_id = mi.poste_id
+--         and o.mesure_id = mi.mesure_id
+--         and timescaledb_experimental.time_bucket_ng('1 month', mi.date_local, origin => '1950-01-01') = timescaledb_experimental.time_bucket_ng('1 month', mi.date_local, origin => '1950-01-01')
+--       left join x_max_month ma on 
+--         o.poste_id = ma.poste_id
+--         and o.mesure_id = ma.mesure_id
+--         and timescaledb_experimental.time_bucket_ng('1 month', ma.date_local, origin => '1950-01-01') = timescaledb_experimental.time_bucket_ng('1 month', ma.date_local, origin => '1950-01-01')
+--     where o.mesure_id = 1
+-- --       Important to add a where on each table => 
+-- --           timescale can limit the search in the underlying chunks for each table
+--       and o.date_local > '202-12-01'
+--       and mi.date_local > '202-12-01'
+--       and ma.date_local > '202-12-01'
 --     group by 1,2;
 
-
-CREATE OR REPLACE FUNCTION create_obs_trigger_fn()
+-- ---------
+-- Triggers
+-- ---------
+/*
+*  maintain last_obs_date/id in poste table
+*  cascade qa_value to x_min/x_max tables
+*/ 
+CREATE OR REPLACE FUNCTION create_update_obs_trigger_fn()
   RETURNS TRIGGER LANGUAGE PLPGSQL AS
 $BODY$
 DECLARE
     obs_dat timestamp;
 BEGIN
   select last_obs_date  into obs_dat from postes where id = NEW.poste_id;
-  if new.duration > 0 and (obs_dat is null or new.date_local > obs_dat) then
-    update postes set last_obs_date = NEW.date_local, last_obs_id = NEW.id where id = NEW.poste_id;
+  if new.duration > 0 and (obs_dat is null or new.date_utc > obs_dat) then
+    update postes set last_obs_date = NEW.date_utc, last_obs_id = NEW.id where id = NEW.poste_id;
   end if;
   if NEW.qa_value <> OLD.qa_value then
     update x_min set qa_min = NEW.qa_value where obs_id = NEW.id;
@@ -193,57 +253,13 @@ BEGIN
 END
 $BODY$;
 
-/*
-*  store in each poste the id and time for the most recent obs
-*/ 
-CREATE TRIGGER create_obs_trigger
+CREATE OR REPLACE TRIGGER create_update_obs_trigger
   AFTER INSERT OR UPDATE ON obs
-  FOR EACH ROW EXECUTE PROCEDURE create_obs_trigger_fn();
-
-
-CREATE OR REPLACE FUNCTION create_x_min_trigger_fn()
-  RETURNS TRIGGER LANGUAGE PLPGSQL AS
-$BODY$
-DECLARE
-    x_dat timestamp;
-BEGIN
-  select last_extremes_date  into x_dat from postes where id = NEW.poste_id;
-  if x_dat is null or new.date_local > x_dat then
-    update postes set last_extremes_date = NEW.date_local, last_extremes_id = NEW.id where id = NEW.poste_id;
-  end if;
-  return NEW;
-END
-$BODY$;
+  FOR EACH ROW EXECUTE PROCEDURE create_update_obs_trigger_fn();
 
 /*
-*  store in each poste the id and time for the most recent obs
+*  cascade delete obs to x_min/x_max
 */ 
-CREATE OR REPLACE TRIGGER create_x_min_trigger
-  AFTER INSERT OR UPDATE ON x_min
-  FOR EACH ROW EXECUTE PROCEDURE create_x_min_trigger_fn();
-
-
-CREATE OR REPLACE FUNCTION create_x_max_trigger_fn()
-  RETURNS TRIGGER LANGUAGE PLPGSQL AS
-$BODY$
-DECLARE
-    x_dat timestamp;
-BEGIN
-  select last_extremes_date  into x_dat from postes where id = NEW.poste_id;
-  if x_dat is null or new.date_local > x_dat then
-    update postes set last_extremes_date = NEW.date_local, last_extremes_id = NEW.id where id = NEW.poste_id;
-  end if;
-  return NEW;
-END
-$BODY$;
-
-/*
-*  store in each poste the id and time for the most recent obs
-*/ 
-CREATE OR REPLACE TRIGGER create_x_max_trigger
-  AFTER INSERT OR UPDATE ON x_max
-  FOR EACH ROW EXECUTE PROCEDURE create_x_max_trigger_fn();
-
 CREATE OR REPLACE FUNCTION delete_obs_trigger_fn()
   RETURNS TRIGGER LANGUAGE PLPGSQL AS
 $BODY$
@@ -255,134 +271,100 @@ BEGIN
 END
 $BODY$;
 
-
-/*
-*  delete cascase linked obs, and linked extremes
-*/ 
-CREATE TRIGGER delete_obs_trigger
-  AFTER DELETE ON obs
+CREATE OR REPLACE TRIGGER delete_obs_trigger
+  AFTER INSERT OR UPDATE ON x_max
   FOR EACH ROW EXECUTE PROCEDURE delete_obs_trigger_fn();
 
 
 -- CREATE OR REPLACE FUNCTION get_last_obs(pid integer)
--- RETURNS json LANGUAGE plpgsql
+-- RETURNS TABLE(poste_id smallint, ) LANGUAGE plpgsql
 -- AS $$
 -- DECLARE
---     tmp_str text;
---     j_result json;
---     v_barometer float;
---     v_barometer_omm float;
---     v_dewpoint float;
---     v_etp float;
---     v_extra_humid1 float;
---     v_extra_humid2 float;
---     v_extra_temp1 float;
---     v_extra_temp2 float;
---     v_extra_temp3 float;
---     v_hail float;
---     v_hail_rate float;
---     v_heatindex float;
---     v_heating_temp float;
---     v_in_humidity float;
---     v_in_temp float;
---     v_leaf_temp1 float;
---     v_leaf_temp2 float;
---     v_leaf_wet1 float;
---     v_leaf_wet2 float;
---     v_out_humidity float;
---     v_out_humidity_omm float;
---     v_out_temp float;
---     v_out_temp_omm float;
---     v_pressure float;
---     v_radiation float;
---     v_rain float;
---     v_rain_omm float;
---     v_rain_rate float;
---     v_rx float;
---     v_soil_moist1 float;
---     v_soil_moist2 float;
---     v_soil_moist3 float;
---     v_soil_moist4 float;
---     v_soil_temp1 float;
---     v_soil_temp2 float;
---     v_soil_temp3 float;
---     v_soil_temp4 float;
---     v_uv float;
---     v_voltage float;
---     v_wind float;
---     v_wind_gust float;
---     v_wind10 float;
---     v_wind10_omm float;
---     v_windchill float;
--- BEGIN
---     tmp_str = '';
-
---     select barometer, barometer_omm, dewpoint, etp, extra_humid1,
---            extra_humid2, extra_temp1, extra_temp2, extra_temp3, hail,
---            hail_rate, heatindex, heating_temp, in_humidity, in_temp,
---            leaf_temp1, leaf_temp2, leaf_wet1, leaf_wet2, out_humidity,
---            out_humidity_omm, out_temp, out_temp_omm, pressure, radiation,
---            rain, rain_omm, rain_rate, rx, soil_moist1,
---            soil_moist2, soil_moist3, soil_moist4, soil_temp1, soil_temp2,
---            soil_temp3, soil_temp4, uv, voltage, wind,
---            wind_gust, wind10, wind10_omm, windchill
---     into
---         v_barometer, v_barometer_omm, v_dewpoint, v_etp, v_extra_humid1,
---         v_extra_humid2, v_extra_temp1, v_extra_temp2, v_extra_temp3, v_hail,
---         v_hail_rate, v_heatindex, v_heating_temp, v_in_humidity, v_in_temp,
---         v_leaf_temp1, v_leaf_temp2, v_leaf_wet1, v_leaf_wet2, v_out_humidity,
---         v_out_humidity_omm, v_out_temp, v_out_temp_omm, v_pressure, v_radiation,
---         v_rain, v_rain_omm, v_rain_rate, v_rx, v_soil_moist1,
---         v_soil_moist2, v_soil_moist3, v_soil_moist4, v_soil_temp1, v_soil_temp2,
---         v_soil_temp3, v_soil_temp4, v_uv, v_voltage, v_wind,
---         v_wind_gust, v_wind10, v_wind10_omm, v_windchill
-
---     from obs where id = (select last_obs_id from postes where id = pid);
-
---     if v_barometer is not null then tmp_str = concat(tmp_str, ', "barometer", ', v_barometer); end if;        
---     if v_dewpoint is not null then tmp_str = concat(tmp_str, ', "dewpoint", ', v_dewpoint); end if;
---     if v_etp is not null then tmp_str = concat(tmp_str, ', "etp", ', v_etp); end if;
---     if v_extra_humid1 is not null then tmp_str = concat(tmp_str, ', "extra_humid1", ', v_extra_humid1); end if;
---     if v_extra_humid2 is not null then tmp_str = concat(tmp_str, ', "extra_humid2", ', v_extra_humid2); end if;
---     if v_extra_temp1 is not null then tmp_str = concat(tmp_str, ', "extra_temp1", ', v_extra_temp1); end if;
---     if v_extra_temp2 is not null then tmp_str = concat(tmp_str, ', "extra_temp2", ', v_extra_temp2); end if;
---     if v_extra_temp3 is not null then tmp_str = concat(tmp_str, ', "extra_temp3", ', v_extra_temp3); end if;
---     if v_hail is not null then tmp_str = concat(tmp_str, ', "hail", ', v_hail); end if;
---     if v_hail_rate is not null then tmp_str = concat(tmp_str, ', "hail_rate", ', v_hail_rate); end if;
---     if v_heatindex is not null then tmp_str = concat(tmp_str, ', "heatindex", ', v_heatindex); end if;
---     if v_heating_temp is not null then tmp_str = concat(tmp_str, ', "heating_temp", ', v_heating_temp); end if;
---     if v_in_humidity is not null then tmp_str = concat(tmp_str, ', "in_humidity", ', v_in_humidity); end if;
---     if v_in_temp is not null then tmp_str = concat(tmp_str, ', "in_temp", ', v_in_temp); end if;
---     if v_leaf_temp1 is not null then tmp_str = concat(tmp_str, ', "leaf_temp1", ', v_leaf_temp1); end if;
---     if v_leaf_temp2 is not null then tmp_str = concat(tmp_str, ', "leaf_temp2", ', v_out_temp); end if;
---     if v_leaf_wet1 is not null then tmp_str = concat(tmp_str, ', "leaf_wet1", ', v_leaf_wet1); end if;
---     if v_leaf_wet2 is not null then tmp_str = concat(tmp_str, ', "leaf_wet2", ', v_leaf_wet2); end if;
---     if v_out_temp is not null then tmp_str = concat(tmp_str, ', "out_temp", ', v_out_temp); end if;
---     if v_out_humidity is not null then tmp_str = concat(tmp_str, ', "out_humidity", ', v_out_humidity); end if;
---     if v_pressure is not null then tmp_str = concat(tmp_str, ', "pressure", ', v_pressure); end if;
---     if v_rain is not null then tmp_str = concat(tmp_str, ', "rain", ', v_rain); end if;
---     if v_rain_rate is not null then tmp_str = concat(tmp_str, ', "rain_rate", ', v_rain_rate); end if;
---     if v_rx is not null then tmp_str = concat(tmp_str, ', "rx", ', v_rx); end if;
---     if v_soil_moist1 is not null then tmp_str = concat(tmp_str, ', "soil_moist1", ', v_soil_moist1); end if;
---     if v_soil_moist2 is not null then tmp_str = concat(tmp_str, ', "soil_moist2", ', v_soil_moist2); end if;
---     if v_soil_moist3 is not null then tmp_str = concat(tmp_str, ', "soil_moist3", ', v_soil_moist3); end if;
---     if v_soil_moist4 is not null then tmp_str = concat(tmp_str, ', "soil_moist4", ', v_soil_moist4); end if;
---     if v_soil_temp1 is not null then tmp_str = concat(tmp_str, ', "soil_temp1", ', v_soil_temp1); end if;
---     if v_soil_temp2 is not null then tmp_str = concat(tmp_str, ', "soil_temp2", ', v_soil_temp2); end if;
---     if v_soil_temp3 is not null then tmp_str = concat(tmp_str, ', "soil_temp3", ', v_soil_temp3); end if;
---     if v_soil_temp4 is not null then tmp_str = concat(tmp_str, ', "soil_temp4", ', v_soil_temp4); end if;
---     if v_uv is not null then tmp_str = concat(tmp_str, ', "uv", ', v_uv); end if;
---     if v_voltage is not null then tmp_str = concat(tmp_str, ', "voltage", ', v_voltage); end if;
---     if v_wind is not null then tmp_str = concat(tmp_str, ', "wind", ', v_wind); end if;
---     if v_wind_gust is not null then tmp_str = concat(tmp_str, ', "wind_gust", ', v_wind_gust); end if;
---     if v_wind10 is not null then tmp_str = concat(tmp_str, ', "wind10", ', v_wind10); end if;
---     if v_windchill is not null then tmp_str = concat(tmp_str, ', "windchill", ', v_windchill); end if;
-
--- 	tmp_str = substring(tmp_str, 2);
---     tmp_str = concat('{', tmp_str, '}');
-
---     select json_object(tmp_str::text[]) into j_result;
---     return j_result;
+--   select last(date_local, mesure_id) as date_local, last(avg, mesure_id) as mesure_id
+--     from obs_month join mesures on mesures.id = mesure_id
+--     where poste_id = pid
+--     group by 1,2
+--     order by 1,2;
 -- END;
 -- $$
 -- ;
+
+/*
+Id_station;Id_omm;Nom_usuel;Latitude;Longitude;Altitude;Date_ouverture;Pack
+97401520;;LE TEVELAVE;-21.211667;55.361333;908;1953-01-01;ETENDU
+97401540;;LES AVIRONS - CIRAD;-21.239500;55.327500;180;1952-01-01;ETENDU
+97402240;;BELLEVUE BRAS-PANON;-21.005000;55.622667;480;1990-09-01;RADOME
+97403410;;LE DIMITILE_SAPC;-21.189000;55.481500;1808;2013-09-27;ETENDU
+97403435;;BRAS-LONG_SAPC;-21.228333;55.474667;510;2013-05-22;ETENDU
+97404540;;PONT-MATHURIN;-21.265000;55.380000;19;1961-06-01;RADOME
+97405420;;PITON-BLOC_SAPC;-21.321167;55.572333;812;1990-01-01;ETENDU
+97406220;;PLAINE DES PALMISTES;-21.136167;55.627167;1032;1952-01-01;RADOME
+97407520;61981;LE PORT;-20.946167;55.282000;9;1971-04-18;RADOME
+97408510;;POSSESSION;-20.921333;55.346167;9;1997-10-01;ETENDU
+97408560;;AURERE_SAPC;-21.018833;55.424833;940;1952-01-01;ETENDU
+97408580;;LA NOUVELLE_SAPC;-21.076667;55.423333;1415;1970-01-01;ETENDU
+97408582;;DOS D'ANE;-20.978500;55.390500;1027;2022-05-02;ETENDU
+97409210;;BOIS-ROUGE;-20.913667;55.641333;5;1952-01-01;ETENDU
+97409230;;LE COLOSSE;-20.934500;55.664500;16;1957-03-01;RADOME
+97409240;;MENCIOL;-20.961167;55.625667;181;1953-01-01;ETENDU
+97410202;;BEAUVALLON;-21.008000;55.693333;16;1952-01-01;ETENDU
+97410238;;SAINT-BENOIT;-21.058833;55.719333;43;1952-01-01;RADOME
+97410250;;TAKAMAKA - PK12_SAPC;-21.076333;55.630833;660;1971-11-01;ETENDU
+97410265;;CHEMIN DE CEINTURE_SAPC;-21.076333;55.685500;255;2003-07-24;ETENDU
+97411132;;CHAUDRON;-20.897000;55.495000;38;1967-01-01;ETENDU
+97411141;;GRANDE-CHALOUPE;-20.898333;55.369833;10;1997-10-01;ETENDU
+97411146;;COLORADO_SAPC;-20.910500;55.421500;702;2003-02-26;ETENDU
+97411150;;SAINT-FRANCOIS;-20.921333;55.456333;545;1953-03-01;ETENDU
+97411155;;MONTAUBAN_SAPC;-20.938667;55.496833;420;2009-09-29;ETENDU
+97411164;;LE BRULE - VAL FLEURI_SAPC;-20.941667;55.429500;1069;1956-09-01;ETENDU
+97411170;;PLAINE DES CHICOTS_SAPC;-20.987333;55.444833;1834;1982-01-01;ETENDU
+97412302;;COMMERSON_SAPC;-21.208000;55.643667;2310;1968-01-01;ETENDU
+97412336;;GRAND-COUDE_SAPC;-21.301667;55.631333;1085;1978-01-01;ETENDU
+97412340;;GRAND-GALET;-21.311000;55.639500;505;1953-08-06;ETENDU
+97412356;;LA CRETE_SAPC;-21.337500;55.667667;659;1968-10-01;ETENDU
+97412384;;ST-JOSEPH_SAPC;-21.385167;55.609667;13;1960-04-01;ETENDU
+97412801;;ST JOSEPH-CIRAD;-21.385167;55.609667;13;2021-10-05;ETENDU
+97413520;;COLIMACONS;-21.130333;55.304667;798;1963-08-01;RADOME
+97413542;;ST-LEU;-21.190000;55.292333;79;1950-10-01;ETENDU
+97413545;;SAINT-LEU - CIRAD;-21.187333;55.300833;222;1997-01-01;ETENDU
+97413550;;ETANG SAINT-LEU - CIRAD;-21.173333;55.308833;429;2002-02-01;ETENDU
+97413580;;PITON SAINT-LEU_SAPC;-21.215167;55.325833;530;1973-02-01;ETENDU
+97414409;;PLAINE DES MAKES_SAPC;-21.199500;55.409167;980;2004-12-29;ETENDU
+97414431;;LE GOL LES HAUTS - CIRAD;-21.245833;55.428000;365;1997-01-01;ETENDU
+97414451;;LE TAPAGE - CIRAD;-21.224667;55.444167;863;2002-03-25;ETENDU
+97415516;;BOIS DE NEFLES ST-PAUL_SAPC;-20.997500;55.341167;595;1952-01-01;ETENDU
+97415536;;PETITE-FRANCE;-21.045000;55.342000;1200;1999-09-01;RADOME
+97415541;;TAN-ROUGE_SAPC;-21.069167;55.299667;750;1960-01-01;ETENDU
+97415550;;L'ERMITAGE - CIRAD;-21.053000;55.241333;147;2002-05-01;ETENDU
+97415557;;LE GUILLAUME;-21.064667;55.324333;1035;1953-01-01;ETENDU
+97415566;;PITON-MAIDO;-21.076667;55.381167;2150;1998-11-18;RADOME
+97415590;;POINTE DES TROIS-BASSINS;-21.105167;55.247667;5;1987-10-02;RADOME
+97415592;;TAN ROUGE-CIRAD;-21.069167;55.299667;746;2021-06-02;ETENDU
+97416410;;RAVINE DES CABRIS - CIRAD;-21.274500;55.475333;310;1997-01-01;ETENDU
+97416463;;PIERREFONDS-AEROPORT;-21.320000;55.425500;21;1999-01-01;RADOME
+97416465;;LIGNE-PARADIS - CIRAD;-21.319167;55.485167;156;1966-01-01;ETENDU
+97417340;;LE TREMBLET;-21.317333;55.801000;91;1953-01-01;ETENDU
+97417360;;LE BARIL;-21.359000;55.732167;114;1989-02-01;RADOME
+97418110;61980;GILLOT-AEROPORT;-20.892167;55.528667;8;1953-01-01;RADOME
+97418123;;LA MARE - CIRAD;-20.903500;55.532000;68;2001-01-01;ETENDU
+97418170;;PLAINE DES FOUGERES_SAPC;-20.967333;55.527833;1064;1993-06-01;ETENDU
+97419310;;RIVIERE DE L'EST - CIRAD;-21.120167;55.758667;144;1953-01-01;ETENDU
+97419320;;HAUTS DE SAINTE-ROSE_SAPC;-21.159500;55.763667;820;1973-07-01;ETENDU
+97419350;;GROS PITON SAINTE-ROSE;-21.179500;55.828833;181;1987-09-01;RADOME
+97419380;;BELLECOMBE-JACOB;-21.217833;55.687000;2245;1966-11-01;RADOME
+97420110;;GRAND-HAZIER - CIRAD;-20.902833;55.586000;69;1953-01-01;ETENDU
+97420150;;BAGATELLE_SAPC;-20.931000;55.576667;262;1953-01-01;ETENDU
+97420180;;BRAS-PISTOLET_SAPC;-20.969000;55.587500;556;2002-12-01;ETENDU
+97421210;;MARE A VIEILLE PLACE;-21.027833;55.512167;870;1989-07-01;ETENDU
+97421220;;GRAND-ILET_SAPC;-21.028667;55.471667;1185;1973-07-01;ETENDU
+97421240;;SALAZIE-VILLAGE_SAPC;-21.031667;55.538500;476;1996-01-01;ETENDU
+97421260;;BELOUVE_SAPC;-21.060833;55.536500;1500;1955-09-01;ETENDU
+97421265;;ILET A VIDOT_SAPC;-21.063167;55.510333;940;2003-12-01;ETENDU
+97422440;;PLAINE DES CAFRES;-21.209167;55.572833;1560;1948-01-01;RADOME
+97422445;;BRAS-SEC;-21.205667;55.525167;1210;1969-11-15;ETENDU
+97422455;;PONT D'YVES;-21.231333;55.503167;835;1977-07-19;ETENDU
+97422465;;LE TAMPON - CIRAD;-21.251667;55.530333;860;1958-01-01;ETENDU
+97424410;;CILAOS;-21.134167;55.471667;1197;1952-01-01;RADOME
+97424450;;ILET A CORDES_SAPC;-21.153500;55.438167;1067;1977-08-08;ETENDU
+97424460;;PALMISTE-ROUGE;-21.168667;55.474500;830;1962-01-01;ETENDU
+*/
