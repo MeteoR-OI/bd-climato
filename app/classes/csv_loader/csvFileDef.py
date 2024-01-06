@@ -173,7 +173,9 @@ class CsvFileSpec(ABC):
             return None, None, None
 
         cu_val = float(fields_array[a_mesure['csv_row_idx']])
-        cur_q_val = fields_array[a_mesure['csv_qa_idx']] if a_mesure['csv_qa_idx'] is not None else QA.UNSET
+        cur_q_val = fields_array[a_mesure['csv_qa_idx']] if a_mesure['csv_qa_idx'] is not None else QA.UNSET.value
+        if cur_q_val == '':
+            cur_q_val = QA.UNSET.value
         obs_date_utc = self.getStopDate(fields_array)
 
         return cu_val, cur_q_val, obs_date_utc
