@@ -126,37 +126,63 @@ select 'nb mesures: ' || count(*) from mesures;
 
 -- get last values
 -- select poste_id, name, last(date_local, mesure_id), last(avg, mesure_id)  from obs_month join mesures on mesures.id = mesure_id group by 1,2 order by 1,2;
-
 create materialized view obs_hour WITH (timescaledb.continuous) as
   select
-        timescaledb_experimental.time_bucket_ng('1 hour', date_local, origin => '1950-01-01') as date_local,
-        poste_id as poste_id,
-        mesure_id as mesure_id,
-        sum(duration) as duration,
-        avg(value) as value
-  from obs
+        timescaledb_experimental.time_bucket_ng('1 hour', o.date_local, origin => '1950-01-01') as date_local,
+        o.poste_id as poste_id,
+        o.mesure_id as mesure_id,
+        m.is_avg as is_avg,
+        sum(o.duration) as duration,
+        CASE WHEN m.is_avg is True THEN avg(o.value) ELSE sum(o.value) END AS value
+  from obs o join mesures m on m.id = mesure_id
   where qa_value != 9
-  group by 1,2,3;
+  group by 1,2,3,4;
+
+ALTER MATERIALIZED VIEW obs_hour set (timescaledb.materialized_only = false);
+
+SELECT add_continuous_aggregate_policy('obs_hour',
+  start_offset => INTERVAL '1 minute',
+  end_offset => NULL,
+  schedule_interval => INTERVAL '30 seconds');
 
 create materialized view obs_day WITH (timescaledb.continuous) as
   select
-        timescaledb_experimental.time_bucket_ng('1 day', date_local, origin => '1950-01-01') as date_local,
-        poste_id as poste_id,
-        mesure_id as mesure_id,
-        sum(duration) as duration,
-        avg(value) as value
-  from obs_hour
-  group by 1,2,3;
+        timescaledb_experimental.time_bucket_ng('1 day', o.date_local, origin => '1950-01-01') as date_local,
+        o.poste_id as poste_id,
+        o.mesure_id as mesure_id,
+        m.is_avg as is_avg,
+        sum(o.duration) as duration,
+        CASE WHEN m.is_avg is True THEN avg(o.value) ELSE sum(o.value) END AS value
+  from obs o join mesures m on m.id = mesure_id
+  group by 1,2,3,4;
+
+
+ALTER MATERIALIZED VIEW obs_day set (timescaledb.materialized_only = false);
+
+SELECT add_continuous_aggregate_policy('obs_day',
+  start_offset => INTERVAL '1 minute',
+  end_offset => NULL,
+  schedule_interval => INTERVAL '30 seconds');
+
 
 create materialized view obs_month WITH (timescaledb.continuous) as
   select
-        timescaledb_experimental.time_bucket_ng('1 month', date_local, origin => '1950-01-01') as date_local,
-        poste_id,
-        mesure_id,
-        sum(duration) as duration,
-        avg(value) as value
-  from obs_day
-  group by 1,2,3;
+        timescaledb_experimental.time_bucket_ng('1 month', o.date_local, origin => '1950-01-01') as date_local,
+        o.poste_id,
+        o.mesure_id,
+        m.is_avg as is_avg,
+        sum(o.duration) as duration,
+        CASE WHEN m.is_avg is True THEN avg(o.value) ELSE sum(o.value) END AS value
+  from obs o join mesures m on m.id = mesure_id
+  group by 1,2,3,4;
+
+
+ALTER MATERIALIZED VIEW obs_month set (timescaledb.materialized_only = false);
+
+SELECT add_continuous_aggregate_policy('obs_month',
+  start_offset => INTERVAL '1 minute',
+  end_offset => NULL,
+  schedule_interval => INTERVAL '30 seconds');
 
 create materialized view x_min_day WITH (timescaledb.continuous) as
   select
@@ -169,6 +195,15 @@ create materialized view x_min_day WITH (timescaledb.continuous) as
   where qa_min != 9
   group by 1,2,3;
 
+
+ALTER MATERIALIZED VIEW x_min_day set (timescaledb.materialized_only = false);
+
+SELECT add_continuous_aggregate_policy('x_min_day',
+  start_offset => INTERVAL '1 minute',
+  end_offset => NULL,
+  schedule_interval => INTERVAL '30 seconds');
+
+
 create materialized view x_min_month WITH (timescaledb.continuous) as
   select
         timescaledb_experimental.time_bucket_ng('1 month', date_local, origin => '1950-01-01') as date_local,
@@ -178,6 +213,13 @@ create materialized view x_min_month WITH (timescaledb.continuous) as
         first(min_time, min) as min_time
   from x_min_day
  group by 1,2,3;
+
+ALTER MATERIALIZED VIEW x_min_month set (timescaledb.materialized_only = false);
+
+SELECT add_continuous_aggregate_policy('x_min_month',
+  start_offset => INTERVAL '1 minute',
+  end_offset => NULL,
+  schedule_interval => INTERVAL '30 seconds');
 
 create materialized view x_max_day WITH (timescaledb.continuous) as
   select
@@ -190,6 +232,13 @@ create materialized view x_max_day WITH (timescaledb.continuous) as
   where qa_max != 9
   group by 1,2,3;
 
+ALTER MATERIALIZED VIEW x_max_day set (timescaledb.materialized_only = false);
+
+SELECT add_continuous_aggregate_policy('x_max_day',
+  start_offset => INTERVAL '1 minute',
+  end_offset => NULL,
+  schedule_interval => INTERVAL '30 seconds');
+
 create materialized view x_max_month WITH (timescaledb.continuous) as
   select
         timescaledb_experimental.time_bucket_ng('1 month', date_local, origin => '1950-01-01') as date_local,
@@ -200,51 +249,14 @@ create materialized view x_max_month WITH (timescaledb.continuous) as
   from x_max_day
   group by 1,2,3;
 
+ALTER MATERIALIZED VIEW x_max_month set (timescaledb.materialized_only = false);
+
+SELECT add_continuous_aggregate_policy('x_max_month',
+  start_offset => INTERVAL '1 minute',
+  end_offset => NULL,
+  schedule_interval => INTERVAL '30 seconds');
+
 -- call refresh_continuous_aggregate('obs_hour', null, null);
-
--- CALL refresh_continuous_aggregate(
---     'obs_hour',
---     window_start := '-infinity'::timestamptz,
---     window_end := now()
--- );
--- CREATE OR REPLACE PROCEDURE refresh_mv(m_view text, window_start timestamp default '-infinity'::timestamp, window_end timestamp default now()::timestamp)
-CREATE OR REPLACE PROCEDURE refresh_mv(m_view text)
-LANGUAGE PLPGSQL
-AS $$
-DECLARE
-BEGIN
-  raise notice 'refreshing %', m_view;
-  -- CALL refresh_continuous_aggregate(m_view, window_start := window_start, window_end := window_end);
-  CALL refresh_continuous_aggregate(m_view, null, null);
-  raise notice 'refreshing % done', m_view;
-END
-$$;
-
--- CREATE OR REPLACE PROCEDURE refresh_all_mv(window_start timestamp default '-infinity'::timestamp, window_end timestamp default now()::timestamp)
--- CREATE OR REPLACE PROCEDURE refresh_all_mv(window_start timestamp default null, window_end timestamp default null)
-CREATE OR REPLACE PROCEDURE refresh_all_mv()
-LANGUAGE PLPGSQL
-AS $$
-DECLARE
-  -- mv_list TEXT ARRAY default ARRAY['obs_day', 'obs_hour', 'obs_month', 'x_min_day', 'x_min_month', 'x_max_day', 'x_max_month '];
-  -- m_v TEXT;
-BEGIN
-  -- FOREACH m_v IN ARRAY mv_list
-  -- LOOP
-  --   raise notice 'refreshing %', m_v;    
-  --   -- CALL refresh_continuous_aggregate(m_v, window_start := window_start, window_end := window_end);
-  --   CALL refresh_continuous_aggregate(m_v);
-  --   raise notice 'refreshing % done', m_v;
-  -- END LOOP;
-  CALL refresh_continuous_aggregate('obs_day', null, null);
-  CALL refresh_continuous_aggregate('obs_hour', null, null);
-  CALL refresh_continuous_aggregate('obs_month', null, null);
-  CALL refresh_continuous_aggregate('x_min_day', null, null);
-  CALL refresh_continuous_aggregate('x_min_month', null, null);
-  CALL refresh_continuous_aggregate('x_max_day', null, null);
-  CALL refresh_continuous_aggregate('x_max_month', null, null);
-END
-$$;
 
 -- create materialized view compare_month WITH (timescaledb.continuous) as
 -- materialized view does not support left join...
@@ -288,7 +300,7 @@ DECLARE
     obs_dat timestamp;
 BEGIN
   select last_obs_date  into obs_dat from postes where id = NEW.poste_id;
-  if new.duration > 0 and (obs_dat is null or new.date_utc > obs_dat) then
+  if obs_dat is null or new.date_utc > obs_dat then
     update postes set last_obs_date = NEW.date_utc, last_obs_id = NEW.id where id = NEW.poste_id;
   end if;
   if NEW.qa_value <> OLD.qa_value then
