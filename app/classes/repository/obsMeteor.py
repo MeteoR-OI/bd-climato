@@ -46,6 +46,10 @@ class ObsMeteor():
     def count_obs_poste_local(poste_id: int, dt_obs: datetime):
         return Observation.objects.filter(poste_id=poste_id).filter(date_local=dt_obs).count()
 
+    @staticmethod
+    def load_obs(poste_id: int, dt_obs: datetime):
+        return Observation.objects.filter(poste_id=poste_id).filter(date_local=dt_obs).first()
+
     def __str__(self):
         """print myself"""
         return "ObsMeteor id: " + str(self.data.id) + ", poste_id: " + str(self.data.poste_id) + ", time: " + str(self.data.time)

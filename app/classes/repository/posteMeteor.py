@@ -43,12 +43,6 @@ class PosteMeteor:
         else:
             return None
 
-    @staticmethod
-    def getPosteIdAndTzByMeteor(meteor: str):
-        if Poste.objects.filter(meteor=meteor).exists():
-            return Poste(meteor)
-        return None
-
     def __str__(self) -> None:
         """print myself"""
         return "PosteMeteor id: " + str(self.data.id) + ", meteor: " + self.data.meteor

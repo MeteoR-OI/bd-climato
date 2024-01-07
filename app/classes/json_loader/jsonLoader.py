@@ -14,12 +14,9 @@ from app.classes.repository.mesureMeteor import MesureMeteor
 from app.classes.repository.posteMeteor import PosteMeteor
 from app.classes.repository.incidentMeteor import IncidentMeteor
 from app.classes.repository.obsMeteor import ObsMeteor
-from app.classes.repository.xMaxMeteor import ExtremeMeteor
-from app.classes.repository.histoExtreme import HistoExtreme
-from app.classes.repository.histoObs import HistoObsMeteor
 from app.tools.jsonValidator import checkJson
+from app.tools.dateTools import str_to_datetime
 import psycopg2
-from datetime import timedelta
 import app.tools.myTools as t
 from app.tools.jsonPlus import JsonPlus
 from django.db import transaction
@@ -167,97 +164,81 @@ class JsonLoader:
 
         while idx_global < jsons_to_load.__len__():
             try:
-                meteor = str(jsons_to_load[idx_global].get("meteor"))
-                cur_poste = PosteMeteor.getPosteIdAndTzByMeteor(jsons_to_load[idx_global]["meteor"])
+                json_to_load = jsons_to_load[idx_global]
+                meteor = str(json_to_load.get("meteor"))
+                cur_poste = PosteMeteor.getPosteByMeteor(json_to_load["meteor"])
                 pid = cur_poste.data.id
                 if pid is None:
                     raise Exception("code meteor inconnu: " + meteor + ', idx_global: ' + str(idx_global))
                 poste_tz = cur_poste.data.delta_timezone
-                
+
                 idx_data = 0
-                try:
-                    a_work_item = jsons_to_load[idx_global]['data'][idx_data]
+                while idx_data < json_to_load['data'].__len__():
+                    try:
+                        a_work_item = json_to_load['data'][idx_data]
 
-                    # get data from our json item
-                    j_stop_dat = a_work_item["stop_dat"]
-                    j_duration = a_work_item["duration"]
+                        # get data from our json item
+                        j_stop_dat = a_work_item["stop_dat"]
+                        stop_date = str_to_datetime(j_stop_dat)
+                        j_duration = a_work_item["duration"]
 
-                    # Load the obs we need in cache
-                    all_obs = ObsMeteor.load_all_needed_obs(pid, self.decas, j_stop_dat, poste_tz)
+                        # Load the obs we need in cache
+                        all_obs = ObsMeteor.load_obs(pid, stop_date)
 
-                    # load attributes in our sub_spam
-                    my_span.set_attribute("stop_dat", str(j_stop_dat))
+                        # load attributes in our sub_spam
+                        my_span.set_attribute("stop_dat", str(j_stop_dat))
 
-                    # NCNC -> futur: check if stop_dat in range ]time-duration, time]
+                        # NCNC -> futur: check if stop_dat in range ]time-duration, time]
 
-                    # check if json already loaded on the main obs in cache
-                    if all_obs[0]['obs'].data.duration != 0:
-                        if a_work_item.__contains__("force_replace") is not True:
-                            t.logInfo(
-                                    'already loaded', my_span,
-                                    {'meteor': meteor, 'file': filename, 'idx': idx_data, 'stop_dat': str(j_stop_dat)})
-                            continue
+                        # check if json already loaded on the main obs in cache
+                        if all_obs[0]['obs'].data.duration != 0:
+                            if a_work_item.__contains__("force_replace") is not True:
+                                t.logInfo(
+                                        'already loaded', my_span,
+                                        {'meteor': meteor, 'file': filename, 'idx': idx_data, 'stop_dat': str(j_stop_dat)})
+                                continue
+                            else:
+                                # delete our obs, and linked extremes and obs
+                                all_obs[0]['obs'].data.delete()
+
+                                # reload a new set of obs (first will be new now)
+                                all_obs = ObsMeteor.load_all_needed_obs(pid, self.decas, j_stop_dat, poste_tz)
+
+                        all_obs[0]['obs'].data.duration = j_duration
+                        # all_obs[0]['obs'].data.save()
+
+                        keys_found = self.load_obs_data_j(pid, all_obs, a_work_item['valeurs'], j_stop_dat)
+                        if keys_found is not None:
+                            # t.logInfo("keys loaded from json: " + str(keys_found), my_span)
+                            pass
                         else:
-                            # delete our obs, and linked extremes and obs
-                            all_obs[0]['obs'].data.delete()
+                            t.logError("jsonloder", "no keys loaded !!!", my_span)
 
-                            # reload a new set of obs (first will be new now)
-                            all_obs = ObsMeteor.load_all_needed_obs(pid, self.decas, j_stop_dat, poste_tz)
+                        # save obs, store dependencies in histoObs
+                        histo_obs_new = []
+                        histo_x_new = []
+                        idx_obs_all = 0
+                        while idx_obs_all < len(all_obs):
+                            an_obs = all_obs[idx_obs_all]
+                            an_obs['obs'].data.save()
+# save id to x_min/max
 
-                    all_obs[0]['obs'].data.duration = j_duration
-                    # all_obs[0]['obs'].data.save()
+                        my_span.add_event('jsonload', "file: " + filename + " DONE")
+                        my_span.add_event('obs', 'new rows: ' + str(len(histo_obs_new)))
+                        # my_span.add_event('histo', "new rows: " + str(len(histo_x_new)))
+                        my_span.add_event('histo_extreme', "new rows: " + str(len(histo_x_new)))
+                        histo_obs_new = []
+                        histo_x_new = []
 
-                    histo_x_list = []
-                    for an_obs in all_obs:
-                        histo_x_list.append([])
-
-                    keys_found = self.load_obs_data_j(pid, all_obs, a_work_item['valeurs'], j_stop_dat, histo_x_list)
-                    if keys_found is not None:
-                        # t.logInfo("keys loaded from json: " + str(keys_found), my_span)
-                        pass
-                    else:
-                        t.logError("jsonloder", "no keys loaded !!!", my_span)
-
-                    # save obs, store dependencies in histoObs
-                    id_obs_main = 0
-                    histo_obs_new = []
-                    histo_x_new = []
-                    idx_obs_all = 0
-                    while idx_obs_all < len(all_obs):
-                        an_obs = all_obs[idx_obs_all]
-                        an_obs['obs'].data.save()
-
-                        if id_obs_main == 0 and an_obs['obs'].data.duration != 0:
-                            id_obs_main = an_obs['obs'].data.id
-
-                        if id_obs_main != 0:
-                            for an_histo_x in histo_x_list[idx_obs_all]:
-                                histo_x_new.append([id_obs_main, an_histo_x])
-                        idx_obs_all += 1
-
-                    pgconn = self.getPGConnexion()
-                    HistoObsMeteor.storeArray(pgconn, histo_obs_new)
-                    pgconn.commit()
-                    HistoExtreme.storeArray(pgconn, histo_x_new)
-                    pgconn.commit()
-                    pgconn.close()
-
-                    my_span.add_event('jsonload', "file: " + filename + " DONE")
-                    my_span.add_event('obs', 'new rows: ' + str(len(histo_obs_new)))
-                    # my_span.add_event('histo', "new rows: " + str(len(histo_x_new)))
-                    my_span.add_event('histo_extreme', "new rows: " + str(len(histo_x_new)))
-                    histo_obs_new = []
-                    histo_x_new = []
-
-                finally:
-                    idx_data += 1
+                    finally:
+                        idx_data += 1
 
             finally:
                 idx_global += 1
 
         work_item['is_loaded'] = True
 
-    def load_obs_data_j(self, pid, all_obs, valeurs, stop_dat, histo_x_list):
+    def load_obs_data_j(self, pid, all_obs, valeurs, stop_dat):
         keys_found = []
         for a_mesure in self.mesures:
             cur_vals = self.get_valeurs(a_mesure, valeurs, stop_dat)
@@ -279,7 +260,6 @@ class JsonLoader:
             # store min/max
             self.insert_extremes(
                 pid,
-                histo_x_list[cur_obs_idx],
                 a_mesure,
                 [
                     {'col': 'min', 'v': cur_vals[2], 't': cur_vals[3], 'd': None},
@@ -291,13 +271,6 @@ class JsonLoader:
     def get_valeurs(self, a_mesure, valeurs, stop_dat, force_abs=False, use_second_input_key=False):
         #  [0]   [1]       [2]     [3]      [4]      [5]       [6]
         # val, dir|None, valmin, min_time, valmax, max_time, max_dir
-
-        # for omm values, get the underlying data
-        if a_mesure['ommidx'] is not None:
-            return self.get_valeurs(self.mesures[a_mesure['ommidx']], valeurs, stop_dat, True, use_second_input_key)
-
-        # if a_mesure['col'] == 'rain':
-        #     print('rain')
 
         suffix_key1 = '_avg'
         suffix_key2 = '_s'
@@ -349,47 +322,38 @@ class JsonLoader:
         return [my_val, my_val_dir, my_val_min, my_val_min_time, my_val_max, my_val_max_time, my_val_max_dir]
 
     def get_cur_obs_idx(self, all_obs, a_mesure):
-        idx = 0
-        while idx < all_obs.__len__():
-            if all_obs[idx]['deca'] == a_mesure['valdk']:
-                return idx
-            idx += 1
-        raise Exception("obs not in cache for dk: " + str(a_mesure['valdk']))
+        return 0
 
-    def insert_extremes(self, pid, x_histo_array, a_mesure, x_data):
-        x_row = None
-        b_insert_histo = False
-        for a_data in x_data:
-            if a_mesure[a_data['col']] is True and (a_data['v'] is not None and a_data['t'] is not None):
-                x_date_key = a_data['t'] + timedelta(hours=a_mesure[a_data['col'] + 'dk'])
-                x_date_key = x_date_key.date()
-                if x_row is None or x_row.data.date != x_date_key:
-                    if x_row is not None:
-                        x_row.data.save()
-                        if b_insert_histo is True:
-                            x_histo_array.append(x_row.data.id)
-                            b_insert_histo = False
-                    x_row = ExtremeMeteor.get_extreme(pid, a_mesure['id'], x_date_key)
-                if (a_data['col'] == 'min' and
-                        (hasattr(x_row.data, a_data['col']) is False or
-                         x_row.data.__getattribute__(a_data['col']) is None or
-                         a_data['v'] < x_row.data.__getattribute__(a_data['col']))) or \
-                   (a_data['col'] == 'max' and
-                        (hasattr(x_row.data, a_data['col']) is False or
-                         x_row.data.__getattribute__(a_data['col']) is None or
-                         a_data['v'] > x_row.data.__getattribute__(a_data['col']))):
-                    # set the new value for the extreme
-                    b_insert_histo = True
-                    x_row.data.__setattr__(a_data['col'], a_data['v'])
-                    x_row.data.__setattr__(a_data['col'] + '_time', a_data['t'])
-                    if a_data['d'] is not None:
-                        x_row.data.__setattr__(a_data['col'] + '_dir', a_data['d'])
+    def insert_extremes(self, pid, a_mesure, x_data):
+        # x_row = None
+        # for a_data in x_data:
+        #     if a_mesure[a_data['col']] is True and (a_data['v'] is not None and a_data['t'] is not None):
+        #         x_date_key = a_data['t'] + timedelta(hours=a_mesure[a_data['col'] + 'dk'])
+        #         x_date_key = x_date_key.date()
+        #         if x_row is None or x_row.data.date != x_date_key:
+        #             if x_row is not None:
+        #                 x_row.data.save()
+        #             x_row = ExtremeMeteor.get_extreme(pid, a_mesure['id'], x_date_key)
+        #         if (a_data['col'] == 'min' and
+        #                 (hasattr(x_row.data, a_data['col']) is False or
+        #                  x_row.data.__getattribute__(a_data['col']) is None or
+        #                  a_data['v'] < x_row.data.__getattribute__(a_data['col']))) or \
+        #            (a_data['col'] == 'max' and
+        #                 (hasattr(x_row.data, a_data['col']) is False or
+        #                  x_row.data.__getattribute__(a_data['col']) is None or
+        #                  a_data['v'] > x_row.data.__getattribute__(a_data['col']))):
+        #             # set the new value for the extreme
+        #             b_insert_histo = True
+        #             x_row.data.__setattr__(a_data['col'], a_data['v'])
+        #             x_row.data.__setattr__(a_data['col'] + '_time', a_data['t'])
+        #             if a_data['d'] is not None:
+        #                 x_row.data.__setattr__(a_data['col'] + '_dir', a_data['d'])
 
-        if x_row is not None:
-            x_row.data.save()
-            if b_insert_histo is True:
-                x_histo_array.append(x_row.data.id)
-                b_insert_histo = False
+        # if x_row is not None:
+        #     x_row.data.save()
+        #     if b_insert_histo is True:
+        #         b_insert_histo = False
+        return
 
     def getPGConnexion(self):
         return psycopg2.connect(
