@@ -16,11 +16,12 @@
 # ---------------
 import app.tools as t
 from app.tools.myTools import FromTimestampToDate, AsTimezone, GetFirstDayNextMonth
+from app.classes.repository.obsMeteor import QA
+from app.classes.repository.posteMeteor import PosteMeteor
 from app.tools.myTools import FromDateToLocalDateTime
 import mysql.connector
 import psycopg2
 from datetime import datetime, timedelta
-from app.classes.repository.posteMeteor import PosteMeteor
 
 
 # --------------------------------------
@@ -98,19 +99,21 @@ class MigrateDB:
 
                 # Load obs, records from archive
                 new_extremes = self.loadExistingArchive(pg_cur, work_item, my_span)
-                pgconn.commit()
 
-                # Add data from WeeWx record tables
-                new_extremes = self.loadMaxminFromWeewx(work_item, new_extremes, my_span)
-                pgconn.commit()
+                if new_extremes is not None:
+                    pgconn.commit()
+    
+                    # Add data from WeeWx record tables
+                    new_extremes = self.loadMaxminFromWeewx(work_item, new_extremes, my_span)
+                    pgconn.commit()
 
-                # Merge list in db
-                self.storeMaxMinInDB(pg_cur, work_item['pid'], new_extremes, my_span)
+                    # Merge list in db
+                    self.storeMaxMinInDB(pg_cur, work_item['pid'], new_extremes, my_span)
 
-                new_extremes = []
+                    new_extremes = []
 
-                pgconn.commit()
-                # print("     after commit" + ', time: ' + str(datetime.now() - start_dt))
+                    pgconn.commit()
+
                 print("     Done in : " + str(datetime.now() - start_dt) + " for " + str(work_item['start_dt_archive_utc']))
                 self.getNewDateBraket(work_item, my_span)
 
@@ -279,6 +282,7 @@ class MigrateDB:
         # load field_name/row_id mapping for weewx select
         col_mapping = {}
         idx = 0
+        cur_poste = None
 
         while idx < len(my_cur.column_names):
             col_mapping[my_cur.column_names[idx]] = idx
@@ -288,34 +292,37 @@ class MigrateDB:
             if row2[self.row_archive_usunits] != 16:
                 raise Exception('bad usUnits: ' + str(row2[self.row_archive_usunits]) + ', dateTime(UTC): ' + str(row2[self.row_archive_dt_utc]))
 
-            for a_mesure in self.measures:
-                cur_val, ts_mesure_local = self.get_valeurs(a_mesure, row2, col_mapping)
-                if cur_val is None:
-                    continue
+            if cur_poste is None:
+                cur_poste = PosteMeteor(work_item['meteor'])
+                if cur_poste.data.id is None:
+                    raise Exception('station ' + work_item['meteor'] + ' not found')
+                
+            date_obs_utc = FromTimestampToDate(row2[self.row_archive_dt_utc]).replace(tzinfo=None)
+            date_obs_local = AsTimezone(date_obs_utc, work_item['tz']).replace(tzinfo=None)
 
-                date_obs_utc = FromTimestampToDate(ts_mesure_local + a_mesure['valdk'] * 3600)
-                date_obs_local = AsTimezone(date_obs_utc, work_item['tz']).replace(tzinfo=None)
-                data_args.append(([work_item['pid'], date_obs_utc, date_obs_local, a_mesure['id'], row2[self.row_archive_interval], cur_val, 0]))
+            if date_obs_utc > cur_poste.data.last_obs_date:
+                for a_mesure in self.measures:
+                    cur_val = self.get_valeurs(a_mesure, row2, col_mapping)
+                    if cur_val is None:
+                        continue
 
-                if a_mesure['valdk'] != 0:
-                    date_obs_local = FromTimestampToDate(ts_mesure_local + work_item['tz'] * 3600).replace(tzinfo=None)
-                date_obs_utc = date_obs_utc.replace(tzinfo=None)
+                    data_args.append(([work_item['pid'], date_obs_utc, date_obs_local, a_mesure['id'], row2[self.row_archive_interval], cur_val, QA.UNSET.value, ]))
 
-                if a_mesure['id'] == 76 and cur_val == 15.6:
-                    pass
+                    if a_mesure['iswind'] is True:
+                        max_dir = None
+                        if a_mesure['diridx'] is not None:
+                            max_dir = row2[col_mapping[self.measures[a_mesure['diridx']]['archive_col']]]
 
-                if a_mesure['iswind'] is True:
-                    max_dir = None
-                    if a_mesure['diridx'] is not None:
-                        max_dir = row2[col_mapping[self.measures[a_mesure['diridx']]['archive_col']]]
-
-                    minmax_values.append({'min': cur_val, 'max': cur_val, 'date_min': date_obs_local, 'date_max': date_obs_local, 'max_dir': max_dir, 'mid': a_mesure['id'], 'obs_id': -1})
-                else:
-                    minmax_values.append({'min': cur_val, 'max': cur_val, 'date_min': date_obs_local, 'date_max': date_obs_local, 'mid': a_mesure['id'], 'obs_id': -1})
+                        minmax_values.append({'min': cur_val, 'max': cur_val, 'date_min': date_obs_local, 'date_max': date_obs_local, 'max_dir': max_dir, 'mid': a_mesure['id'], 'obs_id': -1})
+                    else:
+                        minmax_values.append({'min': cur_val, 'max': cur_val, 'date_min': date_obs_local, 'date_max': date_obs_local, 'mid': a_mesure['id'], 'obs_id': -1})
 
             row2 = my_cur.fetchone()
 
         my_cur.close()
+
+        if len(data_args) == 0:
+            return None
 
         # cursor.mogrify() to insert multiple values
         args = ','.join(pg_cur.mogrify("( %s, %s, %s, %s, %s, %s, %s )", i).decode('utf-8')
@@ -331,14 +338,12 @@ class MigrateDB:
 
         return minmax_values
 
+    #  Returns: cur_val
     def get_valeurs(self, a_mesure, row2, col_mapping):
-        if a_mesure['ommidx'] is not None:
-            return self.get_valeurs(self.measures[a_mesure['ommidx']], row2, col_mapping)
-
         if row2[col_mapping[a_mesure['archive_col']]] is None:
-            return None, None
+            return None
 
-        return row2[col_mapping[a_mesure['archive_col']]], row2[self.row_archive_dt_utc]
+        return row2[col_mapping[a_mesure['archive_col']]]
 
     # ------------------------------------
     # generate max/min from WeeWX records
@@ -378,8 +383,8 @@ class MigrateDB:
                     row = my_cur.fetchone()
                     while row is not None:
                         if row[0] is not None or row[2] is not None:
-                            dt_min = AsTimezone(FromTimestampToDate((row[1] if row[1] is not None else row[5]) + a_mesure['valdk'] * 3600), work_item['tz']).replace(tzinfo=None)
-                            dt_max = AsTimezone(FromTimestampToDate((row[3] if row[3] is not None else row[5]) + a_mesure['valdk'] * 3600), work_item['tz']).replace(tzinfo=None)
+                            dt_min = AsTimezone(FromTimestampToDate((row[1] if row[1] is not None else row[5])), work_item['tz']).replace(tzinfo=None)
+                            dt_max = AsTimezone(FromTimestampToDate((row[3] if row[3] is not None else row[5])), work_item['tz']).replace(tzinfo=None)
                             if a_mesure['iswind'] is True:
                                 new_records.append({'min': row[0], 'date_min': dt_min, 'max': row[2], 'date_max': dt_max, 'max_dir': row[4], 'mid': a_mesure['id'], 'obs_id': -1})
                             else:
@@ -408,12 +413,12 @@ class MigrateDB:
                 pass
 
             if cur_mesure['min'] is True:
-                dt_local_min = (a_record['date_min'] + timedelta(hours=cur_mesure['mindk'])).date()
-                min_args.append((a_record['obs_id'] if a_record['obs_id'] > -1 else None, dt_local_min, pid, a_record['mid'], a_record['min'], a_record['date_min'], 0))
+                dt_local_min = a_record['date_min'].date()
+                min_args.append((a_record['obs_id'] if a_record['obs_id'] > -1 else None, dt_local_min, pid, a_record['mid'], a_record['min'], a_record['date_min'], QA.UNSET.value))
 
             if cur_mesure['max'] is True:
-                dt_local_max = (a_record['date_min'] + timedelta(hours=cur_mesure['maxdk'])).date()
-                max_args.append((a_record['obs_id'] if a_record['obs_id'] > -1 else None, dt_local_max, pid, a_record['mid'], a_record['max'], a_record['date_max'], 0, a_record.get('max_dir')))
+                dt_local_max = a_record['date_min'].date()
+                max_args.append((a_record['obs_id'] if a_record['obs_id'] > -1 else None, dt_local_max, pid, a_record['mid'], a_record['max'], a_record['date_max'], QA.UNSET.value, a_record.get('max_dir')))
 
         min_args_ok = ','.join(pg_cur.mogrify("(%s, %s, %s, %s, %s, %s, %s)", i).decode('utf-8') for i in min_args)
         max_args_ok = ','.join(pg_cur.mogrify("(%s, %s, %s, %s, %s, %s, %s, %s)", i).decode('utf-8') for i in max_args)
@@ -427,7 +432,7 @@ class MigrateDB:
     def getWeewxSelectSql(self, work_item):
         query_my = "select dateTime, usUnits, `interval`"
 
-        # load an array of query args, one for each valdk, update sql statement
+        # load an array of query args
         for a_mesure in self.measures:
             # add field name into our select statement for weewx
             query_my += ', ' + a_mesure['archive_col']
@@ -442,7 +447,7 @@ class MigrateDB:
 
     def getMeasures(self, pgconn):
         mesures = []
-        pg_query = "select id, archive_col, archive_table, field_dir, json_input, val_deca, min, min_deca, max, max_deca, is_avg, is_wind, allow_zero, omm_link from mesures order by id"
+        pg_query = "select id, archive_col, archive_table, field_dir, json_input, min, max, is_avg, is_wind, allow_zero from mesures order by id"
 
         pg_cur = pgconn.cursor()
         pg_cur.execute(pg_query)
@@ -456,23 +461,12 @@ class MigrateDB:
                 'table': row[2],
                 'diridx': row[3],
                 'field': row[4],
-                'valdk': row[5],
-                'min': row[6],
-                'mindk': row[7],
-                'max': row[8],
-                'maxdk': row[9],
-                'isavg': row[10],
-                'iswind': row[11],
-                'zero': row[12],
-                'ommidx': None
+                'min': row[5],
+                'max': row[6],
+                'isavg': row[7],
+                'iswind': row[8],
+                'zero': row[9]
             }
-            if row[13] != 0:
-                idx_mesure = len(mesures) - 1
-                while idx_mesure >= 0:
-                    if mesures[idx_mesure]['id'] == row[13]:
-                        one_mesure['ommidx'] = idx_mesure
-                        idx_mesure = 0
-                    idx_mesure -= 1
             mesures.append(one_mesure)
             row = pg_cur.fetchone()
         pg_cur.close()
