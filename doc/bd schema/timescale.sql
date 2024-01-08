@@ -48,3 +48,11 @@ select * from timescaledb_information.hypertables;
 -- Display info on scheduled jobs
 select  job_id, application_name, schedule_interval, max_runtime, max_retries as retry, retry_period as period, proc_schema, proc_name, scheduled as sched, fixed_schedule as fixed, config,  next_start, initial_start from timescaledb_information.jobs;
 
+-- taille des hypertables:
+SELECT hypertable_name, pg_size_pretty(hypertable_size(format('%I.%I', hypertable_schema, hypertable_name)::regclass))                                                                                                                                                                                                                                              FROM timescaledb_information.hypertables;
+
+-- taille de la BD:
+SELECT pg_size_pretty(pg_database_size('climato'));
+
+-- tailles des chunks d'une hypertable:
+select chunk_name,  pg_size_pretty(table_bytes) as tables_bytes,  pg_size_pretty(index_bytes) as index_bytes,  pg_size_pretty(toast_bytes) as toast_bytes,  pg_size_pretty(total_bytes) as total_bytes FROM chunks_detailed_size('obs') ORDER BY chunk_name;

@@ -89,6 +89,14 @@ class CsvLoader:
 
         os.rename(self.base_dir + "/" + work_item['f'], target_dir + work_item['f'])
 
+        # refresh our materialized view
+        pgconn = self.getPGConnexion()
+        pg_cur = pgconn.cursor()
+        pg_cur.execute("call refresh_all_aggregates();")
+        pg_cur.close()
+        pgconn.commit()
+        pgconn.close()
+
     def failWorkItem(self, work_item, exc, my_span):
         # move the file to failed archive
         t.logException(exc, my_span)

@@ -60,6 +60,13 @@ class MigrateDB:
     # process was succesful
     # ---------------------
     def succeedWorkItem(self, work_item, my_span):
+        # refresh our materialized view
+        pgconn = self.getPGConnexion()
+        pg_cur = pgconn.cursor()
+        pg_cur.execute("call refresh_all_aggregates();")
+        pg_cur.close()
+        pgconn.commit()
+        pgconn.close()
         return
 
     # ---------------
@@ -102,7 +109,7 @@ class MigrateDB:
 
                 if new_extremes is not None:
                     pgconn.commit()
-    
+
                     # Add data from WeeWx record tables
                     new_extremes = self.loadMaxminFromWeewx(work_item, new_extremes, my_span)
                     pgconn.commit()
@@ -217,21 +224,6 @@ class MigrateDB:
         finally:
             myconn.close()
 
-    # def updateLoadJsonValue(self, work_item):
-    #     pgconn = self.getPGConnexion()
-    #     pg_cur = pgconn.cursor()
-
-    #     try:
-    #         pg_cur.execute('update postes set load_raw_data = ' + str(work_item['old_json_load']) + " where meteor = '" + work_item['meteor'] + "'")
-    #         pgconn.commit()
-
-    #     except Exception as ex:
-    #         pgconn.rollback()
-    #         raise ex
-
-    #     finally:
-    #         pg_cur.close()
-
     # ---------------------------------------------------
     # insert mesures from weewx archive in our obs table
     # ---------------------------------------------------
@@ -296,7 +288,7 @@ class MigrateDB:
                 cur_poste = PosteMeteor(work_item['meteor'])
                 if cur_poste.data.id is None:
                     raise Exception('station ' + work_item['meteor'] + ' not found')
-                
+
             date_obs_utc = FromTimestampToDate(row2[self.row_archive_dt_utc]).replace(tzinfo=None)
             date_obs_local = AsTimezone(date_obs_utc, work_item['tz']).replace(tzinfo=None)
 
@@ -414,11 +406,25 @@ class MigrateDB:
 
             if cur_mesure['min'] is True:
                 dt_local_min = a_record['date_min'].date()
-                min_args.append((a_record['obs_id'] if a_record['obs_id'] > -1 else None, dt_local_min, pid, a_record['mid'], a_record['min'], a_record['date_min'], QA.UNSET.value))
+                min_args.append(
+                    (a_record['obs_id'] if a_record['obs_id'] > -1 else None,
+                     dt_local_min,
+                     pid,
+                     a_record['mid'],
+                     a_record['min'],
+                     a_record['date_min'],
+                     QA.UNSET.value))
 
             if cur_mesure['max'] is True:
                 dt_local_max = a_record['date_min'].date()
-                max_args.append((a_record['obs_id'] if a_record['obs_id'] > -1 else None, dt_local_max, pid, a_record['mid'], a_record['max'], a_record['date_max'], QA.UNSET.value, a_record.get('max_dir')))
+                max_args.append(
+                    (a_record['obs_id'] if a_record['obs_id'] > -1 else None,
+                     dt_local_max,
+                     pid,
+                     a_record['mid'],
+                     a_record['max'],
+                     a_record['date_max'],
+                     QA.UNSET.value, a_record.get('max_dir')))
 
         min_args_ok = ','.join(pg_cur.mogrify("(%s, %s, %s, %s, %s, %s, %s)", i).decode('utf-8') for i in min_args)
         max_args_ok = ','.join(pg_cur.mogrify("(%s, %s, %s, %s, %s, %s, %s, %s)", i).decode('utf-8') for i in max_args)

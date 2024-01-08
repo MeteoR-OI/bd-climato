@@ -12,6 +12,8 @@
  	INNER JOIN archive_day_windGust ON archive_day_windSpeed.dateTime=archive_day_windGust.dateTime
  	INNER JOIN archive_day_wind ON archive_day_windSpeed.dateTime=archive_day_wind.dateTime
  WHERE archive_day_windGust.max > 0 order by 8 desc limit 100;
-
+select count(*), avg(min), min(min), avg(max), max(max) from archive_day_windSpeed;
+select count(*), avg(min), min(min), avg(max), max(max) from archive_day_wind;
+select count(*), avg(min), min(min), avg(max), max(max) from archive_day_windGust;
 
 -- => change order by 7,8,9 et asc/desc pour mieux analyser les donnees...

@@ -75,11 +75,11 @@ insert into mesures
 ( 1, 'barometer',       'barometer',        'barometer',          null,        null,     true,    true,     true,   false,    true,            null,        False),
 ( 6, 'dewpoint',        'dewpoint',         'dewpoint',           null,        null,     true,    true,     true,   false,    true,            null,        False),
 ( 8, 'etp',             'etp',              'ET',                 null,        null,     true,    true,     false,  false,    true,            null,         True),
-(10, 'extra_temp1',     'extra_temp1',      'extraTemp1',         null,        null,     false,   false,    true,   false,    true,            null,        False),
-(12, 'extra_temp2',     'extra_temp2',      'extraTemp2',         null,        null,     false,   false,    true,   false,    true,            null,        False),
-(14, 'extra_temp3',     'extra_temp3',      'extraTemp3',         null,        null,     false,   false,    true,   false,    true,            null,        False),
-(16, 'extrahumid1',     'extra_humid1',     'extraHumid1',        null,        null,     false,   false,    true,   false,    true,            null,        False),
-(18, 'extrahumid2',     'extra_humid2',     'extraHumid2',        null,        null,     false,   false,    true,   false,    true,            null,        False),
+(10, 'extra_temp1',     'extra_temp1',      'extraTemp1',         null,        null,     false,   false,    true,   false,    true,    'extratemp1',        False),
+(12, 'extra_temp2',     'extra_temp2',      'extraTemp2',         null,        null,     false,   false,    true,   false,    true,    'extratemp2',        False),
+(14, 'extra_temp3',     'extra_temp3',      'extraTemp3',         null,        null,     false,   false,    true,   false,    true,    'extratemp3',        False),
+(16, 'extrahumid1',     'extra_humid1',     'extraHumid1',        null,        null,     false,   false,    true,   false,    true,   'extrahumid1',        False),
+(18, 'extrahumid2',     'extra_humid2',     'extraHumid2',        null,        null,     false,   false,    true,   false,    true,   'extrahumid2',        False),
 (20, 'gust',            'wind_gust',        'windGust',           'wind',        22,     false,   true,     true,   true,     true,      'wind_max',        False),
 (22, 'gust dir',        'wind_gust_dir',    'windGustDir',        'skip',      null,     false,   false,    true,   false,    true,  'wind_max_dir',        False),
 (24, 'hail rate',       'hail_rate',        'hailRate',           null,        null,     false,   true,     true,   false,    true,            null,        False),
@@ -88,23 +88,23 @@ insert into mesures
 (30, 'heating temp',    'heating_temp',     'heatingTemp',        null,        null,     false,   true,     true,   false,    true,            null,        False),
 (32, 'humidity inside', 'in_humidity',      'inHumidity',         null,        null,     true,    true,     true,   false,    true,            null,        False),
 (34, 'humidity',        'out_humidity',     'outHumidity',        null,        null,     true,    true,     true,   false,    true,      'humidity',        False),
-(38, 'leaftemp1',       'leaf_temp1',       'leafTemp1',          null,        null,     false,   false,    true,   false,    true,      'leaftemp',        False),
-(40, 'leaftemp2',       'leaf_temp2',       'leafTemp2',          null,        null,     false,   false,    true,   false,    true,            null,        False),
-(42, 'leafwet1',        'leaf_wet1',        'leafWet1',           null,        null,     false,   false,    true,   false,    true,       'leafwet',        False),
-(44, 'leafwet2',        'leaf_wet2',        'leafWet2',           null,        null,     false,   false,    true,   false,    true,            null,        False),
+(38, 'leaftemp1',       'leaf_temp1',       'leafTemp1',          null,        null,     false,   false,    true,   false,    true,     'leaftemp1',        False),
+(40, 'leaftemp2',       'leaf_temp2',       'leafTemp2',          null,        null,     false,   false,    true,   false,    true,     'leaftemp2',        False),
+(42, 'leafwet1',        'leaf_wet1',        'leafWet1',           null,        null,     false,   false,    true,   false,    true,      'leafwet1',        False),
+(44, 'leafwet2',        'leaf_wet2',        'leafWet2',           null,        null,     false,   false,    true,   false,    true,      'leafwet2',        False),
 (46, 'pressure',        'pressure',         'pressure',           null,        null,     true,    true,     true,   false,    true,            null,        False),
 (48, 'radiation',       'radiation',        'radiation',          null,        null,     true,    true,     true,   false,    true,            null,        False),
 (50, 'rain rate',       'rain_rate',        'rainRate',           null,        null,     false,   true,     true,   false,    true,            null,        False),
 (52, 'rain',            'rain',             'rain',               null,        null,     false,   true,     false,  false,    true,            null,        False),
 (56, 'rx',              'rx',               'rxCheckPercent',     null,        null,     true,    true,     true,   false,    true,            null,        False),
-(58, 'soilmoist1',      'soil_moist1',      'soilMoist1',         null,        null,     false,   false,    true,   false,    true,     'soilmoist',        False),
-(60, 'soilmoist2',      'soil_moist2',      'soilMoist2',         null,        null,     false,   false,    true,   false,    true,            null,        False),
-(62, 'soilmoist3',      'soil_moist3',      'soilMoist3',         null,        null,     false,   false,    true,   false,    true,            null,        False),
-(64, 'soilmoist4',      'soil_moist4',      'soilMoist4',         null,        null,     false,   false,    true,   false,    true,            null,        False),
-(66, 'soiltemp1',       'soil_temp1',       'soilTemp1',          null,        null,     false,   false,    true,   false,    true,      'soiltemp',        False),
-(68, 'soiltemp2',       'soil_temp2',       'soilTemp2',          null,        null,     false,   false,    true,   false,    true,            null,        False),
-(70, 'soiltemp3',       'soil_temp3',       'soilTemp3',          null,        null,     false,   false,    true,   false,    true,            null,        False),
-(72, 'soiltemp4',       'soil_temp4',       'soilTemp4',          null,        null,     false,   false,    true,   false,    true,            null,        False),
+(58, 'soilmoist1',      'soil_moist1',      'soilMoist1',         null,        null,     false,   false,    true,   false,    true,    'soilmoist1',        False),
+(60, 'soilmoist2',      'soil_moist2',      'soilMoist2',         null,        null,     false,   false,    true,   false,    true,    'soilmoist2',        False),
+(62, 'soilmoist3',      'soil_moist3',      'soilMoist3',         null,        null,     false,   false,    true,   false,    true,    'soilmoist3',        False),
+(64, 'soilmoist4',      'soil_moist4',      'soilMoist4',         null,        null,     false,   false,    true,   false,    true,    'soilmoist4',        False),
+(66, 'soiltemp1',       'soil_temp1',       'soilTemp1',          null,        null,     false,   false,    true,   false,    true,     'soiltemp1',        False),
+(68, 'soiltemp2',       'soil_temp2',       'soilTemp2',          null,        null,     false,   false,    true,   false,    true,     'soiltemt2',        False),
+(70, 'soiltemp3',       'soil_temp3',       'soilTemp3',          null,        null,     false,   false,    true,   false,    true,     'soiltemp3',        False),
+(72, 'soiltemp4',       'soil_temp4',       'soilTemp4',          null,        null,     false,   false,    true,   false,    true,     'soiltemp4',        False),
 (74, 'temp inside',     'in_temp',          'inTemp',             null,        null,     true,    true,     true,   false,    true,            null,        False),
 (76, 'temperature',     'out_temp',         'outTemp',            null,        null,     true,    true,     true,   false,    true,            null,        False),
 (80, 'uv_indice',       'uv',               'UV',                 null,        null,     false,   true,     true,   false,    true,            null,        False),
@@ -251,7 +251,20 @@ SELECT add_continuous_aggregate_policy('x_max_month',
   end_offset => NULL,
   schedule_interval => INTERVAL '30 seconds');
 
--- call refresh_continuous_aggregate('obs_hour', null, null);
+CREATE OR REPLACE PROCEDURE refresh_all_aggregates()
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  CALL refresh_continuous_aggregate('obs_hour', null, null);
+  CALL refresh_continuous_aggregate('obs_day', null, null);
+  CALL refresh_continuous_aggregate('obs_month', null, null);
+  CALL refresh_continuous_aggregate('x_min_day', null, null);
+  CALL refresh_continuous_aggregate('x_min_month', null, null);
+  CALL refresh_continuous_aggregate('x_max_day', null, null);
+  CALL refresh_continuous_aggregate('x_max_month', null, null);
+END; $$
+
+
 
 -- create materialized view compare_month WITH (timescaledb.continuous) as
 -- materialized view does not support left join...
