@@ -136,9 +136,9 @@ create materialized view obs_hour WITH (timescaledb.continuous) as
 ALTER MATERIALIZED VIEW obs_hour set (timescaledb.materialized_only = false);
 
 SELECT add_continuous_aggregate_policy('obs_hour',
-  start_offset => INTERVAL '1 minute',
+  start_offset => INTERVAL '60 minute',
   end_offset => NULL,
-  schedule_interval => INTERVAL '30 seconds');
+  schedule_interval => INTERVAL '30 minutes');
 
 create materialized view obs_day WITH (timescaledb.continuous) as
   select
@@ -155,9 +155,9 @@ create materialized view obs_day WITH (timescaledb.continuous) as
 ALTER MATERIALIZED VIEW obs_day set (timescaledb.materialized_only = false);
 
 SELECT add_continuous_aggregate_policy('obs_day',
-  start_offset => INTERVAL '1 minute',
+  start_offset => INTERVAL '12 hours',
   end_offset => NULL,
-  schedule_interval => INTERVAL '30 seconds');
+  schedule_interval => INTERVAL '6 hours');
 
 
 create materialized view obs_month WITH (timescaledb.continuous) as
@@ -175,9 +175,9 @@ create materialized view obs_month WITH (timescaledb.continuous) as
 ALTER MATERIALIZED VIEW obs_month set (timescaledb.materialized_only = false);
 
 SELECT add_continuous_aggregate_policy('obs_month',
-  start_offset => INTERVAL '1 minute',
+  start_offset => INTERVAL '2 days',
   end_offset => NULL,
-  schedule_interval => INTERVAL '30 seconds');
+  schedule_interval => INTERVAL '1 day');
 
 create materialized view x_min_day WITH (timescaledb.continuous) as
   select
@@ -194,9 +194,9 @@ create materialized view x_min_day WITH (timescaledb.continuous) as
 ALTER MATERIALIZED VIEW x_min_day set (timescaledb.materialized_only = false);
 
 SELECT add_continuous_aggregate_policy('x_min_day',
-  start_offset => INTERVAL '1 minute',
+  start_offset => INTERVAL '12 hours',
   end_offset => NULL,
-  schedule_interval => INTERVAL '30 seconds');
+  schedule_interval => INTERVAL '6 hours');
 
 
 create materialized view x_min_month WITH (timescaledb.continuous) as
@@ -212,9 +212,9 @@ create materialized view x_min_month WITH (timescaledb.continuous) as
 ALTER MATERIALIZED VIEW x_min_month set (timescaledb.materialized_only = false);
 
 SELECT add_continuous_aggregate_policy('x_min_month',
-  start_offset => INTERVAL '1 minute',
+  start_offset => INTERVAL '2 days',
   end_offset => NULL,
-  schedule_interval => INTERVAL '30 seconds');
+  schedule_interval => INTERVAL '1 day');
 
 create materialized view x_max_day WITH (timescaledb.continuous) as
   select
@@ -230,9 +230,9 @@ create materialized view x_max_day WITH (timescaledb.continuous) as
 ALTER MATERIALIZED VIEW x_max_day set (timescaledb.materialized_only = false);
 
 SELECT add_continuous_aggregate_policy('x_max_day',
-  start_offset => INTERVAL '1 minute',
+  start_offset => INTERVAL '12 hours',
   end_offset => NULL,
-  schedule_interval => INTERVAL '30 seconds');
+  schedule_interval => INTERVAL '6 hours');
 
 create materialized view x_max_month WITH (timescaledb.continuous) as
   select
@@ -247,9 +247,9 @@ create materialized view x_max_month WITH (timescaledb.continuous) as
 ALTER MATERIALIZED VIEW x_max_month set (timescaledb.materialized_only = false);
 
 SELECT add_continuous_aggregate_policy('x_max_month',
-  start_offset => INTERVAL '1 minute',
+  start_offset => INTERVAL '2 days',
   end_offset => NULL,
-  schedule_interval => INTERVAL '30 seconds');
+  schedule_interval => INTERVAL '1 day');
 
 CREATE OR REPLACE PROCEDURE refresh_all_aggregates()
 LANGUAGE plpgsql
@@ -262,7 +262,7 @@ BEGIN
   CALL refresh_continuous_aggregate('x_min_month', null, null);
   CALL refresh_continuous_aggregate('x_max_day', null, null);
   CALL refresh_continuous_aggregate('x_max_month', null, null);
-END; $$
+END; $$;
 
 
 
