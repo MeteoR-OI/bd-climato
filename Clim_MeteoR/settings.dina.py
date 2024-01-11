@@ -138,8 +138,12 @@ MEDIA_ROOT = "/home/meteor/climato/media"
 DATA_FS_PATH = os.path.join(MEDIA_ROOT, 'data')
 
 # App settings
-JSON_AUTOLOAD = "/home/meteor/data/auto_load"          # in symc with dc-telemetry.yaml
+AUTOLOAD_DIR = "/home/meteor/data/auto_load"          # in symc with dc-telemetry.yaml
 ARCHIVE_DIR = "/home/meteor/data/archive"             # in symc with dc-telemetry.yaml
+
+JSON_AUTOLOAD = "/home/meteor/./data/json_auto_load"          # in symc with dc-telemetry.yaml
+CSV_AUTOLOAD = "/home/meteor/data/csv_auto_load"              # in symc with dc-telemetry.yaml
+ARCHIVE_DIR = "/home/meteor/data/json_archive"             # in symc with dc-telemetry.yaml
 
 
 TELEMETRY_PROVIDER = False          # None, Console, Jaeger, Thrift
