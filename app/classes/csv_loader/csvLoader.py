@@ -91,6 +91,7 @@ class CsvLoader:
 
         # refresh our materialized view
         pgconn = self.getPGConnexion()
+        pgconn.autocommit = True
         pg_cur = pgconn.cursor()
         pg_cur.execute("call refresh_all_aggregates();")
         pg_cur.close()

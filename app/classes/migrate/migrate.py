@@ -62,6 +62,7 @@ class MigrateDB:
     def succeedWorkItem(self, work_item, my_span):
         # refresh our materialized view
         pgconn = self.getPGConnexion()
+        pgconn.autocommit = True
         pg_cur = pgconn.cursor()
         pg_cur.execute("call refresh_all_aggregates();")
         pg_cur.close()
@@ -97,7 +98,7 @@ class MigrateDB:
             work_item['tz'] = cur_poste.data.delta_timezone
             work_item['stop_date_utc'] = cur_poste.data.stop_date if cur_poste.data.stop_date is None else AsTimezone(cur_poste.data.stop_date, 0)
 
-            self.getNewDateBraket(work_item, my_span)
+            self.getNewDateBraket(cur_poste, work_item, my_span)
 
             # loop per year
             while work_item['start_ts_archive_utc'] < current_ts:
@@ -105,24 +106,21 @@ class MigrateDB:
                 start_dt = datetime.now()
 
                 # Load obs, records from archive
-                new_extremes = self.loadExistingArchive(pg_cur, work_item, my_span)
+                new_extremes = self.loadExistingArchive(cur_poste, pg_cur, work_item, my_span)
 
                 if new_extremes is not None:
-                    pgconn.commit()
 
                     # Add data from WeeWx record tables
                     new_extremes = self.loadMaxminFromWeewx(work_item, new_extremes, my_span)
-                    pgconn.commit()
 
                     # Merge list in db
                     self.storeMaxMinInDB(pg_cur, work_item['pid'], new_extremes, my_span)
 
                     new_extremes = []
 
-                    pgconn.commit()
-
+                pgconn.commit()
                 print("     Done in : " + str(datetime.now() - start_dt) + " for " + str(work_item['start_dt_archive_utc']))
-                self.getNewDateBraket(work_item, my_span)
+                self.getNewDateBraket(cur_poste, work_item, my_span)
 
         finally:
             pg_cur.close()
@@ -133,14 +131,11 @@ class MigrateDB:
     # ---------------------------------------
     # other methods specific to this service
     # ---------------------------------------
-    def getNewDateBraket(self, work_item, my_span):
+    def getNewDateBraket(self, cur_poste, work_item, my_span):
 
         """Get start_dt/end_dt from postes, and archive table"""
         myconn = self.getMSQLConnection(work_item['meteor'])
         my_cur = myconn.cursor()
-
-        pgconn = self.getPGConnexion()
-        pg_cur = pgconn.cursor()
 
         work_item['old_load_raw_data'] = False
 
@@ -157,25 +152,23 @@ class MigrateDB:
                 if row is None or len(row) == 0 or row[0] is None or row[1] is None:
                     work_item['start_ts_archive_utc'] = max_ts
                     return
-                work_item['start_ts_limit'] = row[0]
+                ts_poste_obs_date = int(cur_poste.data.last_obs_date.timestamp()) if cur_poste.data.last_obs_date is not None else 0
+                work_item['start_ts_limit'] = max(row[0], ts_poste_obs_date)
                 work_item['end_ts_limit'] = row[1] + 1
 
             # Get start_dt/start_ts_archive_utc
             if work_item.get('end_dt_archive_utc') is None:
                 # First pass
-                sql = "select last_obs_date, last_extremes_date from postes where meteor='" + work_item['meteor'] + "';"
-                pg_cur.execute(sql)
-                row = pg_cur.fetchone()
-                if row is None or len(row) < 1 or row[0] is None or row[1] is None:
+                # now we only use last_obs_date for both obs and x_min/max
+                if cur_poste.data.last_obs_date is None:
                     work_item['start_ts_archive_utc'] = work_item['start_ts_limit']
                     work_item['start_dt_archive_utc'] = FromTimestampToDate(work_item['start_ts_archive_utc'])
                     work_item['start_date_extremes'] = AsTimezone((work_item['start_dt_archive_utc'] - timedelta(days=1)), work_item['tz']).date()
 
                 else:
-                    work_item['start_dt_archive_utc'] = AsTimezone(row[0], 0)
+                    work_item['start_dt_archive_utc'] = AsTimezone(cur_poste.data.last_obs_date, 0)
                     work_item['start_ts_archive_utc'] = work_item['start_dt_archive_utc'].timestamp() + 1
-                    work_item['start_date_extremes'] = AsTimezone(row[1] - timedelta(days=1)).date()
-
+                    work_item['start_date_extremes'] = AsTimezone(cur_poste.data.last_obs_date - timedelta(days=1)).date()
             else:
                 work_item['start_ts_archive_utc'] = work_item['end_ts_archive_utc']
                 work_item['start_dt_archive_utc'] = FromTimestampToDate(work_item['start_ts_archive_utc'])
@@ -210,10 +203,10 @@ class MigrateDB:
 
             print('-------------------------------------------------')
             print('Archive (dt utc)       from: ' + str(work_item['start_dt_archive_utc']) + ' to ' + str(work_item['end_dt_archive_utc']))
-            # print('ts_archive (ts utc)    from: ' + str(work_item['start_ts_archive_utc']) + ' to ' + str(work_item['end_ts_archive_utc']))
-            # print('ts_arch_day (date utc) from: ' + str(work_item['start_ts_archive_utc_day']) + ' to ' + str(work_item['end_ts_archive_utc_day']))
+            print('ts_archive (ts utc)    from: ' + str(work_item['start_ts_archive_utc']) + ' to ' + str(work_item['end_ts_archive_utc']))
+            print('ts_arch_day (date utc) from: ' + str(work_item['start_ts_archive_utc_day']) + ' to ' + str(work_item['end_ts_archive_utc_day']))
             # print('X_Days  (date local)   from: ' + str(work_item['start_date_extremes']) + ' to ' + str(work_item['end_date_extremes']))
-            # print('-------------------------------------------------')
+            print('-------------------------------------------------')
 
             return
 
@@ -255,7 +248,7 @@ class MigrateDB:
 
         return existing_records
 
-    def loadExistingArchive(self, pg_cur, work_item, my_span):
+    def loadExistingArchive(self, cur_poste, pg_cur, work_item, my_span):
 
         query_my = self.getWeewxSelectSql(work_item)
         sql_insert = "insert into obs(poste_id, date_utc, date_local, mesure_id, duration, value, qa_value) values "
@@ -274,7 +267,6 @@ class MigrateDB:
         # load field_name/row_id mapping for weewx select
         col_mapping = {}
         idx = 0
-        cur_poste = None
 
         while idx < len(my_cur.column_names):
             col_mapping[my_cur.column_names[idx]] = idx
@@ -284,15 +276,10 @@ class MigrateDB:
             if row2[self.row_archive_usunits] != 16:
                 raise Exception('bad usUnits: ' + str(row2[self.row_archive_usunits]) + ', dateTime(UTC): ' + str(row2[self.row_archive_dt_utc]))
 
-            if cur_poste is None:
-                cur_poste = PosteMeteor(work_item['meteor'])
-                if cur_poste.data.id is None:
-                    raise Exception('station ' + work_item['meteor'] + ' not found')
-
             date_obs_utc = FromTimestampToDate(row2[self.row_archive_dt_utc]).replace(tzinfo=None)
             date_obs_local = AsTimezone(date_obs_utc, work_item['tz']).replace(tzinfo=None)
 
-            if date_obs_utc > cur_poste.data.last_obs_date:
+            if cur_poste.data.last_obs_date is None or date_obs_utc > cur_poste.data.last_obs_date:
                 for a_mesure in self.measures:
                     cur_val = self.get_valeurs(a_mesure, row2, col_mapping)
                     if cur_val is None:
