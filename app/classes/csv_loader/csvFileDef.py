@@ -172,13 +172,13 @@ class CsvFileSpec(ABC):
         if fields_array[a_mesure['csv_row_idx']] is None or fields_array[a_mesure['csv_row_idx']] == '':
             return None, None, None
 
-        cu_val = float(fields_array[a_mesure['csv_row_idx']])
+        cur_val = float(fields_array[a_mesure['csv_row_idx']]) if a_mesure.get("convert") is None else a_mesure.get("convert")(float(fields_array[a_mesure['csv_row_idx']]))
         cur_q_val = fields_array[a_mesure['csv_qa_idx']] if a_mesure['csv_qa_idx'] is not None else QA.UNSET.value
         if cur_q_val == '':
             cur_q_val = QA.UNSET.value
         obs_date_utc = self.getStopDate(fields_array)
 
-        return cu_val, cur_q_val, obs_date_utc
+        return cur_val, cur_q_val, obs_date_utc
 
     # returns cur_min, cur_min_qa, cur_min_time_local, is_it_obs_data
     def get_valeur_min(self, cur_poste, a_mesure, fields_array, cur_val, obs_date_local):
