@@ -116,8 +116,60 @@ insert into mesures
 (92, 'windchill',       'windchill',        'windchill',          null,        null,     true,    false,    true,   false,    true,            null,        False)
 ; 
 
+insert into annotations
+(id,time,timeend,text,tags) values
+(1,'2022-02-01 00:00:00','2022-02-05 00:00:00','Batsirai','système, cyclone intense'),
+(2,'2022-02-19 00:00:00','2022-02-23 00:00:00','Emnati','système, cyclone intense'),
+(3,'2018-01-16 12:00:00','2018-01-19 04:00:00','Berguitta','système,cyclone tropical intense'),
+(4,'2021-01-11 00:00:00','2021-01-13 12:00:00','Danilo','forte tempête tropicale, système'),
+(5,'2021-03-06 00:00:00','2021-03-08 00:00:00','Iman','système,tempête tropicale modérée'),
+(6,'2019-12-29 00:00:00','2019-12-31 12:00:00','Calvinia','système, cyclone tropical'),
+(7,'2018-03-03 12:00:00','2018-03-06 18:00:00','Dumazile','système, cyclone tropical intense'),
+(8,'2019-11-24 00:00:00','2019-11-24 00:00:00','TAR600','première donnée'),
+(9,'2011-04-13 00:00:00','2011-04-13 00:00:00','SBBM100','première donnée'),
+(10,'2020-09-14 00:00:00','2020-09-14 00:00:00','CHP690','première donnée'),
+(11,'2019-09-22 00:00:00','2019-09-22 00:00:00','PFD040','première donnée'),
+(12,'2020-01-10 00:00:00','2020-01-10 00:00:00','NDLP1520','première donnée'),
+(13,'2020-11-25 00:00:00','2020-11-25 00:00:00','BOCO1370','première donnée'),
+(14,'2022-08-23 00:00:00','2022-08-23 00:00:00','BPN100','première donnée'),
+(15,'2017-06-10 00:00:00','2017-06-10 00:00:00','BAG280','première donnée'),
+(16,'2018-06-30 00:00:00','2018-06-30 00:00:00','ESB005','première donnée'),
+(17,'2021-12-10 00:00:00','2021-12-10 00:00:00','TAM1790','première donnée'),
+(18,'2013-03-24 00:00:00','2013-03-24 00:00:00','ESH555','première donnée'),
+(19,'2020-08-26 00:00:00','2020-08-26 00:00:00','CHAR645','première donnée'),
+(20,'2018-02-25 00:00:00','2018-02-25 00:00:00','TRM490','première donnée'),
+(21,'2015-06-24 00:00:00','2015-06-24 00:00:00','BBF015','première donnée'),
+(22,'2015-06-27 00:00:00','2015-06-27 00:00:00','RAM450','première donnée'),
+(23,'2021-09-26 00:00:00','2021-09-26 00:00:00','LCV050','première donnée'),
+(24,'2021-05-02 00:00:00','2021-05-02 00:00:00','BER590','première donnée'),
+(25,'2019-11-24 00:00:00','2019-11-24 00:00:00','TAN1270','première donnée'),
+(26,'2020-12-17 00:00:00','2020-12-17 00:00:00','FAY040','première donnée'),
+(27,'2021-09-20 00:00:00','2021-09-20 00:00:00','MVP860','première donnée'),
+(28,'2019-09-26 00:00:00','2019-09-26 00:00:00','BP130','première donnée'),
+(29,'2019-02-05 00:00:00','2019-02-05 00:00:00','ELH675','première donnée'),
+(30,'2019-08-09 00:00:00','2019-08-09 00:00:00','MTG320','première donnée'),
+(31,'2020-08-11 00:00:00','2020-08-11 00:00:00','BOMU1610','première donnée'),
+(32,'2017-03-04 00:00:00','2017-03-04 00:00:00','TBL105','première donnée'),
+(33,'2017-03-09 00:00:00','2017-03-09 00:00:00','GDC030','première donnée'),
+(34,'2023-12-11 00:00:00','2023-12-11 00:00:00','MTG280','première donnée'),
+(35,'2022-02-10 00:00:00','2022-02-10 00:00:00','MAT315','première donnée'),
+(36,'2019-09-26 00:00:00','2019-09-26 00:00:00','PSL310','première donnée'),
+(37,'2017-12-11 00:00:00','2017-12-11 00:00:00','SPC010','première donnée'),
+(38,'2014-12-31 00:00:00','2014-12-31 00:00:00','BRT240','première donnée'),
+(39,'2016-10-20 00:00:00','2016-10-20 00:00:00','TRG170','première donnée'),
+(40,'2021-04-22 00:00:00','2021-04-22 00:00:00','ROQ070','première donnée'),
+(41,'2021-01-22 00:00:00','2021-01-22 00:00:00','CAM015','première donnée'),
+(42,'2019-06-05 00:00:00','2019-06-05 00:00:00','LAN030','première donnée'),
+(43,'2019-11-16 00:00:00','2019-11-16 00:00:00','PAH575','première donnée'),
+(44,'2024-01-12 00:00:00','2024-01-17 00:00:00','Belal','système')
+;
+-- reset id serial to max id
+SELECT SETVAL('annotations_id_seq', (SELECT MAX(id) FROM annotations));
+
+-- display number of inserted rows
 select 'nb postes: ' || count(*) from postes;
 select 'nb mesures: ' || count(*) from mesures;
+select 'nb annotations: ' || count(*) from annotations;
 
 -- get last values
 -- select poste_id, name, last(date_local, mesure_id), last(avg, mesure_id)  from obs_month join mesures on mesures.id = mesure_id group by 1,2 order by 1,2;
@@ -263,8 +315,6 @@ BEGIN
   CALL refresh_continuous_aggregate('x_max_day', null, null);
   CALL refresh_continuous_aggregate('x_max_month', null, null);
 END; $$;
-
-
 
 -- create materialized view compare_month WITH (timescaledb.continuous) as
 -- materialized view does not support left join...
