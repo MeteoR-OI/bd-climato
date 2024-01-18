@@ -1,3 +1,7 @@
+# -----------------------------------------------------------------------------
+# to do in future:
+# - allow to load only a few mesures, while other mesures where already loaded
+# -----------------------------------------------------------------------------
 from abc import ABC, abstractmethod
 from app.tools.dateTools import str_to_datetime
 from app.classes.repository.mesureMeteor import MesureMeteor
@@ -60,6 +64,9 @@ class CsvFileSpec(ABC):
                 j_stop_dat_utc = self.getStopDate(my_fields)
                 str_stop_dat_utc = str(j_stop_dat_utc)
 
+                # check if we already have data for this date
+                # need to load obs_data_in_db, when date_already_loaded is smaller than j_stop_dat_utc
+                # to be worked on ...
                 b_check_obs_data_in_db = False
                 if obs_data_in_db is None:
                     if obs_data_in_db.get(str_stop_dat_utc) is not None:
@@ -74,7 +81,7 @@ class CsvFileSpec(ABC):
                     max_data = []
                     line_count = 0
 
-                if (total_line % 1000) == 0:
+                if (total_line % 5000) == 0:
                     print('total line processed: ' + str(total_line))
 
                 # get new poste if needed
@@ -92,7 +99,7 @@ class CsvFileSpec(ABC):
                         cur_poste.data.delta_timezone = 4       # assume all meteo france data are in UTC+4
                         cur_poste.data.save()
                     last_meteor = self.__poste
-                    date_already_loaded = str_to_datetime(cur_poste.data.last_obs_date)
+                    date_already_loaded = str_to_datetime(cur_poste.data.last_obs_date) if cur_poste.data.last_obs_date is not None else datetime(1900, 1, 1)
 
                 if j_stop_dat_utc > date_already_loaded:
                     #  process row
@@ -106,22 +113,24 @@ class CsvFileSpec(ABC):
             if len(obs_data) > 0:
                 yield {'obs_data': obs_data, 'min_data': min_data, 'max_data': max_data}
 
+            print('total line processed: ' + str(total_line))
+
     def processRow(self, my_fields, cur_poste, obs_data, min_data, max_data, b_check_obs_data_in_db, obs_data_in_db):
         poste_id = cur_poste.data.id
         for a_mesure in self.__mesures:
-            cur_val, cur_q_val, obs_date_utc = self.get_valeurs(a_mesure, my_fields)
+            cur_val, cur_q_val, obs_date_local = self.get_valeurs(a_mesure, my_fields)
             if cur_val is None:
                 continue
 
             # Check if mesure already loaded in obs
             if b_check_obs_data_in_db:
-                str_obs_date_utc = str(obs_date_utc)
-                if obs_data_in_db.get(str_obs_date_utc) is not None:
-                    for a_mid in obs_data_in_db[str_obs_date_utc]['mids']:
+                str_obs_date_local = str(obs_date_local)
+                if obs_data_in_db.get(str_obs_date_local) is not None:
+                    for a_mid in obs_data_in_db[str_obs_date_local]['mids']:
                         if a_mid == a_mesure['id']:
                             continue
 
-            obs_date_local = obs_date_utc + timedelta(hours=cur_poste.data.delta_timezone)
+            obs_date_utc = obs_date_local - timedelta(hours=cur_poste.data.delta_timezone)
             data_args = (poste_id, obs_date_utc, obs_date_local, a_mesure['id'], 60, cur_val, cur_q_val)
             # 'obs_data': [(poste_id, date_utc, date_local, mesure_id, duration, value, qa_value)],
             obs_data.append(data_args)
@@ -163,6 +172,7 @@ class CsvFileSpec(ABC):
                     a_mesure['csv_row_idx'] = a_mapping['csv_idx']      # idx in row array
                     a_mesure['csv_qa_idx'] = a_mapping.get('qa_idx')    # idx in row array for quality data
                     a_mesure['csv_minmax'] = a_mapping['minmax']        # {min_idx: idx inself.__mesure, minTime, max: idx, maxTime, maxDir}
+                    a_mesure['convert'] = a_mapping.get('convert')      # function to convert value
 
                     self.__mesures.append(a_mesure)
                 idx_mesure += 1

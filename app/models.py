@@ -40,6 +40,8 @@ class Poste(models.Model):
     # reception donnees
     last_obs_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Datetime UTC de derniere reception de donnees")
     last_obs_id = models.BigIntegerField(null=True, default=0, verbose_name="ID obs de la derniere reception de donnees")
+    last_date_per_mesure = models.JSONField(null=True, default=dict, verbose_name="derniere date par mesure")
+
     last_extremes_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Datetime locale de dernier record")
     last_extremes_id = models.BigIntegerField(null=True, default=0, verbose_name="ID du dernier record")
 

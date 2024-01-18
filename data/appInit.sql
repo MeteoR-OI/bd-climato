@@ -72,7 +72,7 @@ insert into postes
 
 insert into mesures
 (id,    name,            json_input,         archive_col,   archive_table, field_dir,     min,     max,    is_avg, is_wind,  allow_zero,  json_input_bis, is_hourly) values
-( 1, 'barometer',       'barometer',        'barometer',          null,        null,     true,    true,     true,   false,    true,            null,        False),
+( 1, 'barometer',       'barometer',        'barometer',          null,        null,     false,   false,    true,   false,    true,            null,        False),
 ( 6, 'dewpoint',        'dewpoint',         'dewpoint',           null,        null,     true,    true,     true,   false,    true,            null,        False),
 ( 8, 'etp',             'etp',              'ET',                 null,        null,     true,    true,     false,  false,    true,            null,         True),
 (10, 'extra_temp1',     'extra_temp1',      'extraTemp1',         null,        null,     false,   false,    true,   false,    true,    'extratemp1',        False),
@@ -86,14 +86,14 @@ insert into mesures
 (26, 'hail',            'hail',             'hail',               null,        null,     true,    true,     true,   false,    true,            null,        False),
 (28, 'heatindex',       'heatindex',        'heatindex',          null,        null,     false,   true,     true,   false,    true,            null,        False),
 (30, 'heating temp',    'heating_temp',     'heatingTemp',        null,        null,     false,   true,     true,   false,    true,            null,        False),
-(32, 'humidity inside', 'in_humidity',      'inHumidity',         null,        null,     true,    true,     true,   false,    true,            null,        False),
+(32, 'humidity inside', 'in_humidity',      'inHumidity',         null,        null,     false,   false,    true,   false,    true,            null,        False),
 (34, 'humidity',        'out_humidity',     'outHumidity',        null,        null,     true,    true,     true,   false,    true,      'humidity',        False),
 (38, 'leaftemp1',       'leaf_temp1',       'leafTemp1',          null,        null,     false,   false,    true,   false,    true,     'leaftemp1',        False),
 (40, 'leaftemp2',       'leaf_temp2',       'leafTemp2',          null,        null,     false,   false,    true,   false,    true,     'leaftemp2',        False),
 (42, 'leafwet1',        'leaf_wet1',        'leafWet1',           null,        null,     false,   false,    true,   false,    true,      'leafwet1',        False),
 (44, 'leafwet2',        'leaf_wet2',        'leafWet2',           null,        null,     false,   false,    true,   false,    true,      'leafwet2',        False),
 (46, 'pressure',        'pressure',         'pressure',           null,        null,     true,    true,     true,   false,    true,            null,        False),
-(48, 'radiation',       'radiation',        'radiation',          null,        null,     true,    true,     true,   false,    true,            null,        False),
+(48, 'radiation',       'radiation',        'radiation',          null,        null,     false,   true,     true,   false,    true,            null,        False),
 (50, 'rain rate',       'rain_rate',        'rainRate',           null,        null,     false,   true,     true,   false,    true,            null,        False),
 (52, 'rain',            'rain',             'rain',               null,        null,     false,   true,     false,  false,    true,            null,        False),
 (56, 'rx',              'rx',               'rxCheckPercent',     null,        null,     true,    true,     true,   false,    true,            null,        False),
@@ -105,16 +105,16 @@ insert into mesures
 (68, 'soiltemp2',       'soil_temp2',       'soilTemp2',          null,        null,     false,   false,    true,   false,    true,     'soiltemt2',        False),
 (70, 'soiltemp3',       'soil_temp3',       'soilTemp3',          null,        null,     false,   false,    true,   false,    true,     'soiltemp3',        False),
 (72, 'soiltemp4',       'soil_temp4',       'soilTemp4',          null,        null,     false,   false,    true,   false,    true,     'soiltemp4',        False),
-(74, 'temp inside',     'in_temp',          'inTemp',             null,        null,     true,    true,     true,   false,    true,            null,        False),
+(74, 'temp inside',     'in_temp',          'inTemp',             null,        null,     false,   false,    true,   false,    true,            null,        False),
 (76, 'temperature',     'out_temp',         'outTemp',            null,        null,     true,    true,     true,   false,    true,            null,        False),
 (80, 'uv_indice',       'uv',               'UV',                 null,        null,     false,   true,     true,   false,    true,            null,        False),
-(82, 'voltage',         'voltage',          'consBatteryVoltage', null,        null,     true,    true,     true,   false,    true,            null,        False),
+(82, 'voltage',         'voltage',          'consBatteryVoltage', null,        null,     false,   false,    true,   false,    true,            null,        False),
 (84, 'wind 10',         'wind10',           'windSpeed',          'wind',        86,     false,   true,     true,   false,    true,            null,        False),
 (86, 'wind 10 dir',     'wind10_dir',       'windSpeed',          'skip',      null,     false,   false,    true,   false,    true,            null,        False),
 (88, 'wind',            'wind',             'windSpeed',          'wind',        90,     false,   true,     true,   false,    true,            null,        False),
 (90, 'wind dir',        'wind_dir',         'windDir',            'skip',      null,     false,   false,    true,   false,    true,            null,        False),
 (92, 'windchill',       'windchill',        'windchill',          null,        null,     true,    false,    true,   false,    true,            null,        False)
-; 
+;
 
 insert into annotations
 (id,time,timeend,text,tags) values
@@ -358,8 +358,8 @@ DECLARE
     obs_dat timestamp;
 BEGIN
   select last_obs_date  into obs_dat from postes where id = NEW.poste_id;
-  if obs_dat is null or new.date_utc > obs_dat then
-    update postes set last_obs_date = NEW.date_utc, last_obs_id = NEW.id where id = NEW.poste_id;
+  if obs_dat is null or new.date_local > obs_dat then
+    update postes set last_obs_date = NEW.date_local, last_obs_id = NEW.id where id = NEW.poste_id;
   end if;
   if NEW.qa_value <> OLD.qa_value then
     update x_min set qa_min = NEW.qa_value where obs_id = NEW.id;

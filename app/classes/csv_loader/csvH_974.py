@@ -224,13 +224,16 @@ class CsvH_974(CsvFileSpec):
                     {'csv_field': 'FF',        'csv_idx': RowsId.FF.value, 'qa_idx': RowsId.QFF.value,         'mesure': 'wind 10',          'minmax':
                         {"max": RowsId.FXY.value, "qmax": RowsId.QFXY.value, "maxDir": RowsId.DXY.value, "maxTime": RowsId.HXY.value},
                         "convert": lambda x: x * 3.6},
+                    {'csv_field': 'FXI',       'csv_idx': RowsId.FXI.value, 'qa_idx': RowsId.QFXI.value,       'mesure': 'gust',             'minmax':
+                        {"max": RowsId.FXI.value, "qmax": RowsId.QFXI.value, "maxDir": RowsId.DXI.value, "maxTime": RowsId.HXI.value},
+                        "convert": lambda x: x * 3.6},
                     {'csv_field': 'DD2',       'csv_idx': RowsId.DD2.value, 'qa_idx': RowsId.QDD2.value,       'mesure': 'wind dir',         'minmax': {}},
                     {'csv_field': 'FF2',       'csv_idx': RowsId.FF2.value, 'qa_idx': RowsId.QFF2.value,       'mesure': 'wind',             'minmax':
                         {"max": RowsId.FXI2.value, "qmax": RowsId.QFXI2.value, "maxDir": RowsId.DXI2.value, "maxTime": RowsId.HXI2.value},
                         "convert": lambda x: x * 3.6},
                     {'csv_field': 'GLO',       'csv_idx': RowsId.GLO.value, 'qa_idx': RowsId.QGLO.value,       'mesure': 'radiation',        'minmax': {}},
                     {'csv_field': 'PMER',      'csv_idx': RowsId.PMER.value, 'qa_idx': RowsId.QPMER.value,     'mesure': 'barometer',        'minmax':
-                        {"min": RowsId.PMERMIN.value, "qmin": RowsId.QPMER.value}},
+                        {"min": RowsId.PMERMIN.value, "qmin": RowsId.QPERMIN.value}},
                     {'csv_field': 'PSTAT',     'csv_idx': RowsId.PSTAT.value, 'qa_idx': RowsId.QPSTAT.value,   'mesure': 'pressure',         'minmax': {}},
                     {'csv_field': 'RR1',       'csv_idx': RowsId.RR1.value, 'qa_idx': RowsId.QRR1.value,       'mesure': 'rain',             'minmax': {}},
                     {'csv_field': 'T',         'csv_idx': RowsId.T.value, 'qa_idx': RowsId.QT.value,           'mesure': 'temperature',      'minmax':
@@ -243,7 +246,8 @@ class CsvH_974(CsvFileSpec):
                     {'csv_field': 'TVEGETAUX', 'csv_idx': RowsId.TVEGETAUX.value, 'qa_idx': RowsId.QTVEGETAUX.value,    'mesure': 'leaftemp1',        'minmax': {}},
                     {'csv_field': 'U',         'csv_idx': RowsId.U.value, 'qa_idx': RowsId.QU.value,           'mesure': 'humidity',         'minmax':
                         {"min": RowsId.UN.value, "qmin": RowsId.QUN.value, "minTime": RowsId.HUN.value, "max": RowsId.UX.value, "qmax": RowsId.QUX.value, "maxTine": RowsId.HUX.value}},
-                    {'csv_field': 'UV',        'csv_idx': RowsId.UV.value, 'qa_idx': RowsId.QUV.value,         'mesure': 'uv_indice',        'minmax': {}},
+                    {'csv_field': 'UV',        'csv_idx': RowsId.UV_INDICE.value, 'qa_idx': RowsId.QUV_INDICE.value,         'mesure': 'uv_indice',        'minmax': {}},
+                    {'csv_field': 'GLO',       'csv_idx': RowsId.GLO.value,     'qa_idx': RowsId.QGLO.value,   'mesure': 'radiation',        'minmax': {}},
                 ],
                 'skip_lines': 1,
                 'poste_strategy': 1,
