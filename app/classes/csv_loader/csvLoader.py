@@ -15,8 +15,11 @@ from app.classes.repository.incidentMeteor import IncidentMeteor
 import app.tools.myTools as t
 from django.conf import settings
 import json
+import datetime
 import os
 import psycopg2
+from psycopg2 import sql
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from app.classes.csv_loader.csvH_974 import CsvH_974 as csvInstance
 
 
@@ -91,9 +94,20 @@ class CsvLoader:
 
         # refresh our materialized view
         pgconn = self.getPGConnexion()
-        pgconn.autocommit = True
+        pgconn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         pg_cur = pgconn.cursor()
-        pg_cur.execute("call refresh_all_aggregates();")
+
+        start_tm = datetime.datetime.now()
+        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_hour')))
+        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_day')))
+        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_month')))
+        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_min_day')))
+        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_min_month')))
+        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_day')))
+        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_month')))
+
+        my_span.add_event('csvload', work_item['f'] + ': refresh_continuous_aggregate: ' + str(datetime.datetime.now() - start_tm) + ' ms')
+
         pg_cur.close()
         pgconn.commit()
         pgconn.close()

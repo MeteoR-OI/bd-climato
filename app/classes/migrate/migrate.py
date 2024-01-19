@@ -21,6 +21,9 @@ from app.classes.repository.posteMeteor import PosteMeteor
 from app.tools.myTools import FromDateToLocalDateTime
 import mysql.connector
 import psycopg2
+from psycopg2 import sql
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+from psycopg2 import sql
 from datetime import datetime, timedelta
 
 
@@ -62,9 +65,20 @@ class MigrateDB:
     def succeedWorkItem(self, work_item, my_span):
         # refresh our materialized view
         pgconn = self.getPGConnexion()
-        pgconn.autocommit = True
+        pgconn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         pg_cur = pgconn.cursor()
-        pg_cur.execute("call refresh_all_aggregates();")
+
+        start_tm = datetime.now()
+        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_hour')))
+        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_day')))
+        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_month')))
+        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_min_day')))
+        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_min_month')))
+        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_day')))
+        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_month')))
+
+        my_span.add_event('migrate', work_item['meteor'] + ': refresh_continuous_aggregate: ' + str(datetime.now() - start_tm) + ' ms')
+
         pg_cur.close()
         pgconn.commit()
         pgconn.close()
