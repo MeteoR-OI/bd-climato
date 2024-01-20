@@ -72,7 +72,7 @@ insert into postes
 
 insert into mesures
 (id,    name,            json_input,         archive_col,   archive_table, field_dir,     min,     max,    is_avg, is_wind,  allow_zero,  json_input_bis, is_hourly) values
-( 1, 'barometer',       'barometer',        'barometer',          null,        null,     false,   false,    true,   false,    true,            null,        False),
+( 1, 'barometer',       'barometer',        'barometer',          null,        null,     true,    true,     true,   false,    true,            null,        False),
 ( 6, 'dewpoint',        'dewpoint',         'dewpoint',           null,        null,     true,    true,     true,   false,    true,            null,        False),
 ( 8, 'etp',             'etp',              'ET',                 null,        null,     true,    true,     false,  false,    true,            null,         True),
 (10, 'extra_temp1',     'extra_temp1',      'extraTemp1',         null,        null,     false,   false,    true,   false,    true,    'extratemp1',        False),
@@ -92,7 +92,7 @@ insert into mesures
 (40, 'leaftemp2',       'leaf_temp2',       'leafTemp2',          null,        null,     false,   false,    true,   false,    true,     'leaftemp2',        False),
 (42, 'leafwet1',        'leaf_wet1',        'leafWet1',           null,        null,     false,   false,    true,   false,    true,      'leafwet1',        False),
 (44, 'leafwet2',        'leaf_wet2',        'leafWet2',           null,        null,     false,   false,    true,   false,    true,      'leafwet2',        False),
-(46, 'pressure',        'pressure',         'pressure',           null,        null,     true,    true,     true,   false,    true,            null,        False),
+(46, 'pressure',        'pressure',         'pressure',           null,        null,     false,   false,    true,   false,    true,            null,        False),
 (48, 'radiation',       'radiation',        'radiation',          null,        null,     false,   true,     true,   false,    true,            null,        False),
 (50, 'rain rate',       'rain_rate',        'rainRate',           null,        null,     false,   true,     true,   false,    true,            null,        False),
 (52, 'rain',            'rain',             'rain',               null,        null,     false,   true,     false,  false,    true,            null,        False),
