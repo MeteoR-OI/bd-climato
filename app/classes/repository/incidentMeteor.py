@@ -17,19 +17,12 @@ class IncidentMeteor():
             self.data = Incident(date_utc=datetime.datetime.utcnow(), source="??", level="??", reason="??", details={}, active=True)
 
     @staticmethod
-    def new(source: str, level: str, reason: str, j_details: json):
+    def new(source: str, level: str, reason: str, details: json):
         """Init a new IncidentMeteor object"""
         my_incident = IncidentMeteor(-1)
         my_incident.data.source = source
         my_incident.data.level = level
         my_incident.data.reason = reason
-        details = {}
-        # change datetime to string...
-        for ki in j_details.keys():
-            if "datetime" in str(type(j_details[ki])):
-                details[ki] = str(j_details[ki])
-            else:
-                details[ki] = j_details[ki]
         my_incident.data.details = details
         my_incident.data.active = True
         my_incident.save()
@@ -39,7 +32,23 @@ class IncidentMeteor():
         if self.data.active is False:
             self.data.delete()
         else:
+            # change datetime to string...
+            self.data.details = self.fix_json(self.data.details)
             self.data.save()
+
+    def fix_json(self, j: json):
+        clean_j = {}
+        # change datetime to string...
+        for ki in j.keys():
+            j_type = str(type(j[ki]))
+            if "datetime" in j_type:
+                clean_j[ki] = str(j[ki])
+                continue
+            if "class 'dict" in j_type:
+                clean_j[ki] = self.fix_json(j[ki])
+                continue
+            clean_j[ki] = j[ki]
+        return clean_j
 
     def __str__(self):
         """print myself"""
