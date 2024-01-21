@@ -23,7 +23,6 @@ import mysql.connector
 import psycopg2
 from psycopg2 import sql
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from psycopg2 import sql
 from datetime import datetime, timedelta
 
 
@@ -121,6 +120,7 @@ class MigrateDB:
 
                 # Load obs, records from archive
                 new_extremes = self.loadExistingArchive(cur_poste, pg_cur, work_item, my_span)
+                pgconn.commit()
 
                 if new_extremes is not None:
 

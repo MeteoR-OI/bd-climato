@@ -14,15 +14,22 @@ class IncidentMeteor():
         """Init a new IncidentMeteor object"""
         self.data = Incident.objects.filter(id=id).first()
         if self.data is None:
-            self.data = Incident(date_utc=datetime.datetime.utcnow(), source="??", level="??", reason="??", details={}, active=True)
+            self.data = Incident(date_utc=datetime.datetime.utcnow(), source="??", level="??", reason="??", j_details={}, active=True)
 
     @staticmethod
-    def new(source: str, level: str, reason: str, details: json):
+    def new(source: str, level: str, reason: str, j_details: json):
         """Init a new IncidentMeteor object"""
         my_incident = IncidentMeteor(-1)
         my_incident.data.source = source
         my_incident.data.level = level
         my_incident.data.reason = reason
+        details = {}
+        # change datetime to string...
+        for ki in j_details.keys():
+            if "datetime" in str(type(j_details[ki])):
+                details[ki] = str(j_details[ki])
+            else:
+                details[ki] = j_details[ki]
         my_incident.data.details = details
         my_incident.data.active = True
         my_incident.save()
