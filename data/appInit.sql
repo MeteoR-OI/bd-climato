@@ -161,6 +161,70 @@ create materialized view obs_day WITH (timescaledb.continuous) as
     group by 1,2;
 
 
+create materialized view obs_month WITH (timescaledb.continuous) as
+    select
+        timescaledb_experimental.time_bucket_ng('1 month', date_local) as date_local,
+        poste_id,
+        avg(barometer) as barometer,
+        avg(barometer_omm) as barometer_omm,
+        avg(dewpoint) as dewpoint,
+        sum(etp) as etp,
+        avg(extra_humid1) as extra_humid1,
+        avg(extra_humid2) as extra_humid2,
+        avg(extra_temp1) as extra_temp1,
+        avg(extra_temp2) as extra_temp2,
+        avg(extra_temp3) as extra_temp3,
+        avg(hail) as hail,
+        avg(hail_rate) as hail_rate,
+        avg(heatindex) as heatindex,
+        avg(heating_temp) as heating_temp,
+        avg(in_humidity) as in_humidity,
+        avg(in_temp) as in_temp,
+        avg(leaf_temp1) as leaf_temp1,
+        avg(leaf_temp2) as leaf_temp2,
+        avg(leaf_wet1) as leaf_wet1,
+        avg(leaf_wet2) as leaf_wet2,
+        avg(out_humidity) as out_humidity,
+        avg(out_humidity_omm) as out_humidity_omm,
+        avg(out_temp) as out_temp,
+        avg(out_temp_omm) as out_temp_omm,
+        avg(pressure) as pressure,
+        max(radiation) as radiation,
+        sum(rain) as rain,
+        sum(rain_omm) as rain_omm,
+        avg(rain_rate) as rain_rate,
+        avg(rx) as rx,
+        avg(soil_moist1) as soil_moist1,
+        avg(soil_moist2) as soil_moist2,
+        avg(soil_moist3) as soil_moist3,
+        avg(soil_moist4) as soil_moist4,
+        avg(soil_temp1) as soil_temp1,
+        avg(soil_temp2) as soil_temp2,
+        avg(soil_temp3) as soil_temp3,
+        avg(soil_temp4) as soil_temp4,
+        max(uv) as uv,
+        avg(voltage) as voltage,
+        avg(wind) as wind,
+        max(wind_gust) as wind_gust,
+        avg(wind10) as wind10,
+        avg(wind10_omm) as wind10_omm,
+        avg(windchill) as windchill
+    from obs_day
+    group by 1,2;
+
+create materialized view extremes_month WITH (timescaledb.continuous) as
+    select
+        timescaledb_experimental.time_bucket_ng('1 month', date_local) as date_local,
+        poste_id,
+        mesure_id,
+        min(min) as min,
+        first(min_time, min) as mintime,
+        max(max) as max,
+        last(max_time, max) as maxtime,
+        last(max_dir, max) as maxdir
+      from extremes
+      group by 1,2,3;
+
 CREATE OR REPLACE FUNCTION create_obs_trigger_fn()
   RETURNS TRIGGER LANGUAGE PLPGSQL AS
 $BODY$
