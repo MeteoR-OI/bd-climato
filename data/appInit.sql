@@ -160,6 +160,10 @@ create materialized view obs_day WITH (timescaledb.continuous) as
     from obs
     group by 1,2;
 
+SELECT add_continuous_aggregate_policy('obs_day',
+  start_offset => INTERVAL '6 hours',
+  end_offset => NULL,
+  schedule_interval => INTERVAL '12 hours');
 
 create materialized view obs_month WITH (timescaledb.continuous) as
     select
@@ -212,6 +216,11 @@ create materialized view obs_month WITH (timescaledb.continuous) as
     from obs_day
     group by 1,2;
 
+SELECT add_continuous_aggregate_policy('obs_month',
+  start_offset => INTERVAL '12 hours',
+  end_offset => NULL,
+  schedule_interval => INTERVAL '1 days');
+
 create materialized view extremes_month WITH (timescaledb.continuous) as
     select
         timescaledb_experimental.time_bucket_ng('1 month', date_local) as date_local,
@@ -224,6 +233,11 @@ create materialized view extremes_month WITH (timescaledb.continuous) as
         last(max_dir, max) as maxdir
       from extremes
       group by 1,2,3;
+
+SELECT add_continuous_aggregate_policy('extremes_month',
+  start_offset => INTERVAL '24 hours',
+  end_offset => NULL,
+  schedule_interval => INTERVAL '2 days');
 
 CREATE OR REPLACE FUNCTION create_obs_trigger_fn()
   RETURNS TRIGGER LANGUAGE PLPGSQL AS
