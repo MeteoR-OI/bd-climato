@@ -274,7 +274,8 @@ create materialized view x_max_day WITH (timescaledb.continuous) as
         poste_id as poste_id,
         mesure_id as mesure_id,
         max(max) as max,
-        last(max_time, max) as max_time
+        last(max_time, max) as max_time,
+        last(max_dir, max) as max_dir
   from x_max
   where qa_max != 9
   group by 1,2,3;
@@ -292,7 +293,8 @@ create materialized view x_max_month WITH (timescaledb.continuous) as
         poste_id as poste_id,
         mesure_id as mesure_id,
         max(max) as max,
-        last(max_time, max) as max_time
+        last(max_time, max) as max_time,
+        last(max_dir, max) as max_dir
   from x_max_day
   group by 1,2,3;
 
