@@ -236,9 +236,9 @@ create materialized view x_min_day WITH (timescaledb.continuous) as
         timescaledb_experimental.time_bucket_ng('1 day', date_local, origin => '1950-01-01') as date_local,
         poste_id as poste_id,
         mesure_id as mesure_id,
-        min(min) as min,
+        CASE WHEN m.is_avg is True THEN min(min) ELSE sum(min) END AS min,
         first(min_time, min) as min_time
-  from x_min
+  from x_min join mesures m on m.id = mesure_id
   where qa_min != 9
   group by 1,2,3;
 
@@ -256,9 +256,9 @@ create materialized view x_min_month WITH (timescaledb.continuous) as
         timescaledb_experimental.time_bucket_ng('1 month', date_local, origin => '1950-01-01') as date_local,
         poste_id as poste_id,
         mesure_id as mesure_id,
-        min(min) as min,
+        CASE WHEN m.is_avg is True THEN min(min) ELSE sum(min) END AS min,
         first(min_time, min) as min_time
-  from x_min_day
+  from x_min_day join mesures m on m.id = mesure_id
  group by 1,2,3;
 
 ALTER MATERIALIZED VIEW x_min_month set (timescaledb.materialized_only = false);
@@ -273,10 +273,10 @@ create materialized view x_max_day WITH (timescaledb.continuous) as
         timescaledb_experimental.time_bucket_ng('1 day', date_local, origin => '1950-01-01') as date_local,
         poste_id as poste_id,
         mesure_id as mesure_id,
-        max(max) as max,
+        CASE WHEN m.is_avg is True THEN max(max) ELSE sum(max) END AS max,
         last(max_time, max) as max_time,
         last(max_dir, max) as max_dir
-  from x_max
+  from x_max join mesures m on m.id = mesure_id
   where qa_max != 9
   group by 1,2,3;
 
@@ -292,10 +292,10 @@ create materialized view x_max_month WITH (timescaledb.continuous) as
         timescaledb_experimental.time_bucket_ng('1 month', date_local, origin => '1950-01-01') as date_local,
         poste_id as poste_id,
         mesure_id as mesure_id,
-        max(max) as max,
+        CASE WHEN m.is_avg is True THEN max(max) ELSE sum(max) END AS max,
         last(max_time, max) as max_time,
         last(max_dir, max) as max_dir
-  from x_max_day
+  from x_max_day join mesures m on m.id = mesure_id
   group by 1,2,3;
 
 ALTER MATERIALIZED VIEW x_max_month set (timescaledb.materialized_only = false);
