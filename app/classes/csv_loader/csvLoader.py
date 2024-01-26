@@ -216,5 +216,5 @@ class CsvLoader:
             host="localhost",
             user="postgres",
             password="Funiculi",
-            database="clim_test"
+            database="climato"
         )
