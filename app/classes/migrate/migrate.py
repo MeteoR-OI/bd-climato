@@ -15,15 +15,14 @@
 # more info on wind vs windGust: https://github-wiki-see.page/m/weewx/weewx/wiki/windgust
 # ---------------
 import app.tools as t
-from app.tools.myTools import FromTimestampToDate, AsTimezone, GetFirstDayNextMonth
+from app.tools.myTools import FromTimestampToDateTime, AsTimezone, GetFirstDayNextMonthFromTs
 from app.classes.repository.obsMeteor import QA
 from app.classes.repository.posteMeteor import PosteMeteor
-from app.tools.myTools import FromDateToLocalDateTime
 import mysql.connector
 import psycopg2
 from psycopg2 import sql
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 # --------------------------------------
@@ -111,7 +110,7 @@ class MigrateDB:
             work_item['tz'] = cur_poste.data.delta_timezone
             work_item['stop_date_utc'] = cur_poste.data.stop_date if cur_poste.data.stop_date is None else AsTimezone(cur_poste.data.stop_date, 0)
 
-            self.getNewDateBraket(cur_poste, work_item, my_span)
+            self.getNewDateBracket(cur_poste, work_item, my_span)
 
             # loop per year
             while work_item['start_ts_archive_utc'] < current_ts:
@@ -120,32 +119,32 @@ class MigrateDB:
 
                 # Load obs, records from archive
                 new_extremes = self.loadExistingArchive(cur_poste, pg_cur, work_item, my_span)
+
+                #     # Merge list in db
+                del_cde = self.storeMaxMinInDB(pg_cur, work_item['pid'], new_extremes, my_span)
+                # Commit obs and x_min/x_max new rows
                 pgconn.commit()
+                new_extremes = []
 
-                if new_extremes is not None:
-
-                    # Add data from WeeWx record tables
-                    new_extremes = self.loadMaxminFromWeewx(work_item, new_extremes, my_span)
-
-                    # Merge list in db
-                    self.storeMaxMinInDB(pg_cur, work_item['pid'], new_extremes, my_span)
-
-                    new_extremes = []
+                # delete min/max coming from obs for non avg mesures, which get also a record from archive_day_xxx
+                for a_del_sql in del_cde:
+                    pg_cur.execute(a_del_sql)
 
                 pgconn.commit()
                 print("     Done in : " + str(datetime.now() - start_dt) + " for " + str(work_item['start_dt_archive_utc']))
-                self.getNewDateBraket(cur_poste, work_item, my_span)
+                self.getNewDateBracket(cur_poste, work_item, my_span)
 
         finally:
             pg_cur.close()
             pgconn.close()
+
             # if work_item['old_json_load'] is not None and work_item['old_json_load'] is True:
             #     self.updateLoadJsonValue(work_item)
 
     # ---------------------------------------
     # other methods specific to this service
     # ---------------------------------------
-    def getNewDateBraket(self, cur_poste, work_item, my_span):
+    def getNewDateBracket(self, cur_poste, work_item, my_span):
 
         """Get start_dt/end_dt from postes, and archive table"""
         myconn = self.getMSQLConnection(work_item['meteor'])
@@ -159,56 +158,43 @@ class MigrateDB:
 
         try:
             # Get scan limit
-            if work_item.get('start_ts_limit') is None:
+            if work_item.get('start_ts_utc_limit') is None:
                 my_cur.execute('select min(dateTime), max(dateTime) from archive')
                 row = my_cur.fetchone()
                 my_cur.close()
                 if row is None or len(row) == 0 or row[0] is None or row[1] is None:
                     work_item['start_ts_archive_utc'] = max_ts
                     return
-                ts_poste_obs_date = int(cur_poste.data.last_obs_date.timestamp()) if cur_poste.data.last_obs_date is not None else 0
-                work_item['start_ts_limit'] = max(row[0], ts_poste_obs_date)
-                work_item['end_ts_limit'] = row[1] + 1
+                ts_poste_obs_date_utc = int(cur_poste.data.last_obs_date.timestamp() - work_item['tz'] * 3600) if cur_poste.data.last_obs_date is not None else 0
+                work_item['start_ts_utc_limit'] = max(row[0], ts_poste_obs_date_utc)
+                work_item['end_ts_utc_limit'] = row[1] + 1
+                if cur_poste.data.stop_date is not None:
+                    # cur_poste.data.stop_date is in local time
+                    work_item['end_ts_utc_limit'] = min(work_item['end_ts_utc_limit'], (ts_poste_obs_date_utc + 1) if ts_poste_obs_date_utc > 0 else max_ts)
 
             # Get start_dt/start_ts_archive_utc
-            if work_item.get('end_dt_archive_utc') is None:
+            if work_item.get('end_ts_archive_utc') is None:
                 # First pass
                 # now we only use last_obs_date for both obs and x_min/max
                 if cur_poste.data.last_obs_date is None:
-                    work_item['start_ts_archive_utc'] = work_item['start_ts_limit']
-                    work_item['start_dt_archive_utc'] = FromTimestampToDate(work_item['start_ts_archive_utc'])
-                    work_item['start_date_extremes'] = AsTimezone((work_item['start_dt_archive_utc'] - timedelta(days=1)), work_item['tz']).date()
-
+                    work_item['start_ts_archive_utc'] = work_item['start_ts_utc_limit']
                 else:
-                    work_item['start_dt_archive_utc'] = AsTimezone(cur_poste.data.last_obs_date, 0)
-                    work_item['start_ts_archive_utc'] = work_item['start_dt_archive_utc'].timestamp() + 1
-                    work_item['start_date_extremes'] = AsTimezone(cur_poste.data.last_obs_date - timedelta(days=1)).date()
+                    # cur_poste.data.last_obs_date is in local time
+                    work_item['start_ts_archive_utc'] = int(cur_poste.data.last_obs_date.timestamp() - work_item['tz'] * 3600) + 1
             else:
-                work_item['start_ts_archive_utc'] = work_item['end_ts_archive_utc']
-                work_item['start_dt_archive_utc'] = FromTimestampToDate(work_item['start_ts_archive_utc'])
-                work_item['start_date_extremes'] = AsTimezone((work_item['start_dt_archive_utc'] - timedelta(days=1)), work_item['tz']).date()
+                work_item['start_ts_archive_utc'] = work_item['end_ts_archive_utc'] + 1
 
-            work_item['start_ts_archive_utc_day'] = int(AsTimezone((work_item['start_dt_archive_utc'] - timedelta(days=1)), work_item['tz']).timestamp())
-
-            if work_item['stop_date_utc'] is not None:
-                # do not process data if start_archive_utc is after postes.stop_date
-                if work_item['stop_date_utc'] < work_item['start_dt_archive_utc']:
-                    work_item['start_ts_archive_utc'] = max_ts
-                    return
-
-            # if start_ts_archive_utc greater than end_ts_limit -> exit
-            if work_item['start_ts_archive_utc'] > work_item['end_ts_limit']:
+            # if start_ts_archive_utc greater than end_ts_utc_limit -> exit
+            if work_item['start_ts_archive_utc'] > work_item['end_ts_utc_limit']:
                 work_item['start_ts_archive_utc'] = max_ts
                 return
 
-            work_item['end_dt_archive_utc'] = GetFirstDayNextMonth(FromTimestampToDate(work_item['start_ts_archive_utc']), work_item['tz'])
-            # Do not process data after postes.stop_date
-            if work_item['stop_date_utc'] is not None and work_item['stop_date_utc'] < work_item['end_dt_archive_utc']:
-                work_item['end_dt_archive_utc'] = work_item['stop_date_utc']
+            # tz is needed to get the first day of next month in local time
+            work_item['end_ts_archive_utc'] = int(GetFirstDayNextMonthFromTs(work_item['start_ts_archive_utc'], work_item['tz']).timestamp())
 
-            work_item['end_ts_archive_utc'] = int(work_item['end_dt_archive_utc'].timestamp())
-            work_item['end_date_extremes'] = AsTimezone((work_item['end_dt_archive_utc'] + timedelta(days=1)), work_item['tz']).date()
-            work_item['end_ts_archive_utc_day'] = int(AsTimezone((work_item['end_dt_archive_utc'] + timedelta(days=1)), work_item['tz']).timestamp())
+            # Keep in separate field if values need to be different
+            work_item['start_ts_archive_utc_day'] = int(work_item['start_ts_archive_utc'])
+            work_item['end_ts_archive_utc_day'] = int(work_item['end_ts_archive_utc'])
 
             t.myTools.logInfo(
                 'ts_archive (ts utc)    from: ' + str(work_item['start_ts_archive_utc']) + ' to ' + str(work_item['end_ts_archive_utc']),
@@ -216,10 +202,10 @@ class MigrateDB:
                 {"svc": "migrate", "meteor":  work_item['meteor']})
 
             print('-------------------------------------------------')
-            print('Archive (dt utc)       from: ' + str(work_item['start_dt_archive_utc']) + ' to ' + str(work_item['end_dt_archive_utc']))
+            print('Meteor: ' + work_item['meteor'])
+            work_item['start_dt_archive_utc'] = FromTimestampToDateTime(work_item['start_ts_archive_utc'])
+            print('Archive (dt utc)       from: ' + str(work_item['start_dt_archive_utc']) + ' to ' + str(FromTimestampToDateTime(work_item['end_ts_archive_utc'])))
             print('ts_archive (ts utc)    from: ' + str(work_item['start_ts_archive_utc']) + ' to ' + str(work_item['end_ts_archive_utc']))
-            print('ts_arch_day (date utc) from: ' + str(work_item['start_ts_archive_utc_day']) + ' to ' + str(work_item['end_ts_archive_utc_day']))
-            # print('X_Days  (date local)   from: ' + str(work_item['start_date_extremes']) + ' to ' + str(work_item['end_date_extremes']))
             print('-------------------------------------------------')
 
             return
@@ -230,37 +216,6 @@ class MigrateDB:
 
         finally:
             myconn.close()
-
-    # ---------------------------------------------------
-    # insert mesures from weewx archive in our obs table
-    # ---------------------------------------------------
-    def getExistingRecord(self, pg_cur, work_item, my_span):
-        existing_records = {}
-
-        # store min/max in our cache
-        for a_mesure in self.measures:
-            cache = []
-            sql = 'select id, mesure_id, date_local, min, min_time, max, max_time, max_dir from extremes ' +\
-                ' where poste_id = ' + str(work_item['pid']) +\
-                " and date_local >= '" + str(work_item['start_date_extremes'] - timedelta(days=1)) + "' " +\
-                " and date_local < '" + str(work_item['end_date_extremes'] + timedelta(days=1)) + "' " +\
-                ' order by mesure_id, date_local'
-
-            current_mid = -1
-            cache = []
-            pg_cur.execute(sql)
-            row = pg_cur.fetchone()
-            while row is not None:
-                if row[1] != current_mid:
-                    cache = []
-                    existing_records['m_' + str(row[1])] = {'mid': row[1], 'cache': cache}
-                    current_mid = row[1]
-
-                cache.append([row[2], row[1], row[3], row[4], None, row[5], row[6], row[7], None, row[0], FromDateToLocalDateTime(row[2], work_item['tz']).timestamp(), False])
-
-                row = pg_cur.fetchone()
-
-        return existing_records
 
     def loadExistingArchive(self, cur_poste, pg_cur, work_item, my_span):
 
@@ -290,13 +245,13 @@ class MigrateDB:
             if row2[self.row_archive_usunits] != 16:
                 raise Exception('bad usUnits: ' + str(row2[self.row_archive_usunits]) + ', dateTime(UTC): ' + str(row2[self.row_archive_dt_utc]))
 
-            date_obs_utc = FromTimestampToDate(row2[self.row_archive_dt_utc]).replace(tzinfo=None)
-            date_obs_local = AsTimezone(date_obs_utc, work_item['tz']).replace(tzinfo=None)
+            date_obs_utc = FromTimestampToDateTime(row2[self.row_archive_dt_utc])
+            date_obs_local = FromTimestampToDateTime(row2[self.row_archive_dt_utc], work_item['tz'])
 
-            if cur_poste.data.last_obs_date is None or date_obs_utc > cur_poste.data.last_obs_date:
+            if cur_poste.data.last_obs_date is None or date_obs_local > cur_poste.data.last_obs_date:
                 for a_mesure in self.measures:
-                    cur_val = self.get_valeurs(a_mesure, row2, col_mapping)
-                    if cur_val is None:
+                    cur_val = row2[col_mapping[a_mesure['archive_col']]]
+                    if cur_val is None or cur_val == '' or (cur_val == 0 and a_mesure['zero'] is False):
                         continue
 
                     data_args.append(([work_item['pid'], date_obs_utc, date_obs_local, a_mesure['id'], row2[self.row_archive_interval], cur_val, QA.UNSET.value, ]))
@@ -318,8 +273,7 @@ class MigrateDB:
             return None
 
         # cursor.mogrify() to insert multiple values
-        args = ','.join(pg_cur.mogrify("( %s, %s, %s, %s, %s, %s, %s )", i).decode('utf-8')
-                        for i in data_args)
+        args = ','.join(pg_cur.mogrify("( %s, %s, %s, %s, %s, %s, %s )", i).decode('utf-8') for i in data_args)
 
         pg_cur.execute(sql_insert + args + ' returning id')
         new_ids = pg_cur.fetchall()
@@ -330,13 +284,6 @@ class MigrateDB:
             idx += 1
 
         return minmax_values
-
-    #  Returns: cur_val
-    def get_valeurs(self, a_mesure, row2, col_mapping):
-        if row2[col_mapping[a_mesure['archive_col']]] is None:
-            return None
-
-        return row2[col_mapping[a_mesure['archive_col']]]
 
     # ------------------------------------
     # generate max/min from WeeWX records
@@ -376,12 +323,12 @@ class MigrateDB:
                     row = my_cur.fetchone()
                     while row is not None:
                         if row[0] is not None or row[2] is not None:
-                            dt_min = AsTimezone(FromTimestampToDate((row[1] if row[1] is not None else row[5])), work_item['tz']).replace(tzinfo=None)
-                            dt_max = AsTimezone(FromTimestampToDate((row[3] if row[3] is not None else row[5])), work_item['tz']).replace(tzinfo=None)
+                            dt_local_min = AsTimezone(FromTimestampToDateTime((row[1] if row[1] is not None else row[5])), work_item['tz'])
+                            dt_local_max = AsTimezone(FromTimestampToDateTime((row[3] if row[3] is not None else row[5])), work_item['tz'])
                             if a_mesure['iswind'] is True:
-                                new_records.append({'min': row[0], 'date_min': dt_min, 'max': row[2], 'date_max': dt_max, 'max_dir': row[4], 'mid': a_mesure['id'], 'obs_id': -1})
+                                new_records.append({'min': row[0], 'date_min': dt_local_min, 'max': row[2], 'date_max': dt_local_max, 'max_dir': row[4], 'mid': a_mesure['id'], 'obs_id': -1})
                             else:
-                                new_records.append({'min': row[0], 'date_min': dt_min, 'max': row[2], 'date_max': dt_max, 'mid': a_mesure['id'], 'obs_id': -1})
+                                new_records.append({'min': row[0], 'date_min': dt_local_min, 'max': row[2], 'date_max': dt_local_max, 'mid': a_mesure['id'], 'obs_id': -1})
                         row = my_cur.fetchone()
                 finally:
                     my_cur.close()
@@ -396,42 +343,61 @@ class MigrateDB:
         min_args = []
         max_args = []
         mesures_hash = {}
+        mesure_sum_id = []
+        x_min_min_date = datetime.now().date()
+        x_max_min_date = datetime.now().date()
+
         for a_mesure in self.measures:
             mesures_hash[a_mesure['id']] = a_mesure
+            if a_mesure['isavg'] is False:
+                mesure_sum_id.append(a_mesure['id'])
 
         for a_record in new_records:
             cur_mesure = mesures_hash[a_record['mid']]
 
-            if a_record['mid'] == 76 and a_record['min'] == 15.6:
-                pass
-
             if cur_mesure['min'] is True:
                 dt_local_min = a_record['date_min'].date()
-                min_args.append(
-                    (a_record['obs_id'] if a_record['obs_id'] > -1 else None,
-                     dt_local_min,
-                     pid,
-                     a_record['mid'],
-                     a_record['min'],
-                     a_record['date_min'],
-                     QA.UNSET.value))
+                if dt_local_min < x_min_min_date:
+                    x_min_min_date = dt_local_min
+                if a_record['min'] is not None:
+                    min_args.append(
+                        (a_record['obs_id'] if a_record['obs_id'] > -1 else None,
+                         dt_local_min,
+                         pid,
+                         a_record['mid'],
+                         a_record['min'],
+                         a_record['date_min'],
+                         QA.UNSET.value))
 
             if cur_mesure['max'] is True:
                 dt_local_max = a_record['date_min'].date()
-                max_args.append(
-                    (a_record['obs_id'] if a_record['obs_id'] > -1 else None,
-                     dt_local_max,
-                     pid,
-                     a_record['mid'],
-                     a_record['max'],
-                     a_record['date_max'],
-                     QA.UNSET.value, a_record.get('max_dir')))
+                if dt_local_max < x_max_min_date:
+                    x_max_min_date = dt_local_max
+                if a_record['max'] is not None:
+                    max_args.append(
+                        (a_record['obs_id'] if a_record['obs_id'] > -1 else None,
+                         dt_local_max,
+                         pid,
+                         a_record['mid'],
+                         a_record['max'],
+                         a_record['date_max'],
+                         QA.UNSET.value, a_record.get('max_dir')))
 
         min_args_ok = ','.join(pg_cur.mogrify("(%s, %s, %s, %s, %s, %s, %s)", i).decode('utf-8') for i in min_args)
         max_args_ok = ','.join(pg_cur.mogrify("(%s, %s, %s, %s, %s, %s, %s, %s)", i).decode('utf-8') for i in max_args)
 
         pg_cur.execute(insert_cde_min + min_args_ok)
         pg_cur.execute(insert_cde_max + max_args_ok)
+
+        # for sum mesures, remove data from obs, when a record is inserted in x_min/x_max from archive_day_xxx
+        str_mesure_list = "(" + ','.join(str(x) for x in mesure_sum_id) + ")"
+        return ["delete from x_max where obs_id is not null and date_local in " +
+                " (select date_local from x_max where obs_id is null and date_local >= '" +
+                x_max_min_date.strftime("%Y/%m/%d, %H:%M:%S") + "' and mesure_id in " + str_mesure_list + ")",
+                "delete from x_min where obs_id is not null and date_local in " +
+                " (select date_local from x_min where obs_id is null and date_local >= '" +
+                x_min_min_date.strftime("%Y/%m/%d, %H:%M:%S") + "' and mesure_id in " + str_mesure_list + ")"
+                ]
 
     # --------------------------------
     # return the sql select statement
@@ -477,6 +443,8 @@ class MigrateDB:
             mesures.append(one_mesure)
             row = pg_cur.fetchone()
         pg_cur.close()
+
+        # Link wind speed mesures with the linked wind dir mesure
         for a_mesure in mesures:
             if a_mesure['diridx'] is not None:
                 fi_dir = a_mesure['diridx']
@@ -494,7 +462,7 @@ class MigrateDB:
             host="localhost",
             user="postgres",
             password="Funiculi",
-            database="clim_test"
+            database="climato"
         )
 
     def getMSQLConnection(self, meteor):
