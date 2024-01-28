@@ -120,15 +120,17 @@ class MigrateDB:
                 # Load obs, records from archive
                 new_extremes = self.loadExistingArchive(cur_poste, pg_cur, work_item, my_span)
 
-                #     # Merge list in db
-                del_cde = self.storeMaxMinInDB(pg_cur, work_item['pid'], new_extremes, my_span)
-                # Commit obs and x_min/x_max new rows
-                pgconn.commit()
-                new_extremes = []
+                if new_extremes is not None:
+                    #     # Merge list in db
+                    del_cde = self.storeMaxMinInDB(pg_cur, work_item['pid'], new_extremes, my_span)
+                    # Commit obs and x_min/x_max new rows
 
-                # delete min/max coming from obs for non avg mesures, which get also a record from archive_day_xxx
-                for a_del_sql in del_cde:
-                    pg_cur.execute(a_del_sql)
+                    pgconn.commit()
+                    new_extremes = []
+
+                    # delete min/max coming from obs for non avg mesures, which get also a record from archive_day_xxx
+                    for a_del_sql in del_cde:
+                        pg_cur.execute(a_del_sql)
 
                 pgconn.commit()
                 print("     Done in : " + str(datetime.now() - start_dt) + " for " + str(work_item['start_dt_archive_utc']))
@@ -250,6 +252,8 @@ class MigrateDB:
 
             if cur_poste.data.last_obs_date is None or date_obs_local > cur_poste.data.last_obs_date:
                 for a_mesure in self.measures:
+                    if a_mesure['id'] == 52:
+                        pass
                     cur_val = row2[col_mapping[a_mesure['archive_col']]]
                     if cur_val is None or cur_val == '' or (cur_val == 0 and a_mesure['zero'] is False):
                         continue
@@ -391,12 +395,16 @@ class MigrateDB:
 
         # for sum mesures, remove data from obs, when a record is inserted in x_min/x_max from archive_day_xxx
         str_mesure_list = "(" + ','.join(str(x) for x in mesure_sum_id) + ")"
-        return ["delete from x_max where obs_id is not null and date_local in " +
+        return ["delete from x_max where obs_id is not null and mesure_id in " + str_mesure_list +
+                " and poste_id = " + str(pid) + " and date_local in " +
                 " (select date_local from x_max where obs_id is null and date_local >= '" +
-                x_max_min_date.strftime("%Y/%m/%d, %H:%M:%S") + "' and mesure_id in " + str_mesure_list + ")",
-                "delete from x_min where obs_id is not null and date_local in " +
+                x_max_min_date.strftime("%Y/%m/%d, %H:%M:%S") + "' and mesure_id in " + str_mesure_list +
+                " and poste_id = " + str(pid) + ")",
+                "delete from x_min where obs_id is not null and mesure_id in " + str_mesure_list +
+                " and poste_id = " + str(pid) + " and date_local in " +
                 " (select date_local from x_min where obs_id is null and date_local >= '" +
-                x_min_min_date.strftime("%Y/%m/%d, %H:%M:%S") + "' and mesure_id in " + str_mesure_list + ")"
+                x_min_min_date.strftime("%Y/%m/%d, %H:%M:%S") + "' and mesure_id in " + str_mesure_list +
+                " and poste_id = " + str(pid) + ")"
                 ]
 
     # --------------------------------
