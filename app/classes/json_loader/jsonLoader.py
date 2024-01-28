@@ -174,8 +174,11 @@ class JsonLoader:
         if meteor == 'None':
             raise Exception('invalid format, unreadable meteor key ' + filename)
         pid = PosteMeteor.getPosteIdByMeteor(jsons_to_load[0]["meteor"])
-        b_load = PosteMeteor(pid).data.load_raw_data
-        if b_load is False:
+        cur_poste = PosteMeteor(pid)
+        if cur_poste.data.load_type is None:
+            raise Exception("code meteor inconnu: " + meteor + ', idx_global: ' + str(idx_global))
+
+        if (cur_poste.data.load_type & PosteMeteor.Load_Type.LOAD_FROM_JSON.value) == 0:
             my_span.add_event('jsonload', meteor + ' inactif json_load is False), skipping file ' + filename)
             return
         my_span.set_attribute('file', filename)
@@ -189,10 +192,11 @@ class JsonLoader:
             try:
                 json_to_load = jsons_to_load[idx_global]
                 meteor = str(json_to_load.get("meteor"))
-                cur_poste = PosteMeteor.getPosteByMeteor(json_to_load["meteor"])
-                pid = cur_poste.data.id
-                if pid is None:
-                    raise Exception("code meteor inconnu: " + meteor + ', idx_global: ' + str(idx_global))
+                if meteor != cur_poste.data.meteor:
+                    cur_poste = PosteMeteor.getPosteByMeteor(json_to_load["meteor"])
+                    pid = cur_poste.data.id
+                    if pid is None:
+                        raise Exception("code meteor inconnu: " + meteor + ', idx_global: ' + str(idx_global))
                 poste_tz = cur_poste.data.delta_timezone
 
                 idx_data = 0

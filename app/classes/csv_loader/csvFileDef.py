@@ -97,11 +97,12 @@ class CsvFileSpec(ABC):
                         cur_poste.data.owner = "Meteo France"
                         cur_poste.data.data_source = 1
                         cur_poste.data.delta_timezone = 4       # assume all meteo france data are in UTC+4
+                        cur_poste.data.load_type = PosteMeteor.Load_Type.LOAD_FROM_CSV_FILE.value
                         cur_poste.data.save()
                     last_meteor = self.__poste
                     date_already_loaded = str_to_datetime(cur_poste.data.last_obs_date) if cur_poste.data.last_obs_date is not None else datetime(1900, 1, 1)
 
-                if j_stop_dat_utc > date_already_loaded:
+                if j_stop_dat_utc > date_already_loaded and ((cur_poste.data.load_type & PosteMeteor.Load_Type.LOAD_FROM_CSV_FILE.value) == PosteMeteor.Load_Type.LOAD_FROM_CSV_FILE.value):
                     #  process row
                     self.processRow(my_fields, cur_poste, obs_data, min_data, max_data, b_check_obs_data_in_db, obs_data_in_db)
                     line_count += 1

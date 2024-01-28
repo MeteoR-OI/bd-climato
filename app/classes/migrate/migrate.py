@@ -102,7 +102,7 @@ class MigrateDB:
             if cur_poste.data.id is None:
                 raise Exception('station ' + meteor + ' not found')
 
-            if cur_poste.data.load_dump is False:
+            if (cur_poste.data.load_type & PosteMeteor.Load_Type.LOAD_FROM_DUMP.value) == 0:
                 my_span.add_event(meteor, {'status': 'Migration stopped, station load_dump is False'})
                 return
 
@@ -194,10 +194,6 @@ class MigrateDB:
             # tz is needed to get the first day of next month in local time
             work_item['end_ts_archive_utc'] = int(GetFirstDayNextMonthFromTs(work_item['start_ts_archive_utc'], work_item['tz']).timestamp())
 
-            # Keep in separate field if values need to be different
-            work_item['start_ts_archive_utc_day'] = int(work_item['start_ts_archive_utc'])
-            work_item['end_ts_archive_utc_day'] = int(work_item['end_ts_archive_utc'])
-
             t.myTools.logInfo(
                 'ts_archive (ts utc)    from: ' + str(work_item['start_ts_archive_utc']) + ' to ' + str(work_item['end_ts_archive_utc']),
                 my_span,
@@ -288,57 +284,6 @@ class MigrateDB:
             idx += 1
 
         return minmax_values
-
-    # ------------------------------------
-    # generate max/min from WeeWX records
-    # ------------------------------------
-    def loadMaxminFromWeewx(self, work_item, new_records, my_span):
-        myconn = self.getMSQLConnection(work_item['meteor'])
-        try:
-            for a_mesure in self.measures:
-                if a_mesure.get('table') == 'skip':
-                    continue
-
-                my_cur = myconn.cursor()
-                try:
-                    # get table name, fix for wind table
-                    table_name = a_mesure['archive_col']
-                    if a_mesure['table'] is not None:
-                        table_name = a_mesure['table']
-
-                    # We need to use mintime/maxtime as the date of the record
-                    # the mintime and maxtime can be on two different days...
-                    if a_mesure['iswind'] is False:
-                        my_query = \
-                            'select min, mintime, max, maxtime, null as max_dir, dateTime ' + \
-                            ' from archive_day_' + table_name +\
-                            " where dateTime >= " + str(work_item['start_ts_archive_utc_day']) +\
-                            " and dateTime < " + str(work_item['end_ts_archive_utc_day']) +\
-                            " order by dateTime"
-                    else:
-                        my_query = \
-                            'select min, mintime, max, maxtime, max_dir, dateTime ' + \
-                            ' from archive_day_' + table_name +\
-                            " where dateTime >= " + str(work_item['start_ts_archive_utc_day']) +\
-                            " and dateTime < " + str(work_item['end_ts_archive_utc_day']) +\
-                            " order by dateTime"
-
-                    my_cur.execute(my_query)
-                    row = my_cur.fetchone()
-                    while row is not None:
-                        if row[0] is not None or row[2] is not None:
-                            dt_local_min = AsTimezone(FromTimestampToDateTime((row[1] if row[1] is not None else row[5])), work_item['tz'])
-                            dt_local_max = AsTimezone(FromTimestampToDateTime((row[3] if row[3] is not None else row[5])), work_item['tz'])
-                            if a_mesure['iswind'] is True:
-                                new_records.append({'min': row[0], 'date_min': dt_local_min, 'max': row[2], 'date_max': dt_local_max, 'max_dir': row[4], 'mid': a_mesure['id'], 'obs_id': -1})
-                            else:
-                                new_records.append({'min': row[0], 'date_min': dt_local_min, 'max': row[2], 'date_max': dt_local_max, 'mid': a_mesure['id'], 'obs_id': -1})
-                        row = my_cur.fetchone()
-                finally:
-                    my_cur.close()
-        finally:
-            myconn.close()
-            return new_records
 
     def storeMaxMinInDB(self, pg_cur, pid, new_records, my_span):
         # check: nico use: last_in_db for insert-update or insert..
@@ -505,39 +450,6 @@ class MigrateDB:
             self.row_archive_dt_utc = 0
             self.row_archive_usunits = 1
             self.row_archive_interval = 2
-
-            # row_id for extreme data
-            self.row_extreme_min = 0
-            self.row_extreme_mintime = 1
-            self.row_extreme_max = 2
-            self.row_extreme_maxtime = 3
-            self.row_extreme_maxdir = 4
-            self.row_extreme_mid = 5
-            self.row_extreme_dateTime = 6
-
-            # row_id for virtual data
-            self.row_virtual_min_utc_ts = 0
-            self.row_virtual_min = 1
-            self.row_virtual_mintime = 2
-            self.row_virtual_max_utc_ts = 3
-            self.row_virtual_max = 4
-            self.row_virtual_maxtime = 5
-            self.row_virtual_maxdir = 6
-            self.row_virtual_mid = 7
-            self.row_virtual_obsid = 8
-
-            self.row_cache_datetime = 0
-            self.row_cache_mid = 1
-            self.row_cache_min = 2
-            self.row_cache_min_local_dt = 3
-            self.row_cache_obsid_min = 4
-            self.row_cache_max = 5
-            self.row_cache_max_local_dt = 6
-            self.row_cache_maxdir = 7
-            self.row_cache_obsid_max = 8
-            self.row_cache_row_id = 9
-            self.row_cache_ts = 10
-            self.row_cache_dirty = 11
 
         finally:
             if pgconn is not None:

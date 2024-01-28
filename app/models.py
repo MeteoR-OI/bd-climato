@@ -10,6 +10,15 @@ class DateTimeFieldNoTZ(models.Field):
 
 # class Poste(ExportModelOperationsMixin('poste'), models.Model):
 class Poste(models.Model):
+    class Load_Type(models.IntegerChoices):
+        NONE = 0
+        LOAD_FROM_DUMP = 1
+        LOAD_FROM_JSON = 2
+        LOAD_FROM_DUMP_THEN_JSON = 3
+        LOAD_FROM_CSV_FILE = 4
+        LOAD_FROM_METEOFR_API = 8
+        LOAD_FROM_API_AND_CSV = 12
+
     # mandatory fields
     id = models.SmallAutoField(primary_key=True)
     meteor = models.CharField(null=False, max_length=50, verbose_name="Code station")
@@ -22,9 +31,11 @@ class Poste(models.Model):
     lat = models.FloatField(null=True, default=0, verbose_name="Latitude")
     long = models.FloatField(null=True, default=0, verbose_name="Longitude")
     info = models.JSONField(null=True, default=dict, verbose_name="autre info station")
-    load_dump = models.BooleanField(null=True, default=False, verbose_name="Charge les donnees a partir des dumps")
-    load_raw_data = models.BooleanField(null=True, default=False, verbose_name="Charge les donnees a partir des donnees brutes")
-    pause_raw_data = models.BooleanField(null=True, default=False, verbose_name="Ne traite pas les fichiers Jsde donnees brutes")
+    load_type = models.IntegerField(choices=Load_Type.choices, default=Load_Type.NONE, verbose_name="Type de chargement des donnees")
+
+    # load_dump = models.BooleanField(null=True, default=False, verbose_name="Charge les donnees a partir des dumps")
+    # load_raw_data = models.BooleanField(null=True, default=False, verbose_name="Charge les donnees a partir des donnees brutes")
+    # pause_raw_data = models.BooleanField(null=True, default=False, verbose_name="Ne traite pas les fichiers Jsde donnees brutes")
     stop_date = DateTimeFieldNoTZ(null=True, verbose_name="Datetime local de stop de la station")
 
     # la suite n'est pas utilise par climato - a revoir pour pages html...

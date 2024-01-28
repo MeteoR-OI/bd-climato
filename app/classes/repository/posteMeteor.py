@@ -11,6 +11,8 @@ class PosteMeteor:
         p2=PosteMeteor("BBF015") -> recupere le poste meteor BBF015
     """
 
+    Load_Type = Poste.Load_Type
+
     def __init__(self, key):
         if 'int' in str(type(key)):
             """ load our instance from db """
