@@ -94,6 +94,11 @@ class JsonLoader:
         }
 
     def succeedWorkItem(self, work_item, my_span):
+        # Don't move JSON files if we are in a "dump then json mode"
+        cur_poste = PosteMeteor(work_item['meteor'])
+        if (cur_poste.data.load_type & PosteMeteor.Load_Type.LOAD_FROM_DUMP_THEN_JSON) == PosteMeteor.Load_Type.LOAD_FROM_DUMP_THEN_JSON:
+            return
+
         # move the file to archive
         str_annee = 'inconnu'
         str_mois = 'inconnu'
@@ -170,20 +175,10 @@ class JsonLoader:
         filename = work_item['f']
         jsons_to_load = work_item['json']
         idx_global = 0
-        meteor = str(jsons_to_load[0].get("meteor"))
-        if meteor == 'None':
-            raise Exception('invalid format, unreadable meteor key ' + filename)
-        pid = PosteMeteor.getPosteIdByMeteor(jsons_to_load[0]["meteor"])
-        cur_poste = PosteMeteor(pid)
-        if cur_poste.data.load_type is None:
-            raise Exception("code meteor inconnu: " + meteor + ', idx_global: ' + str(idx_global))
-
-        if (cur_poste.data.load_type & PosteMeteor.Load_Type.LOAD_FROM_JSON.value) == 0:
-            my_span.add_event('jsonload', meteor + ' inactif json_load is False), skipping file ' + filename)
-            return
+        cur_meteor = "inconnu"
         my_span.set_attribute('file', filename)
-        my_span.set_attribute('meteor', meteor)
-        check_result = checkJson(jsons_to_load, pid, filename)
+
+        check_result = checkJson(jsons_to_load, filename)
         if check_result is not None:
             my_span.set_event('check_json', check_result)
             raise Exception("Invalid Json file: " + filename + ": " + check_result)
@@ -192,12 +187,20 @@ class JsonLoader:
             try:
                 json_to_load = jsons_to_load[idx_global]
                 meteor = str(json_to_load.get("meteor"))
-                if meteor != cur_poste.data.meteor:
-                    cur_poste = PosteMeteor.getPosteByMeteor(json_to_load["meteor"])
-                    pid = cur_poste.data.id
-                    if pid is None:
+
+                if meteor != cur_meteor:
+                    cur_poste = PosteMeteor(meteor)
+                    if cur_poste.data is None or cur_poste.data.load_type is None:
                         raise Exception("code meteor inconnu: " + meteor + ', idx_global: ' + str(idx_global))
-                poste_tz = cur_poste.data.delta_timezone
+
+                    pid = cur_poste.data.id
+
+                    if (cur_poste.data.load_type & PosteMeteor.Load_Type.LOAD_FROM_JSON.value) == 0:
+                        my_span.add_event('jsonload', meteor + ' inactif json_load is False), skipping file ' + filename)
+                        return
+
+                    my_span.set_attribute('meteor', meteor)
+                    cur_meteor = meteor
 
                 idx_data = 0
                 while idx_data < json_to_load['data'].__len__():
@@ -208,6 +211,19 @@ class JsonLoader:
                         j_stop_dat = a_work_item["stop_dat"]
                         stop_date = str_to_datetime(j_stop_dat)
                         j_duration = a_work_item["duration"]
+
+                        if (cur_poste.data.load_type & PosteMeteor.Load_Type.LOAD_FROM_DUMP_THEN_JSON.value) == PosteMeteor.Load_Type.LOAD_FROM_DUMP_THEN_JSON.value:
+                            if j_stop_dat <= cur_poste.data.last_obs_date:
+                                cur_poste.data.load_type = PosteMeteor.Load_Type.LOAD_FROM_JSON.value
+                                cur_poste.data.save()
+                                my_span.add_event('jsonload', meteor + ' switching to Load_From_Json mode data from ' + filename + ', stop_date: ' + stop_date)
+                            else:
+                                my_span.add_event('jsonload', meteor + ' waiting for an older json file, skipping file ' + filename + ', stop_date: ' + stop_date)
+                                return
+
+                        if j_stop_dat <= cur_poste.data.last_obs_date:
+                            my_span.add_event('jsonload', meteor + ' skipping data from ' + filename + ', stop_date: ' + stop_date + ', last_obs_date: ' + str(cur_poste.data.last_obs_date))
+                            return
 
                         # Load the obs we need in cache
                         all_obs = ObsMeteor.load_obs(pid, stop_date)
@@ -229,7 +245,7 @@ class JsonLoader:
                                 all_obs[0]['obs'].data.delete()
 
                                 # reload a new set of obs (first will be new now)
-                                all_obs = ObsMeteor.load_all_needed_obs(pid, self.decas, j_stop_dat, poste_tz)
+                                all_obs = ObsMeteor.load_all_needed_obs(pid, self.decas, j_stop_dat, cur_poste.data.delta_timezone)
 
                         all_obs[0]['obs'].data.duration = j_duration
                         # all_obs[0]['obs'].data.save()

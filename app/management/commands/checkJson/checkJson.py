@@ -21,7 +21,7 @@ if __name__ == "__main__":
 
             j_content = JsonPlus().loads(json_str)
 
-            ret = checkJson(j_content, 1, filename)
+            ret = checkJson(j_content, filename)
             if ret is None:
                 print("file ok")
             else:

@@ -2,7 +2,7 @@ from app.tools.dateTools import str_to_datetime
 import json
 
 
-def checkJson(j_arr: json, pid: int = -1, filename: str = "???") -> str:
+def checkJson(j_arr: json, filename: str = "???") -> str:
     """
     checkJson
         Check Json integrity
@@ -17,7 +17,7 @@ def checkJson(j_arr: json, pid: int = -1, filename: str = "???") -> str:
     while idx < j_arr.__len__() and ret is None:
         j = j_arr[idx]
 
-        ret = _checkJsonOneItem(j, pid, meteor)
+        ret = _checkJsonOneItem(j, meteor)
 
         if ret is not None:
             return "file: " + filename + ", item " + str(idx) + " error =>" + ret
@@ -25,16 +25,13 @@ def checkJson(j_arr: json, pid: int = -1, filename: str = "???") -> str:
     return None
 
 
-def _checkJsonOneItem(j: json, pid: int, meteor: str) -> str:
+def _checkJsonOneItem(j: json, meteor: str) -> str:
     idx = 0
     valeurs_to_add = []
     extremes_to_add = []
     new_val = {}
     new_val_xtreme = {}
     stop_dat_list = []
-
-    # add this key used in app
-    j["poste_id"] = pid
 
     # check meteor code
     if j.__contains__("meteor") is False or j["meteor"].__len__() == 0:
