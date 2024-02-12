@@ -15,21 +15,19 @@ timescaledb-tune --yes --conf-path=/Users/nico/Library/Application\ Support/Post
 
 */
 ============================================
-(install timescaledb 2.13.0 with postgres 16)
+(install timescaledb 2.14.0 with postgres 16)
 =============================================
+be sure the PATH points to: /Applications/Postgres.app/Contents/Versions/16/bin
 
-Do not work yet.... ???
+git clone https://github.com/timescale/timescaledb
+git checkout 2.14.0
 
-brew tap timescale/tap
-brew install timescaledb
+./bootstrap
 
-timescaledb-tune --yes --conf-path=/Users/nico/Library/Application\ Support/Postgres/var-16/postgresql.conf
+cd build && make
 
-/usr/bin/install -c -m 755 /opt/homebrew/Cellar/timescaledb/2.13.0/lib/timescaledb/postgresql/timescaledb-2.13.0.so  /Applications/Postgres.app/Contents/Versions/16/lib/postgresql/
-/usr/bin/install -c -m 755 /opt/homebrew/Cellar/timescaledb/2.13.0/lib/timescaledb/postgresql/timescaledb-tsl-2.13.0.so  /Applications/Postgres.app/Contents/Versions/16/lib/postgresql/
-/usr/bin/install -c -m 755 /opt/homebrew/Cellar/timescaledb/2.13.0/lib/timescaledb/postgresql/timescaledb.so  /Applications/Postgres.app/Contents/Versions/16/lib/postgresql/
+make install
 
-/usr/bin/install -c -m 644 /opt/homebrew/Cellar/timescaledb/2.13.0/share/timescaledb/* /Applications/Postgres.app/Contents/Versions/16/share/postgresql/extension/
 
 */
 
