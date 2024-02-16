@@ -105,6 +105,23 @@ class Observation(models.Model):
         unique_together = (['id', 'date_local'],)
 
 
+class LastObs(models.Model):
+    id = models.BigAutoField(primary_key=True, null=False, verbose_name="id du minimum")
+    date_local = DateTimeFieldNoTZ(null=False, verbose_name="datetime locale derniere valeur de la mesure")
+    poste = models.ForeignKey(null=False, to="Poste", on_delete=models.PROTECT)
+    mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.PROTECT)
+    value = models.FloatField(null=False, verbose_name="valeur")
+
+    def __str__(self):
+        return "LastObs id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.date_local) + ", mesure: " + str(self.mesure)
+    
+    class Meta:
+        db_table = "last_obs"
+        indexes = [
+            Index(name='last_obs_poste_id', fields=['poste', 'mesure'])
+        ]
+
+
 class XMin(models.Model):
     id = models.BigAutoField(primary_key=True, null=False, verbose_name="id du minimum")
     obs_id = models.BigIntegerField(null=True, verbose_name="id de l'observation")
