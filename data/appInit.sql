@@ -182,7 +182,7 @@ create materialized view obs_hour WITH (timescaledb.continuous) as
         sum(o.duration) as duration,
         CASE WHEN m.is_avg is True THEN avg(o.value) ELSE sum(o.value) END AS value
   from obs o join mesures m on m.id = mesure_id
-  where qa_value != 9
+  where qa_value != 9 and duration <= 60
   group by 1,2,3,4;
 
 ALTER MATERIALIZED VIEW obs_hour set (timescaledb.materialized_only = false);
@@ -201,15 +201,16 @@ create materialized view obs_day WITH (timescaledb.continuous) as
         sum(o.duration) as duration,
         CASE WHEN m.is_avg is True THEN avg(o.value) ELSE sum(o.value) END AS value
   from obs o join mesures m on m.id = mesure_id
+  where qa_value != 9
   group by 1,2,3,4;
 
 
 ALTER MATERIALIZED VIEW obs_day set (timescaledb.materialized_only = false);
 
 SELECT add_continuous_aggregate_policy('obs_day',
-  start_offset => INTERVAL '12 hours',
+  start_offset => INTERVAL '60 minute',
   end_offset => NULL,
-  schedule_interval => INTERVAL '6 hours');
+  schedule_interval => INTERVAL '30 minutes');
 
 
 create materialized view obs_month WITH (timescaledb.continuous) as
@@ -236,11 +237,11 @@ create materialized view x_min_day WITH (timescaledb.continuous) as
         timescaledb_experimental.time_bucket_ng('1 day', date_local, origin => '1950-01-01') as date_local,
         poste_id as poste_id,
         mesure_id as mesure_id,
-        CASE WHEN m.is_avg is True THEN min(min) ELSE sum(min) END AS min,
-        first(min_time, min) as min_time
+        CASE WHEN m.is_avg is True THEN min(x_min.min) ELSE sum(x_min.min) END AS min,
+        first(x_min.min_time, x_min.min) as min_time
   from x_min join mesures m on m.id = mesure_id
   where qa_min != 9
-  group by 1,2,3;
+  group by 1,2,3, m.is_avg;
 
 
 ALTER MATERIALIZED VIEW x_min_day set (timescaledb.materialized_only = false);
@@ -256,10 +257,10 @@ create materialized view x_min_month WITH (timescaledb.continuous) as
         timescaledb_experimental.time_bucket_ng('1 month', date_local, origin => '1950-01-01') as date_local,
         poste_id as poste_id,
         mesure_id as mesure_id,
-        CASE WHEN m.is_avg is True THEN min(min) ELSE sum(min) END AS min,
-        first(min_time, min) as min_time
+        CASE WHEN m.is_avg is True THEN min(x_min_day.min) ELSE sum(x_min_day.min) END AS min,
+        first(x_min_day.min_time, x_min_day.min) as min_time
   from x_min_day join mesures m on m.id = mesure_id
- group by 1,2,3;
+ group by 1,2,3, m.is_avg;
 
 ALTER MATERIALIZED VIEW x_min_month set (timescaledb.materialized_only = false);
 
@@ -273,12 +274,12 @@ create materialized view x_max_day WITH (timescaledb.continuous) as
         timescaledb_experimental.time_bucket_ng('1 day', date_local, origin => '1950-01-01') as date_local,
         poste_id as poste_id,
         mesure_id as mesure_id,
-        CASE WHEN m.is_avg is True THEN max(max) ELSE sum(max) END AS max,
-        last(max_time, max) as max_time,
-        last(max_dir, max) as max_dir
+        CASE WHEN m.is_avg is True THEN max(x_max.max) ELSE sum(x_max.max) END AS max,
+        last(x_max.max_time, x_max.max) as max_time,
+        last(x_max.max_dir, x_max.max) as max_dir
   from x_max join mesures m on m.id = mesure_id
   where qa_max != 9
-  group by 1,2,3;
+  group by 1,2,3, m.is_avg;
 
 ALTER MATERIALIZED VIEW x_max_day set (timescaledb.materialized_only = false);
 
@@ -292,11 +293,11 @@ create materialized view x_max_month WITH (timescaledb.continuous) as
         timescaledb_experimental.time_bucket_ng('1 month', date_local, origin => '1950-01-01') as date_local,
         poste_id as poste_id,
         mesure_id as mesure_id,
-        CASE WHEN m.is_avg is True THEN max(max) ELSE sum(max) END AS max,
-        last(max_time, max) as max_time,
-        last(max_dir, max) as max_dir
+        CASE WHEN m.is_avg is True THEN max(x_max_day.max) ELSE sum(x_max_day.max) END AS max,
+        last(x_max_day.max_time, x_max_day.max) as max_time,
+        last(x_max_day.max_dir, x_max_day.max) as max_dir
   from x_max_day join mesures m on m.id = mesure_id
-  group by 1,2,3;
+  group by 1,2,3, m.is_avg;
 
 ALTER MATERIALIZED VIEW x_max_month set (timescaledb.materialized_only = false);
 
@@ -358,6 +359,7 @@ CREATE OR REPLACE FUNCTION create_update_obs_trigger_fn()
 $BODY$
 DECLARE
     obs_dat timestamp;
+    last_obs_dat timestamp;
 BEGIN
   select last_obs_date  into obs_dat from postes where id = NEW.poste_id;
   if obs_dat is null or new.date_local > obs_dat then
@@ -367,6 +369,15 @@ BEGIN
     update x_min set qa_min = NEW.qa_value where obs_id = NEW.id;
     update x_max set qa_max = NEW.qa_value where obs_id = NEW.id;
   end if;
+
+  -- Update last_obs
+  select date_local from last_obs where poste_id = NEW.poste_id and mesure_id = NEW.mesure_id into last_obs_dat;
+  if obs_dat is null then
+    insert into last_obs (poste_id, mesure_id, date_local, value) values (NEW.poste_id, NEW.mesure_id, NEW.date_local, NEW.value);
+  elsif last_obs_dat < NEW.date_local then
+    update last_obs set date_local = NEW.date_local, value = NEW.value where poste_id = NEW.poste_id and mesure_id = NEW.mesure_id;
+  end if;
+
   return NEW;
 END
 $BODY$;
