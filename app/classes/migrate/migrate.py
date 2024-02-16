@@ -248,11 +248,11 @@ class MigrateDB:
 
             if cur_poste.data.last_obs_date is None or date_obs_local > cur_poste.data.last_obs_date:
                 for a_mesure in self.measures:
-                    if a_mesure['id'] == 52:
-                        pass
                     cur_val = row2[col_mapping[a_mesure['archive_col']]]
                     if cur_val is None or cur_val == '' or (cur_val == 0 and a_mesure['zero'] is False):
                         continue
+                    if a_mesure['convert'] is not None and a_mesure['convert'].get('weewx') is not None:
+                        cur_val = eval(a_mesure['convert']['weewx'])(cur_val)
 
                     data_args.append(([work_item['pid'], date_obs_utc, date_obs_local, a_mesure['id'], row2[self.row_archive_interval], cur_val, QA.UNSET.value, ]))
 
@@ -373,7 +373,7 @@ class MigrateDB:
 
     def getMeasures(self, pgconn):
         mesures = []
-        pg_query = "select id, archive_col, archive_table, field_dir, json_input, min, max, is_avg, is_wind, allow_zero from mesures order by id"
+        pg_query = "select id, archive_col, archive_table, field_dir, json_input, min, max, is_avg, is_wind, allow_zero, convert from mesures order by id"
 
         pg_cur = pgconn.cursor()
         pg_cur.execute(pg_query)
@@ -391,7 +391,8 @@ class MigrateDB:
                 'max': row[6],
                 'isavg': row[7],
                 'iswind': row[8],
-                'zero': row[9]
+                'zero': row[9],
+                'convert': row[10]
             }
             mesures.append(one_mesure)
             row = pg_cur.fetchone()

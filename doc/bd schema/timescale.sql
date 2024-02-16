@@ -20,7 +20,7 @@ timescaledb-tune --yes --conf-path=/Users/nico/Library/Application\ Support/Post
 be sure the PATH points to: /Applications/Postgres.app/Contents/Versions/16/bin
 
 git clone https://github.com/timescale/timescaledb
-git checkout 2.14.0
+git checkout 2.14.x
 
 ./bootstrap
 

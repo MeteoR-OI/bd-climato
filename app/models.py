@@ -78,6 +78,7 @@ class Mesure(models.Model):
     is_wind = models.BooleanField(null=True, default=False, verbose_name="Calcul du wind_dir")
     allow_zero = models.BooleanField(null=True, default=True, verbose_name="Zero est une valeur valide")
     is_hourly = models.BooleanField(null=True, default=False, verbose_name="Must be agregated by hour(s) or more, not less")
+    convert = models.JSONField(null=True, default=dict, verbose_name="Conversion")
 
     def __str__(self):
         return "Mesure id: " + str(self.id) + ", name: " + self.name
