@@ -222,15 +222,12 @@ class CsvH_974(CsvFileSpec):
                 'mappings': [
                     {'csv_field': 'DD',        'csv_idx': RowsId.DD.value, 'qa_idx': RowsId.QDD.value,         'mesure': 'wind 10 dir',         'minmax': {}},
                     {'csv_field': 'FF',        'csv_idx': RowsId.FF.value, 'qa_idx': RowsId.QFF.value,         'mesure': 'wind 10',          'minmax':
-                        {"max": RowsId.FXY.value, "qmax": RowsId.QFXY.value, "maxDir": RowsId.DXY.value, "maxTime": RowsId.HXY.value},
-                        "convert": lambda x: x * 3.6},
+                        {"max": RowsId.FXY.value, "qmax": RowsId.QFXY.value, "maxDir": RowsId.DXY.value, "maxTime": RowsId.HXY.value}},
                     {'csv_field': 'FXI',       'csv_idx': RowsId.FXI.value, 'qa_idx': RowsId.QFXI.value,       'mesure': 'gust',             'minmax':
-                        {"max": RowsId.FXI.value, "qmax": RowsId.QFXI.value, "maxDir": RowsId.DXI.value, "maxTime": RowsId.HXI.value},
-                        "convert": lambda x: x * 3.6},
+                        {"max": RowsId.FXI.value, "qmax": RowsId.QFXI.value, "maxDir": RowsId.DXI.value, "maxTime": RowsId.HXI.value}},
                     {'csv_field': 'DD2',       'csv_idx': RowsId.DD2.value, 'qa_idx': RowsId.QDD2.value,       'mesure': 'wind dir',         'minmax': {}},
                     {'csv_field': 'FF2',       'csv_idx': RowsId.FF2.value, 'qa_idx': RowsId.QFF2.value,       'mesure': 'wind',             'minmax':
-                        {"max": RowsId.FXI2.value, "qmax": RowsId.QFXI2.value, "maxDir": RowsId.DXI2.value, "maxTime": RowsId.HXI2.value},
-                        "convert": lambda x: x * 3.6},
+                        {"max": RowsId.FXI2.value, "qmax": RowsId.QFXI2.value, "maxDir": RowsId.DXI2.value, "maxTime": RowsId.HXI2.value}},
                     {'csv_field': 'GLO',       'csv_idx': RowsId.GLO.value, 'qa_idx': RowsId.QGLO.value,       'mesure': 'radiation',        'minmax': {}},
                     {'csv_field': 'PMER',      'csv_idx': RowsId.PMER.value, 'qa_idx': RowsId.QPMER.value,     'mesure': 'barometer',        'minmax':
                         {"min": RowsId.PMERMIN.value, "qmin": RowsId.QPERMIN.value}},

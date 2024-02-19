@@ -81,7 +81,7 @@ insert into mesures
 (16, 'extrahumid1',     'extra_humid1',     'extraHumid1',        null,        null,     false,   false,    true,   false,    true,   'extrahumid1',        False,    '{}'),
 (18, 'extrahumid2',     'extra_humid2',     'extraHumid2',        null,        null,     false,   false,    true,   false,    true,   'extrahumid2',        False,    '{}'),
 (20, 'gust',            'wind_gust',        'windGust',           'wind',        22,     false,   true,     true,   true,     true,      'wind_max',        False,
-  '{"meteofr": "lambda x: x * 3.6"}'),
+  '{"mfr_csv": "lambda x: x * 3.6"}'),
 (22, 'gust dir',        'wind_gust_dir',    'windGustDir',        'skip',      null,     false,   false,    true,   false,    true,  'wind_max_dir',        False,    '{}'),
 (24, 'hail rate',       'hail_rate',        'hailRate',           null,        null,     false,   true,     true,   false,    true,            null,        False,    '{}'),
 (26, 'hail',            'hail',             'hail',               null,        null,     true,    true,     true,   false,    true,            null,        False,    '{}'),
@@ -112,10 +112,10 @@ insert into mesures
 (80, 'uv_indice',       'uv',               'UV',                 null,        null,     false,   true,     true,   false,    true,            null,        False,    '{}'),
 (82, 'voltage',         'voltage',          'consBatteryVoltage', null,        null,     false,   false,    true,   false,    true,            null,        False,    '{}'),
 (84, 'wind 10',         'wind10',           'windSpeed',          'wind',        86,     false,   true,     true,   false,    true,            null,        False,
-  '{"meteofr": "lambda x: x * 3.6"}'),
+  '{"mfr_csv": "lambda x: x * 3.6"}'),
 (86, 'wind 10 dir',     'wind10_dir',       'windSpeed',          'skip',      null,     false,   false,    true,   false,    true,            null,        False,    '{}'),
 (88, 'wind',            'wind',             'windSpeed',          'wind',        90,     false,   true,     true,   false,    true,            null,        False,
-  '{"meteofr": "lambda x: x * 3.6"}'),
+  '{"mfr_csv": "lambda x: x * 3.6"}'),
 (90, 'wind dir',        'wind_dir',         'windDir',            'skip',      null,     false,   false,    true,   false,    true,            null,        False,    '{}'),
 (92, 'windchill',       'windchill',        'windchill',          null,        null,     true,    false,    true,   false,    true,            null,        False,    '{}')
 ;

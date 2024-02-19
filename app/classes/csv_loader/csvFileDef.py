@@ -173,7 +173,6 @@ class CsvFileSpec(ABC):
                     a_mesure['csv_row_idx'] = a_mapping['csv_idx']      # idx in row array
                     a_mesure['csv_qa_idx'] = a_mapping.get('qa_idx')    # idx in row array for quality data
                     a_mesure['csv_minmax'] = a_mapping['minmax']        # {min_idx: idx inself.__mesure, minTime, max: idx, maxTime, maxDir}
-                    a_mesure['convert'] = a_mapping.get('convert')      # function to convert value
 
                     self.__mesures.append(a_mesure)
                 idx_mesure += 1
@@ -183,7 +182,11 @@ class CsvFileSpec(ABC):
         if fields_array[a_mesure['csv_row_idx']] is None or fields_array[a_mesure['csv_row_idx']] == '':
             return None, None, None
 
-        cur_val = float(fields_array[a_mesure['csv_row_idx']]) if a_mesure.get("convert") is None else a_mesure.get("convert")(float(fields_array[a_mesure['csv_row_idx']]))
+        # convert with csv loader specific function
+        cur_val = float(fields_array[a_mesure['csv_row_idx']])
+        if a_mesure['convert'] is not None and a_mesure['convert'].get('mfr_csv') is not None:
+            cur_val = eval(a_mesure['convert']['mfr_csv'])(cur_val)
+
         cur_q_val = fields_array[a_mesure['csv_qa_idx']] if a_mesure['csv_qa_idx'] is not None else QA.UNSET.value
         if cur_q_val == '':
             cur_q_val = QA.UNSET.value

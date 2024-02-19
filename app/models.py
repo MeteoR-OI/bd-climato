@@ -115,7 +115,7 @@ class LastObs(models.Model):
 
     def __str__(self):
         return "LastObs id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.date_local) + ", mesure: " + str(self.mesure)
-    
+
     class Meta:
         db_table = "last_obs"
         indexes = [

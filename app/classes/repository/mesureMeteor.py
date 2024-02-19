@@ -59,12 +59,12 @@ class MesureMeteor():
                 'col': a_data['json_input'],
                 'col2': a_data['json_input_bis'],
                 'field': a_data['archive_col'],
-                "csv_field": None,
                 'min': a_data['min'],
                 'max': a_data['max'],
                 'isavg': a_data['is_avg'],
                 'iswind': a_data['is_wind'],
-                'zero': a_data['allow_zero']
+                'zero': a_data['allow_zero'],
+                'convert': a_data['convert']
             }
 
             def_mesures.append(m_item)
