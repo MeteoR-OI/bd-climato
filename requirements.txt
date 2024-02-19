@@ -13,7 +13,7 @@ idna==3.4
 iniconfig==2.0.0
 mccabe==0.7.0
 mysql-connector-python==8.0.32
-numpy==1.24.2
+numpy==1.26.4
 opentelemetry-api==1.16.0
 opentelemetry-exporter-jaeger==1.16.0
 opentelemetry-exporter-jaeger-proto-grpc==1.16.0

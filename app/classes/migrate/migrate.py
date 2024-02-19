@@ -16,8 +16,8 @@
 # ---------------
 import app.tools as t
 from app.tools.myTools import FromTimestampToDateTime, AsTimezone, GetFirstDayNextMonthFromTs
-from app.classes.repository.obsMeteor import QA
 from app.classes.repository.posteMeteor import PosteMeteor
+from app.classes.data_loader.dl_weewx import DlWeewx
 import mysql.connector
 import psycopg2
 from psycopg2 import sql
@@ -32,7 +32,7 @@ from datetime import datetime
 class MigrateDB:
     def __init__(self):
         self._meteors_to_process = []
-        self.loadSelfVariables()
+        self._bulk_dl = DlWeewx()
 
     # -----------------------------------
     # add an item in the list to execute
@@ -93,11 +93,9 @@ class MigrateDB:
     # -----------------
     def processWorkItem(self, work_item, my_span):
         try:
-            pgconn = self.getPGConnexion()
-            pg_cur = pgconn.cursor()
-            meteor = work_item['meteor']
             current_ts = datetime.now().timestamp() + 1
-
+            my_cur = None
+            meteor = work_item['meteor']
             cur_poste = PosteMeteor(meteor)
             if cur_poste.data.id is None:
                 raise Exception('station ' + meteor + ' not found')
@@ -118,30 +116,27 @@ class MigrateDB:
                 start_dt = datetime.now()
 
                 # Load obs, records from archive
-                new_extremes = self.loadExistingArchive(cur_poste, pg_cur, work_item, my_span)
+                query_my = self.getWeewxSelectSql(work_item)
 
-                if new_extremes is not None:
-                    #     # Merge list in db
-                    del_cde = self.storeMaxMinInDB(pg_cur, work_item['pid'], new_extremes, my_span)
-                    # Commit obs and x_min/x_max new rows
+                # get a cursor to our archive db
+                myconn = self.getMSQLConnection(work_item['meteor'])
+                my_cur = myconn.cursor()
+                query_my = self.getWeewxSelectSql(work_item)
 
-                    pgconn.commit()
-                    new_extremes = []
+                # execute the select statement
+                my_cur.execute(query_my)
 
-                    # delete min/max coming from obs for non avg mesures, which get also a record from archive_day_xxx
-                    for a_del_sql in del_cde:
-                        pg_cur.execute(a_del_sql)
+                self._bulk_dl.bulkLoad(cur_poste, my_cur, False, my_span)
 
-                pgconn.commit()
+                my_cur.close()
+                my_cur = None
+
                 print("     Done in : " + str(datetime.now() - start_dt) + " for " + str(work_item['start_dt_archive_utc']))
                 self.getNewDateBracket(cur_poste, work_item, my_span)
 
         finally:
-            pg_cur.close()
-            pgconn.close()
-
-            # if work_item['old_json_load'] is not None and work_item['old_json_load'] is True:
-            #     self.updateLoadJsonValue(work_item)
+            if my_cur is not None:
+                my_cur.close()
 
     # ---------------------------------------
     # other methods specific to this service
@@ -215,143 +210,6 @@ class MigrateDB:
         finally:
             myconn.close()
 
-    def loadExistingArchive(self, cur_poste, pg_cur, work_item, my_span):
-
-        query_my = self.getWeewxSelectSql(work_item)
-        sql_insert = "insert into obs(poste_id, date_utc, date_local, mesure_id, duration, value, qa_value) values "
-
-        minmax_values = []
-        data_args = []
-
-        # get a cursor to our archive db
-        myconn = self.getMSQLConnection(work_item['meteor'])
-        my_cur = myconn.cursor()
-
-        # execute the select statement
-        my_cur.execute(query_my)
-        row2 = my_cur.fetchone()
-
-        # load field_name/row_id mapping for weewx select
-        col_mapping = {}
-        idx = 0
-
-        while idx < len(my_cur.column_names):
-            col_mapping[my_cur.column_names[idx]] = idx
-            idx += 1
-
-        while row2 is not None:
-            if row2[self.row_archive_usunits] != 16:
-                raise Exception('bad usUnits: ' + str(row2[self.row_archive_usunits]) + ', dateTime(UTC): ' + str(row2[self.row_archive_dt_utc]))
-
-            date_obs_utc = FromTimestampToDateTime(row2[self.row_archive_dt_utc])
-            date_obs_local = FromTimestampToDateTime(row2[self.row_archive_dt_utc], work_item['tz'])
-
-            if cur_poste.data.last_obs_date is None or date_obs_local > cur_poste.data.last_obs_date:
-                for a_mesure in self.measures:
-                    cur_val = row2[col_mapping[a_mesure['archive_col']]]
-                    if cur_val is None or cur_val == '' or (cur_val == 0 and a_mesure['zero'] is False):
-                        continue
-                    if a_mesure['convert'] is not None and a_mesure['convert'].get('weewx') is not None:
-                        cur_val = eval(a_mesure['convert']['weewx'])(cur_val)
-
-                    data_args.append(([work_item['pid'], date_obs_utc, date_obs_local, a_mesure['id'], row2[self.row_archive_interval], cur_val, QA.UNSET.value, ]))
-
-                    if a_mesure['iswind'] is True:
-                        max_dir = None
-                        if a_mesure['diridx'] is not None:
-                            max_dir = row2[col_mapping[self.measures[a_mesure['diridx']]['archive_col']]]
-
-                        minmax_values.append({'min': cur_val, 'max': cur_val, 'date_min': date_obs_local, 'date_max': date_obs_local, 'max_dir': max_dir, 'mid': a_mesure['id'], 'obs_id': -1})
-                    else:
-                        minmax_values.append({'min': cur_val, 'max': cur_val, 'date_min': date_obs_local, 'date_max': date_obs_local, 'mid': a_mesure['id'], 'obs_id': -1})
-
-            row2 = my_cur.fetchone()
-
-        my_cur.close()
-
-        if len(data_args) == 0:
-            return None
-
-        # cursor.mogrify() to insert multiple values
-        args = ','.join(pg_cur.mogrify("( %s, %s, %s, %s, %s, %s, %s )", i).decode('utf-8') for i in data_args)
-
-        pg_cur.execute(sql_insert + args + ' returning id')
-        new_ids = pg_cur.fetchall()
-
-        idx = 0
-        while idx < len(new_ids):
-            minmax_values[idx]['obs_id'] = new_ids[idx][0]
-            idx += 1
-
-        return minmax_values
-
-    def storeMaxMinInDB(self, pg_cur, pid, new_records, my_span):
-        # check: nico use: last_in_db for insert-update or insert..
-        insert_cde_min = "insert into x_min(obs_id, date_local, poste_id, mesure_id, min, min_time, qa_min) values "
-        insert_cde_max = "insert into x_max(obs_id, date_local, poste_id, mesure_id, max, max_time, qa_max, max_dir) values "
-        min_args = []
-        max_args = []
-        mesures_hash = {}
-        mesure_sum_id = []
-        x_min_min_date = datetime.now().date()
-        x_max_min_date = datetime.now().date()
-
-        for a_mesure in self.measures:
-            mesures_hash[a_mesure['id']] = a_mesure
-            if a_mesure['isavg'] is False:
-                mesure_sum_id.append(a_mesure['id'])
-
-        for a_record in new_records:
-            cur_mesure = mesures_hash[a_record['mid']]
-
-            if cur_mesure['min'] is True:
-                dt_local_min = a_record['date_min'].date()
-                if dt_local_min < x_min_min_date:
-                    x_min_min_date = dt_local_min
-                if a_record['min'] is not None:
-                    min_args.append(
-                        (a_record['obs_id'] if a_record['obs_id'] > -1 else None,
-                         dt_local_min,
-                         pid,
-                         a_record['mid'],
-                         a_record['min'],
-                         a_record['date_min'],
-                         QA.UNSET.value))
-
-            if cur_mesure['max'] is True:
-                dt_local_max = a_record['date_min'].date()
-                if dt_local_max < x_max_min_date:
-                    x_max_min_date = dt_local_max
-                if a_record['max'] is not None:
-                    max_args.append(
-                        (a_record['obs_id'] if a_record['obs_id'] > -1 else None,
-                         dt_local_max,
-                         pid,
-                         a_record['mid'],
-                         a_record['max'],
-                         a_record['date_max'],
-                         QA.UNSET.value, a_record.get('max_dir')))
-
-        min_args_ok = ','.join(pg_cur.mogrify("(%s, %s, %s, %s, %s, %s, %s)", i).decode('utf-8') for i in min_args)
-        max_args_ok = ','.join(pg_cur.mogrify("(%s, %s, %s, %s, %s, %s, %s, %s)", i).decode('utf-8') for i in max_args)
-
-        pg_cur.execute(insert_cde_min + min_args_ok)
-        pg_cur.execute(insert_cde_max + max_args_ok)
-
-        # for sum mesures, remove data from obs, when a record is inserted in x_min/x_max from archive_day_xxx
-        str_mesure_list = "(" + ','.join(str(x) for x in mesure_sum_id) + ")"
-        return ["delete from x_max where obs_id is not null and mesure_id in " + str_mesure_list +
-                " and poste_id = " + str(pid) + " and date_local in " +
-                " (select date_local from x_max where obs_id is null and date_local >= '" +
-                x_max_min_date.strftime("%Y/%m/%d, %H:%M:%S") + "' and mesure_id in " + str_mesure_list +
-                " and poste_id = " + str(pid) + ")",
-                "delete from x_min where obs_id is not null and mesure_id in " + str_mesure_list +
-                " and poste_id = " + str(pid) + " and date_local in " +
-                " (select date_local from x_min where obs_id is null and date_local >= '" +
-                x_min_min_date.strftime("%Y/%m/%d, %H:%M:%S") + "' and mesure_id in " + str_mesure_list +
-                " and poste_id = " + str(pid) + ")"
-                ]
-
     # --------------------------------
     # return the sql select statement
     # --------------------------------
@@ -359,7 +217,7 @@ class MigrateDB:
         query_my = "select dateTime, usUnits, `interval`"
 
         # load an array of query args
-        for a_mesure in self.measures:
+        for a_mesure in self._bulk_dl.getMeasures():
             # add field name into our select statement for weewx
             query_my += ', ' + a_mesure['archive_col']
 
@@ -370,46 +228,6 @@ class MigrateDB:
         # query_my += " order by dateTime"""
         query_my += " order by dateTime"
         return query_my
-
-    def getMeasures(self, pgconn):
-        mesures = []
-        pg_query = "select id, archive_col, archive_table, field_dir, json_input, min, max, is_avg, is_wind, allow_zero, convert from mesures order by id"
-
-        pg_cur = pgconn.cursor()
-        pg_cur.execute(pg_query)
-        row = pg_cur.fetchone()
-        while row is not None:
-            if row[1] is None:
-                continue
-            one_mesure = {
-                'id': row[0],
-                'archive_col': row[1],
-                'table': row[2],
-                'diridx': row[3],
-                'field': row[4],
-                'min': row[5],
-                'max': row[6],
-                'isavg': row[7],
-                'iswind': row[8],
-                'zero': row[9],
-                'convert': row[10]
-            }
-            mesures.append(one_mesure)
-            row = pg_cur.fetchone()
-        pg_cur.close()
-
-        # Link wind speed mesures with the linked wind dir mesure
-        for a_mesure in mesures:
-            if a_mesure['diridx'] is not None:
-                fi_dir = a_mesure['diridx']
-                a_mesure['diridx'] = None
-                dir_idx = 0
-                while dir_idx < len(mesures):
-                    if mesures[dir_idx]['id'] == fi_dir:
-                        a_mesure['diridx'] = dir_idx
-                        dir_idx = len(mesures)
-                    dir_idx += 1
-        return mesures
 
     def getPGConnexion(self):
         return psycopg2.connect(
@@ -438,20 +256,3 @@ class MigrateDB:
 
         myconn.time_zone = "+00:00"
         return myconn
-
-    def loadSelfVariables(self):
-        pgconn = None
-        try:
-            pgconn = self.getPGConnexion()
-
-            # load mesures definition in memory
-            self.measures = self.getMeasures(pgconn)
-
-            # row_id for select from archive data, first 4 fields
-            self.row_archive_dt_utc = 0
-            self.row_archive_usunits = 1
-            self.row_archive_interval = 2
-
-        finally:
-            if pgconn is not None:
-                pgconn.close()

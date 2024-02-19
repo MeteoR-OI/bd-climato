@@ -1,0 +1,30 @@
+# INFORMATIONS
+id_station=GFD010
+type=txt
+version=weewx-mysql-2.5
+date_releve=19/02/2024
+heure_releve_utc=09h00
+# PARAMETRES TEMPS REEL
+temperature=28.4
+pression=1011.3
+humidite=70
+point_de_rosee=22.4
+vent_dir_moy=360
+vent_moyen=2.4
+vent_rafales=8
+pluie_intensite=0
+pluie_intensite_maxi_1h=0
+# PARAMETRES TEMPS PASSE
+pluie_cumul_1h=0
+pluie_cumul=0
+pluie_cumul_heure_utc=09h00
+pluie_cumul_annee=230.2
+pluie_intensite_maxi=0
+pluie_intensite_maxi_heure_utc=00h00
+tn_heure_utc=02h35
+tn_deg_c=24.1
+tx_heure_utc=07h25
+tx_deg_c=32.1
+# ENSOLEILLEMENT
+radiations_solaires_wlk=179
+uv_wlk=3.8
