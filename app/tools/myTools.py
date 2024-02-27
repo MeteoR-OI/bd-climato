@@ -1,5 +1,4 @@
 from app.classes.repository.incidentMeteor import IncidentMeteor
-from app.tools.jsonPlus import JsonPlus
 from django.conf import settings
 import traceback
 import datetime
@@ -7,55 +6,44 @@ import inspect
 import logging
 import json
 
-# logException(e, my_span, params):
-# logCritical(source, message: str, my_span, params):
+# logException(e, params):
+# logCritical(source, message: str, params):
 
 
-def logException(e, my_span=None, params: json = {}):
+def logException(e, params: json = {}):
     message, params['stack'] = get_trace_info(e)
+    stack_0 = params['stack'].split('\n')[0]
+    msg_line = stack_0.split(' ')
+    filenames = msg_line[3][:-1].split("/")
+    if filenames.__len__() == 0:
+        filenames = ["??"]
+    filename = filenames[filenames.__len__() - 1]
+    line_no = msg_line[5][:-1]
+    module = msg_line[7]
+    params['code'] = params['stack'].split('\n')[1]
     IncidentMeteor.new(
         'exception',
         'critical',
-        message,
+        message.split(':')[1],
         params,
     )
-    if my_span is not None:
-        my_span.add_event('exception', str(e))
-    return LogMe.GetInstance().LogMe(message, "critical", my_span, params)
+    # filename, line_no, module = self.GetStackInfo(5 if level == "critical" else 2)
+    return LogMe.GetInstance().LogMeOut(filename, line_no, module, message.split(':')[1], 'critical', params)
+    # return LogMe.GetInstance().LogMe(message, "critical", params)
 
 
-def logCritical(source, message: str, my_span=None, params: json = {}):
-    IncidentMeteor.new(
-        source,
-        'critical',
-        'message',
-        params,
-    )
-    if my_span is not None:
-        my_span.add_event('critical', message)
-    return LogMe.GetInstance().LogMe(message, "critical", my_span, params)
-
-
-def logError(source, message: str, my_span=None, params: json = {}):
+def logError(source, message: str, params: json = {}):
     IncidentMeteor.new(
         source,
         'error',
         'message',
         params,
     )
-    if my_span is not None:
-        my_span.add_attribute('error', message)
-    return LogMe.GetInstance().LogMe(message, "error", my_span, params)
+    return LogMe.GetInstance().LogMe(message, "error", params)
 
 
-def logWarning(message: str, my_span=None, params: json = {}):
-    if my_span is not None:
-        my_span.add_attribute('warning', message)
-    return LogMe.GetInstance().LogMe(message, "warning", my_span, params)
-
-
-def logInfo(message: str, my_span=None, params: json = {}):
-    return LogMe.GetInstance().LogMe(message, "info", my_span, params)
+def logInfo(message: str, params: json = {}):
+    return LogMe.GetInstance().LogMe(message, "info", params)
 
 
 def CopyJson(src: json, dest: json):
@@ -177,7 +165,6 @@ class LogMe:
         self,
         message: str,
         level: str = None,
-        my_span=None,
         params: json = {}
     ):
         """
@@ -186,74 +173,41 @@ class LogMe:
             get filename, line_no module from current stack
         """
 
-        if level.lower() not in ["info", "warning", "error", "critical"]:
+        if level.lower() not in ["info", "error", "critical"]:
             level = "info"
 
-        filename, line_no, module = self.GetStackInfo()
-        return self.LogMeOutput(filename, line_no, module, message, level, my_span, params)
+        filename, line_no, module = self.GetStackInfo(5 if level == "critical" else 2)
+        return self.LogMeOut(filename, line_no, module, message, level, params)
 
-    def LogMeOutput(
+    def LogMeOut(
         self,
         filename: str,
         line_no: int,
         module: str,
         message: str,
         level: str = None,
-        my_span=None,
         params: json = {},
     ):
-        # build our json
-        log_j = {
-            "timestamp": str(datetime.datetime.now()),
-            "pyFile": filename,
-            "pyLine": line_no,
-            "pyFunc": module,
-            "level": level,
-            "msg": self.CleanUpMessage(message),
-            # "params": params,
-        }
-        # add params values
+        if level.lower() not in ["info", "error", "critical"]:
+            level = "info"
+
+        msg = 'timestamp=' + '"' + str(datetime.datetime.now()) + '" '
+        msg += 'pyFile=' + filename + " "
+        msg += 'pyLine=' + str(line_no) + " "
+        msg += 'pyFunc=' + module + " "
+        msg += 'msg="' + self.CleanUpMessage(message) + '" '
         if params != {}:
             for key in params:
-                log_j[key] = params[key]
-
-        # add traceID
-        if my_span is not None and my_span.get_span_context().trace_id is not None:
-            log_j["traceID"] = format(int(my_span.get_span_context().trace_id), 'x')
-            log_j["spanID"] = format(int(my_span.get_span_context().span_id), 'x')
-        else:
-            log_j["traceID"] = "no_trace"
-            log_j["spanID"] = "no_trace"
-
-        if hasattr(settings, "TELEMETRY") is True and settings.TELEMETRY is True:
-            msg = JsonPlus().dumps(log_j)
-        else:
-            msg = 'timestamp=' + str(log_j.get("timestamp")) + " "
-            msg += 'level=' + str(log_j.get("level")).upper() + " "
-            msg += 'pyFile=' + str(log_j.get("pyFile")) + " "
-            msg += 'pyLine=' + str(log_j.get("pyLine")) + " "
-            msg += 'pyFunc=' + str(log_j.get("pyFunc")) + " "
-            msg += 'msg="' + str(log_j.get("msg")) + '" '
-            if log_j.get("traceID") != "no_trace" and log_j.get("traceID") is not None:
-                msg += 'traceID=' + str(log_j.get("traceID")) + " "
-            if log_j.get("spanID") != "no_trace" and log_j.get("spanID") is not None:
-                msg += 'spanID=' + str(log_j.get("spanID")) + " "
-            if params != {}:
-                for key in params:
-                    msg += "  " + key + "=" + str(params[key]) + " "
+                msg += key + '="' + str(params[key]) + '" '
 
         if level == 'info':
             self.log.info(msg)
-        elif level == 'warning':
-            self.log.warning(msg)
         elif level == 'error':
             self.log.error(msg)
         elif level == 'critical':
             self.log.critical(msg)
         else:
             self.log.critical('Unknow level - ' + msg)
-
-        return msg
 
     def GetStackInfo(self, stack_level: int = 0):
         loc_filename = "??"

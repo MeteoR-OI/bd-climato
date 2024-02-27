@@ -4,11 +4,11 @@
 #   work_item = class.getNextWorkItem()
 #       return None -> no more work for now
 #       return a work_item data, which should include enought info for other calls
-#   processItem(work_item, my_span):
+#   processItem(work_item):
 #       Process the work item
-#   succeedWorkItem(work_item, my_span):
+#   succeedWorkItem(work_item):
 #       Mark the work_item as processed
-#   failWorkItem(work_item, exc, my_span):
+#   failWorkItem(work_item, exc):
 #       mark the work_item as failed
 from app.classes.repository.mesureMeteor import MesureMeteor
 from app.classes.repository.posteMeteor import PosteMeteor
@@ -51,6 +51,7 @@ class JsonLoader:
     # public methods
     # ----------------
     def addNewWorkItem(self, work_item):
+        work_item['info'] = "chargement des json"
         return
 
     def getNextWorkItem(self):
@@ -90,10 +91,10 @@ class JsonLoader:
             'json': my_json,
             'spanID': 'load of ' + a_filename,
             'meteor': meteor,
-            'info': a_filename
+            'info': "loading " + filename
         }
 
-    def succeedWorkItem(self, work_item, my_span):
+    def succeedWorkItem(self, work_item):
         # Don't move JSON files if we are in a "dump then json mode"
         cur_poste = PosteMeteor(work_item['meteor'])
         if (cur_poste.data.load_type & PosteMeteor.Load_Type.LOAD_FROM_DUMP_THEN_JSON) == PosteMeteor.Load_Type.LOAD_FROM_DUMP_THEN_JSON:
@@ -134,20 +135,18 @@ class JsonLoader:
         pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_day')))
         pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_month')))
 
-        my_span.add_event('jsonloader', work_item['f'] + ': refresh_continuous_aggregate: ' + str(datetime.datetime.now() - start_tm) + ' ms')
+        t.logInfo('jsonloader', work_item['f'] + ': refresh_continuous_aggregate: ' + str(datetime.datetime.now() - start_tm) + ' ms')
 
         pg_cur.close()
         pgconn.commit()
         pgconn.close()
 
-    def failWorkItem(self, work_item, exc, my_span):
+    def failWorkItem(self, work_item, exc):
         meteor = 'inconnu'
         try:
             meteor = str(work_item['f']).split(".")[1]
         except Exception:
             pass
-
-        t.logException(exc, my_span)
 
         str_annee = 'inconnu'
         str_mois = 'inconnu'
@@ -166,21 +165,19 @@ class JsonLoader:
         os.rename(self.base_dir + "/" + work_item['f'], filename_prefix + work_item['f'])
 
         j_info = {"filename": work_item['f'], "dest": self.archive_dir + "/" + meteor + "/failed/" + work_item['f']}
-        t.logError('jsonloader', "file moved to fail directory", None, j_info)
+        t.logError('jsonloader', "file moved to fail directory", j_info)
         IncidentMeteor.new('_getJsonFileNameAndData', 'error', 'file ' + work_item['f'] + ' moved to failed directory', j_info)
 
     @transaction.atomic
-    def processWorkItem(self, work_item: json, my_span):
+    def processWorkItem(self, work_item: json):
         work_item['is_loaded'] = False
         filename = work_item['f']
         jsons_to_load = work_item['json']
         idx_global = 0
         cur_meteor = "inconnu"
-        my_span.set_attribute('file', filename)
 
         check_result = checkJson(jsons_to_load, filename)
         if check_result is not None:
-            my_span.set_event('check_json', check_result)
             raise Exception("Invalid Json file: " + filename + ": " + check_result)
 
         while idx_global < jsons_to_load.__len__():
@@ -196,10 +193,9 @@ class JsonLoader:
                     pid = cur_poste.data.id
 
                     if (cur_poste.data.load_type & PosteMeteor.Load_Type.LOAD_FROM_JSON.value) == 0:
-                        my_span.add_event('jsonload', meteor + ' inactif json_load is False), skipping file ' + filename)
+                        t.logInfo('jsonload', meteor + ' inactif json_load is False), skipping file ' + filename)
                         return
 
-                    my_span.set_attribute('meteor', meteor)
                     cur_meteor = meteor
 
                 idx_data = 0
@@ -216,20 +212,17 @@ class JsonLoader:
                             if j_stop_dat <= cur_poste.data.last_obs_date:
                                 cur_poste.data.load_type = PosteMeteor.Load_Type.LOAD_FROM_JSON.value
                                 cur_poste.data.save()
-                                my_span.add_event('jsonload', meteor + ' switching to Load_From_Json mode data from ' + filename + ', stop_date: ' + stop_date)
+                                t.logInfo('jsonload', meteor + ' switching to Load_From_Json mode data from ' + filename + ', stop_date: ' + stop_date)
                             else:
-                                my_span.add_event('jsonload', meteor + ' waiting for an older json file, skipping file ' + filename + ', stop_date: ' + stop_date)
+                                t.logInfo('jsonload', meteor + ' waiting for an older json file, skipping file ' + filename + ', stop_date: ' + stop_date)
                                 return
 
                         if j_stop_dat <= cur_poste.data.last_obs_date:
-                            my_span.add_event('jsonload', meteor + ' skipping data from ' + filename + ', stop_date: ' + stop_date + ', last_obs_date: ' + str(cur_poste.data.last_obs_date))
+                            t.logInfo('jsonload', meteor + ' skipping data from ' + filename + ', stop_date: ' + stop_date + ', last_obs_date: ' + str(cur_poste.data.last_obs_date))
                             return
 
                         # Load the obs we need in cache
                         all_obs = ObsMeteor.load_obs(pid, stop_date)
-
-                        # load attributes in our sub_spam
-                        my_span.set_attribute("stop_dat", str(j_stop_dat))
 
                         # NCNC -> futur: check if stop_dat in range ]time-duration, time]
 
@@ -237,7 +230,7 @@ class JsonLoader:
                         if all_obs[0]['obs'].data.duration != 0:
                             if a_work_item.__contains__("force_replace") is not True:
                                 t.logInfo(
-                                        'already loaded', my_span,
+                                        'already loaded',
                                         {'meteor': meteor, 'file': filename, 'idx': idx_data, 'stop_dat': str(j_stop_dat)})
                                 continue
                             else:
@@ -252,26 +245,17 @@ class JsonLoader:
 
                         keys_found = self.load_obs_data_j(pid, all_obs, a_work_item['valeurs'], j_stop_dat)
                         if keys_found is not None:
-                            # t.logInfo("keys loaded from json: " + str(keys_found), my_span)
+                            # t.logInfo("keys loaded from json: " + str(keys_found))
                             pass
                         else:
-                            t.logError("jsonloder", "no keys loaded !!!", my_span)
+                            t.logError("jsonloder", "no keys loaded !!!")
 
                         # save obs, store dependencies in histoObs
-                        histo_obs_new = []
-                        histo_x_new = []
                         idx_obs_all = 0
                         while idx_obs_all < len(all_obs):
                             an_obs = all_obs[idx_obs_all]
                             an_obs['obs'].data.save()
 # save id to x_min/max
-
-                        my_span.add_event('jsonload', "file: " + filename + " DONE")
-                        my_span.add_event('obs', 'new rows: ' + str(len(histo_obs_new)))
-                        # my_span.add_event('histo', "new rows: " + str(len(histo_x_new)))
-                        my_span.add_event('histo_extreme', "new rows: " + str(len(histo_x_new)))
-                        histo_obs_new = []
-                        histo_x_new = []
 
                     finally:
                         idx_data += 1

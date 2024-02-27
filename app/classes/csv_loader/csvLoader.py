@@ -4,14 +4,13 @@
 #   work_item = class.getNextWorkItem()
 #       return None -> no more work for now
 #       return a work_item data, which should include enought info for other calls
-#   processItem(work_item, my_span):
+#   processItem(work_item):
 #       Process the work item
-#   succeedWorkItem(work_item, my_span):
+#   succeedWorkItem(work_item):
 #       Mark the work_item as processed
-#   failWorkItem(work_item, exc, my_span):
+#   failWorkItem(work_item, exc):
 #       mark the work_item as failed
 from app.classes.repository.mesureMeteor import MesureMeteor
-from app.classes.repository.incidentMeteor import IncidentMeteor
 import app.tools.myTools as t
 from django.conf import settings
 import json
@@ -50,6 +49,7 @@ class CsvLoader:
     # public methods
     # ----------------
     def addNewWorkItem(self, work_item):
+        work_item['info'] = "chargement du fichier: " + work_item['f']
         return
 
     def getNextWorkItem(self):
@@ -84,7 +84,7 @@ class CsvLoader:
 
         Exception("No file spec found for " + a_filename)
 
-    def succeedWorkItem(self, work_item, my_span):
+    def succeedWorkItem(self, work_item):
         # move the file to archive
         target_dir = self.archive_dir + "/meteoFR/"
         if not os.path.exists(target_dir):
@@ -106,27 +106,24 @@ class CsvLoader:
         pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_day')))
         pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_month')))
 
-        my_span.add_event('csvload', work_item['f'] + ': refresh_continuous_aggregate: ' + str(datetime.datetime.now() - start_tm) + ' ms')
+        t.logInfo('csvload', work_item['f'] + ': refresh_continuous_aggregate: ' + str(datetime.datetime.now() - start_tm) + ' ms')
 
         pg_cur.close()
         pgconn.commit()
         pgconn.close()
 
-    def failWorkItem(self, work_item, exc, my_span):
+    def failWorkItem(self, work_item, exc):
         # move the file to failed archive
-        t.logException(exc, my_span)
         target_dir = self.archive_dir + "/failed/meteoFR/"
         if not os.path.exists(target_dir):
             os.makedirs(target_dir)
 
         os.rename(self.base_dir + "/" + work_item['f'], target_dir + work_item['f'])
 
-        j_info = {"filename": work_item['f'], "dest": target_dir}
-        t.logError('CsvLoader', "file moved to failed directory", None, j_info)
-        IncidentMeteor.new('_getJsonFileNameAndData', 'error', 'file ' + work_item['f'] + ' moved to failed directory', j_info)
+        t.logError('CsvLoader', "file moved to failed directory", {"filename": work_item['f'], "dest": target_dir})
 
     # Load data per block
-    def processWorkItem(self, work_item: json, my_span):
+    def processWorkItem(self, work_item: json):
         cur_spec = self.__file_spec[work_item['spec_idx']]
         pg_conn = self.getPGConnexion()
 

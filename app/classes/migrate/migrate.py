@@ -4,11 +4,11 @@
 #   work_item = class.getNextWorkItem()
 #       return None -> no more work for now
 #       return a work_item data, which should include enought info for other calls
-#   processItem(work_item, my_span):
+#   processItem(work_item):
 #       Process the work item
-#   succeedWorkItem(work_item, my_span):
+#   succeedWorkItem(work_item):
 #       Mark the work_item as processed
-#   failWorkItem(work_item, exc, my_span):
+#   failWorkItem(work_item, exc):
 #       mark the work_item as failed
 
 # ---------------
@@ -33,6 +33,7 @@ class MigrateDB:
     def __init__(self):
         self._meteors_to_process = []
         self._bulk_dl = DlWeewx()
+        self.stopRequested = False
 
     # -----------------------------------
     # add an item in the list to execute
@@ -40,12 +41,10 @@ class MigrateDB:
     def addNewWorkItem(self, meteor):
         self._meteors_to_process.append({
             'meteor': meteor,
-            'info': meteor,
+            'info': "Migration du dump de " + meteor,
             'bd': meteor,
             'spanID': 'Start ' + meteor + ' migration'
         })
-
-        t.myTools.logInfo("New work item added in queue", None, {"svc": "migrate", "meteor": meteor, "work_item": self._meteors_to_process[len(self._meteors_to_process) - 1]})
 
     # -----------------------------
     # get next item form our queue
@@ -60,13 +59,12 @@ class MigrateDB:
     # ---------------------
     # process was succesful
     # ---------------------
-    def succeedWorkItem(self, work_item, my_span):
+    def succeedWorkItem(self, work_item):
         # refresh our materialized view
         pgconn = self.getPGConnexion()
         pgconn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         pg_cur = pgconn.cursor()
 
-        start_tm = datetime.now()
         pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_hour')))
         pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_day')))
         pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_month')))
@@ -75,7 +73,8 @@ class MigrateDB:
         pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_day')))
         pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_month')))
 
-        my_span.add_event('migrate', work_item['meteor'] + ': refresh_continuous_aggregate: ' + str(datetime.now() - start_tm) + ' ms')
+        start_tm = datetime.now()
+        t.logInfo('migrate', work_item['meteor'] + ': refresh_continuous_aggregate: ' + str(datetime.now() - start_tm) + ' ms')
 
         pg_cur.close()
         pgconn.commit()
@@ -85,13 +84,13 @@ class MigrateDB:
     # ---------------
     # process failed
     # ---------------
-    def failWorkItem(self, work_item, exc, my_span):
+    def failWorkItem(self, work_item, exc):
         return
 
     # -----------------
     # process our item
     # -----------------
-    def processWorkItem(self, work_item, my_span):
+    def processWorkItem(self, work_item):
         try:
             current_ts = datetime.now().timestamp() + 1
             my_cur = None
@@ -101,14 +100,14 @@ class MigrateDB:
                 raise Exception('station ' + meteor + ' not found')
 
             if (cur_poste.data.load_type & PosteMeteor.Load_Type.LOAD_FROM_DUMP.value) == 0:
-                my_span.add_event(meteor, {'status': 'Migration stopped, station load_dump is False'})
+                t.logInfo(meteor, {'status': 'Migration stopped, station load_dump is False'})
                 return
 
             work_item['pid'] = cur_poste.data.id
             work_item['tz'] = cur_poste.data.delta_timezone
             work_item['stop_date_utc'] = cur_poste.data.stop_date if cur_poste.data.stop_date is None else AsTimezone(cur_poste.data.stop_date, 0)
 
-            self.getNewDateBracket(cur_poste, work_item, my_span)
+            self.getNewDateBracket(cur_poste, work_item)
 
             # loop per year
             while work_item['start_ts_archive_utc'] < current_ts:
@@ -126,13 +125,13 @@ class MigrateDB:
                 # execute the select statement
                 my_cur.execute(query_my)
 
-                self._bulk_dl.bulkLoad(cur_poste, my_cur, False, my_span)
+                self._bulk_dl.bulkLoad(cur_poste, my_cur, False)
 
                 my_cur.close()
                 my_cur = None
 
                 print("     Done in : " + str(datetime.now() - start_dt) + " for " + str(work_item['start_dt_archive_utc']))
-                self.getNewDateBracket(cur_poste, work_item, my_span)
+                self.getNewDateBracket(cur_poste, work_item)
 
         finally:
             if my_cur is not None:
@@ -141,7 +140,7 @@ class MigrateDB:
     # ---------------------------------------
     # other methods specific to this service
     # ---------------------------------------
-    def getNewDateBracket(self, cur_poste, work_item, my_span):
+    def getNewDateBracket(self, cur_poste, work_item):
 
         """Get start_dt/end_dt from postes, and archive table"""
         myconn = self.getMSQLConnection(work_item['meteor'])
@@ -191,7 +190,6 @@ class MigrateDB:
 
             t.myTools.logInfo(
                 'ts_archive (ts utc)    from: ' + str(work_item['start_ts_archive_utc']) + ' to ' + str(work_item['end_ts_archive_utc']),
-                my_span,
                 {"svc": "migrate", "meteor":  work_item['meteor']})
 
             print('-------------------------------------------------')

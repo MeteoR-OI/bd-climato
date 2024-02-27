@@ -18,6 +18,10 @@ class BulkDataLoader(ABC):
         Exception("getConvertKey not implemented")
 
     @abstractmethod
+    def getMeasuresInitial(self):
+        Exception("getMeasuresInitial not implemented")
+
+    @abstractmethod
     def getColMapping(self, data_iterator):
         Exception("getColMapping not implemented")
 
@@ -30,6 +34,10 @@ class BulkDataLoader(ABC):
         Exception("getValues not implemented")
 
     @abstractmethod
+    def getMinMaxValues(self, cur_row, col_mapping, a_mesure, cur_val, date_obs_local):
+        Exception("getMinMaxValues not implemented")
+
+    @abstractmethod
     def getNextRow(self, data_iterator):
         Exception("getNextRow not implemented")
 
@@ -40,7 +48,7 @@ class BulkDataLoader(ABC):
     def getMeasures(self):
         return self.measures
 
-    def bulkLoad(self, cur_poste, data_iterator, load_missing_data, my_span):
+    def bulkLoad(self, cur_poste, data_iterator, load_missing_data):
         pg_conn = None
         pg_cur = None
 
@@ -48,10 +56,10 @@ class BulkDataLoader(ABC):
             pg_conn = self.getPGConnexion()
             pg_cur = pg_conn.cursor()
 
-            min_max = self.loadObs(pg_cur, cur_poste, data_iterator, load_missing_data, my_span)
+            min_max = self.loadObs(pg_cur, cur_poste, data_iterator, load_missing_data)
 
             if min_max is not None:
-                del_cde = self.LoadMaxMin(pg_cur, cur_poste, min_max, my_span)
+                del_cde = self.LoadMaxMin(pg_cur, cur_poste, min_max)
                 min_max = None
                 for a_del_sql in del_cde:
                     pg_cur.execute(a_del_sql)
@@ -69,7 +77,7 @@ class BulkDataLoader(ABC):
                 if pg_cur is not None:
                     pg_cur.close()
 
-    def loadObs(self, pg_cur, cur_poste, data_iterator, load_missing_data, my_span):
+    def loadObs(self, pg_cur, cur_poste, data_iterator, load_missing_data):
         sql_insert = "insert into obs(poste_id, date_utc, date_local, mesure_id, duration, value, qa_value) values "
 
         minmax_values = []
@@ -97,11 +105,12 @@ class BulkDataLoader(ABC):
 
                         data_args.append((cur_poste.data.id, date_obs_utc, date_obs_local, a_mesure['id'], interval, cur_val, cur_qa_val, ))
 
+                        cur_min, date_min, cur_max, date_max, max_dir = self.getMinMaxValues(cur_row, col_mapping, a_mesure, cur_val, date_obs_local)
+
                         if a_mesure['iswind'] is True:
-                            max_dir = None if a_mesure['diridx'] is not None else cur_row[col_mapping[self.measures[a_mesure['diridx']]['archive_col']]]
-                            minmax_values.append({'min': cur_val, 'max': cur_val, 'date_min': date_obs_local, 'date_max': date_obs_local, 'max_dir': max_dir, 'mid': a_mesure['id'], 'obs_id': -1})
+                            minmax_values.append({'min': cur_min, 'max': cur_max, 'date_min': date_min, 'date_max': date_max, 'max_dir': max_dir, 'mid': a_mesure['id'], 'obs_id': -1})
                         else:
-                            minmax_values.append({'min': cur_val, 'max': cur_val, 'date_min': date_obs_local, 'date_max': date_obs_local, 'mid': a_mesure['id'], 'obs_id': -1})
+                            minmax_values.append({'min': cur_min, 'max': cur_max, 'date_min': date_min, 'date_max': date_max, 'mid': a_mesure['id'], 'obs_id': -1})
 
                 if load_missing_data is True and (cur_poste.data.last_obs_date is not None or date_obs_local <= cur_poste.data.last_obs_date):
                     # Future chargement de donnees manquantes
@@ -125,7 +134,7 @@ class BulkDataLoader(ABC):
 
         return minmax_values
 
-    def LoadMaxMin(self, pg_cur, cur_poste, new_records, my_span):
+    def LoadMaxMin(self, pg_cur, cur_poste, new_records):
         # check: nico use: last_in_db for insert-update or insert..
         insert_cde_min = "insert into x_min(obs_id, date_local, poste_id, mesure_id, min, min_time, qa_min) values "
         insert_cde_max = "insert into x_max(obs_id, date_local, poste_id, mesure_id, max, max_time, qa_max, max_dir) values "
@@ -185,46 +194,6 @@ class BulkDataLoader(ABC):
 
         # (Load Need to remove min/max k=linked with obs, when mesure is a sum
         return self.fixMinMax(str_mesure_list, cur_poste, x_max_min_date, x_min_min_date)
-
-    def getMeasuresInitial(self):
-        mesures = []
-        pg_query = "select id, archive_col, archive_table, field_dir, json_input, min, max, is_avg, is_wind, allow_zero, convert from mesures order by id"
-
-        pgconn = self.getPGConnexion()
-        pg_cur = pgconn.cursor()
-        pg_cur.execute(pg_query)
-
-        row = pg_cur.fetchone()
-        while row is not None:
-            one_mesure = {
-                'id': row[0],
-                'archive_col': row[1],
-                'table': row[2],
-                'diridx': row[3],
-                'field': row[4],
-                'min': row[5],
-                'max': row[6],
-                'isavg': row[7],
-                'iswind': row[8],
-                'zero': row[9],
-                'convert': row[10]
-            }
-            mesures.append(one_mesure)
-            row = pg_cur.fetchone()
-        pg_cur.close()
-
-        # Link wind speed mesures with the linked wind dir mesure
-        for a_mesure in mesures:
-            if a_mesure['diridx'] is not None:
-                fi_dir = a_mesure['diridx']
-                a_mesure['diridx'] = None
-                dir_idx = 0
-                while dir_idx < len(mesures):
-                    if mesures[dir_idx]['id'] == fi_dir:
-                        a_mesure['diridx'] = dir_idx
-                        dir_idx = len(mesures)
-                    dir_idx += 1
-        return mesures
 
     def getPGConnexion(self):
         return psycopg2.connect(

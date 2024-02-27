@@ -16,6 +16,46 @@ class DlWeewx(BulkDataLoader):
     def getConvertKey(self):
         return 'weewx'
 
+    def getMeasuresInitial(self):
+        mesures = []
+        pg_query = "select id, archive_col, archive_table, field_dir, json_input, min, max, is_avg, is_wind, allow_zero, convert from mesures order by id"
+
+        pgconn = self.getPGConnexion()
+        pg_cur = pgconn.cursor()
+        pg_cur.execute(pg_query)
+
+        row = pg_cur.fetchone()
+        while row is not None:
+            one_mesure = {
+                'id': row[0],
+                'archive_col': row[1],
+                'table': row[2],
+                'diridx': row[3],
+                'field': row[4],
+                'min': row[5],
+                'max': row[6],
+                'isavg': row[7],
+                'iswind': row[8],
+                'zero': row[9],
+                'convert': row[10]
+            }
+            mesures.append(one_mesure)
+            row = pg_cur.fetchone()
+        pg_cur.close()
+
+        # Link wind speed mesures with the linked wind dir mesure
+        for a_mesure in mesures:
+            if a_mesure['diridx'] is not None:
+                fi_dir = a_mesure['diridx']
+                a_mesure['diridx'] = None
+                dir_idx = 0
+                while dir_idx < len(mesures):
+                    if mesures[dir_idx]['id'] == fi_dir:
+                        a_mesure['diridx'] = dir_idx
+                        dir_idx = len(mesures)
+                    dir_idx += 1
+        return mesures
+
     def getColMapping(self, my_cur):
         if self.col_mapping is None:
             # load field_name/row_id mapping for weewx select
@@ -42,6 +82,11 @@ class DlWeewx(BulkDataLoader):
         interval = 60 if (cur_row[col_mapping['interval']] is None or cur_row[col_mapping['interval']] == 0) else cur_row[col_mapping['interval']]
         return cur_val, cur_qa_val, interval
 
+    def getMinMaxValues(self, cur_row, col_mapping, a_mesure, cur_val, date_obs_local):
+        max_dir = None if a_mesure['diridx'] is None else cur_row[col_mapping[self.measures[a_mesure['diridx']]['archive_col']]]
+
+        return cur_val, date_obs_local, cur_val, date_obs_local, max_dir
+
     def getNextRow(self, data_iterator):
         next_row = data_iterator.fetchone()
         if next_row is None:
@@ -60,10 +105,3 @@ class DlWeewx(BulkDataLoader):
                 x_min_min_date.strftime("%Y/%m/%d, %H:%M:%S") + "' and mesure_id in " + str_mesure_list +
                 " and poste_id = " + str(cur_poste.data.id) + ")"
                 ]
-
-    def transcodeQACode(self, qa_meteoFR):
-        if qa_meteoFR is None or qa_meteoFR == 0:
-            return QA.UNSET.value
-        if qa_meteoFR == 2:
-            return QA.UNVALIDATED.value
-        return QA.VALIDATED.value

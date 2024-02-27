@@ -14,10 +14,9 @@
 - [4. app tests](#4-app-tests)
 - [5. Problemes courants](#5-problemes-courants)
 - [6. Demarrer avec GIT](#6-demarrer-avec-git)
-- [7. Telemetry](#7-telemetry)
-- [8. Commandes](#8-commandes)
-- [9. API](#9-api)
-- [10. Notes Generales](#10-notes-generales)
+- [7. Commandes](#8-commandes)
+- [8. API](#9-api)
+- [9. Notes Generales](#10-notes-generales)
 
 <!-- /code_chunk_output -->
 
@@ -48,14 +47,11 @@ Non disponible avec cette version
 # 6. Demarrer avec GIT
 [Intro Git](doc/gitBasic.md)
 
-# 7. Telemetry
-[Telemetry](doc/telemetry.md)
-
-# 8. Commandes
+# 7. Commandes
 [Commandes](doc/commands.md)
 
-# 9. API
+# 8. API
 [Api](doc/api/apiDoc.md)
 
-# 10. Notes Generales
+# 9. Notes Generales
 [Notes](doc/globalNotes.md)

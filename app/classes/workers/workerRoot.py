@@ -4,20 +4,20 @@
 #   work_item = class.getNextWorkItem()
 #       return None -> no more work for now
 #       return a work_item data, which should include enought info for other calls
-#   processItem(work_item, my_span)
+#   processItem(work_item)
 #       Process the work item
-#   succeedWorkItem(work_item, my_span)
+#   succeedWorkItem(work_item)
 #       Mark the work_item as processed
-#   failWorkItem(work_item, exc, my_span)
+#   failWorkItem(work_item, exc)
 #       mark the work_item as failed (exc is the exception)
 # ----------
 import threading
 import time
 import json
 from app.tools.refManager import RefManager
-from app.tools.telemetry import Telemetry
 from app.classes.repository.incidentMeteor import IncidentMeteor
 import app.tools.myTools as t
+from datetime import datetime
 
 
 class WorkerRoot:
@@ -37,7 +37,7 @@ class WorkerRoot:
         try:
             self.display = str(name).replace("<class 'app.classes.workers.", "")
             self.display = self.display.split('.')[0]
-            t.logInfo('worker ' + name + ' new instance')
+            t.logInfo('worker ' + self.display + ' new instance', {"svc": self.display})
         except Exception:
             self.display = name
 
@@ -45,10 +45,9 @@ class WorkerRoot:
         # check globally that only one instance was created for the name
         if self.ref_mgr.IncrementRef("Svc_" + name) > 1:
             IncidentMeteor().new('worker ' + name, 'CRITICAL', 'Multiple instance')
-            t.logError('WorkerRoot::__init__', 'multiple instances of ' + name, None, {"svc": self.display})
+            t.logError('WorkerRoot::__init__', 'multiple instances of ' + name, {"svc": self.display})
             raise Exception(name, 'Multiple instances called')
 
-        self.tracer = Telemetry.Start('svc ' + self.display, __name__)
         self.frequency = frequency
         self.synonym = synonym
         WorkerRoot.all_syn.append({"s": synonym, "svc": name, "name": self.display, "instance": self})
@@ -98,7 +97,6 @@ class WorkerRoot:
                 if trace_flag:
                     t.logInfo(
                         'task ' + self.display + ' setTraceFlag',
-                        None,
                         {'traceFlag': trace_flag}
                     )
                 return
@@ -127,7 +125,7 @@ class WorkerRoot:
                         self.eventRunMe.clear()
                         thread = threading.Thread(target=self.__runSvc, args=(a_worker,), daemon=True)
                         thread.setName(self.name)
-                        t.logInfo('svc thread started', None, {"svc": self.display, "status": "started"})
+                        t.logInfo('svc thread started', {"svc": self.display, "status": "started"})
                         thread.start()
                         a_worker['threadRunning'] = True
                         # force the thread to run once
@@ -136,7 +134,7 @@ class WorkerRoot:
 
                     except Exception as exc:
                         a_worker['threadRunning'] = False
-                        t.logError('Start', self.display + ": Exception", None, {"svc": self.display, "exception": str(exc)}, {"svc": self.display})
+                        t.logError('Start', self.display + ": Exception", {"svc": self.display, "exception": str(exc)})
                         raise exc
 
         finally:
@@ -155,7 +153,7 @@ class WorkerRoot:
                     # Stop this worker first
                     self.killFlag = True
                     self.eventRunMe.set()
-                    t.logInfo('Stop command received', None, {"svc": self.display, "status": "stopped"})
+                    t.logInfo('Stop command received', {"svc": self.display, "status": "stopped"})
 
                     if self.run_once is False:
                         self.closed.wait(5)
@@ -174,10 +172,11 @@ class WorkerRoot:
         for a_worker in WorkerRoot.wrks:
             if a_worker['name'] == self.name:
                 try:
-                    a_worker['class'].addNewWorkItem(work_item)
+                    info = a_worker['class'].addNewWorkItem(work_item)
+                    t.logInfo(self.display + " new item in queue", {"svc": self.display, "info": info})
 
                 except Exception as exc:
-                    t.Exception(exc, None)
+                    t.logException(exc, None)
 
                 finally:
                     pass
@@ -189,7 +188,7 @@ class WorkerRoot:
             for a_worker in WorkerRoot.wrks:
                 if a_worker['name'] == self.name:
                     return a_worker['threadRunning']
-            t.logError('workerRoot::IsRunning', 'Service ' + self.display + " not found", None, {"svc": self.display})
+            t.logError('workerRoot::IsRunning', 'Service ' + self.display + " not found", {"svc": self.display})
 
         finally:
             WorkerRoot.wrks_lock.release()
@@ -212,66 +211,65 @@ class WorkerRoot:
         trace_flag = self.GetTraceFlag()
         try:
             if trace_flag is True:
-                t.logInfo('task ' + self.display + " running", None, {})
+                t.logInfo('task ' + self.display + " running", {})
 
             while True:
                 in_use = False
                 try:
                     trace_flag = self.GetTraceFlag()
                     if trace_flag is True:
-                        t.logInfo('task ' + self.display + " waiting now", None, {"frequency": self.frequency})
+                        t.logInfo('task ' + self.display + " waiting now", {"frequency": self.frequency})
 
                     # wait our frequency
                     self.eventRunMe.wait(self.frequency)
 
                     #  Stop request processing
                     if self.killFlag is True:
+                        if trace_flag is True:
+                            t.logInfo('task ' + self.display + " killed", {})
                         self.closed.set()
                         return
 
                     if in_use is True:
+                        if trace_flag is True:
+                            t.logInfo('task ' + self.display + " in use, continue", {})
                         continue
 
                     # work_item should have the key: spanID, and info, plus info for the service itself
                     work_item = a_worker['class'].getNextWorkItem()
                     if work_item is None:
                         if self.run_once is True:
+                            if trace_flag is True:
+                                t.logInfo('task ' + self.display + " queue empty, stop", {})
                             self.Stop()
                             return
                         self.eventRunMe.clear()
                         continue
 
                     # safe check...
-                    if work_item.get("spanID") is None:
-                        work_item['spanID'] = self.display
                     if work_item.get("info") is None:
                         work_item['info'] = self.display
                     if work_item.get("meteor") is None:
                         work_item['meteor'] = "?"
 
-                    with self.tracer.start_as_current_span(work_item['spanID']) as my_span:
-                        my_span.set_attribute("job", "django")  # for link jaeger -> loki
-                        my_span.set_attribute("info", work_item['info'])
-                        my_span.set_attribute("meteor", work_item['meteor'])
-                        # call the service handler
-                        try:
-                            in_use = True
-                            a_worker['class'].processWorkItem(work_item, my_span)
-                            my_span._status._status_code = Telemetry.get_ok_status()
-                            a_worker['class'].succeedWorkItem(work_item, my_span)
-                            t.logInfo("work item processed ok", my_span, {
-                                "svc": self.display,
-                                "info": work_item['info'],
-                                "meteor": work_item['meteor'],
-                            })
+                    # call the service handler
+                    try:
+                        start_ts = datetime.now()
+                        in_use = True
+                        a_worker['class'].processWorkItem(work_item)
+                        a_worker['class'].succeedWorkItem(work_item)
+                        t.logInfo("item processed ok", {
+                            "svc": self.display,
+                            "info": work_item['info'],
+                            "duration": datetime.now() - start_ts,
+                        })
 
-                        except Exception as exc:
-                            my_span._status._status_code = Telemetry.get_error_status()
-                            t.logException(exc, my_span, {"svc": self.display, "work_item": work_item})
-                            a_worker['class'].failWorkItem(work_item, exc, my_span)
+                    except Exception as exc:
+                        t.logException(exc, {"svc": self.display, "work_item": work_item})
+                        a_worker['class'].failWorkItem(work_item, exc)
 
-                        finally:
-                            in_use = False
+                    finally:
+                        in_use = False
 
                     self.eventRunMe.set()
 
