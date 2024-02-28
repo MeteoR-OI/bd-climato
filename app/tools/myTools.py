@@ -10,6 +10,11 @@ import json
 # logCritical(source, message: str, params):
 
 
+def notifyAdmin(type, message: str, params: json = {}):
+    print("notifyAdmin:", type + ' =>', message, params)
+    return LogMe.GetInstance().LogMe(message, "info", params)
+
+
 def logException(e, params: json = {}):
     message, params['stack'] = get_trace_info(e)
     stack_0 = params['stack'].split('\n')[0]
@@ -27,6 +32,7 @@ def logException(e, params: json = {}):
         message.split(':')[1],
         params,
     )
+    notifyAdmin('exception', message.split(':')[1], params)
     # filename, line_no, module = self.GetStackInfo(5 if level == "critical" else 2)
     return LogMe.GetInstance().LogMeOut(filename, line_no, module, message.split(':')[1], 'critical', params)
     # return LogMe.GetInstance().LogMe(message, "critical", params)
@@ -36,9 +42,11 @@ def logError(source, message: str, params: json = {}):
     IncidentMeteor.new(
         source,
         'error',
-        'message',
+        message,
         params,
     )
+    notifyAdmin('error', message, params)
+
     return LogMe.GetInstance().LogMe(message, "error", params)
 
 

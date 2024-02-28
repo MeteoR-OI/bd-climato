@@ -73,9 +73,6 @@ class MigrateDB:
         pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_day')))
         pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_month')))
 
-        start_tm = datetime.now()
-        t.logInfo('migrate', work_item['meteor'] + ': refresh_continuous_aggregate: ' + str(datetime.now() - start_tm) + ' ms')
-
         pg_cur.close()
         pgconn.commit()
         pgconn.close()

@@ -15,7 +15,7 @@ class MesureMeteor():
         """Init a new MesureMeteor object"""
 
         # Load Mesure definitions and decas
-        if hasattr(MesureMeteor, "all_decas") is False:
+        if hasattr(MesureMeteor, "all_defs") is False:
             self.loadMesureDefs()
 
         if 'int' in str(type(key)):
@@ -35,13 +35,6 @@ class MesureMeteor():
     def save(self):
         """ save Poste """
         self.data.save()
-
-    @staticmethod
-    def getAllDecas():
-        if hasattr(MesureMeteor, "all_decas") is False:
-            # Dummy call to load mesures in cache
-            MesureMeteor('out_temp')
-        return MesureMeteor.all_decas
 
     @staticmethod
     def getDefinitions():

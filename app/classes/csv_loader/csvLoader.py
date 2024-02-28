@@ -14,7 +14,6 @@ from app.classes.repository.mesureMeteor import MesureMeteor
 import app.tools.myTools as t
 from django.conf import settings
 import json
-import datetime
 import os
 import psycopg2
 from psycopg2 import sql
@@ -97,7 +96,6 @@ class CsvLoader:
         pgconn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         pg_cur = pgconn.cursor()
 
-        start_tm = datetime.datetime.now()
         pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_hour')))
         pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_day')))
         pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_month')))
@@ -105,8 +103,6 @@ class CsvLoader:
         pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_min_month')))
         pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_day')))
         pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_month')))
-
-        t.logInfo('csvload', work_item['f'] + ': refresh_continuous_aggregate: ' + str(datetime.datetime.now() - start_tm) + ' ms')
 
         pg_cur.close()
         pgconn.commit()
