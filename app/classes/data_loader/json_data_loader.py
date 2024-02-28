@@ -1,14 +1,10 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from app.classes.repository.mesureMeteor import MesureMeteor
-from app.classes.repository.posteMeteor import PosteMeteor
-from app.classes.repository.obsMeteor import ObsMeteor, QA
-from app.tools.jsonValidator import checkJson
-from app.tools.dateTools import str_to_datetime
+from app.classes.repository.obsMeteor import QA
 import psycopg2
+from datetime import timedelta
 import app.tools.myTools as t
-from app.tools.jsonPlus import JsonPlus
 from django.conf import settings
-import json
 import os
 from enum import Enum
 
@@ -47,36 +43,79 @@ class JsonDataLoader(ABC):
             self.archive_dir = self.base_dir
 
     def loadObsData(self, cur_poste, j_data, stop_dat, duration):
-        keys_found = []
-        for a_mesure in self.mesures:
-            cur_vals = self.get_valeurs(a_mesure, j_data, stop_dat)
+        obs_data = min_data = max_data = []
+        pg_conn = self.getPGConnexion()
+        pg_cur = pg_conn.cursor()
+        sql_insert = "insert into obs(poste_id, date_utc, date_local, mesure_id, duration, value, qa_value) values "
+        insert_cde_min = "insert into x_min(obs_id, date_local, poste_id, mesure_id, min, min_time, qa_min) values "
+        insert_cde_max = "insert into x_max(obs_id, date_local, poste_id, mesure_id, max, max_time, qa_max, max_dir) values "
 
-//Nico
-            cur_obs_idx = self.get_cur_obs_idx(all_obs, a_mesure)
-            cur_obs = all_obs[cur_obs_idx]
+        try:
+            for a_mesure in self.mesures:
+                cur_vals = self.get_valeurs(a_mesure, j_data, stop_dat)
+                if cur_vals[0] is None:
+                    if a_mesure.get("col2") is not None and a_mesure['col2'] is not None:
+                        cur_vals = self.get_valeurs(a_mesure, j_data, stop_dat, False, True)
 
-            # if current value is None, try with the second input key
-            if cur_vals[0] is None:
-                if a_mesure.get("col2") is not None and a_mesure['col2'] is not None:
-                    cur_vals = self.get_valeurs(a_mesure, j_data, stop_dat, False, True)
+                if cur_vals[0] is None:
+                    continue
 
-            # store the value in the observation data
-            if cur_vals[0] is not None:
-                cur_obs['obs'].data.__setattr__(a_mesure['col'], cur_vals[0])
-                if a_mesure['iswind'] is True and cur_vals[1] is not None:
-                    cur_obs['obs'].data.__setattr__(a_mesure['col'] + '_dir', cur_vals[1])
-                keys_found.append(a_mesure['col'])
+                obs_data.append((cur_poste.data.id, stop_dat, stop_dat + timedelta(hours=cur_poste.data.delta_timezone), a_mesure['id'], duration, cur_vals[IDX.IDX_VAL], cur_vals[IDX.IDX_QVAL], ))
 
-            # store min/max
-            self.insert_extremes(
-                pid,
-                a_mesure,
-                [
-                    {'col': 'min', 'v': cur_vals[2], 't': cur_vals[3], 'd': None},
-                    {'col': 'max', 'v': cur_vals[4], 't': cur_vals[5], 'd': cur_vals[6]}
-                ]
-            )
-        return None if keys_found.__len__ == 0 else keys_found
+                if a_mesure['min'] is not None and a_mesure['min'] is True:
+                    min_data.append((
+                        None,
+                        stop_dat.date(),
+                        cur_poste.data.id,
+                        a_mesure['id'],
+                        cur_vals[IDX.IDX_VALMIN],
+                        cur_vals[IDX.IDX_MIN_TIME],
+                        cur_vals[IDX.IDX_QVALMIN]),)
+                else:
+                    min_data.append((None, None, None, None, None, None, None),)
+
+                if a_mesure['max'] is not None:
+                    max_data.append((
+                        None,
+                        stop_dat.date(),
+                        cur_poste.data.id,
+                        cur_vals[IDX.IDX_VALAX],
+                        cur_vals[IDX.IDX_AX_TIME],
+                        cur_vals[IDX.IDX_QVALAX],
+                        cur_vals[IDX.IDX_MAX_DIR]),)
+                else:
+                    max_data.append((None, None, None, None, None, None, None, None),)
+
+            if len(obs_data) == 0:
+                return
+
+            # cursor.mogrify() to insert multiple values
+            args = ','.join(pg_cur.mogrify("( %s, %s, %s, %s, %s, %s, %s )", i).decode('utf-8') for i in obs_data)
+
+            pg_cur.execute(sql_insert + args + ' returning id')
+            new_ids = pg_cur.fetchall()
+
+            idx = 0
+            while idx < len(new_ids):
+                min_data[idx][0] = max_data[idx][0] = new_ids[idx][0]
+                idx += 1
+
+            min_args_ok = ','.join(pg_cur.mogrify("(%s, %s, %s, %s, %s, %s, %s)", i).decode('utf-8') for i in min_data)
+            max_args_ok = ','.join(pg_cur.mogrify("(%s, %s, %s, %s, %s, %s, %s, %s)", i).decode('utf-8') for i in max_data)
+
+            pg_cur.execute(insert_cde_min + min_args_ok)
+            pg_cur.execute(insert_cde_max + max_args_ok)
+
+            pg_conn.commit()
+
+        except Exception as e:
+            t.logException(e)
+            pg_conn.rollback()
+            raise e
+
+        finally:
+            pg_cur.close()
+            pg_conn.close()
 
     def get_valeurs(self, a_mesure, valeurs, stop_dat, force_abs=False, use_second_input_key=False):
         #  [0]  [1]     [2]        [3]      [4]      [5]     [6]      [7]      [8]      [9]     [10]
@@ -137,42 +176,8 @@ class JsonDataLoader(ABC):
                 my_val_max = my_val
                 my_val_max_time = stop_dat
                 my_val_max_dir = my_val_dir
- 
+
         return [my_val, my_qval, my_val_dir, my_qval_dir, my_val_min, my_qval_min, my_val_min_time, my_val_max, my_qval_max, my_val_max_time, my_val_max_dir]
-
-    def get_cur_obs_idx(self, all_obs, a_mesure):
-        return 0
-
-    def insert_extremes(self, pid, a_mesure, x_data):
-        # x_row = None
-        # for a_data in x_data:
-        #     if a_mesure[a_data['col']] is True and (a_data['v'] is not None and a_data['t'] is not None):
-        #         x_date_key = a_data['t'] + timedelta(hours=a_mesure[a_data['col'] + 'dk'])
-        #         x_date_key = x_date_key.date()
-        #         if x_row is None or x_row.data.date != x_date_key:
-        #             if x_row is not None:
-        #                 x_row.data.save()
-        #             x_row = ExtremeMeteor.get_extreme(pid, a_mesure['id'], x_date_key)
-        #         if (a_data['col'] == 'min' and
-        #                 (hasattr(x_row.data, a_data['col']) is False or
-        #                  x_row.data.__getattribute__(a_data['col']) is None or
-        #                  a_data['v'] < x_row.data.__getattribute__(a_data['col']))) or \
-        #            (a_data['col'] == 'max' and
-        #                 (hasattr(x_row.data, a_data['col']) is False or
-        #                  x_row.data.__getattribute__(a_data['col']) is None or
-        #                  a_data['v'] > x_row.data.__getattribute__(a_data['col']))):
-        #             # set the new value for the extreme
-        #             b_insert_histo = True
-        #             x_row.data.__setattr__(a_data['col'], a_data['v'])
-        #             x_row.data.__setattr__(a_data['col'] + '_time', a_data['t'])
-        #             if a_data['d'] is not None:
-        #                 x_row.data.__setattr__(a_data['col'] + '_dir', a_data['d'])
-
-        # if x_row is not None:
-        #     x_row.data.save()
-        #     if b_insert_histo is True:
-        #         b_insert_histo = False
-        return
 
     def getPGConnexion(self):
         return psycopg2.connect(
