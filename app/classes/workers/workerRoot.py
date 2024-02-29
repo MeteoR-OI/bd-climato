@@ -265,7 +265,7 @@ class WorkerRoot:
                         })
 
                     except Exception as exc:
-                        t.logException(exc, {"svc": self.display, "work_item": work_item})
+                        t.logException(exc, {"svc": self.display, "info": work_item.get()})
                         a_worker['class'].failWorkItem(work_item, exc)
 
                     finally:

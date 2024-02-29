@@ -10,9 +10,10 @@ import json
 # logCritical(source, message: str, params):
 
 
-def notifyAdmin(type, message: str, params: json = {}):
+def notifyAdmin(type, message: str, params: json = {}, create_info_log: bool = True):
     print("notifyAdmin:", type + ' =>', message, params)
-    return LogMe.GetInstance().LogMe(message, "info", params)
+    if create_info_log is True:
+        return LogMe.GetInstance().LogMe(message, "info", params)
 
 
 def logException(e, params: json = {}):
@@ -32,7 +33,7 @@ def logException(e, params: json = {}):
         message.split(':')[1],
         params,
     )
-    notifyAdmin('exception', message.split(':')[1], params)
+    notifyAdmin('exception', message.split(':')[1], params, False)
     # filename, line_no, module = self.GetStackInfo(5 if level == "critical" else 2)
     return LogMe.GetInstance().LogMeOut(filename, line_no, module, message.split(':')[1], 'critical', params)
     # return LogMe.GetInstance().LogMe(message, "critical", params)
@@ -45,7 +46,7 @@ def logError(source, message: str, params: json = {}):
         message,
         params,
     )
-    notifyAdmin('error', message, params)
+    notifyAdmin('error', message, params, False)
 
     return LogMe.GetInstance().LogMe(message, "error", params)
 

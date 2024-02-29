@@ -11,7 +11,6 @@
 #   failWorkItem(work_item, exc):
 #       mark the work_item as failed
 from app.classes.repository.posteMeteor import PosteMeteor
-from app.classes.repository.incidentMeteor import IncidentMeteor
 from app.classes.data_loader.json_data_loader import JsonDataLoader
 from app.tools.jsonValidator import checkJson
 from app.tools.dateTools import str_to_datetime
@@ -44,11 +43,14 @@ class JsonLoader(JsonDataLoader):
         else:
             self.archive_dir = self.base_dir
 
+    def getConvertKey(self):
+        return 'json'
+
     # ----------------
     # public methods
     # ----------------
     def addNewWorkItem(self, work_item):
-        work_item['info'] = "chargement du json " + work_item['f']
+        work_item['info'] = "chargement de json "
         return
 
     def getNextWorkItem(self):
@@ -164,7 +166,6 @@ class JsonLoader(JsonDataLoader):
 
         j_info = {"filename": work_item['f'], "dest": self.archive_dir + "/" + meteor + "/failed/" + work_item['f']}
         t.logError('jsonloader', "file moved to fail directory", j_info)
-        IncidentMeteor.new('_getJsonFileNameAndData', 'error', 'file ' + work_item['f'] + ' moved to failed directory', j_info)
 
     def processWorkItem(self, work_item: json):
         work_item['is_loaded'] = False
@@ -188,7 +189,7 @@ class JsonLoader(JsonDataLoader):
                         raise Exception("code meteor inconnu: " + meteor + ', idx_global: ' + str(idx_global) + ' dans le fichier: ' + filename)
 
                     if (cur_poste.data.load_type & PosteMeteor.Load_Type.LOAD_FROM_JSON.value) == 0:
-                        t.logInfo('jsonload', meteor + ' inactif json_load is False), skipping file ' + filename)
+                        t.logInfo('jsonload: ' + meteor + ' inactif json_load is False), skipping file ' + filename)
                         return
 
                     cur_meteor = meteor
@@ -207,16 +208,16 @@ class JsonLoader(JsonDataLoader):
                             if j_stop_dat <= cur_poste.data.last_obs_date:
                                 cur_poste.data.load_type = PosteMeteor.Load_Type.LOAD_FROM_JSON.value
                                 cur_poste.data.save()
-                                t.notifyAdmin('jsonload', meteor + ' switching to Load_From_Json mode data from ' + filename + ', stop_date: ' + stop_date)
+                                t.notifyAdmin('info', 'jsonload: ' + meteor + ' switching to Load_From_Json mode data from ' + filename + ', stop_date: ' + stop_date)
                             else:
-                                t.logInfo('jsonload', meteor + ' waiting for an older json file, skipping file ' + filename + ', stop_date: ' + stop_date)
+                                t.logInfo('info', 'jsonload: ' + meteor + ' waiting for an older json file, skipping file ' + filename + ', stop_date: ' + stop_date)
                                 return
 
                         if j_stop_dat <= cur_poste.data.last_obs_date:
-                            t.logInfo('jsonload', meteor + ' skipping data already loaded rom ' + filename + ', stop_date: ' + stop_date + ', last_obs_date: ' + str(cur_poste.data.last_obs_date))
+                            t.logInfo('jsonload: ' + meteor + ' skipping data already loaded rom ' + filename + ', stop_date: ' + stop_date + ', last_obs_date: ' + str(cur_poste.data.last_obs_date))
                             return
 
-                        self.load_obs_data_j(cur_poste, a_work_item['valeurs'], j_stop_dat, j_duration)
+                        self.loadObsData(cur_poste, a_work_item['valeurs'], j_stop_dat, j_duration)
 
                     finally:
                         idx_data += 1

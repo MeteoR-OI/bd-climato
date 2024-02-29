@@ -1,9 +1,8 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from app.classes.repository.mesureMeteor import MesureMeteor
 from app.classes.repository.obsMeteor import QA
 import psycopg2
 from datetime import timedelta
-import app.tools.myTools as t
 from django.conf import settings
 import os
 from enum import Enum
@@ -24,6 +23,10 @@ class IDX(Enum):
 
 
 class JsonDataLoader(ABC):
+    @abstractmethod
+    def getConvertKey(self):
+        Exception("getConvertKey not implemented")
+
     def __init__(self):
         # save mesures definition
         self.mesures = MesureMeteor.getDefinitions()
@@ -42,8 +45,12 @@ class JsonDataLoader(ABC):
         else:
             self.archive_dir = self.base_dir
 
-    def loadObsData(self, cur_poste, j_data, stop_dat, duration):
-        obs_data = min_data = max_data = []
+    def loadObsData(self, cur_poste, j_data, stop_dat_local, duration):
+        obs_data = []
+        min_data = []
+        max_data = []
+        idx_min_map = []
+        idx_max_map = []
         pg_conn = self.getPGConnexion()
         pg_cur = pg_conn.cursor()
         sql_insert = "insert into obs(poste_id, date_utc, date_local, mesure_id, duration, value, qa_value) values "
@@ -52,39 +59,42 @@ class JsonDataLoader(ABC):
 
         try:
             for a_mesure in self.mesures:
-                cur_vals = self.get_valeurs(a_mesure, j_data, stop_dat)
+                cur_vals = self.get_valeurs(a_mesure, j_data, stop_dat_local)
                 if cur_vals[0] is None:
                     if a_mesure.get("col2") is not None and a_mesure['col2'] is not None:
-                        cur_vals = self.get_valeurs(a_mesure, j_data, stop_dat, False, True)
+                        cur_vals = self.get_valeurs(a_mesure, j_data, stop_dat_local, False, True)
 
                 if cur_vals[0] is None:
                     continue
 
-                obs_data.append((cur_poste.data.id, stop_dat, stop_dat + timedelta(hours=cur_poste.data.delta_timezone), a_mesure['id'], duration, cur_vals[IDX.IDX_VAL], cur_vals[IDX.IDX_QVAL], ))
+                obs_data.append([cur_poste.data.id, stop_dat_local - timedelta(hours=cur_poste.data.delta_timezone), stop_dat_local, a_mesure['id'], duration, cur_vals[IDX.IDX_VAL.value], cur_vals[IDX.IDX_QVAL.value]])
 
                 if a_mesure['min'] is not None and a_mesure['min'] is True:
-                    min_data.append((
+                    min_data.append([
                         None,
-                        stop_dat.date(),
+                        stop_dat_local.date(),
                         cur_poste.data.id,
                         a_mesure['id'],
-                        cur_vals[IDX.IDX_VALMIN],
-                        cur_vals[IDX.IDX_MIN_TIME],
-                        cur_vals[IDX.IDX_QVALMIN]),)
+                        cur_vals[IDX.IDX_VALMIN.value],
+                        cur_vals[IDX.IDX_MIN_TIME.value],
+                        cur_vals[IDX.IDX_QVALMIN.value]])
+                    idx_min_map.append(len(min_data) - 1)
                 else:
-                    min_data.append((None, None, None, None, None, None, None),)
+                    idx_min_map.append(None)
 
-                if a_mesure['max'] is not None:
-                    max_data.append((
+                if a_mesure['max'] is not None and a_mesure['max'] is True:
+                    max_data.append([
                         None,
-                        stop_dat.date(),
+                        stop_dat_local.date(),
                         cur_poste.data.id,
-                        cur_vals[IDX.IDX_VALAX],
-                        cur_vals[IDX.IDX_AX_TIME],
-                        cur_vals[IDX.IDX_QVALAX],
-                        cur_vals[IDX.IDX_MAX_DIR]),)
+                        a_mesure['id'],
+                        cur_vals[IDX.IDX_VALMAX.value],
+                        cur_vals[IDX.IDX_MAX_TIME.value],
+                        cur_vals[IDX.IDX_QVALMAX.value],
+                        cur_vals[IDX.IDX_MAX_DIR.value]])
+                    idx_max_map.append(len(max_data) - 1)
                 else:
-                    max_data.append((None, None, None, None, None, None, None, None),)
+                    idx_max_map.append(None)
 
             if len(obs_data) == 0:
                 return
@@ -97,7 +107,10 @@ class JsonDataLoader(ABC):
 
             idx = 0
             while idx < len(new_ids):
-                min_data[idx][0] = max_data[idx][0] = new_ids[idx][0]
+                if idx_min_map[idx] is not None:
+                    min_data[idx_min_map[idx]][0] = new_ids[idx][0]
+                if idx_max_map[idx] is not None:
+                    max_data[idx_max_map[idx]][0] = new_ids[idx][0]
                 idx += 1
 
             min_args_ok = ','.join(pg_cur.mogrify("(%s, %s, %s, %s, %s, %s, %s)", i).decode('utf-8') for i in min_data)
@@ -109,7 +122,6 @@ class JsonDataLoader(ABC):
             pg_conn.commit()
 
         except Exception as e:
-            t.logException(e)
             pg_conn.rollback()
             raise e
 
@@ -144,6 +156,8 @@ class JsonDataLoader(ABC):
         for a_key in j_keys:
             if valeurs.get(a_key) is not None:
                 my_val = valeurs[a_key]
+                if a_mesure['convert'] is not None and a_mesure['convert'].get(self.getConvertKey()) is not None:
+                    my_val = eval(a_mesure['convert'][self.getConvertKey()])(my_val)
                 if valeurs.get('Q' + a_key) is not None:
                     my_qval = valeurs['Q' + a_key]
                 if a_mesure['iswind'] is True and valeurs.get(a_key + '_dir') is not None:
