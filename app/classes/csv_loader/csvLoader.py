@@ -18,7 +18,7 @@ import os
 import psycopg2
 from psycopg2 import sql
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from app.classes.csv_loader.csvH_974 import CsvH_974 as csvInstance
+from app.classes.csv_loader.csv_meteoFR import CSV_MeteoFR as csvInstance
 
 
 class CsvLoader:
