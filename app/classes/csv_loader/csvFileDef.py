@@ -12,32 +12,34 @@ from datetime import timedelta, datetime
 
 
 class CsvFileSpec(ABC):
-    def __init__(self, __spec) -> None:
+    def __init__(self, patterns, __spec) -> None:
         self.__spec = __spec
+        self.__patterns = patterns
 
     @abstractmethod
-    def getPosteData(self, rows):
+    def getPosteData(spec_id, self, idx, rows):
+  spec_id,       pass
+
+    @abstractmethod
+    def hackHeader(self, idx, header):
         pass
 
     @abstractmethod
-    def hackHeader(self, header):
+    def getStopDate(self, idx, rows):
         pass
 
-    @abstractmethod
-    def getStopDate(self, rows):
-        pass
-
+    # check if a file name match our patterns
     def isItForMe(self, file_path, file_name) -> bool:
         self.__file_path = file_path
         self.__file_name = file_name
         self.__header = []
-        for a_pattern in self.__spec['pattern']:
-            match = re.match(a_pattern, file_name)
+        for a_pattern in self.__patterns:
+            match = re.match(a_pattern['p'], file_name)
             if match:
-                return True
-        return True
+                a_pattern['idx']
+        return -1
 
-    def nextBlockLines(self):
+    def nextBlockLines(self, spec_id):
         obs_data = []
         min_data = []
         max_data = []
@@ -60,8 +62,8 @@ class CsvFileSpec(ABC):
                     row = file.readline()
                     continue
 
-                self.__poste_info = self.getPosteData(my_fields)
-                j_stop_dat_utc = self.getStopDate(my_fields)
+                self.__poste_info = self.getPosteData(spec_id, my_fields)
+                j_stop_dat_utc = self.getStopDate(spec_id, my_fields)
                 str_stop_dat_utc = str(j_stop_dat_utc)
 
                 # check if we already have data for this date

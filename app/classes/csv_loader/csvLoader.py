@@ -18,14 +18,10 @@ import os
 import psycopg2
 from psycopg2 import sql
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from app.classes.csv_loader.csv_meteoFR import CSV_MeteoFR as csvInstance
+from app.classes.csv_loader.csv_meteoFR import CSV_MeteoFR
 
 
 class CsvLoader:
-    __file_spec = [
-        csvInstance()
-    ]
-
     def __init__(self):
         # save mesures definition
         self.__all_mesures = MesureMeteor.getDefinitions()
@@ -43,6 +39,10 @@ class CsvLoader:
             self.archive_dir = settings.ARCHIVE_DIR
         else:
             self.archive_dir = self.base_dir
+
+        self.__all_providers = [
+            CSV_MeteoFR()
+        ]
 
     # ----------------
     # public methods
@@ -68,18 +68,23 @@ class CsvLoader:
         a_filename = file_names[0]
 
         # find our file specification
-        idx_file_spec = 0
+        idx_provider = 0
 
-        while idx_file_spec < len(self.__file_spec):
-            if self.__file_spec[idx_file_spec].isItForMe(self.base_dir, a_filename) is True:
+        while idx_provider < len(self.__all_providers):
+            id_spec = self.__all_providers[idx_provider].isItForMe(
+                self.base_dir,
+                a_filename,
+            )
+            if id_spec >= 0:
                 return {
                     'f': a_filename,
                     'path': self.base_dir,
-                    'spec_idx': idx_file_spec,
+                    'provider_idx': idx_provider,
+                    'spec_id': id_spec,
                     'spanID': 'load of ' + a_filename,
                     'info': a_filename
                 }
-            idx_file_spec += 1
+            idx_provider += 1
 
         Exception("No file spec found for " + a_filename)
 
@@ -120,10 +125,10 @@ class CsvLoader:
 
     # Load data per block
     def processWorkItem(self, work_item: json):
-        cur_spec = self.__file_spec[work_item['spec_idx']]
+        cur_provider = self.__all_providers[work_item['provider_idx']]
         pg_conn = self.getPGConnexion()
 
-        for data_to_flush in cur_spec.nextBlockLines():
+        for data_to_flush in cur_provider.nextBlockLines(work_item['spec_id']):
             # data_to_flush = {
             #     'obs_data': [(poste_id, date_utc, date_local, mesure_id, duration, value, qa_value)],
             #     'min_data': [(poste_id, date_utc, date_local, mesure_id, min, min_time, is_it_obs_data)],
