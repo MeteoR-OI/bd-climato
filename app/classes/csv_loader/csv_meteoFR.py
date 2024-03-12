@@ -17,17 +17,25 @@ class CSV_MeteoFR(CsvFileSpec):
         super().__init__(patterns, self.all_formats)
 
     def getPosteData(self, idx, rows):
-        return {
-                'meteor': rows[self.all_formats[idx].RowsId.NOM_USUEL.value],
-                'ALTI': rows[self.all_formats[idx].RowsId.ALTI.value],
-                'LAT': rows[self.all_formats[idx].RowsId.LAT.value],
-                'LON': rows[self.all_formats[idx].RowsId.LON.value],
-                'CODE': rows[self.all_formats[idx].RowsId.NUM_POSTE.value].strip()
-        }
+        csv_format = self.all_formats[idx]
+        if csv_format.poste_strategy == 1:
+            return {
+                    'meteor': rows[csv_format.RowsId.NOM_USUEL.value],
+                    'ALTI': rows[csv_format.RowsId.ALTI.value],
+                    'LAT': rows[csv_format.RowsId.LAT.value],
+                    'LON': rows[csv_format.RowsId.LON.value],
+                    'CODE': rows[csv_format.RowsId.NUM_POSTE.value].strip()
+            }
+        if csv_format.poste_strategy == 2:
+            return self.__poste_info
 
-    def hackHeader(self, idx, header):
-        return header
+    def hackHeader(self, idx, header, row):
+        return
 
     def getStopDate(self, idx, rows):
         tmp_dt = rows[self.all_formats[idx].RowsId.AAAAMMJJHH.value]
-        return str_to_datetime(tmp_dt[0:4] + '-' + tmp_dt[4:6] + '-' + tmp_dt[6:8] + 'T' + tmp_dt[8:10] + ':00:00')
+        return str_to_datetime(
+            tmp_dt[0:4] + '-' +
+            tmp_dt[4:6] + '-' +
+            tmp_dt[6:8] + 'T' +
+            tmp_dt[8:10] + ':00:00')

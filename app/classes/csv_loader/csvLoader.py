@@ -79,10 +79,9 @@ class CsvLoader:
                 return {
                     'f': a_filename,
                     'path': self.base_dir,
-                    'provider_idx': idx_provider,
-                    'spec_id': id_spec,
-                    'spanID': 'load of ' + a_filename,
-                    'info': a_filename
+                    'idx_provider': idx_provider,
+                    'id_spec': id_spec,
+                    'info': 'loading file: ' + a_filename
                 }
             idx_provider += 1
 
@@ -125,10 +124,10 @@ class CsvLoader:
 
     # Load data per block
     def processWorkItem(self, work_item: json):
-        cur_provider = self.__all_providers[work_item['provider_idx']]
+        cur_provider = self.__all_providers[work_item['idx_provider']]
         pg_conn = self.getPGConnexion()
 
-        for data_to_flush in cur_provider.nextBlockLines(work_item['spec_id']):
+        for data_to_flush in cur_provider.nextBlockLines(work_item['id_spec']):
             # data_to_flush = {
             #     'obs_data': [(poste_id, date_utc, date_local, mesure_id, duration, value, qa_value)],
             #     'min_data': [(poste_id, date_utc, date_local, mesure_id, min, min_time, is_it_obs_data)],

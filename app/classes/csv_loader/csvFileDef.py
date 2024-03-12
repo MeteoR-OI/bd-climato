@@ -9,6 +9,7 @@ from app.classes.repository.posteMeteor import PosteMeteor
 from app.classes.repository.obsMeteor import QA
 import re
 from datetime import timedelta, datetime
+import app.tools.myTools as t
 
 
 class CsvFileSpec(ABC):
@@ -17,37 +18,39 @@ class CsvFileSpec(ABC):
         self.__patterns = patterns
 
     @abstractmethod
-    def getPosteData(spec_id, self, idx, rows):
-  spec_id,       pass
+    def getPosteData(id_spec, self, idx, rows):
+        raise NotImplementedError
 
     @abstractmethod
-    def hackHeader(self, idx, header):
-        pass
+    def hackHeader(self, idx, header, row):
+        raise NotImplementedError
 
     @abstractmethod
     def getStopDate(self, idx, rows):
-        pass
+        raise NotImplementedError
 
     # check if a file name match our patterns
     def isItForMe(self, file_path, file_name) -> bool:
         self.__file_path = file_path
         self.__file_name = file_name
-        self.__header = []
         for a_pattern in self.__patterns:
             match = re.match(a_pattern['p'], file_name)
             if match:
                 a_pattern['idx']
         return -1
 
-    def nextBlockLines(self, spec_id):
+    def nextBlockLines(self, id_spec):
         obs_data = []
         min_data = []
         max_data = []
         total_line = 0
+        self.__header = []
 
         cur_poste = None
         obs_data_in_db = {}
         last_meteor = 'not a meteor !@££$'
+
+        # flake8: noqa
         with open(self.__file_path + '/' + self.__file_name, newline='') as file:
             line_count = 0
             row = file.readline()
@@ -55,36 +58,34 @@ class CsvFileSpec(ABC):
                 my_fields = row.split(';')
                 if line_count < self.__spec['skip_lines']:
                     self.__header.append(row)
-                    if line_count == self.__spec['skip_lines'] - 1:
-                        self.decodeHeader(my_fields)
                     total_line += 1
                     line_count += 1
                     row = file.readline()
+                    if line_count == self.__spec['skip_lines']:
+                        self.decodeHeader(id_spec, self.__header, row)
                     continue
 
-                self.__poste_info = self.getPosteData(spec_id, my_fields)
-                j_stop_dat_utc = self.getStopDate(spec_id, my_fields)
+                self.__poste_info = self.getPosteData(id_spec, my_fields)
+                j_stop_dat_utc = self.getStopDate(id_spec, my_fields)
                 str_stop_dat_utc = str(j_stop_dat_utc)
 
                 # check if we already have data for this date
                 # need to load obs_data_in_db, when date_already_loaded is smaller than j_stop_dat_utc
                 # to be worked on ...
                 b_check_obs_data_in_db = False
-                if obs_data_in_db is None:
-                    if obs_data_in_db.get(str_stop_dat_utc) is not None:
-                        b_check_obs_data_in_db = True
+                # if obs_data_in_db is None:
+                #     if obs_data_in_db.get(str_stop_dat_utc) is not None:
+                #         b_check_obs_data_in_db = True
 
                 # is it time to flush our buffers ?
-                if cur_poste is None or line_count > 500:
-                    print('yielding data: ' + str(len(obs_data)) + ' obs, ' + 'line_cout: ' + str(line_count) + '/' + str(total_line))
-                    yield {'obs_data': obs_data, 'min_data': min_data, 'max_data': max_data}
-                    obs_data = []
-                    min_data = []
-                    max_data = []
+                if line_count > 500:
+                    if len(obs_data) > 0:
+                        t.logInfo('yielding data: ' + str(len(obs_data)) + ' obs, ' + 'line_cout: ' + str(line_count) + '/' + str(total_line))
+                        yield {'obs_data': obs_data, 'min_data': min_data, 'max_data': max_data}
+                        obs_data = []
+                        min_data = []
+                        max_data = []
                     line_count = 0
-
-                if (total_line % 5000) == 0:
-                    print('total line processed: ' + str(total_line))
 
                 # get new poste if needed
                 if self.__poste_info['meteor'] != last_meteor:
@@ -106,7 +107,7 @@ class CsvFileSpec(ABC):
 
                 if j_stop_dat_utc > date_already_loaded and ((cur_poste.data.load_type & PosteMeteor.Load_Type.LOAD_FROM_CSV_FILE.value) == PosteMeteor.Load_Type.LOAD_FROM_CSV_FILE.value):
                     #  process row
-                    self.processRow(my_fields, cur_poste, obs_data, min_data, max_data, b_check_obs_data_in_db, obs_data_in_db)
+                    self.processRow(id_spec, my_fields, cur_poste, obs_data, min_data, max_data, b_check_obs_data_in_db, obs_data_in_db)
                     line_count += 1
 
                 # get next line
@@ -116,25 +117,30 @@ class CsvFileSpec(ABC):
             if len(obs_data) > 0:
                 yield {'obs_data': obs_data, 'min_data': min_data, 'max_data': max_data}
 
-            print('total line processed: ' + str(total_line))
+            t.logInfo('file: ' + self.__file_name + ', total line processed: ' + str(total_line))
 
-    def processRow(self, my_fields, cur_poste, obs_data, min_data, max_data, b_check_obs_data_in_db, obs_data_in_db):
+    def processRow(self, id_spec, my_fields, cur_poste, obs_data, min_data, max_data, b_check_obs_data_in_db, obs_data_in_db):
         poste_id = cur_poste.data.id
+        obs_date_local = self.getStopDate(id_spec, my_fields)
+        obs_date_utc = obs_date_local - timedelta(hours=cur_poste.data.delta_timezone)
+        duration = self.__all_mesures[id_spec]['duration']
+
         for a_mesure in self.__mesures:
-            cur_val, cur_q_val, obs_date_local = self.get_valeurs(a_mesure, my_fields)
+            cur_val, cur_q_val = self.get_valeurs(id_spec, a_mesure, my_fields)
             if cur_val is None:
                 continue
 
-            # Check if mesure already loaded in obs
-            if b_check_obs_data_in_db:
-                str_obs_date_local = str(obs_date_local)
-                if obs_data_in_db.get(str_obs_date_local) is not None:
-                    for a_mid in obs_data_in_db[str_obs_date_local]['mids']:
-                        if a_mid == a_mesure['id']:
-                            continue
+            # Check if this measure needs to be loaded.... Future...
 
-            obs_date_utc = obs_date_local - timedelta(hours=cur_poste.data.delta_timezone)
-            data_args = (poste_id, obs_date_utc, obs_date_local, a_mesure['id'], 60, cur_val, cur_q_val)
+            # Check if mesure already loaded in obs
+            # if b_check_obs_data_in_db:
+            #     str_obs_date_local = str(obs_date_local)
+            #     if obs_data_in_db.get(str_obs_date_local) is not None:
+            #         for a_mid in obs_data_in_db[str_obs_date_local]['mids']:
+            #             if a_mid == a_mesure['id']:
+            #                 continue
+
+            data_args = (poste_id, obs_date_utc, obs_date_local, a_mesure['id'], duration, cur_val, cur_q_val)
             # 'obs_data': [(poste_id, date_utc, date_local, mesure_id, duration, value, qa_value)],
             obs_data.append(data_args)
 
@@ -152,21 +158,29 @@ class CsvFileSpec(ABC):
             else:
                 max_data.append((poste_id, obs_date_local, a_mesure['id'], None, None, None, None, False))
 
-    def decodeHeader(self, field_headers):
+    def decodeHeader(self, id_spec, hdr, row):
         # Change header if needed
-        self.__header = self.hackHeader(self.__header)
+        self.__header = self.hackHeader(id_spec, hdr, row)
 
         # Decode data
-        if self.__spec['poste_strategy'] == 1:
-            self.__poste = None
-        elif self.__spec['poste_strategy'] == 2:
-            self.__poste = self.__header[0]['Poste']
+        csv_format = self.all_formats[id_spec]
+
+        if csv_format.poste_strategy == 1:
+            return
+        elif csv_format.poste_strategy == 2:
+            self.__poste_info = {
+                    'meteor': hdr[0].strip(),
+                    'ALTI': 0,
+                    'LAT': 0,
+                    'LON': 0,
+                    'CODE': hdr[1].strip()
+            }
             Exception('to be written')
 
         # prepare field mapping array
         self.__mesures = []
         self.__all_mesures = MesureMeteor.getDefinitions()
-        for a_mapping in self.__spec['mappings']:
+        for a_mapping in self.__all_mesures[id_spec].mappings:
             idx_mesure = 0
             while idx_mesure < len(self.__all_mesures):
                 a_mesure = self.__all_mesures[idx_mesure]
@@ -177,10 +191,15 @@ class CsvFileSpec(ABC):
                     a_mesure['csv_minmax'] = a_mapping['minmax']        # {min_idx: idx inself.__mesure, minTime, max: idx, maxTime, maxDir}
 
                     self.__mesures.append(a_mesure)
+                    break
+    
                 idx_mesure += 1
 
+            if idx_mesure == len(self.__all_mesures):
+                raise Exception('Mesure not found: ' + a_mapping['mesure'])
+
     #  returns cur_val, cur_q_val, obs_date_utc
-    def get_valeurs(self, a_mesure, fields_array):
+    def get_valeurs(self, id_spec, a_mesure, fields_array):
         if fields_array[a_mesure['csv_row_idx']] is None or fields_array[a_mesure['csv_row_idx']] == '':
             return None, None, None
 
@@ -192,9 +211,8 @@ class CsvFileSpec(ABC):
         cur_q_val = fields_array[a_mesure['csv_qa_idx']] if a_mesure['csv_qa_idx'] is not None else QA.UNSET.value
         if cur_q_val == '':
             cur_q_val = QA.UNSET.value
-        obs_date_utc = self.getStopDate(fields_array)
 
-        return cur_val, cur_q_val, obs_date_utc
+        return cur_val, cur_q_val
 
     # returns cur_min, cur_min_qa, cur_min_time_local, is_it_obs_data
     def get_valeur_min(self, cur_poste, a_mesure, fields_array, cur_val, obs_date_local):

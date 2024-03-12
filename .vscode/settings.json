@@ -10,10 +10,7 @@
     "python.testing.unittestEnabled": false,
     "python.testing.nosetestsEnabled": false,
     "python.linting.mypyEnabled": false,
-    "python.linting.flake8Args": [
-        "--max-line-length=200",
-        // "--ignore=E402,F841,F401,E302,E305, W293",
-    ],
+    "flake8.args": ["--config", ".flake8"],
     "python.testing.pytestArgs": [
         "app/tests",
     ],

@@ -92,11 +92,12 @@ class Q_974_autres_param:
         QTMERMAX = 86
 
     pattern = [
-        r'H_974_\d{4}-\d{4}\.csv',
-        r'H_974_previous-\d{4}-\d{4}\.csv',
-        r'H_974_latest-\d{4}-\d{4}\.csv'
+        r'H_974_\d{4}-\d{4}\_autres_parametres.csv',
+        r'Q_974_previous-\d{4}-\d{4}\_autres_parametres.csv'
+        r'Q_974_latest-\d{4}-\d{4}\_autres_parametres.csv'
     ]
-
+    duration = 1440
+    poste_strategy = 1
     mappings = [
         # {'csv_field': 'DD',        'csv_idx': RowId.DD.value, 'qa_idx': RowId.QDD.value,         'mesure': 'wind 10 dir',         'minmax': {}},
         {'csv_field': 'FFM',        'csv_idx': RowId.FF.value, 'qa_idx': RowId.QFF.value,         'mesure': 'wind 10',          'minmax':
@@ -124,3 +125,51 @@ class Q_974_autres_param:
         {'csv_field': 'UV',        'csv_idx': RowId.UV_INDICE.value, 'qa_idx': RowId.QUV_INDICE.value,         'mesure': 'uv_indice',        'minmax': {}},
         {'csv_field': 'GLO',       'csv_idx': RowId.GLO.value,     'qa_idx': RowId.QGLO.value,   'mesure': 'radiation',        'minmax': {}},
     ]
+
+# NUM_POSTE   : numéro Météo-France du poste sur 8 chiffres	
+# NOM_USUEL   : nom usuel du poste	
+# LAT         : latitude, négative au sud (en degrés et millionièmes de degré)	
+# LON         : longitude, négative à l’ouest de GREENWICH (en degrés et millionièmes de degré)	
+# ALTI        : altitude du pied de l'abri ou du pluviomètre si pas d'abri (en m)	
+# AAAAMMJJ    : date de la mesure (année mois jour)	
+# DHUMEC      : durée d’humectation (en mn)	
+# PMERM       : moyenne quotidienne des pressions mer horaires (en hPa et 1/10)	
+# PMERMIN     : minimum quotidien des pressions mer minimales horaires (en hPa et 1/10)	
+# INST        : durée d’insolation quotidienne (en mn)	
+# GLOT        : rayonnement global quotidien (en J/cm2)	
+# DIFT        : rayonnement diffus quotidien (en J/cm2)	
+# DIRT        : rayonnement direct quotidien (en J/cm2)	
+# INFRART     : somme des rayonnements infra-rouge horaires (en J/cm2)	
+# UV          : cumul quotidien de rayonnement ultra-violet (en J/cm2)	
+# UV_INDICEX  : maximum des indices UV horaires (en J/cm2)	
+# SIGMA       : fraction d’insolation par rapport à la durée du jour (en %)	
+# UN          : minimum quotidien des humidités relatives minimales horaires (en %)	
+# HUN         : heure de UN (hhmm)	
+# UX          : maximum quotidien des humidités relatives maximales horaires (en %)	
+# HUX         : heure de UX (hhmm)	
+# UM          : moyenne quotidienne des humidités relatives horaires (en %)	
+# DHUMI40     : durée humidité avec U ≤ 40 % (en mn)	
+# DHUMI80     : durée humidité U ≥ 80 % (en mn)	
+# TSVM        : tension de vapeur moyenne (en hPa et 1/10)	
+# ETPMON      : ETP Monteith quotidienne (en mm et 1/10)	
+# ETPGRILLE   : ETP calculée au point de grille le plus proche (en mm et 1/10)	
+# ECOULEMENTM : moyenne des niveaux d’écoulement horaires	
+# HNEIGEF	    : hauteur de neige fraîche tombée en 24 heures (de 06h FU le jour J à 06h FU le jour J+1) qui reste au sol à 06h FU. La valeur relevée à J+1 est affectée au jour J (en cm)	
+# NEIGETOTX   : épaisseur maximale de neige quotidienne (entre 01h et 24h FU) (en cm)	
+# NEIGETOT06  : épaisseur totale de neige au sol mesurée à 6h (NEIGETOT de 6h) (en cm)	
+# NEIG        : occurrence de neige (0 s’il n’a pas neigé, 1 s’il a neigé)	
+# BROU        : occurrence de brouillard (0 ou 1 si phéno.)	
+# ORAG        : occurrence d’orage (0 ou 1 si phéno.)	
+# GRESIL      : occurrence de grésil (0 ou 1 si phéno.)	
+# GRELE       : occurrence de grêle (0 ou 1 si phéno.)	
+# ROSEE       : occurrence de rosée (0 ou 1 si phéno.)	
+# VERGLAS     : occurrence de verglas (0 ou 1 si phéno.)	
+# SOLNEIGE    : occurrence de sol couvert de neige (0 ou 1 si phéno.)	
+# GELEE       : occurrence de gelée blanche (0 ou 1 si phéno.)	
+# FUMEE       : occurrence de fumée (0 ou 1 si phéno.)	
+# BRUME       : occurrence de brume (0 ou 1 si phéno.)	
+# ECLAIR      : occurrence d’éclair (0 ou 1 si phéno)	
+# NB300       : nébulosité maximale > 4/8 et couche < 300 m (en octa)	
+# BA300       : hauteur minimale de NB300 (en m)	
+# TMERMIN     : température minimale quotidienne de l’eau de mer (en °C et 1/10)	
+# TMERMAX     : température maximale quotidienne de l’eau de mer (en °C et 1/10)	

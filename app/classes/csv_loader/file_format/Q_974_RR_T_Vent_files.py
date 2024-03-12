@@ -61,11 +61,12 @@ class Q_974_RR_T_Vent:
         QHXI3S = 55
 
     pattern = [
-        r'H_974_\d{4}-\d{4}\.csv',
-        r'H_974_previous-\d{4}-\d{4}\.csv',
-        r'H_974_latest-\d{4}-\d{4}\.csv'
+        r'H_974_\d{4}-\d{4}\_RR-T-Vent.csv',
+        r'Q_974_previous-\d{4}-\d{4}\_RR-T-Vent.csv'
+        r'Q_974_latest-\d{4}-\d{4}\_RR-T-Vent.csv'
     ]
-    
+    duration = 1440
+    poste_strategy = 1
     mappings = [
         # {'csv_field': 'DD',        'csv_idx': RowsId.DD.value, 'qa_idx': RowsId.QDD.value,         'mesure': 'wind 10 dir',         'minmax': {}},
         {'csv_field': 'FFM',        'csv_idx': RowsId.FF.value, 'qa_idx': RowsId.QFF.value,         'mesure': 'wind 10',          'minmax':
@@ -93,3 +94,35 @@ class Q_974_RR_T_Vent:
         {'csv_field': 'UV',        'csv_idx': RowsId.UV_INDICE.value, 'qa_idx': RowsId.QUV_INDICE.value,         'mesure': 'uv_indice',        'minmax': {}},
         {'csv_field': 'GLO',       'csv_idx': RowsId.GLO.value,     'qa_idx': RowsId.QGLO.value,   'mesure': 'radiation',        'minmax': {}},
     ]
+
+# NUM_POSTE   : numéro Météo-France du poste sur 8 chiffres
+# NOM_USUEL   : nom usuel du poste
+# LAT         : latitude, négative au sud (en degrés et millionièmes de degré)
+# LON         : longitude, négative à l’ouest de GREENWICH (en degrés et millionièmes de degré)
+# ALTI        : altitude du pied de l'abri ou du pluviomètre si pas d'abri (en m)
+# AAAAMMJJ    : date de la mesure (année mois jour)
+# RR          : quantité de précipitation tombée en 24 heures (de 06h FU le jour J à 06h FU le jour J+1). La valeur relevée à J+1 est affectée au jour J (en mm et 1/10)
+# TN          : température minimale sous abri (en °C et 1/10)
+# HTN         : heure de TN (hhmm)
+# TX          : température maximale sous abri (en °C et 1/10)
+# HTX         : heure de TX (hhmm)
+# TM          : moyenne quotidienne des températures horaires sous abri (en °C et 1/10)
+# TNTXM       : moyenne quotidienne (TN+TX)/2 (en °C et 1/10)
+# TAMPLI      : amplitude thermique quotidienne : écart entre TX et TN quotidiens (TX-TN) (en °C et 1/10)
+# TNSOL       : température quotidienne minimale à 10 cm au-dessus du sol (en °C et 1/10)
+# TN50        : température quotidienne minimale à 50 cm au-dessus du sol (en °C et 1/10)
+# DG          : durée de gel sous abri (T ≤ 0°C) (en mn)
+# FFM         : moyenne quotidienne de la force du vent moyenné sur 10 mn, à 10 m (en m/s et 1/10)
+# FF2M        : moyenne quotidienne de la force du vent moyenné sur 10 mn, à 2 m (en m/s et 1/10)
+# FXY         : maximum quotidien de la force maximale horaire du vent moyenné sur 10 mn, à 10 m (en m/s et 1/10)
+# DXY         : direction de FXY (en rose de 360)
+# HXY         : heure de FXY (hhmm)
+# FXI         : maximum quotidien de la force maximale horaire du vent instantané, à 10 m (en m/s et 1/10)
+# DXI         : direction de FXI (en rose de 360)
+# HXI         : heure de FXI (hhmm)
+# FXI2        : maximum quotidien de la force maximale horaire du vent instantané, à 2 m (en m/s et 1/10)
+# DXI2        : direction de FXI2 (en rose de 360)
+# HXI2        : heure de FXI2 (hhmm)
+# FXI3S       : maximum quotidien de la force maximale horaire du vent moyenné sur 3 s, à 10 m (en m/s et 1/10)
+# DXI3S       : direction de FXI3S (en rose de 360)
+# HXI3S       : heure de FXI3S (hhmm)
