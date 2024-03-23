@@ -225,7 +225,7 @@ create materialized view obs_month WITH (timescaledb.continuous) as
         m.is_avg as is_avg,
         sum(o.duration) as duration,
         CASE WHEN m.is_avg is True THEN avg(o.value) ELSE sum(o.value) END AS value
-  from obs o join mesures m on m.id = mesure_id
+  from obs_day o join mesures m on m.id = mesure_id
   group by 1,2,3,4;
 
 

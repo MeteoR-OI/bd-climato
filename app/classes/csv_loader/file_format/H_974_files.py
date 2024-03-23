@@ -249,6 +249,7 @@ class H_974:
 # LON         : longitude, négative à l’ouest de GREENWICH (en degrés et millionièmes de degré)
 # ALTI        : altitude du pied de l'abri ou du pluviomètre si pas d'abri (en m)
 # AAAAMMJJHH  : date de la mesure (année mois jour heure)
+    
 # RR1         : quantité de précipitation tombée en 1 heure (en mm et 1/10 mm)
 DRR1        : durée des précipitations (en mn)
 # FF          : force du vent moyenné sur 10 mn, mesurée à 10 m (en m/s et 1/10)
