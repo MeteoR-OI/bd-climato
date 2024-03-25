@@ -31,5 +31,4 @@ class Migration(migrations.Migration):
         # migrations.RunSQL("SELECT set_chunk_time_interval('x_min', 25920000000000);"),
         migrations.RunSQL("DROP index if exists x_max_mesure_id_a633699c;"),
         migrations.RunSQL("DROP index if exists x_max_poste_id_529ea905;")
-
     ]

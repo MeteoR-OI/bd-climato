@@ -1,14 +1,10 @@
 from django.db import models
 from django.db.models import Index
-# , UniqueConstraint, Q
-
 
 class DateTimeFieldNoTZ(models.Field):
     def db_type(self, connection):
         return 'timestamp'
 
-
-# class Poste(ExportModelOperationsMixin('poste'), models.Model):
 class Poste(models.Model):
     class Load_Type(models.IntegerChoices):
         NONE = 0
@@ -23,7 +19,8 @@ class Poste(models.Model):
     id = models.SmallAutoField(primary_key=True)
     meteor = models.CharField(null=False, max_length=50, verbose_name="Code station")
     delta_timezone = models.SmallIntegerField(null=False, verbose_name="delta heure locale et UTC")
-    data_source = models.SmallIntegerField(null=False, verbose_name="Data Source: 0 meteoire, 1 meteofr,..")
+    data_source = models.SmallIntegerField(null=False, default=1, verbose_name="Data Source: 0 meteoire, 1 meteofr,..")
+    load_type = models.IntegerField(choices=Load_Type.choices, default=Load_Type.NONE, verbose_name="Type de chargement des donnees")
 
     # optional fields
     type = models.CharField(null=True, max_length=50, default="", verbose_name="Type de station")
@@ -31,11 +28,6 @@ class Poste(models.Model):
     lat = models.FloatField(null=True, default=0, verbose_name="Latitude")
     long = models.FloatField(null=True, default=0, verbose_name="Longitude")
     info = models.JSONField(null=True, default=dict, verbose_name="autre info station")
-    load_type = models.IntegerField(choices=Load_Type.choices, default=Load_Type.NONE, verbose_name="Type de chargement des donnees")
-
-    # load_dump = models.BooleanField(null=True, default=False, verbose_name="Charge les donnees a partir des dumps")
-    # load_raw_data = models.BooleanField(null=True, default=False, verbose_name="Charge les donnees a partir des donnees brutes")
-    # pause_raw_data = models.BooleanField(null=True, default=False, verbose_name="Ne traite pas les fichiers Jsde donnees brutes")
     stop_date = DateTimeFieldNoTZ(null=True, verbose_name="Datetime local de stop de la station")
 
     # la suite n'est pas utilise par climato - a revoir pour pages html...
@@ -48,23 +40,27 @@ class Poste(models.Model):
     country = models.CharField(null=True, max_length=50, default="", verbose_name="Pays")
     comment = models.TextField(null=True, default="")
 
-    # reception donnees
+    # information de synchronisation
     last_obs_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Datetime UTC de derniere reception de donnees")
     last_obs_id = models.BigIntegerField(null=True, default=0, verbose_name="ID obs de la derniere reception de donnees")
     last_date_per_mesure = models.JSONField(null=True, default=dict, verbose_name="derniere date par mesure")
 
-    last_extremes_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Datetime locale de dernier record")
-    last_extremes_id = models.BigIntegerField(null=True, default=0, verbose_name="ID du dernier record")
 
     def __str__(self):
-        return self.meteor + ", id: " + str(self.id) + ', data_source: ' + str(self.data_source) + ', TZ: ' + str(self.delta_timezone)
+        return self.meteor + ", id: " + str(self.id) + ', load_type: ' + str(self.load_type) + ', TZ: ' + str(self.delta_timezone)
 
     class Meta:
         db_table = "postes"
 
 
-# class TypeInstrument(ExportModelOperationsMixin('type_instrument'), models.Model):
 class Mesure(models.Model):
+    class Aggreg_Type(models.IntegerChoices):
+        NONE = 0
+        AVG = 1
+        SUM = 2
+        MAX = 3
+        MIN = 4
+
     id = models.SmallAutoField(primary_key=True)
     name = models.CharField(null=False, max_length=100, verbose_name="Nom de la mesure")
     json_input = models.CharField(null=True, max_length=20, verbose_name="Clé utilisée dans le json")
@@ -74,20 +70,18 @@ class Mesure(models.Model):
     field_dir = models.SmallIntegerField(null=True, verbose_name="id de la mesure wind dans table weewx.archive")
     max = models.BooleanField(null=True, default=True, verbose_name="Calcul des max")
     min = models.BooleanField(null=True, default=True, verbose_name="Calcul des min")
-    is_avg = models.BooleanField(null=True, default=True, verbose_name="Calcul de moyenne")
+    agreg_type = models.IntegerField(choices=Aggreg_Type.choices, default=Aggreg_Type.NONE, verbose_name="Type d'agregation des donnees")
     is_wind = models.BooleanField(null=True, default=False, verbose_name="Calcul du wind_dir")
     allow_zero = models.BooleanField(null=True, default=True, verbose_name="Zero est une valeur valide")
-    is_hourly = models.BooleanField(null=True, default=False, verbose_name="Must be agregated by hour(s) or more, not less")
     convert = models.JSONField(null=True, default=dict, verbose_name="Conversion")
 
     def __str__(self):
-        return "Mesure id: " + str(self.id) + ", name: " + self.name
+        return "Mesure id: " + str(self.id) + ", name: " + self.name + ", agreg_type: " + str(self.agreg_type)
 
     class Meta:
         db_table = "mesures"
 
 
-# class Observation(ExportModelOperationsMixin('obs'), models.Model):
 class Observation(models.Model):
     id = models.BigAutoField(primary_key=True, null=False, verbose_name="id de l'observation")
     date_local = DateTimeFieldNoTZ(null=False, verbose_name="datetime locale fin période observation")
@@ -99,7 +93,7 @@ class Observation(models.Model):
     qa_value = models.SmallIntegerField(null=True, default=0, verbose_name="Qualite de la valeur")
 
     def __str__(self):
-        return "Observation id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.time) + ", mesure: " + str(self.mesure.name)
+        return "Observation id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", date_local " + str(self.date_local) + ", mesure: " + str(self.mesure.name) + ", value: " + str(self.value) + " qa_value:" + str(self.qa_value)
 
     class Meta:
         db_table = "obs"
@@ -114,7 +108,7 @@ class LastObs(models.Model):
     value = models.FloatField(null=False, verbose_name="valeur")
 
     def __str__(self):
-        return "LastObs id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.date_local) + ", mesure: " + str(self.mesure)
+        return "LastObs id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.date_local) + ", mesure: " + str(self.mesure.name)
 
     class Meta:
         db_table = "last_obs"
@@ -134,7 +128,7 @@ class XMin(models.Model):
     qa_min = models.SmallIntegerField(null=False, default=0, verbose_name="Qualite du min")
 
     def __str__(self):
-        return "Extreme Min id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.date_local) + ", mesure: " + str(self.mesure)
+        return "Extreme Min id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.date_local) + ", mesure: " + str(self.mesure.name)
 
     class Meta:
         db_table = "x_min"
@@ -155,7 +149,7 @@ class XMax(models.Model):
     qa_max = models.SmallIntegerField(null=False, default=0, verbose_name="Qualite du max")
 
     def __str__(self):
-        return "Extreme Max id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.date_local) + ", mesure: " + str(self.mesure)
+        return "Extreme Max id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.date_local) + ", mesure: " + str(self.mesure.name)
 
     class Meta:
         db_table = "x_max"

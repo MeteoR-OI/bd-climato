@@ -62,7 +62,7 @@ insert into postes
   min_deca: decallage du min OMM
   max: compute a max in extreme table
   max_deca: decallage du max OMM
-  is_avg: if False the measure is a sum
+  agreg_type: type agregation 0=None, 1=AVG, 2=SUM, 3=MAX, 4=MIN
   is_wind: is it a wind measure (need to find the winddir data)
   omm_link: for omm measure, link to the base measure
   allow_zero: not used...
@@ -71,53 +71,53 @@ insert into postes
 */
 
 insert into mesures
-(id,    name,            json_input,         archive_col,   archive_table, field_dir,     min,     max,    is_avg, is_wind,  allow_zero,  json_input_bis, is_hourly, convert) values
-( 1, 'barometer',       'barometer',        'barometer',          null,        null,     true,    true,     true,   false,    true,            null,        False,    '{}'),
-( 6, 'dewpoint',        'dewpoint',         'dewpoint',           null,        null,     true,    true,     true,   false,    true,            null,        False,    '{}'),
-( 8, 'etp',             'etp',              'ET',                 null,        null,     true,    true,     false,  false,    true,            null,         True,    '{}'),
-(10, 'extra_temp1',     'extra_temp1',      'extraTemp1',         null,        null,     false,   false,    true,   false,    true,    'extratemp1',        False,    '{}'),
-(12, 'extra_temp2',     'extra_temp2',      'extraTemp2',         null,        null,     false,   false,    true,   false,    true,    'extratemp2',        False,    '{}'),
-(14, 'extra_temp3',     'extra_temp3',      'extraTemp3',         null,        null,     false,   false,    true,   false,    true,    'extratemp3',        False,    '{}'),
-(16, 'extrahumid1',     'extra_humid1',     'extraHumid1',        null,        null,     false,   false,    true,   false,    true,   'extrahumid1',        False,    '{}'),
-(18, 'extrahumid2',     'extra_humid2',     'extraHumid2',        null,        null,     false,   false,    true,   false,    true,   'extrahumid2',        False,    '{}'),
-(20, 'gust',            'wind_gust',        'windGust',           'wind',        22,     false,   true,     true,   true,     true,      'wind_max',        False,
+(id,    name,            json_input,         archive_col,   archive_table, field_dir,    min,    max, agreg_type, is_wind, allow_zero, json_input_bis,   convert) values
+( 1, 'barometer',       'barometer',        'barometer',         null,        null,     true,    true,     1,      false,    true,            null,        '{}'),
+( 6, 'dewpoint',        'dewpoint',         'dewpoint',          null,        null,     true,    true,     1,      false,    true,            null,        '{}'),
+( 8, 'etp',             'etp',              'ET',                null,        null,     true,    true,     2,      false,    true,            null,        '{}'),
+(10, 'extra_temp1',     'extra_temp1',      'extraTemp1',        null,        null,     false,   false,    1,      false,    true,    'extratemp1',        '{}'),
+(12, 'extra_temp2',     'extra_temp2',      'extraTemp2',        null,        null,     false,   false,    1,      false,    true,    'extratemp2',        '{}'),
+(14, 'extra_temp3',     'extra_temp3',      'extraTemp3',        null,        null,     false,   false,    1,      false,    true,    'extratemp3',        '{}'),
+(16, 'extrahumid1',     'extra_humid1',     'extraHumid1',       null,        null,     false,   false,    1,      false,    true,   'extrahumid1',        '{}'),
+(18, 'extrahumid2',     'extra_humid2',     'extraHumid2',       null,        null,     false,   false,    1,      false,    true,   'extrahumid2',        '{}'),
+(20, 'gust',            'wind_gust',        'windGust',          'wind',        22,     false,   true,     1,      true,     true,      'wind_max',
   '{"mfr_csv": "lambda x: x * 3.6"}'),
-(22, 'gust dir',        'wind_gust_dir',    'windGustDir',        'skip',      null,     false,   false,    true,   false,    true,  'wind_max_dir',        False,    '{}'),
-(24, 'hail rate',       'hail_rate',        'hailRate',           null,        null,     false,   true,     true,   false,    true,            null,        False,    '{}'),
-(26, 'hail',            'hail',             'hail',               null,        null,     true,    true,     true,   false,    true,            null,        False,    '{}'),
-(28, 'heatindex',       'heatindex',        'heatindex',          null,        null,     false,   true,     true,   false,    true,            null,        False,    '{}'),
-(30, 'heating temp',    'heating_temp',     'heatingTemp',        null,        null,     false,   true,     true,   false,    true,            null,        False,    '{}'),
-(32, 'humidity inside', 'in_humidity',      'inHumidity',         null,        null,     false,   false,    true,   false,    true,            null,        False,    '{}'),
-(34, 'humidity',        'out_humidity',     'outHumidity',        null,        null,     true,    true,     true,   false,    true,      'humidity',        False,    '{}'),
-(38, 'leaftemp1',       'leaf_temp1',       'leafTemp1',          null,        null,     false,   false,    true,   false,    true,     'leaftemp1',        False,    '{}'),
-(40, 'leaftemp2',       'leaf_temp2',       'leafTemp2',          null,        null,     false,   false,    true,   false,    true,     'leaftemp2',        False,    '{}'),
-(42, 'leafwet1',        'leaf_wet1',        'leafWet1',           null,        null,     false,   false,    true,   false,    true,      'leafwet1',        False,    '{}'),
-(44, 'leafwet2',        'leaf_wet2',        'leafWet2',           null,        null,     false,   false,    true,   false,    true,      'leafwet2',        False,    '{}'),
-(46, 'pressure',        'pressure',         'pressure',           null,        null,     false,   false,    true,   false,    true,            null,        False,    '{}'),
-(48, 'radiation',       'radiation',        'radiation',          null,        null,     false,   true,     true,   false,    true,            null,        False,    '{}'),
-(50, 'rain rate',       'rain_rate',        'rainRate',           null,        null,     false,   true,     true,   false,    true,            null,        False,    '{}'),
-(52, 'rain',            'rain',             'rain',               null,        null,     false,   true,     false,  false,    true,            null,        False,
+(22, 'gust dir',        'wind_gust_dir',    'windGustDir',       'skip',      null,     false,   false,    1,      false,    true,  'wind_max_dir',        '{}'),
+(24, 'hail rate',       'hail_rate',        'hailRate',          null,        null,     false,   true,     1,      false,    true,            null,        '{}'),
+(26, 'hail',            'hail',             'hail',              null,        null,     true,    true,     1,      false,    true,            null,        '{}'),
+(28, 'heatindex',       'heatindex',        'heatindex',         null,        null,     false,   true,     1,      false,    true,            null,        '{}'),
+(30, 'heating temp',    'heating_temp',     'heatingTemp',       null,        null,     false,   true,     1,      false,    true,            null,        '{}'),
+(32, 'humidity inside', 'in_humidity',      'inHumidity',        null,        null,     false,   false,    1,      false,    true,            null,        '{}'),
+(34, 'humidity',        'out_humidity',     'outHumidity',       null,        null,     true,    true,     1,      false,    true,      'humidity',        '{}'),
+(38, 'leaftemp1',       'leaf_temp1',       'leafTemp1',         null,        null,     false,   false,    1,      false,    true,     'leaftemp1',        '{}'),
+(40, 'leaftemp2',       'leaf_temp2',       'leafTemp2',         null,        null,     false,   false,    1,      false,    true,     'leaftemp2',        '{}'),
+(42, 'leafwet1',        'leaf_wet1',        'leafWet1',          null,        null,     false,   false,    1,      false,    true,      'leafwet1',        '{}'),
+(44, 'leafwet2',        'leaf_wet2',        'leafWet2',          null,        null,     false,   false,    1,      false,    true,      'leafwet2',        '{}'),
+(46, 'pressure',        'pressure',         'pressure',          null,        null,     false,   false,    1,      false,    true,            null,        '{}'),
+(48, 'radiation',       'radiation',        'radiation',         null,        null,     false,   true,     1,      false,    true,            null,        '{}'),
+(50, 'rain rate',       'rain_rate',        'rainRate',          null,        null,     false,   true,     1,      false,    true,            null,        '{}'),
+(52, 'rain',            'rain',             'rain',              null,        null,     false,   true,     2,      false,    true,            null,
   '{"weewx": "lambda x: x * 10"}'),
-(56, 'rx',              'rx',               'rxCheckPercent',     null,        null,     true,    true,     true,   false,    true,            null,        False,    '{}'),
-(58, 'soilmoist1',      'soil_moist1',      'soilMoist1',         null,        null,     false,   false,    true,   false,    true,    'soilmoist1',        False,    '{}'),
-(60, 'soilmoist2',      'soil_moist2',      'soilMoist2',         null,        null,     false,   false,    true,   false,    true,    'soilmoist2',        False,    '{}'),
-(62, 'soilmoist3',      'soil_moist3',      'soilMoist3',         null,        null,     false,   false,    true,   false,    true,    'soilmoist3',        False,    '{}'),
-(64, 'soilmoist4',      'soil_moist4',      'soilMoist4',         null,        null,     false,   false,    true,   false,    true,    'soilmoist4',        False,    '{}'),
-(66, 'soiltemp1',       'soil_temp1',       'soilTemp1',          null,        null,     false,   false,    true,   false,    true,     'soiltemp1',        False,    '{}'),
-(68, 'soiltemp2',       'soil_temp2',       'soilTemp2',          null,        null,     false,   false,    true,   false,    true,     'soiltemt2',        False,    '{}'),
-(70, 'soiltemp3',       'soil_temp3',       'soilTemp3',          null,        null,     false,   false,    true,   false,    true,     'soiltemp3',        False,    '{}'),
-(72, 'soiltemp4',       'soil_temp4',       'soilTemp4',          null,        null,     false,   false,    true,   false,    true,     'soiltemp4',        False,    '{}'),
-(74, 'temp inside',     'in_temp',          'inTemp',             null,        null,     false,   false,    true,   false,    true,            null,        False,    '{}'),
-(76, 'temperature',     'out_temp',         'outTemp',            null,        null,     true,    true,     true,   false,    true,            null,        False,    '{}'),
-(80, 'uv_indice',       'uv',               'UV',                 null,        null,     false,   true,     true,   false,    true,            null,        False,    '{}'),
-(82, 'voltage',         'voltage',          'consBatteryVoltage', null,        null,     false,   false,    true,   false,    true,            null,        False,    '{}'),
-(84, 'wind 10',         'wind10',           'windSpeed',          'wind',        86,     false,   true,     true,   false,    true,            null,        False,
+(56, 'rx',              'rx',               'rxCheckPercent',    null,        null,     true,    true,     1,      false,    true,            null,        '{}'),
+(58, 'soilmoist1',      'soil_moist1',      'soilMoist1',        null,        null,     false,   false,    1,      false,    true,    'soilmoist1',        '{}'),
+(60, 'soilmoist2',      'soil_moist2',      'soilMoist2',        null,        null,     false,   false,    1,      false,    true,    'soilmoist2',        '{}'),
+(62, 'soilmoist3',      'soil_moist3',      'soilMoist3',        null,        null,     false,   false,    1,      false,    true,    'soilmoist3',        '{}'),
+(64, 'soilmoist4',      'soil_moist4',      'soilMoist4',        null,        null,     false,   false,    1,      false,    true,    'soilmoist4',        '{}'),
+(66, 'soiltemp1',       'soil_temp1',       'soilTemp1',         null,        null,     false,   false,    1,      false,    true,     'soiltemp1',        '{}'),
+(68, 'soiltemp2',       'soil_temp2',       'soilTemp2',         null,        null,     false,   false,    1,      false,    true,     'soiltemt2',        '{}'),
+(70, 'soiltemp3',       'soil_temp3',       'soilTemp3',         null,        null,     false,   false,    1,      false,    true,     'soiltemp3',        '{}'),
+(72, 'soiltemp4',       'soil_temp4',       'soilTemp4',         null,        null,     false,   false,    1,      false,    true,     'soiltemp4',        '{}'),
+(74, 'temp inside',     'in_temp',          'inTemp',            null,        null,     false,   false,    1,      false,    true,            null,        '{}'),
+(76, 'temperature',     'out_temp',         'outTemp',           null,        null,     true,    true,     1,      false,    true,            null,        '{}'),
+(80, 'uv_indice',       'uv',               'UV',                null,        null,     false,   true,     1,      false,    true,            null,        '{}'),
+(82, 'voltage',         'voltage',          'consBatteryVoltage',null,        null,     false,   false,    1,      false,    true,            null,        '{}'),
+(84, 'wind 10',         'wind10',           'windSpeed',         'wind',        86,     false,   true,     1,      false,    true,            null,
   '{"mfr_csv": "lambda x: x * 3.6"}'),
-(86, 'wind 10 dir',     'wind10_dir',       'windSpeed',          'skip',      null,     false,   false,    true,   false,    true,            null,        False,    '{}'),
-(88, 'wind',            'wind',             'windSpeed',          'wind',        90,     false,   true,     true,   false,    true,            null,        False,
+(86, 'wind 10 dir',     'wind10_dir',       'windSpeed',         'skip',      null,     false,   false,    1,      false,    true,            null,        '{}'),
+(88, 'wind',            'wind',             'windSpeed',         'wind',        90,     false,   true,     1,      false,    true,            null,
   '{"mfr_csv": "lambda x: x * 3.6"}'),
-(90, 'wind dir',        'wind_dir',         'windDir',            'skip',      null,     false,   false,    true,   false,    true,            null,        False,    '{}'),
-(92, 'windchill',       'windchill',        'windchill',          null,        null,     true,    false,    true,   false,    true,            null,        False,    '{}')
+(90, 'wind dir',        'wind_dir',         'windDir',           'skip',      null,     false,   false,    1,      false,    true,            null,        '{}'),
+(92, 'windchill',       'windchill',        'windchill',         null,        null,     true,    false,    1,      false,    true,            null,        '{}')
 ;
 
 insert into annotations
@@ -182,11 +182,16 @@ create materialized view obs_hour WITH (timescaledb.continuous) as
         timescaledb_experimental.time_bucket_ng('1 hour', o.date_local, origin => '1950-01-01') as date_local,
         o.poste_id as poste_id,
         o.mesure_id as mesure_id,
-        m.is_avg as is_avg,
+        m.agreg_type as agreg_type,
         sum(o.duration) as duration,
-        CASE WHEN m.is_avg is True THEN avg(o.value) ELSE sum(o.value) END AS value
+        CASE
+          WHEN m.agreg_type = 1 THEN avg(o.value)
+          WHEN m.agreg_type = 2 THEN sum(o.value)
+          WHEN m.agreg_type = 3 THEN max(o.value)
+          WHEN m.agreg_type = 4 THEN min(o.value)
+           END AS value
   from obs o join mesures m on m.id = mesure_id
-  where qa_value != 9 and duration <= 60
+  where qa_value != 9 and duration <= 60 and m.agreg_type != 2
   group by 1,2,3,4;
 
 ALTER MATERIALIZED VIEW obs_hour set (timescaledb.materialized_only = false);
@@ -201,11 +206,16 @@ create materialized view obs_day WITH (timescaledb.continuous) as
         timescaledb_experimental.time_bucket_ng('1 day', o.date_local, origin => '1950-01-01') as date_local,
         o.poste_id as poste_id,
         o.mesure_id as mesure_id,
-        m.is_avg as is_avg,
+        m.agreg_type as agreg_type,
         sum(o.duration) as duration,
-        CASE WHEN m.is_avg is True THEN avg(o.value) ELSE sum(o.value) END AS value
+        CASE
+          WHEN m.agreg_type = 1 THEN avg(o.value)
+          WHEN m.agreg_type = 2 THEN sum(o.value)
+          WHEN m.agreg_type = 3 THEN max(o.value)
+          WHEN m.agreg_type = 4 THEN min(o.value)
+           END AS value
   from obs o join mesures m on m.id = mesure_id
-  where qa_value != 9
+  where qa_value != 9 and m.agreg_type != 0
   group by 1,2,3,4;
 
 
@@ -222,9 +232,14 @@ create materialized view obs_month WITH (timescaledb.continuous) as
         timescaledb_experimental.time_bucket_ng('1 month', o.date_local, origin => '1950-01-01') as date_local,
         o.poste_id,
         o.mesure_id,
-        m.is_avg as is_avg,
+        o.agreg_type,
         sum(o.duration) as duration,
-        CASE WHEN m.is_avg is True THEN avg(o.value) ELSE sum(o.value) END AS value
+        CASE
+          WHEN o.agreg_type = 1 THEN avg(o.value)
+          WHEN o.agreg_type = 2 THEN sum(o.value)
+          WHEN o.agreg_type = 3 THEN max(o.value)
+          WHEN o.agreg_type = 4 THEN min(o.value)
+           END AS value
   from obs_day o join mesures m on m.id = mesure_id
   group by 1,2,3,4;
 
@@ -238,14 +253,19 @@ SELECT add_continuous_aggregate_policy('obs_month',
 
 create materialized view x_min_day WITH (timescaledb.continuous) as
   select
-        timescaledb_experimental.time_bucket_ng('1 day', date_local, origin => '1950-01-01') as date_local,
-        poste_id as poste_id,
-        mesure_id as mesure_id,
-        CASE WHEN m.is_avg is True THEN min(x_min.min) ELSE sum(x_min.min) END AS min,
-        first(x_min.min_time, x_min.min) as min_time
-  from x_min join mesures m on m.id = mesure_id
-  where qa_min != 9
-  group by 1,2,3, m.is_avg;
+        timescaledb_experimental.time_bucket_ng('1 day', x.date_local, origin => '1950-01-01') as date_local,
+        x.poste_id as poste_id,
+        x.mesure_id as mesure_id,
+        m.agreg_type as agreg_type,
+        CASE
+          WHEN m.agreg_type = 1 THEN min(x.min)
+          WHEN m.agreg_type = 2 THEN sum(x.min)
+          WHEN m.agreg_type = 4 THEN min(x.min)
+           END AS min,
+        first(x.min_time, x.min) as min_time
+  from x_min x join mesures m on m.id = x.mesure_id
+  where x.qa_min != 9 and m.agreg_type != 3 and m.agreg_type != 0
+  group by 1,2,3,4;
 
 
 ALTER MATERIALIZED VIEW x_min_day set (timescaledb.materialized_only = false);
@@ -261,10 +281,15 @@ create materialized view x_min_month WITH (timescaledb.continuous) as
         timescaledb_experimental.time_bucket_ng('1 month', date_local, origin => '1950-01-01') as date_local,
         poste_id as poste_id,
         mesure_id as mesure_id,
-        CASE WHEN m.is_avg is True THEN min(x_min_day.min) ELSE sum(x_min_day.min) END AS min,
-        first(x_min_day.min_time, x_min_day.min) as min_time
-  from x_min_day join mesures m on m.id = mesure_id
- group by 1,2,3, m.is_avg;
+        agreg_type as agreg_type,
+        CASE
+          WHEN agreg_type = 1 THEN min(min)
+          WHEN agreg_type = 2 THEN sum(min)
+          WHEN agreg_type = 4 THEN min(min)
+           END AS min,
+        first(min_time, min) as min_time
+  from x_min_day
+ group by 1,2,3,4;
 
 ALTER MATERIALIZED VIEW x_min_month set (timescaledb.materialized_only = false);
 
@@ -275,15 +300,20 @@ SELECT add_continuous_aggregate_policy('x_min_month',
 
 create materialized view x_max_day WITH (timescaledb.continuous) as
   select
-        timescaledb_experimental.time_bucket_ng('1 day', date_local, origin => '1950-01-01') as date_local,
-        poste_id as poste_id,
-        mesure_id as mesure_id,
-        CASE WHEN m.is_avg is True THEN max(x_max.max) ELSE sum(x_max.max) END AS max,
-        last(x_max.max_time, x_max.max) as max_time,
-        last(x_max.max_dir, x_max.max) as max_dir
-  from x_max join mesures m on m.id = mesure_id
-  where qa_max != 9
-  group by 1,2,3, m.is_avg;
+        timescaledb_experimental.time_bucket_ng('1 day', x.date_local, origin => '1950-01-01') as date_local,
+        x.poste_id as poste_id,
+        x.mesure_id as mesure_id,
+        m.agreg_type as agreg_type,
+        CASE
+          WHEN m.agreg_type = 1 THEN max(x.max)
+          WHEN m.agreg_type = 2 THEN sum(x.max)
+          WHEN m.agreg_type = 3 THEN max(x.max)
+           END AS max,
+        last(x.max_time, x.max) as max_time,
+        last(x.max_dir, x.max) as max_dir
+  from x_max x join mesures m on m.id = mesure_id
+  where qa_max != 9 and m.agreg_type != 4 and m.agreg_type != 0
+  group by 1,2,3,4;
 
 ALTER MATERIALIZED VIEW x_max_day set (timescaledb.materialized_only = false);
 
@@ -297,11 +327,16 @@ create materialized view x_max_month WITH (timescaledb.continuous) as
         timescaledb_experimental.time_bucket_ng('1 month', date_local, origin => '1950-01-01') as date_local,
         poste_id as poste_id,
         mesure_id as mesure_id,
-        CASE WHEN m.is_avg is True THEN max(x_max_day.max) ELSE sum(x_max_day.max) END AS max,
-        last(x_max_day.max_time, x_max_day.max) as max_time,
-        last(x_max_day.max_dir, x_max_day.max) as max_dir
-  from x_max_day join mesures m on m.id = mesure_id
-  group by 1,2,3, m.is_avg;
+        agreg_type as agreg_type,
+        CASE
+          WHEN agreg_type = 1 THEN max(max)
+          WHEN agreg_type = 2 THEN sum(max)
+          WHEN agreg_type = 3 THEN max(max)
+           END AS max,
+        last(max_time, max) as max_time,
+        last(max_dir, max) as max_dir
+  from x_max_day
+  group by 1,2,3,4;
 
 ALTER MATERIALIZED VIEW x_max_month set (timescaledb.materialized_only = false);
 

@@ -54,7 +54,8 @@ class MesureMeteor():
                 'field': a_data['archive_col'],
                 'min': a_data['min'],
                 'max': a_data['max'],
-                'isavg': a_data['is_avg'],
+                # 'isavg': a_data['is_avg'],
+                'agreg': a_data['agreg_type'],
                 'iswind': a_data['is_wind'],
                 'zero': a_data['allow_zero'],
                 'convert': a_data['convert']

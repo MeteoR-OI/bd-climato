@@ -1,0 +1,4 @@
+•⁠  ⁠mettre a jour la def des mesures (Nico)
+•⁠  ⁠Ajouter les triggers pour maintenir la table last_obs a jour
+•⁠  ⁠Voir pour recalcul des materialized views la nuit en batch pour tenir compte des changements de qualite des donnees.
+•⁠  ⁠coder les agrégations par min/max/non agrégee
