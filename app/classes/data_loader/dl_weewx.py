@@ -14,7 +14,7 @@ class DlWeewx(BulkDataLoader):
         return date_obs_utc, date_obs_local
 
     def getConvertKey(self):
-        return 'weewx'
+        return 'w_dump'
 
     def getMeasuresInitial(self):
         mesures = []
