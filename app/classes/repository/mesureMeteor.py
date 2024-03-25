@@ -10,6 +10,7 @@ class MesureMeteor():
         o=MesureMeteor(id_mesure)
         0=MesureMeteor(json_key)
     """
+    Agreg_Type = Mesure.Aggreg_Type
 
     def __init__(self, key):
         """Init a new MesureMeteor object"""

@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from app.classes.repository.obsMeteor import QA
+from app.classes.repository.mesureMeteor import MesureMeteor
 import psycopg2
 from datetime import datetime
 
@@ -149,11 +150,13 @@ class BulkDataLoader(ABC):
             if self.isMesureQualified(a_mesure) is False:
                 continue
             mesures_hash[a_mesure['id']] = a_mesure
-            if a_mesure['isavg'] is False:
+            if a_mesure['agreg'] in (MesureMeteor.Agreg_Type.MAX, MesureMeteor.Agreg_Type.MIN, MesureMeteor.Agreg_Type.SUM):
                 mesure_sum_id.append(a_mesure['id'])
 
         for a_record in new_records:
             cur_mesure = mesures_hash[a_record['mid']]
+            if cur_mesure['agreg'] == 0:
+                continue
 
             if cur_mesure['min'] is True:
                 dt_local_min = a_record['date_min'].date()

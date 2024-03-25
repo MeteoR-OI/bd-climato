@@ -18,7 +18,7 @@ class DlWeewx(BulkDataLoader):
 
     def getMeasuresInitial(self):
         mesures = []
-        pg_query = "select id, archive_col, archive_table, field_dir, json_input, min, max, is_avg, is_wind, allow_zero, convert from mesures order by id"
+        pg_query = "select id, archive_col, archive_table, field_dir, json_input, min, max, agreg_type, is_wind, allow_zero, convert from mesures order by id"
 
         pgconn = self.getPGConnexion()
         pg_cur = pgconn.cursor()
@@ -34,7 +34,7 @@ class DlWeewx(BulkDataLoader):
                 'field': row[4],
                 'min': row[5],
                 'max': row[6],
-                'isavg': row[7],
+                'agreg': row[7],
                 'iswind': row[8],
                 'zero': row[9],
                 'convert': row[10]
