@@ -57,7 +57,8 @@ class BulkDataLoader(ABC):
             pg_conn = self.getPGConnexion()
             pg_cur = pg_conn.cursor()
 
-            min_max = self.loadObs(pg_cur, cur_poste, data_iterator, load_missing_data)
+            min_max = self.loadObs(
+                pg_cur, cur_poste, data_iterator, load_missing_data)
 
             if min_max is not None:
                 del_cde = self.LoadMaxMin(pg_cur, cur_poste, min_max)
@@ -90,28 +91,35 @@ class BulkDataLoader(ABC):
         while cur_row is not None:
             try:
                 if col_mapping.get('usUnits') is not None and cur_row[col_mapping['usUnits']] != 16:
-                    raise Exception('bad usUnits: ' + str(cur_row[col_mapping['usUnits']]) + ', dateTime(UTC): ' + str(cur_row[col_mapping['date_utc']]))
+                    raise Exception('bad usUnits: ' + str(
+                        cur_row[col_mapping['usUnits']]) + ', dateTime(UTC): ' + str(cur_row[col_mapping['date_utc']]))
 
-                date_obs_utc, date_obs_local = self.getObsDateTime(cur_row, col_mapping, cur_poste)
+                date_obs_utc, date_obs_local = self.getObsDateTime(
+                    cur_row, col_mapping, cur_poste)
 
                 if load_missing_data is False and (cur_poste.data.last_obs_date is None or date_obs_local > cur_poste.data.last_obs_date):
                     for a_mesure in self.measures:
                         if self.isMesureQualified(a_mesure) is False:
                             continue
 
-                        cur_val, cur_qa_val, interval = self.getValues(cur_row, col_mapping, a_mesure)
+                        cur_val, cur_qa_val, interval = self.getValues(
+                            cur_row, col_mapping, a_mesure)
 
                         if cur_val is None:
                             continue
 
-                        data_args.append((cur_poste.data.id, date_obs_utc, date_obs_local, a_mesure['id'], interval, cur_val, cur_qa_val, ))
+                        data_args.append((cur_poste.data.id, date_obs_utc, date_obs_local,
+                                         a_mesure['id'], interval, cur_val, cur_qa_val, ))
 
-                        cur_min, date_min, cur_max, date_max, max_dir = self.getMinMaxValues(cur_row, col_mapping, a_mesure, cur_val, date_obs_local)
+                        cur_min, date_min, cur_max, date_max, max_dir = self.getMinMaxValues(
+                            cur_row, col_mapping, a_mesure, cur_val, date_obs_local)
 
                         if a_mesure['iswind'] is True:
-                            minmax_values.append({'min': cur_min, 'max': cur_max, 'date_min': date_min, 'date_max': date_max, 'max_dir': max_dir, 'mid': a_mesure['id'], 'obs_id': -1})
+                            minmax_values.append({'min': cur_min, 'max': cur_max, 'date_min': date_min,
+                                                 'date_max': date_max, 'max_dir': max_dir, 'mid': a_mesure['id'], 'obs_id': -1})
                         else:
-                            minmax_values.append({'min': cur_min, 'max': cur_max, 'date_min': date_min, 'date_max': date_max, 'mid': a_mesure['id'], 'obs_id': -1})
+                            minmax_values.append({'min': cur_min, 'max': cur_max, 'date_min': date_min,
+                                                 'date_max': date_max, 'mid': a_mesure['id'], 'obs_id': -1})
 
                 if load_missing_data is True and (cur_poste.data.last_obs_date is not None or date_obs_local <= cur_poste.data.last_obs_date):
                     # Future chargement de donnees manquantes
@@ -123,7 +131,8 @@ class BulkDataLoader(ABC):
             return None
 
         # cursor.mogrify() to insert multiple values
-        args = ','.join(pg_cur.mogrify("( %s, %s, %s, %s, %s, %s, %s )", i).decode('utf-8') for i in data_args)
+        args = ','.join(pg_cur.mogrify("( %s, %s, %s, %s, %s, %s, %s )", i).decode(
+            'utf-8') for i in data_args)
 
         pg_cur.execute(sql_insert + args + ' returning id')
         new_ids = pg_cur.fetchall()
@@ -186,8 +195,10 @@ class BulkDataLoader(ABC):
                          a_record['date_max'],
                          QA.UNSET.value, a_record.get('max_dir')))
 
-        min_args_ok = ','.join(pg_cur.mogrify("(%s, %s, %s, %s, %s, %s, %s)", i).decode('utf-8') for i in min_args)
-        max_args_ok = ','.join(pg_cur.mogrify("(%s, %s, %s, %s, %s, %s, %s, %s)", i).decode('utf-8') for i in max_args)
+        min_args_ok = ','.join(pg_cur.mogrify(
+            "(%s, %s, %s, %s, %s, %s, %s)", i).decode('utf-8') for i in min_args)
+        max_args_ok = ','.join(pg_cur.mogrify(
+            "(%s, %s, %s, %s, %s, %s, %s, %s)", i).decode('utf-8') for i in max_args)
 
         pg_cur.execute(insert_cde_min + min_args_ok)
         pg_cur.execute(insert_cde_max + max_args_ok)

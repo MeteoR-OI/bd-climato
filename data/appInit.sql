@@ -111,10 +111,7 @@ insert into mesures
 (113, 'gust dir',        'wind_gust_dir',   'windGustDir',      'skip',       null,     false,   false,    0,      false,    true,  'wind_max_dir',        '{}'),
 (114, 'gust',            'wind_gust',       'windGust',         'wind',       113,      false,   true,     4,       true,    true,      'wind_max',
   '{"mfr_csv": "lambda x: x * 3.6"}'),
-(116, 'wind 10 dir',     'wind10_dir',      'windSpeed',        'skip',       null,     false,   false,    0,      false,    true,            null,        '{}'),
-(117, 'wind 10',         'wind10',          'windSpeed',        'wind',       116,      false,   true,     1,      false,    true,            null,
-  '{"mfr_csv": "lambda x: x * 3.6"}'),
-(119, 'windchill',       'windchill',       'windchill',         null,        null,     false,   false,    3,      false,    true,            null,        '{}')
+(115, 'windchill',       'windchill',       'windchill',         null,        null,     false,   false,    3,      false,    true,            null,        '{}')
 ;
 
 insert into annotations
