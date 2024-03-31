@@ -20,6 +20,7 @@ class IDX(Enum):
     IDX_QVALMAX = 8
     IDX_MAX_TIME = 9
     IDX_MAX_DIR = 10
+    IDX_DURATION = 11
 
 
 class JsonDataLoader(ABC):
@@ -59,15 +60,25 @@ class JsonDataLoader(ABC):
 
         try:
             for a_mesure in self.mesures:
+                if a_mesure['id'] in (60,61):
+                    pass
                 cur_vals = self.get_valeurs(a_mesure, j_data, stop_dat_local)
                 if cur_vals[0] is None:
                     if a_mesure.get("col2") is not None and a_mesure['col2'] is not None:
-                        cur_vals = self.get_valeurs(a_mesure, j_data, stop_dat_local, False, True)
+                        cur_vals = self.get_valeurs(a_mesure, j_data, stop_dat_local, True)
 
                 if cur_vals[0] is None:
                     continue
 
-                obs_data.append([cur_poste.data.id, stop_dat_local - timedelta(hours=cur_poste.data.delta_timezone), stop_dat_local, a_mesure['id'], duration, cur_vals[IDX.IDX_VAL.value], cur_vals[IDX.IDX_QVAL.value]])
+                obs_data.append(
+                    [   cur_poste.data.id,
+                        stop_dat_local - timedelta(hours=cur_poste.data.delta_timezone),
+                        stop_dat_local,
+                        a_mesure['id'],
+                        duration if cur_vals[IDX.IDX_DURATION] is None else cur_vals[IDX.IDX_DURATION],
+                        cur_vals[IDX.IDX_VAL.value],
+                        cur_vals[IDX.IDX_QVAL.value]
+                    ])
 
                 if a_mesure['min'] is not None and a_mesure['min'] is True:
                     min_data.append([
@@ -129,22 +140,24 @@ class JsonDataLoader(ABC):
             pg_cur.close()
             pg_conn.close()
 
-    def get_valeurs(self, a_mesure, valeurs, stop_dat, force_abs=False, use_second_input_key=False):
-        #  [0]  [1]     [2]        [3]      [4]      [5]     [6]      [7]      [8]      [9]     [10]
-        # val, qval, dir|None, adir|None, valmin, qvalmin, min_time, valmax, qvalmax, max_time, max_dir
+    def get_valeurs(self, a_mesure, valeurs, stop_dat, use_second_input_key=False):
+        #  [0]  [1]     [2]        [3]      [4]      [5]     [6]      [7]      [8]      [9]     [10]      [11]
+        # val, qval, dir|None, adir|None, valmin, qvalmin, min_time, valmax, qvalmax, max_time, max_dir, duration
 
-        suffix_key1 = '_avg'
-        suffix_key2 = '_s'
+        suffix_avg = '_avg'
+        suffix_sum = '_s'
+        my_duration = None
 
-        mesure_key = a_mesure['col']
+        mesure_keys = a_mesure['col']
         if use_second_input_key is True and a_mesure.get('col2') is not None:
-            mesure_key = a_mesure['col2']
+            mesure_keys = a_mesure['col2']
 
-        # load keys used to look for our value in order of importance
-        if force_abs is True or a_mesure['isavg'] is False:
-            j_keys = [mesure_key + suffix_key2, mesure_key, mesure_key + suffix_key1]
-        else:
-            j_keys = [mesure_key + suffix_key1, mesure_key, mesure_key + suffix_key2]
+        # load keys index used to look for our value in order of importance
+        j_keys = [mesure_keys]
+        if a_mesure['agreg_type'] == MesureMeteor.Agreg_Type.AVG:
+            j_keys = [mesure_keys + suffix_avg, mesure_keys, mesure_keys + suffix_sum]
+        elif a_mesure['agreg_type'] == MesureMeteor.Agreg_Type.SUM:
+            j_keys = [mesure_keys + suffix_sum, mesure_keys, mesure_keys + suffix_avg]
 
         my_val = my_val_dir = None
         my_qval = my_qval_dir = QA.UNSET.value
@@ -156,6 +169,7 @@ class JsonDataLoader(ABC):
         for a_key in j_keys:
             if valeurs.get(a_key) is not None:
                 my_val = valeurs[a_key]
+                my_duration = a_mesure[a_key + '_s']
                 if a_mesure['convert'] is not None and a_mesure['convert'].get(self.getConvertKey()) is not None:
                     my_val = eval(a_mesure['convert'][self.getConvertKey()])(my_val)
                 if valeurs.get('Q' + a_key) is not None:
@@ -167,31 +181,44 @@ class JsonDataLoader(ABC):
                 break
 
         # get our min
-        if valeurs.get(mesure_key + '_min') is not None:
-            my_val_min = valeurs[mesure_key + '_min']
-            my_val_min_time = valeurs[mesure_key + '_min_time']
-            if valeurs.get('Q' + mesure_key + '_min') is not None:
-                my_qval_min = valeurs['Q' + mesure_key + '_min']
+        if valeurs.get(mesure_keys + '_min') is not None:
+            my_val_min = valeurs[mesure_keys + '_min']
+            my_val_min_time = valeurs[mesure_keys + '_min_time']
+            if valeurs.get('Q' + mesure_keys + '_min') is not None:
+                my_qval_min = valeurs['Q' + mesure_keys + '_min']
         else:
             if my_val is not None:
                 my_val_min = my_val
                 my_val_min_time = stop_dat
 
         # get our max
-        if valeurs.get(mesure_key + '_max') is not None:
-            my_val_max = valeurs[mesure_key + '_max']
-            my_val_max_time = valeurs[mesure_key + '_max_time']
-            if valeurs.get('Q' + mesure_key + '_max') is not None:
-                my_qval_max = valeurs['Q' + mesure_key + '_max']
-            if a_mesure['iswind'] is True and valeurs.get(mesure_key + '_max_dir') is not None:
-                my_val_max_dir = valeurs[mesure_key + '_max_dir']
+        if valeurs.get(mesure_keys + '_max') is not None:
+            my_val_max = valeurs[mesure_keys + '_max']
+            my_val_max_time = valeurs[mesure_keys + '_max_time']
+            if valeurs.get('Q' + mesure_keys + '_max') is not None:
+                my_qval_max = valeurs['Q' + mesure_keys + '_max']
+            if a_mesure['iswind'] is True and valeurs.get(mesure_keys + '_max_dir') is not None:
+                my_val_max_dir = valeurs[mesure_keys + '_max_dir']
         else:
             if my_val is not None:
                 my_val_max = my_val
                 my_val_max_time = stop_dat
                 my_val_max_dir = my_val_dir
 
-        return [my_val, my_qval, my_val_dir, my_qval_dir, my_val_min, my_qval_min, my_val_min_time, my_val_max, my_qval_max, my_val_max_time, my_val_max_dir]
+        return [
+            my_val,
+            my_qval,
+            my_val_dir,
+            my_qval_dir,
+            my_val_min,
+            my_qval_min,
+            my_val_min_time,
+            my_val_max,
+            my_qval_max,
+            my_val_max_time,
+            my_val_max_dir,
+            my_duration
+        ]
 
     def getPGConnexion(self):
         return psycopg2.connect(

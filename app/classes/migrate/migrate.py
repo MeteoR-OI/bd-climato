@@ -23,6 +23,8 @@ import psycopg2
 from psycopg2 import sql
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from datetime import datetime
+# import cProfile
+# import pstats
 
 
 # --------------------------------------
@@ -65,13 +67,17 @@ class MigrateDB:
         pgconn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         pg_cur = pgconn.cursor()
 
-        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_hour')))
-        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_day')))
-        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_month')))
-        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_min_day')))
-        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_min_month')))
-        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_day')))
-        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_month')))
+        # if materialized view exist, refresh all of them
+        pg_cur.execute("SELECT count(*) FROM pg_views where schemaname = 'public' and viewname ='obs_hour'")
+        if pg_cur.fetchone()[0] == 1:
+            pg_cur.close()
+            pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_hour')))
+            pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_day')))
+            pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_month')))
+            pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_min_day')))
+            pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_min_month')))
+            pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_day')))
+            pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_month')))
 
         pg_cur.close()
         pgconn.commit()
@@ -89,6 +95,9 @@ class MigrateDB:
     # -----------------
     def processWorkItem(self, work_item):
         try:
+            # profiler = cProfile.Profile()
+            # profiler.enable()
+
             current_ts = datetime.now().timestamp() + 1
             my_cur = None
             meteor = work_item['meteor']
@@ -133,6 +142,11 @@ class MigrateDB:
         finally:
             if my_cur is not None:
                 my_cur.close()
+
+            # profiler.disable()
+            # stats = pstats.Stats(profiler)
+            # stats.sort_stats(pstats.SortKey.TIME)
+            # stats.print_stats()
 
     # ---------------------------------------
     # other methods specific to this service
@@ -182,6 +196,10 @@ class MigrateDB:
                 work_item['start_ts_archive_utc'] = max_ts
                 return
 
+            # if work_item['start_ts_archive_utc'] > datetime(2020, 9, 29).timestamp():
+            #     work_item['start_ts_archive_utc'] = max_ts
+            #     return
+            
             # tz is needed to get the first day of next month in local time
             work_item['end_ts_archive_utc'] = int(GetFirstDayNextMonthFromTs(work_item['start_ts_archive_utc'], work_item['tz']).timestamp())
 

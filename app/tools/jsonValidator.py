@@ -133,6 +133,25 @@ def _checkJsonOneItem(j: json, meteor: str) -> str:
                     str_to_datetime(j_value)
                 except Exception:
                     return 'Invalid date format for "' + key + '": "' + str(j_value) + '"'
+                
+            # change radiation_max and radiation_max_time into radiation_rate_max and radiation_rate_max_time
+            if str(key).__contains__("radiation_max_time"):
+                new_val = {
+                        "k": "radiation_rate_max_time",
+                        "v": j_value,
+                        "idx": idx,
+                        "k2": "valeurs",
+                    }
+                valeurs_to_add.append(new_val)
+            elif str(key).__contains__("radiation_max"):
+                new_val = {
+                        "k": "radiation_rate_max",
+                        "v": j_value,
+                        "idx": idx,
+                        "k2": "valeurs",
+                    }
+                valeurs_to_add.append(new_val)
+
         idx += 1
 
     # extremes check

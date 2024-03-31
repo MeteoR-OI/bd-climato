@@ -93,6 +93,9 @@ class DlWeewx(BulkDataLoader):
             data_iterator.close()
         return next_row
 
+    def addMinMaxData(self, cur_poste, minmax):
+        return minmax
+
     def fixMinMax(self, str_mesure_list, cur_poste, x_max_min_date, x_min_min_date):
         return ["delete from x_max where obs_id is not null and mesure_id in " + str_mesure_list +
                 " and poste_id = " + str(cur_poste.data.id) + " and date_local in " +

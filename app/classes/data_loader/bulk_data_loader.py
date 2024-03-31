@@ -46,6 +46,10 @@ class BulkDataLoader(ABC):
     def fixMinMax(self, str_mesure_list, cur_poste, x_max_min_date, x_min_min_date):
         Exception("fixMinMax not implemented")
 
+    @abstractmethod
+    def addMinMaxData(self, cur_poste, minmax):
+        Exception("addMinMaxData not implemented")
+
     def getMeasures(self):
         return self.measures
 
@@ -57,8 +61,9 @@ class BulkDataLoader(ABC):
             pg_conn = self.getPGConnexion()
             pg_cur = pg_conn.cursor()
 
-            min_max = self.loadObs(
-                pg_cur, cur_poste, data_iterator, load_missing_data)
+            min_max = self.loadObs(pg_cur, cur_poste, data_iterator, load_missing_data)
+
+            min_max = self.addMinMaxData(cur_poste, min_max)
 
             if min_max is not None:
                 del_cde = self.LoadMaxMin(pg_cur, cur_poste, min_max)
@@ -159,7 +164,7 @@ class BulkDataLoader(ABC):
             if self.isMesureQualified(a_mesure) is False:
                 continue
             mesures_hash[a_mesure['id']] = a_mesure
-            if a_mesure['agreg'] in (MesureMeteor.Agreg_Type.MAX, MesureMeteor.Agreg_Type.MIN, MesureMeteor.Agreg_Type.SUM):
+            if a_mesure['agreg'] == MesureMeteor.Agreg_Type.SUM:
                 mesure_sum_id.append(a_mesure['id'])
 
         for a_record in new_records:
