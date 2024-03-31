@@ -90,11 +90,11 @@ insert into mesures
 (51, 'leaftemp2',       'leaf_temp2',       'leafTemp2',         null,        null,     false,   false,    1,      false,    true,     'leaftemp2',        '{}'),
 (54, 'leafwet1',        'leaf_wet1',        'leafWet1',          null,        null,     false,   false,    1,      false,    true,      'leafwet1',        '{}'),
 (55, 'leafwet2',        'leaf_wet2',        'leafWet2',          null,        null,     false,   false,    1,      false,    true,      'leafwet2',        '{}'),
-(60, 'radiation',       'radiation',        'radiation',         null,        null,     false,   false,    2,      false,    true,            null,
+(60, 'radiation',       'radiation',        'radiation',       'skip',        null,     false,   false,    2,      false,    true,            null,
   '{"w_dump": "lambda x: x * 0.03"}'),
 (61, 'radiation_rate', 'radiation_rate',    'radiation',         null,        null,     false,   false,    3,      false,    true,            null,        '{}'),
-(62, 'uv_indice',       'uv',               'UV',                null,        null,     false,   false,    4,      false,    true,            null,        '{}'),
-(70, 'rain',            'rain',             'rain',              null,        null,     false,   false,    2,      false,    true,            null,
+(62, 'uv_indice',       'uv',               'UV',                null,        null,     false,   false,    3,      false,    true,            null,        '{}'),
+(70, 'rain',            'rain',             'rain',            'skip',        null,     false,   false,    2,      false,    true,            null,
   '{"w_dump": "lambda x: x * 10"}'),
 (71, 'rain rate',       'rain_rate',        'rainRate',          null,        null,     false,   false,    3,      false,    true,            null,        '{}'),
 (80, 'rx',              'rx',               'rxCheckPercent',    null,        null,     false,   false,    4,      false,    true,            null,        '{}'),
@@ -102,18 +102,18 @@ insert into mesures
 (91, 'soilmoist2',      'soil_moist2',      'soilMoist2',        null,        null,     false,   false,    1,      false,    true,    'soilmoist2',        '{}'),
 (92, 'soilmoist3',      'soil_moist3',      'soilMoist3',        null,        null,     false,   false,    1,      false,    true,    'soilmoist3',        '{}'),
 (93, 'soilmoist4',      'soil_moist4',      'soilMoist4',        null,        null,     false,   false,    1,      false,    true,    'soilmoist4',        '{}'),
-(94, 'soiltemp1',       'soil_temp1',       'soilTemp1',         null,        null,     false,   false,    3,      false,    true,     'soiltemp1',        '{}'),
-(95, 'soiltemp2',       'soil_temp2',       'soilTemp2',         null,        null,     false,   false,    3,      false,    true,     'soiltemt2',        '{}'),
-(96, 'soiltemp3',       'soil_temp3',       'soilTemp3',         null,        null,     false,   false,    3,      false,    true,     'soiltemp3',        '{}'),
-(97, 'soiltemp4',       'soil_temp4',       'soilTemp4',         null,        null,     false,   false,    3,      false,    true,     'soiltemp4',        '{}'),
+(94, 'soiltemp1',       'soil_temp1',       'soilTemp1',         null,        null,     false,   false,    4,      false,    true,     'soiltemp1',        '{}'),
+(95, 'soiltemp2',       'soil_temp2',       'soilTemp2',         null,        null,     false,   false,    4,      false,    true,     'soiltemt2',        '{}'),
+(96, 'soiltemp3',       'soil_temp3',       'soilTemp3',         null,        null,     false,   false,    4,      false,    true,     'soiltemp3',        '{}'),
+(97, 'soiltemp4',       'soil_temp4',       'soilTemp4',         null,        null,     false,   false,    4,      false,    true,     'soiltemp4',        '{}'),
 (100, 'voltage',         'voltage',         'consBatteryVoltage',null,        null,     false,   false,    3,      false,    true,            null,        '{}'),
 (110, 'wind dir',        'wind_dir',        'windDir',          'skip',       null,     false,   false,    0,      false,    true,            null,        '{}'),
 (111, 'wind',            'wind',            'windSpeed',        'wind',       110,      false,   true,     1,      false,    true,            null,
   '{"mfr_csv": "lambda x: x * 3.6"}'),
 (113, 'gust dir',        'wind_gust_dir',   'windGustDir',      'skip',       null,     false,   false,    0,      false,    true,  'wind_max_dir',        '{}'),
-(114, 'gust',            'wind_gust',       'windGust',         'wind',       113,      false,   true,     4,       true,    true,      'wind_max',
+(114, 'gust',            'wind_gust',       'windGust',         'wind',       113,      false,   true,     3,       true,    true,      'wind_max',
   '{"mfr_csv": "lambda x: x * 3.6"}'),
-(115, 'windchill',       'windchill',       'windchill',         null,        null,     false,   false,    3,      false,    true,            null,        '{}')
+(115, 'windchill',       'windchill',       'windchill',         null,        null,     false,   false,    4,      false,    true,            null,        '{}')
 ;
 
 insert into annotations
@@ -187,8 +187,10 @@ create materialized view obs_hour WITH (timescaledb.continuous) as
           WHEN m.agreg_type = 4 THEN min(o.value)
            END AS value
   from obs o join mesures m on m.id = mesure_id
-  where qa_value != 9 and duration <= 60 and m.agreg_type != 2
-  group by 1,2,3,4;
+  where qa_value != 9 and duration <= 60 and m.agreg_type != 0
+  group by 1,2,3,4
+  order by 1,2,3
+;
 
 ALTER MATERIALIZED VIEW obs_hour set (timescaledb.materialized_only = false);
 
@@ -212,8 +214,9 @@ create materialized view obs_day WITH (timescaledb.continuous) as
            END AS value
   from obs o join mesures m on m.id = mesure_id
   where qa_value != 9 and m.agreg_type != 0
-  group by 1,2,3,4;
-
+  group by 1,2,3,4
+  order by 1,2,3
+;
 
 ALTER MATERIALIZED VIEW obs_day set (timescaledb.materialized_only = false);
 
@@ -221,7 +224,6 @@ SELECT add_continuous_aggregate_policy('obs_day',
   start_offset => INTERVAL '60 minute',
   end_offset => NULL,
   schedule_interval => INTERVAL '30 minutes');
-
 
 create materialized view obs_month WITH (timescaledb.continuous) as
   select
@@ -237,8 +239,9 @@ create materialized view obs_month WITH (timescaledb.continuous) as
           WHEN o.agreg_type = 4 THEN min(o.value)
            END AS value
   from obs_day o join mesures m on m.id = mesure_id
-  group by 1,2,3,4;
-
+  group by 1,2,3,4
+  order by 1,2,3
+;
 
 ALTER MATERIALIZED VIEW obs_month set (timescaledb.materialized_only = false);
 
@@ -259,9 +262,10 @@ create materialized view x_min_day WITH (timescaledb.continuous) as
         END AS min,
         first(x.min_time, x.min) as min_time
   from x_min x join mesures m on m.id = x.mesure_id
-  where x.qa_min != 9 and m.agreg_type != 3 and m.agreg_type != 0
-  group by 1,2,3,4;
-
+  where x.qa_min != 9 and m.agreg_type != 3 and m.agreg_type != 0 and m.min is true
+  group by 1,2,3,4
+  order by 1,2,3
+;
 
 ALTER MATERIALIZED VIEW x_min_day set (timescaledb.materialized_only = false);
 
@@ -280,7 +284,9 @@ create materialized view x_min_month WITH (timescaledb.continuous) as
         min(min) AS min,    -- on prend le min des min quotidiens
         first(min_time, min) as min_time
   from x_min_day
- group by 1,2,3,4;
+ group by 1,2,3,4
+ order by 1,2,3
+;
 
 ALTER MATERIALIZED VIEW x_min_month set (timescaledb.materialized_only = false);
 
@@ -302,8 +308,10 @@ create materialized view x_max_day WITH (timescaledb.continuous) as
         last(x.max_time, x.max) as max_time,
         last(x.max_dir, x.max) as max_dir
   from x_max x join mesures m on m.id = mesure_id
-  where qa_max != 9 and m.agreg_type != 4 and m.agreg_type != 0
-  group by 1,2,3,4;
+  where qa_max != 9 and m.agreg_type != 4 and m.agreg_type != 0 and m.max is true
+  group by 1,2,3,4
+  order by 1,2,3
+;
 
 ALTER MATERIALIZED VIEW x_max_day set (timescaledb.materialized_only = false);
 
@@ -322,7 +330,9 @@ create materialized view x_max_month WITH (timescaledb.continuous) as
         last(max_time, max) as max_time,
         last(max_dir, max) as max_dir
   from x_max_day
-  group by 1,2,3,4;
+  group by 1,2,3,4
+  order by 1,2,3
+;
 
 ALTER MATERIALIZED VIEW x_max_month set (timescaledb.materialized_only = false);
 

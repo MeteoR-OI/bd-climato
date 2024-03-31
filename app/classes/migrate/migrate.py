@@ -22,7 +22,7 @@ import mysql.connector
 import psycopg2
 from psycopg2 import sql
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
-from datetime import datetime
+from datetime import datetime, timedelta
 # import cProfile
 # import pstats
 
@@ -116,22 +116,28 @@ class MigrateDB:
             self.getNewDateBracket(cur_poste, work_item)
 
             # loop per year
-            while work_item['start_ts_archive_utc'] < current_ts:
+            while work_item['archive_first_ts'] < current_ts:
 
                 start_dt = datetime.now()
 
                 # Load obs, records from archive
                 query_my = self.getWeewxSelectSql(work_item)
 
+                # load records data from weewx
+                minmax = []
+                # minmax = self.loadMinMaxFromWeeWX( work_item)
+
                 # get a cursor to our archive db
                 myconn = self.getMSQLConnection(work_item['meteor'])
                 my_cur = myconn.cursor()
+
                 query_my = self.getWeewxSelectSql(work_item)
 
                 # execute the select statement
                 my_cur.execute(query_my)
 
-                self._bulk_dl.bulkLoad(cur_poste, my_cur, False)
+                self._bulk_dl.bulkLoad(cur_poste, my_cur, False, minmax)
+                # my_cur.fetchall()
 
                 my_cur.close()
                 my_cur = None
@@ -164,54 +170,55 @@ class MigrateDB:
         max_ts = int(max_date.timestamp())
 
         try:
+            print('-------------------------------------------------')
+            print('Meteor: ' + work_item['meteor'])
+
             # Get scan limit
-            if work_item.get('start_ts_utc_limit') is None:
+            if work_item.get('global_first_ts') is None:
                 my_cur.execute('select min(dateTime), max(dateTime) from archive')
                 row = my_cur.fetchone()
                 my_cur.close()
                 if row is None or len(row) == 0 or row[0] is None or row[1] is None:
-                    work_item['start_ts_archive_utc'] = max_ts
+                    work_item['archive_first_ts'] = max_ts
                     return
                 ts_poste_obs_date_utc = int(cur_poste.data.last_obs_date.timestamp() - work_item['tz'] * 3600) if cur_poste.data.last_obs_date is not None else 0
-                work_item['start_ts_utc_limit'] = max(row[0], ts_poste_obs_date_utc)
-                work_item['end_ts_utc_limit'] = row[1] + 1
+                work_item['global_first_ts'] = max(row[0], ts_poste_obs_date_utc)
+                work_item['global_last_ts'] = row[1] + 1
                 if cur_poste.data.stop_date is not None:
                     # cur_poste.data.stop_date is in local time
-                    work_item['end_ts_utc_limit'] = min(work_item['end_ts_utc_limit'], (ts_poste_obs_date_utc + 1) if ts_poste_obs_date_utc > 0 else max_ts)
+                    stop_ts_utc = (cur_poste.data.stop_date.timestamp() + 1)  - work_item['tz'] * 3600
+                    # stop to scan at stop_date if exists
+                    work_item['global_last_ts'] = min(work_item['global_last_ts'], stop_ts_utc)
+                print('Global (ts utc)     from: ' + str(work_item['global_first_ts']) + ' to ' + str(work_item['global_last_ts']))
+                print('Global (-> dt utc)  from: ' + str(FromTimestampToDateTime(work_item['global_first_ts'])) + ' to ' + str(FromTimestampToDateTime(work_item['global_last_ts'])))
 
-            # Get start_dt/start_ts_archive_utc
-            if work_item.get('end_ts_archive_utc') is None:
+            # Get start_dt/archive_first_ts
+            if work_item.get('archive_last_ts') is None:
                 # First pass
-                # now we only use last_obs_date for both obs and x_min/max
-                if cur_poste.data.last_obs_date is None:
-                    work_item['start_ts_archive_utc'] = work_item['start_ts_utc_limit']
-                else:
-                    # cur_poste.data.last_obs_date is in local time
-                    work_item['start_ts_archive_utc'] = int(cur_poste.data.last_obs_date.timestamp() - work_item['tz'] * 3600) + 1
+                work_item['archive_first_ts'] = work_item['global_first_ts']
             else:
-                work_item['start_ts_archive_utc'] = work_item['end_ts_archive_utc'] + 1
+                work_item['archive_first_ts'] = work_item['archive_last_ts'] + 1
 
-            # if start_ts_archive_utc greater than end_ts_utc_limit -> exit
-            if work_item['start_ts_archive_utc'] > work_item['end_ts_utc_limit']:
-                work_item['start_ts_archive_utc'] = max_ts
+            # if archive_first_ts greater than global_last_ts -> exit
+            if work_item['archive_first_ts'] > work_item['global_last_ts']:
+                work_item['archive_first_ts'] = max_ts
                 return
-
-            # if work_item['start_ts_archive_utc'] > datetime(2020, 9, 29).timestamp():
-            #     work_item['start_ts_archive_utc'] = max_ts
-            #     return
             
             # tz is needed to get the first day of next month in local time
-            work_item['end_ts_archive_utc'] = int(GetFirstDayNextMonthFromTs(work_item['start_ts_archive_utc'], work_item['tz']).timestamp())
+            work_item['archive_last_ts'] = int(GetFirstDayNextMonthFromTs(work_item['archive_first_ts'], work_item['tz']).timestamp())
 
+            work_item['minmax_first_ts'] = (FromTimestampToDateTime(work_item['archive_first_ts']) - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
+            work_item['minmax_last_ts'] = (FromTimestampToDateTime(work_item['archive_last_ts']) + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
+            
             t.myTools.logInfo(
-                'ts_archive (ts utc)    from: ' + str(work_item['start_ts_archive_utc']) + ' to ' + str(work_item['end_ts_archive_utc']),
+                'ts_archive (ts utc)    from: ' + str(work_item['archive_first_ts']) + ' to ' + str(work_item['archive_last_ts']),
                 {"svc": "migrate", "meteor":  work_item['meteor']})
 
-            print('-------------------------------------------------')
-            print('Meteor: ' + work_item['meteor'])
-            work_item['start_dt_archive_utc'] = FromTimestampToDateTime(work_item['start_ts_archive_utc'])
-            print('Archive (dt utc)       from: ' + str(work_item['start_dt_archive_utc']) + ' to ' + str(FromTimestampToDateTime(work_item['end_ts_archive_utc'])))
-            print('ts_archive (ts utc)    from: ' + str(work_item['start_ts_archive_utc']) + ' to ' + str(work_item['end_ts_archive_utc']))
+            work_item['start_dt_archive_utc'] = FromTimestampToDateTime(work_item['archive_first_ts'])
+            print('Archive (ts utc)    from: ' + str(work_item['archive_first_ts']) + ' to ' + str(work_item['archive_last_ts']))
+            print('Archive (=> dt utc) from: ' + str(FromTimestampToDateTime(work_item['archive_first_ts'])) + ' to ' + str(FromTimestampToDateTime(work_item['archive_last_ts'])))
+            print('MinMax (ts utc)     from: ' + str(work_item['minmax_first_ts']) + ' to ' + str(work_item['minmax_last_ts']))
+            print('MinMax (=> dt utc)  from: ' + str(FromTimestampToDateTime(work_item['minmax_first_ts'])) + ' to ' + str(FromTimestampToDateTime(work_item['minmax_last_ts'])))
             print('-------------------------------------------------')
 
             return
@@ -222,6 +229,80 @@ class MigrateDB:
 
         finally:
             myconn.close()
+# ------------------------------------
+    # generate max/min from WeeWX records
+    # ------------------------------------
+    def loadMinMaxFromWeeWX(self, work_item):
+        min_max = []
+        myconn = self.getMSQLConnection(work_item['meteor'])
+        try:
+            for a_mesure in self.measures:
+                # debug
+                # if a_mesure['id'] in (74,):
+                #     pass
+                # else:
+                #     continue
+                if a_mesure.get('table') == 'skip':
+                    continue
+                nb_record_processed = 0
+                mid = a_mesure['id']
+                my_cur = myconn.cursor()
+                try:
+                    # get cached_mesure
+                    if new_records.get('m_' + str(mid)) is None:
+                        new_records['m_' + str(mid)] = {'mid': mid, 'cache': []}
+
+                    mesure_cache_item = new_records['m_' + str(mid)]
+
+                    # get table name, fix for wind table
+                    table_name = a_mesure['col']
+                    if a_mesure['table'] is not None:
+                        table_name = a_mesure['table']
+
+                    # We need to use mintime/maxtime as the date of the record
+                    # the mintime and maxtime can be on two different days...
+                    if a_mesure['iswind'] is False:
+                        my_query = \
+                            'select min, mintime, max, maxtime, null as max_dir, ' + str(mid) + ' as mid, dateTime ' + \
+                            ' from archive_day_' + table_name +\
+                            " where dateTime >= " + str(work_item['minmax_first_ts']) +\
+                            " and dateTime < " + str(work_item['minmax_last_ts']) +\
+                            " order by dateTime"
+                    else:
+                        my_query = \
+                            'select min, mintime, max, maxtime, max_dir, ' + str(mid) + ' as mid, dateTime ' + \
+                            ' from archive_day_' + table_name +\
+                            " where dateTime >= " + str(work_item['minmax_first_ts']) +\
+                            " and dateTime < " + str(work_item['minmax_last_ts']) +\
+                            " order by dateTime"
+
+                    my_cur.execute(my_query)
+                    row = my_cur.fetchone()
+                    while row is not None:
+                        if row[self.row_extreme_max] is not None or row[self.row_extreme_min] is not None:
+                            nb_record_processed += 1
+                            self.loadMinMaxFromExtremeRow(work_item, a_mesure, row, mesure_cache_item)
+
+                        if a_mesure['iswind'] is True:
+                            min_max.append({'min': cur_min, 'max': cur_max, 'date_min': date_min,
+                                                 'date_max': date_max, 'max_dir': max_dir, 'mid': a_mesure['id'], 'obs_id': -1})
+                        else:
+                            min_max.append({'min': cur_min, 'max': cur_max, 'date_min': date_min,
+                                                 'date_max': date_max, 'mid': a_mesure['id'], 'obs_id': -1})
+                            
+                        row = my_cur.fetchone()
+                finally:
+                    my_cur.close()
+                    # if nb_record_processed > 0:
+                    #     process_length = datetime.now() - start_time
+                    #     t.myTools.logInfo(
+                    #         'weewx.archive_day_' + str(table_name) + " new records: " + str(nb_record_processed) + ' en ' + str(process_length/1000) + ' ms',
+                    #         my_span,
+                    #         {"svc": "migrate", "meteor":  work_item['meteor']})
+
+        finally:
+            myconn.close()
+            return min_max
 
     # --------------------------------
     # return the sql select statement
@@ -235,8 +316,8 @@ class MigrateDB:
             query_my += ', ' + a_mesure['archive_col']
 
         # finalize sql statements
-        query_my += " from archive where dateTime >= " + str(work_item['start_ts_archive_utc'])
-        query_my += " and dateTime < " + str(work_item['end_ts_archive_utc'])
+        query_my += " from archive where dateTime >= " + str(work_item['archive_first_ts'])
+        query_my += " and dateTime < " + str(work_item['archive_last_ts'])
 
         # query_my += " order by dateTime"""
         query_my += " order by dateTime"

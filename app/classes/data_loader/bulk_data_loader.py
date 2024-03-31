@@ -46,14 +46,10 @@ class BulkDataLoader(ABC):
     def fixMinMax(self, str_mesure_list, cur_poste, x_max_min_date, x_min_min_date):
         Exception("fixMinMax not implemented")
 
-    @abstractmethod
-    def addMinMaxData(self, cur_poste, minmax):
-        Exception("addMinMaxData not implemented")
-
     def getMeasures(self):
         return self.measures
 
-    def bulkLoad(self, cur_poste, data_iterator, load_missing_data):
+    def bulkLoad(self, cur_poste, data_iterator, load_missing_data, min_max=[]):
         pg_conn = None
         pg_cur = None
 
@@ -61,9 +57,7 @@ class BulkDataLoader(ABC):
             pg_conn = self.getPGConnexion()
             pg_cur = pg_conn.cursor()
 
-            min_max = self.loadObs(pg_cur, cur_poste, data_iterator, load_missing_data)
-
-            min_max = self.addMinMaxData(cur_poste, min_max)
+            min_max = self.loadObs(pg_cur, cur_poste, data_iterator, load_missing_data, min_max)
 
             if min_max is not None:
                 del_cde = self.LoadMaxMin(pg_cur, cur_poste, min_max)
@@ -84,10 +78,10 @@ class BulkDataLoader(ABC):
                 if pg_cur is not None:
                     pg_cur.close()
 
-    def loadObs(self, pg_cur, cur_poste, data_iterator, load_missing_data):
+    def loadObs(self, pg_cur, cur_poste, data_iterator, load_missing_data, min_max):
         sql_insert = "insert into obs(poste_id, date_utc, date_local, mesure_id, duration, value, qa_value) values "
 
-        minmax_values = []
+        minmax_other_len = len(min_max)
         data_args = []
         idx = 0
         cur_row = self.getNextRow(data_iterator)
@@ -120,10 +114,10 @@ class BulkDataLoader(ABC):
                             cur_row, col_mapping, a_mesure, cur_val, date_obs_local)
 
                         if a_mesure['iswind'] is True:
-                            minmax_values.append({'min': cur_min, 'max': cur_max, 'date_min': date_min,
+                            min_max.append({'min': cur_min, 'max': cur_max, 'date_min': date_min,
                                                  'date_max': date_max, 'max_dir': max_dir, 'mid': a_mesure['id'], 'obs_id': -1})
                         else:
-                            minmax_values.append({'min': cur_min, 'max': cur_max, 'date_min': date_min,
+                            min_max.append({'min': cur_min, 'max': cur_max, 'date_min': date_min,
                                                  'date_max': date_max, 'mid': a_mesure['id'], 'obs_id': -1})
 
                 if load_missing_data is True and (cur_poste.data.last_obs_date is not None or date_obs_local <= cur_poste.data.last_obs_date):
@@ -144,10 +138,10 @@ class BulkDataLoader(ABC):
 
         idx = 0
         while idx < len(new_ids):
-            minmax_values[idx]['obs_id'] = new_ids[idx][0]
+            min_max[idx + minmax_other_len]['obs_id'] = new_ids[idx][0]
             idx += 1
 
-        return minmax_values
+        return min_max
 
     def LoadMaxMin(self, pg_cur, cur_poste, new_records):
         # check: nico use: last_in_db for insert-update or insert..

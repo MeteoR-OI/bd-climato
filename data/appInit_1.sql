@@ -93,7 +93,7 @@ insert into mesures
 (60, 'radiation',       'radiation',        'radiation',         null,        null,     false,   false,    2,      false,    true,            null,
   '{"w_dump": "lambda x: x * 0.03"}'),
 (61, 'radiation_rate', 'radiation_rate',    'radiation',         null,        null,     false,   false,    3,      false,    true,            null,        '{}'),
-(62, 'uv_indice',       'uv',               'UV',                null,        null,     false,   false,    4,      false,    true,            null,        '{}'),
+(62, 'uv_indice',       'uv',               'UV',                null,        null,     false,   false,    3,      false,    true,            null,        '{}'),
 (70, 'rain',            'rain',             'rain',              null,        null,     false,   false,    2,      false,    true,            null,
   '{"w_dump": "lambda x: x * 10"}'),
 (71, 'rain rate',       'rain_rate',        'rainRate',          null,        null,     false,   false,    3,      false,    true,            null,        '{}'),
@@ -102,18 +102,18 @@ insert into mesures
 (91, 'soilmoist2',      'soil_moist2',      'soilMoist2',        null,        null,     false,   false,    1,      false,    true,    'soilmoist2',        '{}'),
 (92, 'soilmoist3',      'soil_moist3',      'soilMoist3',        null,        null,     false,   false,    1,      false,    true,    'soilmoist3',        '{}'),
 (93, 'soilmoist4',      'soil_moist4',      'soilMoist4',        null,        null,     false,   false,    1,      false,    true,    'soilmoist4',        '{}'),
-(94, 'soiltemp1',       'soil_temp1',       'soilTemp1',         null,        null,     false,   false,    3,      false,    true,     'soiltemp1',        '{}'),
-(95, 'soiltemp2',       'soil_temp2',       'soilTemp2',         null,        null,     false,   false,    3,      false,    true,     'soiltemt2',        '{}'),
-(96, 'soiltemp3',       'soil_temp3',       'soilTemp3',         null,        null,     false,   false,    3,      false,    true,     'soiltemp3',        '{}'),
-(97, 'soiltemp4',       'soil_temp4',       'soilTemp4',         null,        null,     false,   false,    3,      false,    true,     'soiltemp4',        '{}'),
+(94, 'soiltemp1',       'soil_temp1',       'soilTemp1',         null,        null,     false,   false,    4,      false,    true,     'soiltemp1',        '{}'),
+(95, 'soiltemp2',       'soil_temp2',       'soilTemp2',         null,        null,     false,   false,    4,      false,    true,     'soiltemt2',        '{}'),
+(96, 'soiltemp3',       'soil_temp3',       'soilTemp3',         null,        null,     false,   false,    4,      false,    true,     'soiltemp3',        '{}'),
+(97, 'soiltemp4',       'soil_temp4',       'soilTemp4',         null,        null,     false,   false,    4,      false,    true,     'soiltemp4',        '{}'),
 (100, 'voltage',         'voltage',         'consBatteryVoltage',null,        null,     false,   false,    3,      false,    true,            null,        '{}'),
 (110, 'wind dir',        'wind_dir',        'windDir',          'skip',       null,     false,   false,    0,      false,    true,            null,        '{}'),
 (111, 'wind',            'wind',            'windSpeed',        'wind',       110,      false,   true,     1,      false,    true,            null,
   '{"mfr_csv": "lambda x: x * 3.6"}'),
 (113, 'gust dir',        'wind_gust_dir',   'windGustDir',      'skip',       null,     false,   false,    0,      false,    true,  'wind_max_dir',        '{}'),
-(114, 'gust',            'wind_gust',       'windGust',         'wind',       113,      false,   true,     4,       true,    true,      'wind_max',
+(114, 'gust',            'wind_gust',       'windGust',         'wind',       113,      false,   true,     3,       true,    true,      'wind_max',
   '{"mfr_csv": "lambda x: x * 3.6"}'),
-(115, 'windchill',       'windchill',       'windchill',         null,        null,     false,   false,    3,      false,    true,            null,        '{}')
+(115, 'windchill',       'windchill',       'windchill',         null,        null,     false,   false,    4,      false,    true,            null,        '{}')
 ;
 
 insert into annotations
