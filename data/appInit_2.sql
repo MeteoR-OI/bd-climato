@@ -1,3 +1,100 @@
+-- ---------
+-- Triggers
+-- ---------
+/*
+*  maintain last_obs_date/id in poste table
+*  update last_obs table
+*/ 
+CREATE OR REPLACE FUNCTION create_obs_trigger_fn()
+  RETURNS TRIGGER LANGUAGE PLPGSQL AS
+$BODY$
+DECLARE
+    obs_dat timestamp;
+    last_obs_dat timestamp;
+BEGIN
+  select last_obs_date  into obs_dat from postes where id = NEW.poste_id;
+  if obs_dat is null or new.date_local > obs_dat then
+    update postes set last_obs_date = NEW.date_local, last_obs_id = NEW.id where id = NEW.poste_id;
+  end if;
+
+  -- Update last_obs
+  select date_local from last_obs where poste_id = NEW.poste_id and mesure_id = NEW.mesure_id into obs_dat;
+
+  if obs_dat is null then
+    insert into last_obs (poste_id, mesure_id, date_local, value) values (NEW.poste_id, NEW.mesure_id, NEW.date_local, NEW.value);
+  elsif obs_dat < NEW.date_local then
+    update last_obs set date_local = NEW.date_local, value = NEW.value where poste_id = NEW.poste_id and mesure_id = NEW.mesure_id;
+  end if;
+
+  return NEW;
+END
+$BODY$;
+
+CREATE OR REPLACE TRIGGER create_obs_trigger
+  AFTER INSERT ON obs
+  FOR EACH ROW EXECUTE PROCEDURE create_obs_trigger_fn();
+
+/*
+*  maintain last_obs_date/id in poste table
+*  cascade qa_value to x_min/x_max tables
+*  update last_obs table
+*/ 
+CREATE OR REPLACE FUNCTION update_obs_trigger_fn()
+  RETURNS TRIGGER LANGUAGE PLPGSQL AS
+$BODY$
+DECLARE
+BEGIN
+  if NEW.qa_value <> OLD.qa_value then
+    update x_min set qa_min = NEW.qa_value where obs_id = NEW.id;
+    update x_max set qa_max = NEW.qa_value where obs_id = NEW.id;
+  end if;
+  return NEW;
+END
+$BODY$;
+
+CREATE OR REPLACE TRIGGER update_obs_trigger
+  AFTER UPDATE ON obs
+  FOR EACH ROW EXECUTE PROCEDURE update_obs_trigger_fn();
+
+/*
+*  cascade delete obs to x_min/x_max
+*/ 
+CREATE OR REPLACE FUNCTION delete_obs_trigger_fn()
+  RETURNS TRIGGER LANGUAGE PLPGSQL AS
+$BODY$
+DECLARE
+BEGIN
+    delete from x_min where obs_id = OLD.id;
+    delete from x_max where obs_id = OLD.id;
+  return OLD;
+END
+$BODY$;
+
+CREATE OR REPLACE TRIGGER delete_obs_trigger
+  AFTER UPDATE OR DELETE ON x_max
+  FOR EACH ROW EXECUTE PROCEDURE delete_obs_trigger_fn();
+
+/********************
+* Init TimeScaleDB
+********************/
+  CREATE EXTENSION IF NOT EXISTS timescaledb;
+  ALTER TABLE obs DROP CONSTRAINT obs_pkey;
+  SELECT create_hypertable('obs', 'date_local');
+  SELECT set_chunk_time_interval('obs', INTERVAL '100 days');
+  DROP index if exists obs_poste_id_7ed1db30;
+  DROP index if exists obs_mesure_id_2198080c;
+
+  ALTER TABLE x_min DROP CONSTRAINT x_min_pkey;
+  SELECT create_hypertable('x_min', 'date_local');
+  SELECT set_chunk_time_interval('x_min',  INTERVAL '200 days');
+  DROP index if exists x_min_mesure_id_915a2d2e;
+  DROP index if exists x_min_poste_id_a7ee3864;
+
+  ALTER TABLE x_max DROP CONSTRAINT x_max_pkey;
+  SELECT create_hypertable('x_max', 'date_local');
+  SELECT set_chunk_time_interval('x_max',  INTERVAL '200 days');
+  DROP index if exists x_max_mesure_id_a633699c;
+  DROP index if exists x_max_poste_id_529ea905;
 
 /*
 * obs_hour

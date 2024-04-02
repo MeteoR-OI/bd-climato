@@ -171,69 +171,22 @@ select 'nb postes: ' || count(*) from postes;
 select 'nb mesures: ' || count(*) from mesures;
 select 'nb annotations: ' || count(*) from annotations;
 
--- ---------
--- Triggers
--- ---------
+/****************
+*  PROCEDURES
+****************/
 -- regenerer la table last_obs
 CREATE OR REPLACE PROCEDURE refesh_last_obs()
 LANGUAGE SQL
 AS $BODY$
   delete from last_obs;
-  insert into last_obs(poste_id, mesure_id, date_local, value) select poste_id, mesure_id, max(date_local) as date_local, last(value, date_local) as value  from obs group by 1,2;
+  with max_dt as (select poste_id, mesure_id, max(date_local) as date_local from obs group by 1,2)
+   insert into last_obs(poste_id, mesure_id, date_local, value)
+     select m.poste_id, m.mesure_id, m.date_local, (select o.value from obs o where o.mesure_id = m.mesure_id and o.poste_id = m.poste_id and m.date_local = o.date_local limit 1) as value from max_dt as m;
+ $BODY$;
+
+-- regenerer la table last_obs_date
+CREATE OR REPLACE PROCEDURE refesh_last_obs_date()
+LANGUAGE SQL
+AS $BODY$
+with max_dt as (select poste_id as pid, max(date_local) as ldt from obs group by 1) update postes set last_obs_date = (select ldt from max_dt where pid=id);
 $BODY$;
-
-/*
-*  maintain last_obs_date/id in poste table
-*  cascade qa_value to x_min/x_max tables
-*  update last_obs table
-*/ 
-CREATE OR REPLACE FUNCTION create_update_obs_trigger_fn()
-  RETURNS TRIGGER LANGUAGE PLPGSQL AS
-$BODY$
-DECLARE
-    obs_dat timestamp;
-    last_obs_dat timestamp;
-BEGIN
-  select last_obs_date  into obs_dat from postes where id = NEW.poste_id;
-  if obs_dat is null or new.date_local > obs_dat then
-    update postes set last_obs_date = NEW.date_local, last_obs_id = NEW.id where id = NEW.poste_id;
-  end if;
-  if NEW.qa_value <> OLD.qa_value then
-    update x_min set qa_min = NEW.qa_value where obs_id = NEW.id;
-    update x_max set qa_max = NEW.qa_value where obs_id = NEW.id;
-  end if;
-
-  -- Update last_obs
-  select date_local from last_obs where poste_id = NEW.poste_id and mesure_id = NEW.mesure_id into obs_dat;
-
-  if obs_dat is null then
-    insert into last_obs (poste_id, mesure_id, date_local, value) values (NEW.poste_id, NEW.mesure_id, NEW.date_local, NEW.value);
-  elsif obs_dat < NEW.date_local then
-    update last_obs set date_local = NEW.date_local, value = NEW.value where poste_id = NEW.poste_id and mesure_id = NEW.mesure_id;
-  end if;
-
-  return NEW;
-END
-$BODY$;
-
-CREATE OR REPLACE TRIGGER create_update_obs_trigger
-  AFTER INSERT OR UPDATE ON obs
-  FOR EACH ROW EXECUTE PROCEDURE create_update_obs_trigger_fn();
-
-/*
-*  cascade delete obs to x_min/x_max
-*/ 
-CREATE OR REPLACE FUNCTION delete_obs_trigger_fn()
-  RETURNS TRIGGER LANGUAGE PLPGSQL AS
-$BODY$
-DECLARE
-BEGIN
-    delete from x_min where obs_id = OLD.id;
-    delete from x_max where obs_id = OLD.id;
-  return OLD;
-END
-$BODY$;
-
-CREATE OR REPLACE TRIGGER delete_obs_trigger
-  AFTER INSERT OR UPDATE ON x_max
-  FOR EACH ROW EXECUTE PROCEDURE delete_obs_trigger_fn();
