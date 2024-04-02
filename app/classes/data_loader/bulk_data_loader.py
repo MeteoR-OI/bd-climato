@@ -55,7 +55,7 @@ class BulkDataLoader(ABC):
         pg_cur = None
 
         try:
-            pg_conn = self.getPGConnexion()
+            pg_conn = getPGConnexion()
             pg_cur = pg_conn.cursor()
 
             min_max = self.loadObs(pg_cur, cur_poste, data_iterator, load_missing_data, min_max)

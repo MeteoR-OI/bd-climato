@@ -2,7 +2,7 @@ import mysql.connector
 import psycopg2
 from django.conf import settings
 
-def getPGConnexion(self):
+def getPGConnexion():
     return psycopg2.connect(
         host="localhost",
         user="postgres",
@@ -10,7 +10,7 @@ def getPGConnexion(self):
         database=settings.PG_DATABASE
     )
 
-def getMSQLConnection(self, meteor):
+def getMSQLConnection(meteor):
     myconn = mysql.connector.connect(
         host="localhost",
         user="nico",

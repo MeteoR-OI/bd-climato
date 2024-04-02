@@ -74,7 +74,7 @@ class MigrateDB:
     # -----------------
     def processWorkItem(self, work_item, my_span):
         try:
-            pgconn = self.getPGConnexion()
+            pgconn = getPGConnexion()
             pg_cur = pgconn.cursor()
             meteor = work_item['meteor']
             current_ts = datetime.now().timestamp() + 1
@@ -118,10 +118,10 @@ class MigrateDB:
     def getNewDateBraket(self, work_item, my_span):
 
         """Get start_dt/end_dt from postes, and archive table"""
-        myconn = self.getMSQLConnection(work_item['meteor'])
+        myconn = getMSQLConnection(work_item['meteor'])
         my_cur = myconn.cursor()
 
-        pgconn = self.getPGConnexion()
+        pgconn = getPGConnexion()
         pg_cur = pgconn.cursor()
 
         work_item['old_load_json'] = False
@@ -207,7 +207,7 @@ class MigrateDB:
             myconn.close()
 
     # def updateLoadJsonValue(self, work_item):
-    #     pgconn = self.getPGConnexion()
+    #     pgconn = getPGConnexion()
     #     pg_cur = pgconn.cursor()
 
     #     try:
@@ -265,7 +265,7 @@ class MigrateDB:
         query_pg, query_args = self.prepareSqlInsertStructure()
 
         # get a cursor to our archive db
-        myconn = self.getMSQLConnection(work_item['meteor'])
+        myconn = getMSQLConnection(work_item['meteor'])
         my_cur = myconn.cursor()
 
         # execute the select statement
@@ -430,7 +430,7 @@ class MigrateDB:
     # generate max/min from WeeWX records
     # ------------------------------------
     def loadMaxminFromWeewx(self, work_item, new_records, my_span):
-        myconn = self.getMSQLConnection(work_item['meteor'])
+        myconn = getMSQLConnection(work_item['meteor'])
         try:
             for a_mesure in self.measures:
                 # debug
@@ -794,7 +794,7 @@ class MigrateDB:
     #     last_x_ts = None
 
     #     try:
-    #         pgconn = self.getPGConnexion()
+    #         pgconn = getPGConnexion()
     #         pg_cur = pgconn.cursor()
     #         pg_cur.execute("select id, last_obs_date, last_extremes_date, load_json from postes where meteor = '" + meteor + "'")
     #         row = pg_cur.fetchone()
@@ -926,7 +926,7 @@ class MigrateDB:
     def loadSelfVariables(self):
         pgconn = None
         try:
-            pgconn = self.getPGConnexion()
+            pgconn = getPGConnexion()
 
             # load mesures definition in memory
             self.measures = self.getMeasures(pgconn)

@@ -64,7 +64,7 @@ class MigrateDB:
     # ---------------------
     def succeedWorkItem(self, work_item):
         # refresh our materialized view
-        pgconn = self.getPGConnexion()
+        pgconn = getPGConnexion()
         pgconn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         pg_cur = pgconn.cursor()
 
@@ -129,7 +129,7 @@ class MigrateDB:
                 # minmax = self.loadMinMaxFromWeeWX( work_item)
 
                 # get a cursor to our archive db
-                myconn = self.getMSQLConnection(work_item['meteor'])
+                myconn = getMSQLConnection(work_item['meteor'])
                 my_cur = myconn.cursor()
 
                 query_my = self.getWeewxSelectSql(work_item)
@@ -161,7 +161,7 @@ class MigrateDB:
     def getNewDateBracket(self, cur_poste, work_item):
 
         """Get start_dt/end_dt from postes, and archive table"""
-        myconn = self.getMSQLConnection(work_item['meteor'])
+        myconn = getMSQLConnection(work_item['meteor'])
         my_cur = myconn.cursor()
 
         work_item['old_load_raw_data'] = False
@@ -235,7 +235,7 @@ class MigrateDB:
     # ------------------------------------
     def loadMinMaxFromWeeWX(self, work_item):
         min_max = []
-        myconn = self.getMSQLConnection(work_item['meteor'])
+        myconn = getMSQLConnection(work_item['meteor'])
         try:
             for a_mesure in self.measures:
                 # debug

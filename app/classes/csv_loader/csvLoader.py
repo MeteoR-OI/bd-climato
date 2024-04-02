@@ -97,7 +97,7 @@ class CsvLoader:
         os.rename(self.base_dir + "/" + work_item['f'], target_dir + work_item['f'])
 
         # refresh our materialized view
-        pgconn = self.getPGConnexion()
+        pgconn = getPGConnexion()
         pgconn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         pg_cur = pgconn.cursor()
 
@@ -126,7 +126,7 @@ class CsvLoader:
     # Load data per block
     def processWorkItem(self, work_item: json):
         cur_provider = self.__all_providers[work_item['idx_provider']]
-        pg_conn = self.getPGConnexion()
+        pg_conn = getPGConnexion()
 
         for data_to_flush in cur_provider.nextBlockLines(work_item['id_spec']):
             # data_to_flush = {

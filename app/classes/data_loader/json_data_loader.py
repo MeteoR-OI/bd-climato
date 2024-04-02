@@ -53,7 +53,7 @@ class JsonDataLoader(ABC):
         max_data = []
         idx_min_map = []
         idx_max_map = []
-        pg_conn = self.getPGConnexion()
+        pg_conn = getPGConnexion()
         pg_cur = pg_conn.cursor()
         sql_insert = "insert into obs(poste_id, date_utc, date_local, mesure_id, duration, value, qa_value) values "
         insert_cde_min = "insert into x_min(obs_id, date_local, poste_id, mesure_id, min, min_time, qa_min) values "

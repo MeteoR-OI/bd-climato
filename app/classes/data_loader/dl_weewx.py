@@ -1,6 +1,7 @@
 from app.classes.data_loader.bulk_data_loader import BulkDataLoader
 from app.tools.myTools import FromTimestampToDateTime
 from app.classes.repository.obsMeteor import QA
+from app.tools.dbTools import getPGConnexion
 
 
 class DlWeewx(BulkDataLoader):
@@ -20,7 +21,7 @@ class DlWeewx(BulkDataLoader):
         mesures = []
         pg_query = "select id, archive_col, archive_table, field_dir, json_input, min, max, agreg_type, is_wind, allow_zero, convert from mesures order by id"
 
-        pgconn = self.getPGConnexion()
+        pgconn = getPGConnexion()
         pg_cur = pgconn.cursor()
         pg_cur.execute(pg_query)
 

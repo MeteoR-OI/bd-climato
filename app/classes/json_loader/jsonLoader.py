@@ -121,7 +121,7 @@ class JsonLoader(JsonDataLoader):
         os.rename(self.base_dir + "/" + work_item['f'], filename_prefix + work_item['f'])
 
         # refresh our materialized view
-        pgconn = self.getPGConnexion()
+        pgconn = getPGConnexion()
         pgconn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         pg_cur = pgconn.cursor()
 
