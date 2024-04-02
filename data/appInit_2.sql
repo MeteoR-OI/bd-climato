@@ -1,6 +1,7 @@
 
--- get last values
--- select poste_id, name, last(date_local, mesure_id), last(avg, mesure_id)  from obs_month join mesures on mesures.id = mesure_id group by 1,2 order by 1,2;
+/*
+* obs_hour
+*/
 create materialized view obs_hour WITH (timescaledb.continuous) as
   select
         timescaledb_experimental.time_bucket_ng('1 hour', o.date_local, origin => '1950-01-01') as date_local,
@@ -15,8 +16,10 @@ create materialized view obs_hour WITH (timescaledb.continuous) as
           WHEN m.agreg_type = 4 THEN min(o.value)
            END AS value
   from obs o join mesures m on m.id = mesure_id
-  where qa_value != 9 and duration <= 60 and m.agreg_type != 2
-  group by 1,2,3,4;
+  where qa_value != 9 and duration <= 60 and m.agreg_type != 0
+  group by 1,2,3,4
+  order by 1,2,3
+;
 
 ALTER MATERIALIZED VIEW obs_hour set (timescaledb.materialized_only = false);
 
@@ -25,6 +28,9 @@ SELECT add_continuous_aggregate_policy('obs_hour',
   end_offset => NULL,
   schedule_interval => INTERVAL '30 minutes');
 
+/*
+* obs_day
+*/
 create materialized view obs_day WITH (timescaledb.continuous) as
   select
         timescaledb_experimental.time_bucket_ng('1 day', o.date_local, origin => '1950-01-01') as date_local,
@@ -40,8 +46,9 @@ create materialized view obs_day WITH (timescaledb.continuous) as
            END AS value
   from obs o join mesures m on m.id = mesure_id
   where qa_value != 9 and m.agreg_type != 0
-  group by 1,2,3,4;
-
+  group by 1,2,3,4
+  order by 1,2,3
+;
 
 ALTER MATERIALIZED VIEW obs_day set (timescaledb.materialized_only = false);
 
@@ -50,7 +57,9 @@ SELECT add_continuous_aggregate_policy('obs_day',
   end_offset => NULL,
   schedule_interval => INTERVAL '30 minutes');
 
-
+/*
+* obs_month
+*/
 create materialized view obs_month WITH (timescaledb.continuous) as
   select
         timescaledb_experimental.time_bucket_ng('1 month', o.date_local, origin => '1950-01-01') as date_local,
@@ -65,8 +74,9 @@ create materialized view obs_month WITH (timescaledb.continuous) as
           WHEN o.agreg_type = 4 THEN min(o.value)
            END AS value
   from obs_day o join mesures m on m.id = mesure_id
-  group by 1,2,3,4;
-
+  group by 1,2,3,4
+  order by 1,2,3
+;
 
 ALTER MATERIALIZED VIEW obs_month set (timescaledb.materialized_only = false);
 
@@ -75,6 +85,9 @@ SELECT add_continuous_aggregate_policy('obs_month',
   end_offset => NULL,
   schedule_interval => INTERVAL '1 day');
 
+/*
+* x_min_day
+*/
 create materialized view x_min_day WITH (timescaledb.continuous) as
   select
         timescaledb_experimental.time_bucket_ng('1 day', x.date_local, origin => '1950-01-01') as date_local,
@@ -87,9 +100,10 @@ create materialized view x_min_day WITH (timescaledb.continuous) as
         END AS min,
         first(x.min_time, x.min) as min_time
   from x_min x join mesures m on m.id = x.mesure_id
-  where x.qa_min != 9 and m.agreg_type != 3 and m.agreg_type != 0
-  group by 1,2,3,4;
-
+  where x.qa_min != 9 and m.agreg_type != 3 and m.agreg_type != 0 and m.min is true
+  group by 1,2,3,4
+  order by 1,2,3
+;
 
 ALTER MATERIALIZED VIEW x_min_day set (timescaledb.materialized_only = false);
 
@@ -98,7 +112,9 @@ SELECT add_continuous_aggregate_policy('x_min_day',
   end_offset => NULL,
   schedule_interval => INTERVAL '6 hours');
 
-
+/*
+* x_min_month
+*/
 create materialized view x_min_month WITH (timescaledb.continuous) as
   select
         timescaledb_experimental.time_bucket_ng('1 month', date_local, origin => '1950-01-01') as date_local,
@@ -108,7 +124,9 @@ create materialized view x_min_month WITH (timescaledb.continuous) as
         min(min) AS min,    -- on prend le min des min quotidiens
         first(min_time, min) as min_time
   from x_min_day
- group by 1,2,3,4;
+ group by 1,2,3,4
+ order by 1,2,3
+;
 
 ALTER MATERIALIZED VIEW x_min_month set (timescaledb.materialized_only = false);
 
@@ -117,6 +135,9 @@ SELECT add_continuous_aggregate_policy('x_min_month',
   end_offset => NULL,
   schedule_interval => INTERVAL '1 day');
 
+/*
+* x_max_day
+*/
 create materialized view x_max_day WITH (timescaledb.continuous) as
   select
         timescaledb_experimental.time_bucket_ng('1 day', x.date_local, origin => '1950-01-01') as date_local,
@@ -130,8 +151,10 @@ create materialized view x_max_day WITH (timescaledb.continuous) as
         last(x.max_time, x.max) as max_time,
         last(x.max_dir, x.max) as max_dir
   from x_max x join mesures m on m.id = mesure_id
-  where qa_max != 9 and m.agreg_type != 4 and m.agreg_type != 0
-  group by 1,2,3,4;
+  where qa_max != 9 and m.agreg_type != 4 and m.agreg_type != 0 and m.max is true
+  group by 1,2,3,4
+  order by 1,2,3
+;
 
 ALTER MATERIALIZED VIEW x_max_day set (timescaledb.materialized_only = false);
 
@@ -140,6 +163,9 @@ SELECT add_continuous_aggregate_policy('x_max_day',
   end_offset => NULL,
   schedule_interval => INTERVAL '6 hours');
 
+/*
+* x_max_month
+*/
 create materialized view x_max_month WITH (timescaledb.continuous) as
   select
         timescaledb_experimental.time_bucket_ng('1 month', date_local, origin => '1950-01-01') as date_local,
@@ -150,7 +176,9 @@ create materialized view x_max_month WITH (timescaledb.continuous) as
         last(max_time, max) as max_time,
         last(max_dir, max) as max_dir
   from x_max_day
-  group by 1,2,3,4;
+  group by 1,2,3,4
+  order by 1,2,3
+;
 
 ALTER MATERIALIZED VIEW x_max_month set (timescaledb.materialized_only = false);
 
@@ -159,17 +187,18 @@ SELECT add_continuous_aggregate_policy('x_max_month',
   end_offset => NULL,
   schedule_interval => INTERVAL '1 day');
 
-CREATE OR REPLACE PROCEDURE refresh_all_aggregates()
+-- refresh all materialized views
+CREATE OR REPLACE PROCEDURE refresh_all_mv(start_date timestamp = null)
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  CALL refresh_continuous_aggregate('obs_hour', null, null);
-  CALL refresh_continuous_aggregate('obs_day', null, null);
-  CALL refresh_continuous_aggregate('obs_month', null, null);
-  CALL refresh_continuous_aggregate('x_min_day', null, null);
-  CALL refresh_continuous_aggregate('x_min_month', null, null);
-  CALL refresh_continuous_aggregate('x_max_day', null, null);
-  CALL refresh_continuous_aggregate('x_max_month', null, null);
+  CALL refresh_continuous_aggregate('obs_hour', start_date, null);
+  CALL refresh_continuous_aggregate('obs_day', start_date, null);
+  CALL refresh_continuous_aggregate('obs_month', start_date, null);
+  CALL refresh_continuous_aggregate('x_min_day', start_date, null);
+  CALL refresh_continuous_aggregate('x_min_month', start_date, null);
+  CALL refresh_continuous_aggregate('x_max_day', start_date, null);
+  CALL refresh_continuous_aggregate('x_max_month', start_date, null);
 END; $$;
 
 -- create materialized view compare_month WITH (timescaledb.continuous) as
@@ -199,77 +228,6 @@ END; $$;
 --       and mi.date_local > '202-12-01'
 --       and ma.date_local > '202-12-01'
 --     group by 1,2;
-
--- ---------
--- Triggers
--- ---------
-/*
-*  maintain last_obs_date/id in poste table
-*  cascade qa_value to x_min/x_max tables
-*/ 
-CREATE OR REPLACE FUNCTION create_update_obs_trigger_fn()
-  RETURNS TRIGGER LANGUAGE PLPGSQL AS
-$BODY$
-DECLARE
-    obs_dat timestamp;
-    last_obs_dat timestamp;
-BEGIN
-  select last_obs_date  into obs_dat from postes where id = NEW.poste_id;
-  if obs_dat is null or new.date_local > obs_dat then
-    update postes set last_obs_date = NEW.date_local, last_obs_id = NEW.id where id = NEW.poste_id;
-  end if;
-  if NEW.qa_value <> OLD.qa_value then
-    update x_min set qa_min = NEW.qa_value where obs_id = NEW.id;
-    update x_max set qa_max = NEW.qa_value where obs_id = NEW.id;
-  end if;
-
-  -- Update last_obs
-  select date_local from last_obs where poste_id = NEW.poste_id and mesure_id = NEW.mesure_id into last_obs_dat;
-  if obs_dat is null then
-    insert into last_obs (poste_id, mesure_id, date_local, value) values (NEW.poste_id, NEW.mesure_id, NEW.date_local, NEW.value);
-  elsif last_obs_dat < NEW.date_local then
-    update last_obs set date_local = NEW.date_local, value = NEW.value where poste_id = NEW.poste_id and mesure_id = NEW.mesure_id;
-  end if;
-
-  return NEW;
-END
-$BODY$;
-
-CREATE OR REPLACE TRIGGER create_update_obs_trigger
-  AFTER INSERT OR UPDATE ON obs
-  FOR EACH ROW EXECUTE PROCEDURE create_update_obs_trigger_fn();
-
-/*
-*  cascade delete obs to x_min/x_max
-*/ 
-CREATE OR REPLACE FUNCTION delete_obs_trigger_fn()
-  RETURNS TRIGGER LANGUAGE PLPGSQL AS
-$BODY$
-DECLARE
-BEGIN
-    delete from x_min where obs_id = OLD.id;
-    delete from x_max where obs_id = OLD.id;
-  return OLD;
-END
-$BODY$;
-
-CREATE OR REPLACE TRIGGER delete_obs_trigger
-  AFTER INSERT OR UPDATE ON x_max
-  FOR EACH ROW EXECUTE PROCEDURE delete_obs_trigger_fn();
-
-
--- CREATE OR REPLACE FUNCTION get_last_obs(pid integer)
--- RETURNS TABLE(poste_id smallint, ) LANGUAGE plpgsql
--- AS $$
--- DECLARE
---   select last(date_local, mesure_id) as date_local, last(avg, mesure_id) as mesure_id
---     from obs_month join mesures on mesures.id = mesure_id
---     where poste_id = pid
---     group by 1,2
---     order by 1,2;
--- END;
--- $$
--- ;
 
 /*
 Id_station;Id_omm;Nom_usuel;Latitude;Longitude;Altitude;Date_ouverture;Pack

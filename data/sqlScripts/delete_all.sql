@@ -1,4 +1,5 @@
 delete from obs;
+delete from last_obs;
 delete from x_min;
 delete from x_max;
 delete from incidents;

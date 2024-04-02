@@ -90,11 +90,11 @@ insert into mesures
 (51, 'leaftemp2',       'leaf_temp2',       'leafTemp2',         null,        null,     false,   false,    1,      false,    true,     'leaftemp2',        '{}'),
 (54, 'leafwet1',        'leaf_wet1',        'leafWet1',          null,        null,     false,   false,    1,      false,    true,      'leafwet1',        '{}'),
 (55, 'leafwet2',        'leaf_wet2',        'leafWet2',          null,        null,     false,   false,    1,      false,    true,      'leafwet2',        '{}'),
-(60, 'radiation',       'radiation',        'radiation',         null,        null,     false,   false,    2,      false,    true,            null,
+(60, 'radiation',       'radiation',        'radiation',       'skip',        null,     false,   false,    2,      false,    true,            null,
   '{"w_dump": "lambda x: x * 0.03"}'),
 (61, 'radiation_rate', 'radiation_rate',    'radiation',         null,        null,     false,   false,    3,      false,    true,            null,        '{}'),
 (62, 'uv_indice',       'uv',               'UV',                null,        null,     false,   false,    3,      false,    true,            null,        '{}'),
-(70, 'rain',            'rain',             'rain',              null,        null,     false,   false,    2,      false,    true,            null,
+(70, 'rain',            'rain',             'rain',            'skip',        null,     false,   false,    2,      false,    true,            null,
   '{"w_dump": "lambda x: x * 10"}'),
 (71, 'rain rate',       'rain_rate',        'rainRate',          null,        null,     false,   false,    3,      false,    true,            null,        '{}'),
 (80, 'rx',              'rx',               'rxCheckPercent',    null,        null,     false,   false,    4,      false,    true,            null,        '{}'),
@@ -170,3 +170,70 @@ SELECT SETVAL('annotations_id_seq', (SELECT MAX(id) FROM annotations));
 select 'nb postes: ' || count(*) from postes;
 select 'nb mesures: ' || count(*) from mesures;
 select 'nb annotations: ' || count(*) from annotations;
+
+-- ---------
+-- Triggers
+-- ---------
+-- regenerer la table last_obs
+CREATE OR REPLACE PROCEDURE refesh_last_obs()
+LANGUAGE SQL
+AS $BODY$
+  delete from last_obs;
+  insert into last_obs(poste_id, mesure_id, date_local, value) select poste_id, mesure_id, max(date_local) as date_local, last(value, date_local) as value  from obs group by 1,2;
+$BODY$;
+
+/*
+*  maintain last_obs_date/id in poste table
+*  cascade qa_value to x_min/x_max tables
+*  update last_obs table
+*/ 
+CREATE OR REPLACE FUNCTION create_update_obs_trigger_fn()
+  RETURNS TRIGGER LANGUAGE PLPGSQL AS
+$BODY$
+DECLARE
+    obs_dat timestamp;
+    last_obs_dat timestamp;
+BEGIN
+  select last_obs_date  into obs_dat from postes where id = NEW.poste_id;
+  if obs_dat is null or new.date_local > obs_dat then
+    update postes set last_obs_date = NEW.date_local, last_obs_id = NEW.id where id = NEW.poste_id;
+  end if;
+  if NEW.qa_value <> OLD.qa_value then
+    update x_min set qa_min = NEW.qa_value where obs_id = NEW.id;
+    update x_max set qa_max = NEW.qa_value where obs_id = NEW.id;
+  end if;
+
+  -- Update last_obs
+  select date_local from last_obs where poste_id = NEW.poste_id and mesure_id = NEW.mesure_id into obs_dat;
+
+  if obs_dat is null then
+    insert into last_obs (poste_id, mesure_id, date_local, value) values (NEW.poste_id, NEW.mesure_id, NEW.date_local, NEW.value);
+  elsif obs_dat < NEW.date_local then
+    update last_obs set date_local = NEW.date_local, value = NEW.value where poste_id = NEW.poste_id and mesure_id = NEW.mesure_id;
+  end if;
+
+  return NEW;
+END
+$BODY$;
+
+CREATE OR REPLACE TRIGGER create_update_obs_trigger
+  AFTER INSERT OR UPDATE ON obs
+  FOR EACH ROW EXECUTE PROCEDURE create_update_obs_trigger_fn();
+
+/*
+*  cascade delete obs to x_min/x_max
+*/ 
+CREATE OR REPLACE FUNCTION delete_obs_trigger_fn()
+  RETURNS TRIGGER LANGUAGE PLPGSQL AS
+$BODY$
+DECLARE
+BEGIN
+    delete from x_min where obs_id = OLD.id;
+    delete from x_max where obs_id = OLD.id;
+  return OLD;
+END
+$BODY$;
+
+CREATE OR REPLACE TRIGGER delete_obs_trigger
+  AFTER INSERT OR UPDATE ON x_max
+  FOR EACH ROW EXECUTE PROCEDURE delete_obs_trigger_fn();
