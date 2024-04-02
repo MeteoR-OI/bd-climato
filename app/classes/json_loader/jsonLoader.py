@@ -20,6 +20,7 @@ from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import app.tools.myTools as t
 from app.tools.jsonPlus import JsonPlus
 from django.conf import settings
+from app.tools.dbTools import getPGConnexion
 import json
 import os
 
@@ -226,11 +227,3 @@ class JsonLoader(JsonDataLoader):
                 idx_global += 1
 
         work_item['is_loaded'] = True
-
-    def getPGConnexion(self):
-        return psycopg2.connect(
-            host="localhost",
-            user="postgres",
-            password="Funiculi",
-            database="climato"
-        )

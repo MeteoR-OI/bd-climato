@@ -3,6 +3,7 @@ from app.classes.repository.obsMeteor import QA
 from app.classes.repository.mesureMeteor import MesureMeteor
 import psycopg2
 from datetime import datetime
+from app.tools.dbTools import getPGConnexion
 
 
 class BulkDataLoader(ABC):
@@ -208,10 +209,3 @@ class BulkDataLoader(ABC):
         # (Load Need to remove min/max k=linked with obs, when mesure is a sum
         return self.fixMinMax(str_mesure_list, cur_poste, x_max_min_date, x_min_min_date)
 
-    def getPGConnexion(self):
-        return psycopg2.connect(
-            host="localhost",
-            user="postgres",
-            password="Funiculi",
-            database="climato"
-        )

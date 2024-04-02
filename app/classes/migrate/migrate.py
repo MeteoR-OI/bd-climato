@@ -18,6 +18,7 @@ import app.tools as t
 from app.tools.myTools import FromTimestampToDateTime, AsTimezone, GetFirstDayNextMonthFromTs
 from app.classes.repository.posteMeteor import PosteMeteor
 from app.classes.data_loader.dl_weewx import DlWeewx
+from app.tools.dbTools import getPGConnexion, getMSQLConnection
 import mysql.connector
 import psycopg2
 from psycopg2 import sql
@@ -322,31 +323,3 @@ class MigrateDB:
         # query_my += " order by dateTime"""
         query_my += " order by dateTime"
         return query_my
-
-    def getPGConnexion(self):
-        return psycopg2.connect(
-            host="localhost",
-            user="postgres",
-            password="Funiculi",
-            database="climato"
-        )
-
-    def getMSQLConnection(self, meteor):
-        myconn = mysql.connector.connect(
-            host="localhost",
-            user="nico",
-            password="Funiculi",
-            database=meteor
-        )
-        if myconn.is_connected() is False:
-            raise Exception("bug in db access")
-
-        # set session timezone to utc
-        my_cur = myconn.cursor()
-        # my_cur.execute("set time_zone = '+00:00'")
-        my_cur.execute('SET @@session.time_zone = "+00:00"')
-        myconn.commit()
-        my_cur.close()
-
-        myconn.time_zone = "+00:00"
-        return myconn

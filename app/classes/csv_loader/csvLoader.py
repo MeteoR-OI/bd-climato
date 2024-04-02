@@ -19,6 +19,7 @@ import psycopg2
 from psycopg2 import sql
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from app.classes.csv_loader.csv_meteoFR import CSV_MeteoFR
+from app.tools.dbTools import getPGConnexion
 
 
 class CsvLoader:
@@ -207,11 +208,3 @@ class CsvLoader:
             args_max = ','.join(pg_cur.mogrify("( %s, %s, %s, %s, %s, %s, %s, %s)", i).decode('utf-8')
                                 for i in max_data_shrinked)
             pg_cur.execute(sql_max_insert + args_max)
-
-    def getPGConnexion(self):
-        return psycopg2.connect(
-            host="localhost",
-            user="postgres",
-            password="Funiculi",
-            database="climato"
-        )

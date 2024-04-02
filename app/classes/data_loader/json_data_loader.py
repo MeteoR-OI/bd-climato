@@ -6,6 +6,7 @@ from datetime import timedelta
 from django.conf import settings
 import os
 from enum import Enum
+from app.tools.dbTools import getPGConnexion
 
 
 class IDX(Enum):
@@ -219,11 +220,3 @@ class JsonDataLoader(ABC):
             my_val_max_dir,
             my_duration
         ]
-
-    def getPGConnexion(self):
-        return psycopg2.connect(
-            host="localhost",
-            user="postgres",
-            password="Funiculi",
-            database="climato"
-        )
