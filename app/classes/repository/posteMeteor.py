@@ -1,4 +1,4 @@
-from app.models import Poste
+from app.models import Poste, Load_Type, Data_Source
 
 
 class PosteMeteor:
@@ -11,7 +11,8 @@ class PosteMeteor:
         p2=PosteMeteor("BBF015") -> recupere le poste meteor BBF015
     """
 
-    Load_Type = Poste.Load_Type
+    LoadType = Load_Type
+    DataSource = Data_Source
 
     def __init__(self, key):
         if 'int' in str(type(key)):
@@ -42,6 +43,15 @@ class PosteMeteor:
     def getPosteByMeteor(meteor: str):
         if Poste.objects.filter(meteor=meteor).exists():
             return Poste(meteor)
+        else:
+            return None
+
+    @staticmethod
+    def getPosteByCode(other_code: str):
+        if Poste.objects.filter(other_code=other_code).exists():
+            p = Poste.objects.filter(other_code=other_code).first()
+            cur_poste = PosteMeteor(p.meteor)
+            return cur_poste
         else:
             return None
 

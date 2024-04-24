@@ -1,4 +1,4 @@
-from app.models import Mesure
+from app.models import Mesure, Aggreg_Type
 
 
 class MesureMeteor():
@@ -10,7 +10,7 @@ class MesureMeteor():
         o=MesureMeteor(id_mesure)
         0=MesureMeteor(json_key)
     """
-    Agreg_Type = Mesure.Aggreg_Type
+    AgregationType = Aggreg_Type
 
     def __init__(self, key):
         """Init a new MesureMeteor object"""

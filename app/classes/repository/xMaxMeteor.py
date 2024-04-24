@@ -1,6 +1,6 @@
 # check __reverse_delta_values (j_xtreme)
 #
-from app.models import XMax
+from app.models import XMax, Code_QA
 
 
 class xMaxMeteor():
@@ -11,6 +11,8 @@ class xMaxMeteor():
 
         o=ExtremeMeteor(id)
     """
+
+    CodeQA = Code_QA
 
     def __init__(self, extreme_id: int):
         if XMax.objects.filter(id=extreme_id).exists():

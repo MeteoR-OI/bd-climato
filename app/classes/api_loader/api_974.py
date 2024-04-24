@@ -1,4 +1,4 @@
-from app.classes.csv_loader.csvFileDef import CsvFileSpec
+from app.classes.csv_loader.csvFileSpec import CsvFileSpec
 from app.tools.dateTools import str_to_datetime
 from enum import Enum
 
@@ -250,7 +250,7 @@ class Api974(CsvFileSpec):
                 'poste_strategy': 1,
             })
 
-    def getPosteData(self, rows):
+    def getPosteData(self, idx, rows, file_name):
         return {
                 'meteor': rows[RowsId.NOM_USUEL.value],
                 'ALTI': rows[RowsId.ALTI.value],

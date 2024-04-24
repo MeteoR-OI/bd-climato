@@ -14,13 +14,10 @@ from app.classes.repository.posteMeteor import PosteMeteor
 from app.classes.data_loader.json_data_loader import JsonDataLoader
 from app.tools.jsonValidator import checkJson
 from app.tools.dateTools import str_to_datetime
-import psycopg2
-from psycopg2 import sql
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import app.tools.myTools as t
 from app.tools.jsonPlus import JsonPlus
 from django.conf import settings
-from app.tools.dbTools import getPGConnexion
+from app.tools.dbTools import refreshMV
 import json
 import os
 
@@ -121,21 +118,7 @@ class JsonLoader(JsonDataLoader):
         os.rename(self.base_dir + "/" + work_item['f'], filename_prefix + work_item['f'])
 
         # refresh our materialized view
-        pgconn = getPGConnexion()
-        pgconn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        pg_cur = pgconn.cursor()
-
-        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_hour')))
-        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_day')))
-        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_month')))
-        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_min_day')))
-        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_min_month')))
-        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_day')))
-        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_month')))
-
-        pg_cur.close()
-        pgconn.commit()
-        pgconn.close()
+        refreshMV()
 
     def failWorkItem(self, work_item, exc):
         # Don't move JSON files if we are in a "dump then json mode"

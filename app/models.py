@@ -5,21 +5,38 @@ class DateTimeFieldNoTZ(models.Field):
     def db_type(self, connection):
         return 'timestamp'
 
-class Poste(models.Model):
-    class Load_Type(models.IntegerChoices):
-        NONE = 0
-        LOAD_FROM_DUMP = 1
-        LOAD_FROM_JSON = 2
-        LOAD_FROM_DUMP_THEN_JSON = 3
-        LOAD_FROM_CSV_FILE = 4
-        LOAD_FROM_METEOFR_API = 8
-        LOAD_FROM_API_AND_CSV = 12
+class Code_QA(models.IntegerChoices):
+    UNSET = 0
+    VALIDATED = 1
+    UNVALIDATED = 9
 
+class Data_Source(models.IntegerChoices):
+    NONE = 0
+    METEOR_OI = 1
+    METEO_FR = 2
+    OVPF = 3
+
+class Load_Type(models.IntegerChoices):
+    NONE = 0
+    LOAD_FROM_DUMP = 1
+    LOAD_FROM_JSON = 2
+    LOAD_FROM_DUMP_THEN_JSON = 4
+    LOAD_FROM_CSV_FILE = 8
+    LOAD_CSV_FOR_OVPF = 16
+
+class Aggreg_Type(models.IntegerChoices):
+    NONE = 0
+    AVG = 1
+    SUM = 2
+    MAX = 3
+    MIN = 4
+
+class Poste(models.Model):
     # mandatory fields
     id = models.SmallAutoField(primary_key=True)
     meteor = models.CharField(null=False, max_length=50, verbose_name="Code station")
     delta_timezone = models.SmallIntegerField(null=False, verbose_name="delta heure locale et UTC")
-    data_source = models.SmallIntegerField(null=False, default=1, verbose_name="Data Source: 0 meteoire, 1 meteofr,..")
+    data_source = models.IntegerField(choices=Data_Source.choices, default=Data_Source.NONE, verbose_name="Source des donnees")
     load_type = models.IntegerField(choices=Load_Type.choices, default=Load_Type.NONE, verbose_name="Type de chargement des donnees")
 
     # optional fields
@@ -28,22 +45,22 @@ class Poste(models.Model):
     lat = models.FloatField(null=True, default=0, verbose_name="Latitude")
     long = models.FloatField(null=True, default=0, verbose_name="Longitude")
     info = models.JSONField(null=True, default=dict, verbose_name="autre info station")
-    stop_date = DateTimeFieldNoTZ(null=True, verbose_name="Datetime local de stop de la station")
+    stop_date = DateTimeFieldNoTZ(null=True, verbose_name="Datetime local d'arret de la station")
 
     # la suite n'est pas utilise par climato - a revoir pour pages html...
-    other_code = models.CharField(null=True, max_length=50, default="", verbose_name="Nom clair de la station")
+    other_code = models.CharField(null=True, max_length=50, default="", verbose_name="Autre code utilisé dans la data source")
     owner = models.CharField(null=True, max_length=50, default="", verbose_name="Propriétaire")
     email = models.CharField(null=True, max_length=50, default="", verbose_name="E-Mail")
     phone = models.CharField(null=True, max_length=50, default="", verbose_name="Téléphone")
     quartier = models.CharField(null=True, max_length=50, default="", verbose_name="Addresse")
     city = models.CharField(null=True, max_length=50, default="", verbose_name="Ville")
     country = models.CharField(null=True, max_length=50, default="", verbose_name="Pays")
-    comment = models.TextField(null=True, default="")
+    comment = models.TextField(null=True, default="", verbose_name="Commentaire")
 
     # information de synchronisation
     last_obs_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Datetime UTC de derniere reception de donnees")
     last_obs_id = models.BigIntegerField(null=True, default=0, verbose_name="ID obs de la derniere reception de donnees")
-    last_date_per_mesure = models.JSONField(null=True, default=dict, verbose_name="derniere date par mesure")
+    info_sync = models.JSONField(null=True, default=dict, verbose_name="Autre info de synchro")
 
 
     def __str__(self):
@@ -54,13 +71,6 @@ class Poste(models.Model):
 
 
 class Mesure(models.Model):
-    class Aggreg_Type(models.IntegerChoices):
-        NONE = 0
-        AVG = 1
-        SUM = 2
-        MAX = 3
-        MIN = 4
-
     id = models.SmallAutoField(primary_key=True)
     name = models.CharField(null=False, max_length=100, verbose_name="Nom de la mesure")
     json_input = models.CharField(null=True, max_length=20, verbose_name="Clé utilisée dans le json")
@@ -90,7 +100,7 @@ class Observation(models.Model):
     mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.PROTECT)
     duration = models.SmallIntegerField(null=False, verbose_name="durée mesure")
     value = models.FloatField(null=False, verbose_name="valeur")
-    qa_value = models.SmallIntegerField(null=True, default=0, verbose_name="Qualite de la valeur")
+    qa_value = models.SmallIntegerField(choices=Code_QA.choices, default=Code_QA.UNSET, verbose_name="Code Qualité")
 
     def __str__(self):
         return "Observation id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", date_local " + str(self.date_local) + ", mesure: " + str(self.mesure.name) + ", value: " + str(self.value) + " qa_value:" + str(self.qa_value)
@@ -125,7 +135,7 @@ class XMin(models.Model):
     mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.PROTECT)
     min = models.FloatField(null=False, verbose_name="valeur minimum")
     min_time = DateTimeFieldNoTZ(null=False, verbose_name="date locale de l'extrême")
-    qa_min = models.SmallIntegerField(null=False, default=0, verbose_name="Qualite du min")
+    qa_min = models.SmallIntegerField(choices=Code_QA.choices, default=Code_QA.UNSET, verbose_name="Code Qualité")
 
     def __str__(self):
         return "Extreme Min id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.date_local) + ", mesure: " + str(self.mesure.name)
@@ -146,7 +156,7 @@ class XMax(models.Model):
     max = models.FloatField(null=False, verbose_name="valeur maximum")
     max_time = DateTimeFieldNoTZ(null=False, verbose_name="date locale de l'extrême")
     max_dir = models.SmallIntegerField(null=True, verbose_name="direction du maximum")
-    qa_max = models.SmallIntegerField(null=False, default=0, verbose_name="Qualite du max")
+    qa_max = models.SmallIntegerField(choices=Code_QA.choices, default=Code_QA.UNSET, verbose_name="Code Qualité")
 
     def __str__(self):
         return "Extreme Max id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.date_local) + ", mesure: " + str(self.mesure.name)

@@ -94,8 +94,7 @@ class BulkDataLoader(ABC):
                     raise Exception('bad usUnits: ' + str(
                         cur_row[col_mapping['usUnits']]) + ', dateTime(UTC): ' + str(cur_row[col_mapping['date_utc']]))
 
-                date_obs_utc, date_obs_local = self.getObsDateTime(
-                    cur_row, col_mapping, cur_poste)
+                date_obs_utc, date_obs_local = self.getObsDateTime(cur_row, col_mapping, cur_poste)
 
                 if load_missing_data is False and (cur_poste.data.last_obs_date is None or date_obs_local > cur_poste.data.last_obs_date):
                     for a_mesure in self.measures:

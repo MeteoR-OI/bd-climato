@@ -1,14 +1,9 @@
 # check __reverse_delta_values (j_xtreme)
 #
-from app.models import Observation
+from app.models import Observation, Code_QA
 from datetime import datetime
 from enum import Enum
 
-
-class QA(Enum):
-    UNSET = 0
-    VALIDATED = 1
-    UNVALIDATED = 9
 
 
 class ObsMeteor():
@@ -21,6 +16,8 @@ class ObsMeteor():
         o.data -> Observation object (data, methods...)
 
     """
+
+    CodeQA = Code_QA
 
     def __init__(self, obs_id: int):
         if 'int' in str(type(obs_id)) and Observation.objects.filter(id=obs_id).exists():

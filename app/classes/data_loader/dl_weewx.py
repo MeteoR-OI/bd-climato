@@ -1,6 +1,6 @@
 from app.classes.data_loader.bulk_data_loader import BulkDataLoader
 from app.tools.myTools import FromTimestampToDateTime
-from app.classes.repository.obsMeteor import QA
+from app.classes.repository.obsMeteor import QACode as QA
 from app.tools.dbTools import getPGConnexion
 
 

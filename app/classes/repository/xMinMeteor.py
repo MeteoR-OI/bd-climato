@@ -1,6 +1,6 @@
 # check __reverse_delta_values (j_xtreme)
 #
-from app.models import XMin
+from app.models import XMin, Code_QA
 
 
 class xMinMeteor():
@@ -11,7 +11,8 @@ class xMinMeteor():
 
         o=ExtremeMeteor(id)
     """
-
+    CodeQA = Code_QA
+    
     def __init__(self, extreme_id: int):
         if XMin.objects.filter(id=extreme_id).exists():
             self.data = XMin.objects.filter(id=extreme_id).first()

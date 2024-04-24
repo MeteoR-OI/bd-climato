@@ -1,5 +1,6 @@
 import mysql.connector
 import psycopg2
+from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from django.conf import settings
 
 def getPGConnexion():
@@ -29,3 +30,25 @@ def getMSQLConnection(meteor):
 
     myconn.time_zone = "+00:00"
     return myconn
+
+def refreshMV():
+        # refresh our materialized view
+        pgconn = getPGConnexion()
+        pgconn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        pg_cur = pgconn.cursor()
+
+        # if materialized view exist, refresh all of them
+        pg_cur.execute("SELECT count(*) FROM pg_views where schemaname = 'public' and viewname ='obs_hour'")
+        if pg_cur.fetchone()[0] == 1:
+            pg_cur.close()
+            pg_cur.execute(psycopg2.sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(psycopg2.sql.Identifier('obs_hour')))
+            pg_cur.execute(psycopg2.sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(psycopg2.sql.Identifier('obs_day')))
+            pg_cur.execute(psycopg2.sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(psycopg2.sql.Identifier('obs_month')))
+            pg_cur.execute(psycopg2.sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(psycopg2.sql.Identifier('x_min_day')))
+            pg_cur.execute(psycopg2.sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(psycopg2.sql.Identifier('x_min_month')))
+            pg_cur.execute(psycopg2.sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(psycopg2.sql.Identifier('x_max_day')))
+            pg_cur.execute(psycopg2.sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(psycopg2.sql.Identifier('x_max_month')))
+
+        pg_cur.close()
+        pgconn.commit()
+        pgconn.close()

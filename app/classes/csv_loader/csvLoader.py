@@ -15,11 +15,8 @@ import app.tools.myTools as t
 from django.conf import settings
 import json
 import os
-import psycopg2
-from psycopg2 import sql
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from app.classes.csv_loader.csv_meteoFR import CSV_MeteoFR
-from app.tools.dbTools import getPGConnexion
+from app.tools.dbTools import getPGConnexion, refreshMV
 
 
 class CsvLoader:
@@ -39,7 +36,7 @@ class CsvLoader:
         if hasattr(settings, "ARCHIVE_DIR") is True:
             self.archive_dir = settings.ARCHIVE_DIR
         else:
-            self.archive_dir = self.base_dir
+            self.archive_dir = (os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/../../data/archive")
 
         self.__all_providers = [
             CSV_MeteoFR()
@@ -53,75 +50,73 @@ class CsvLoader:
         return
 
     def getNextWorkItem(self):
-        file_names = []
+        files_spec = []
 
         # get json file names
         filenames = os.listdir(self.base_dir)
         for filename in filenames:
             if str(filename).endswith('.csv'):
-                file_names.append(filename)
+                files_spec.append({"d": self.base_dir, "f": filename})
+
+        for filename in filenames:
+            if str(filename).endswith('.txt.data'):
+                files_spec.append({"d": self.base_dir, "f": filename})
+
+        # self.addOvpfFiles(files_spec)
 
         # stop processing
-        if len(file_names) == 0:
+        if len(files_spec) == 0:
             return None
 
-        file_names = sorted(file_names)
-        a_filename = file_names[0]
+        files_spec = sorted(files_spec, key=lambda k: k['f'])
 
-        # find our file specification
-        idx_provider = 0
+        idx_file_spec = 0
+        while idx_file_spec < len(files_spec):
+            a_file_spec = files_spec[idx_file_spec]
 
-        while idx_provider < len(self.__all_providers):
-            id_spec = self.__all_providers[idx_provider].isItForMe(
-                self.base_dir,
-                a_filename,
-            )
-            if id_spec >= 0:
-                return {
-                    'f': a_filename,
-                    'path': self.base_dir,
-                    'idx_provider': idx_provider,
-                    'id_spec': id_spec,
-                    'info': 'loading file: ' + a_filename
-                }
-            idx_provider += 1
+            # find our file specification
+            idx_provider = 0
 
-        Exception("No file spec found for " + a_filename)
+            while idx_provider < len(self.__all_providers):
+                id_spec = self.__all_providers[idx_provider].isItForMe(a_file_spec['d'], a_file_spec['f'])
+
+                if id_spec >= 0:
+                    return {
+                        'f': a_file_spec['f'],
+                        'path': a_file_spec['d'],
+                        'idx_provider': idx_provider,
+                        'id_spec': id_spec,
+                        'info': 'loading file: ' + a_file_spec['f'],
+                        'move_file': self.__all_providers[idx_provider].all_formats[id_spec].move_file
+                    }
+                idx_provider += 1
+
+        t.logError('csvLoader', "No file spec found for " + a_file_spec['d'] + "/" + a_file_spec['f'])
+        idx_file_spec += 1
+        return None
 
     def succeedWorkItem(self, work_item):
         # move the file to archive
-        target_dir = self.archive_dir + "/meteoFR/"
-        if not os.path.exists(target_dir):
-            os.makedirs(target_dir)
+        if work_item['move_file'] is True:
+            target_dir = self.archive_dir + "/csv/"
+            if not os.path.exists(target_dir):
+                os.makedirs(target_dir)
 
-        os.rename(self.base_dir + "/" + work_item['f'], target_dir + work_item['f'])
+            # add station/year/month
+
+            os.rename(self.base_dir + "/" + work_item['f'], target_dir + work_item['f'])
 
         # refresh our materialized view
-        pgconn = getPGConnexion()
-        pgconn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        pg_cur = pgconn.cursor()
-
-        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_hour')))
-        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_day')))
-        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('obs_month')))
-        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_min_day')))
-        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_min_month')))
-        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_day')))
-        pg_cur.execute(sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(sql.Identifier('x_max_month')))
-
-        pg_cur.close()
-        pgconn.commit()
-        pgconn.close()
+        refreshMV()
 
     def failWorkItem(self, work_item, exc):
         # move the file to failed archive
-        target_dir = self.archive_dir + "/failed/meteoFR/"
-        if not os.path.exists(target_dir):
-            os.makedirs(target_dir)
-
-        os.rename(self.base_dir + "/" + work_item['f'], target_dir + work_item['f'])
-
-        t.logError('CsvLoader', "file moved to failed directory", {"filename": work_item['f'], "dest": target_dir})
+        if work_item['move_file'] is True:
+            target_dir = self.archive_dir + "/failed/csv/"
+            if not os.path.exists(target_dir):
+                os.makedirs(target_dir)
+            os.rename(self.base_dir + "/" + work_item['f'], target_dir + work_item['f'])
+            t.logError('CsvLoader', "file moved to failed directory", {"filename": work_item['f'], "dest": target_dir})
 
     # Load data per block
     def processWorkItem(self, work_item: json):
