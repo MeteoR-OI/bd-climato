@@ -195,11 +195,9 @@ insert into mesures
 (97, 'soiltemp4',       'soil_temp4',       'soilTemp4',         null,        null,     false,   false,    4,      false,    true,     'soiltemp4',        '{}'),
 (100, 'voltage',         'voltage',         'consBatteryVoltage',null,        null,     false,   false,    3,      false,    true,            null,        '{}'),
 (110, 'wind dir',        'wind_dir',        'windDir',          'skip',       null,     false,   false,    0,      false,    true,            null,        '{}'),
-(111, 'wind',            'wind',            'windSpeed',        'wind',       110,      false,   true,     1,      false,    true,            null,
-  '{"mfr_csv": "lambda x: x * 3.6"}'),
+(111, 'wind',            'wind',            'windSpeed',        'wind',       110,      false,   true,     1,      false,    true,            null,        '{}'),
 (113, 'gust dir',        'wind_gust_dir',   'windGustDir',      'skip',       null,     false,   false,    0,      false,    true,  'wind_max_dir',        '{}'),
-(114, 'gust',            'wind_gust',       'windGust',         'wind',       113,      false,   true,     3,       true,    true,      'wind_max',
-  '{"mfr_csv": "lambda x: x * 3.6"}'),
+(114, 'gust',            'wind_gust',       'windGust',         'wind',       113,      false,   true,     3,       true,    true,      'wind_max',        '{}'),
 (115, 'windchill',       'windchill',       'windchill',         null,        null,     false,   false,    4,      false,    true,            null,        '{}')
 ;
 
@@ -277,3 +275,78 @@ LANGUAGE SQL
 AS $BODY$
 with max_dt as (select poste_id as pid, max(date_local) as ldt from obs group by 1) update postes set last_obs_date = (select ldt from max_dt where pid=id);
 $BODY$;
+-- ---------
+-- Triggers
+-- ---------
+/*
+*  maintain last_obs_date/id in poste table
+*  update last_obs table
+*/ 
+CREATE OR REPLACE FUNCTION create_obs_trigger_fn()
+  RETURNS TRIGGER LANGUAGE PLPGSQL AS
+$BODY$
+DECLARE
+    obs_dat timestamp;
+    last_obs_dat timestamp;
+BEGIN
+  select last_obs_date  into obs_dat from postes where id = NEW.poste_id;
+  if obs_dat is null or new.date_local > obs_dat then
+    update postes set last_obs_date = NEW.date_local, last_obs_id = NEW.id where id = NEW.poste_id;
+  end if;
+
+  -- Update last_obs
+  select date_local from last_obs where poste_id = NEW.poste_id and mesure_id = NEW.mesure_id into obs_dat;
+
+  if obs_dat is null then
+    insert into last_obs (poste_id, mesure_id, date_local, value) values (NEW.poste_id, NEW.mesure_id, NEW.date_local, NEW.value);
+  elsif obs_dat < NEW.date_local then
+    update last_obs set date_local = NEW.date_local, value = NEW.value where poste_id = NEW.poste_id and mesure_id = NEW.mesure_id;
+  end if;
+
+  return NEW;
+END
+$BODY$;
+
+CREATE OR REPLACE TRIGGER create_obs_trigger
+  AFTER INSERT ON obs
+  FOR EACH ROW EXECUTE PROCEDURE create_obs_trigger_fn();
+
+/*
+*  maintain last_obs_date/id in poste table
+*  cascade qa_value to x_min/x_max tables
+*  update last_obs table
+*/ 
+CREATE OR REPLACE FUNCTION update_obs_trigger_fn()
+  RETURNS TRIGGER LANGUAGE PLPGSQL AS
+$BODY$
+DECLARE
+BEGIN
+  if NEW.qa_value <> OLD.qa_value then
+    update x_min set qa_min = NEW.qa_value where obs_id = NEW.id;
+    update x_max set qa_max = NEW.qa_value where obs_id = NEW.id;
+  end if;
+  return NEW;
+END
+$BODY$;
+
+CREATE OR REPLACE TRIGGER update_obs_trigger
+  AFTER UPDATE ON obs
+  FOR EACH ROW EXECUTE PROCEDURE update_obs_trigger_fn();
+
+/*
+*  cascade delete obs to x_min/x_max
+*/ 
+CREATE OR REPLACE FUNCTION delete_obs_trigger_fn()
+  RETURNS TRIGGER LANGUAGE PLPGSQL AS
+$BODY$
+DECLARE
+BEGIN
+    delete from x_min where obs_id = OLD.id;
+    delete from x_max where obs_id = OLD.id;
+  return OLD;
+END
+$BODY$;
+
+CREATE OR REPLACE TRIGGER delete_obs_trigger
+  AFTER UPDATE OR DELETE ON x_max
+  FOR EACH ROW EXECUTE PROCEDURE delete_obs_trigger_fn();

@@ -46,7 +46,7 @@ class CSV_MeteoFR(CsvFileSpec):
             return Code_QA.UNSET.value
 
         for a_mapping in self.all_formats[id_spec].qa_mapping:
-            if code_txt == a_mapping[0]:
+            if code_txt[0] == a_mapping[0]:
                 return a_mapping[1]
 
         return Code_QA.UNSET.value

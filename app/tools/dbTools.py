@@ -41,6 +41,7 @@ def refreshMV():
         pg_cur.execute("SELECT count(*) FROM pg_views where schemaname = 'public' and viewname ='obs_hour'")
         if pg_cur.fetchone()[0] == 1:
             pg_cur.close()
+            pg_cur = pgconn.cursor()
             pg_cur.execute(psycopg2.sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(psycopg2.sql.Identifier('obs_hour')))
             pg_cur.execute(psycopg2.sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(psycopg2.sql.Identifier('obs_day')))
             pg_cur.execute(psycopg2.sql.SQL("CALL refresh_continuous_aggregate('{}', null, null);").format(psycopg2.sql.Identifier('obs_month')))

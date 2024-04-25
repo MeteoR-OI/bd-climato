@@ -138,14 +138,14 @@ class CsvFileSpec(ABC):
             obs_data.append(data_args)
 
             if a_mesure['min'] is True:
-                cur_min, cur_min_qa, cur_min_time_local, is_it_obs_data = self.get_valeur_min(cur_poste, a_mesure, my_fields, cur_val, cur_q_val, obs_date_local)
+                cur_min, cur_min_qa, cur_min_time_local, is_it_obs_data = self.get_valeur_min(cur_poste, id_spec, a_mesure, my_fields, cur_val, cur_q_val, obs_date_local)
                 # 'min_data': [(poste_id, date_local, mesure_id, min, min_time, qa_min, is_it_obs_data)],
                 min_data.append((poste_id, obs_date_local, a_mesure['id'], cur_min, cur_min_time_local, cur_min_qa, is_it_obs_data))
             else:
                 min_data.append((poste_id, obs_date_local, a_mesure['id'], None, None, None, False))
 
             if a_mesure['max'] is True:
-                cur_max, cur_max_qa, cur_max_time_local, cur_max_dir, is_it_obs_data = self.get_valeur_max(cur_poste, a_mesure, my_fields, cur_val, cur_q_val, obs_date_local)
+                cur_max, cur_max_qa, cur_max_time_local, cur_max_dir, is_it_obs_data = self.get_valeur_max(cur_poste, id_spec, a_mesure, my_fields, cur_val, cur_q_val, obs_date_local)
                 # 'max_data': [poste_id, date_local, mesure_id, max, qa_max, max_time, max_dir, is_it_obs_data)],
                 max_data.append((poste_id, obs_date_local, a_mesure['id'], cur_max, cur_max_time_local, cur_max_qa, cur_max_dir, is_it_obs_data))
             else:
@@ -182,6 +182,7 @@ class CsvFileSpec(ABC):
                     a_mesure['csv_row_idx'] = a_mapping['csv_idx']      # idx in row array
                     a_mesure['csv_qa_idx'] = a_mapping.get('qa_idx')    # idx in row array for quality data
                     a_mesure['csv_minmax'] = a_mapping['minmax']        # {min_idx: idx inself.__mesure, minTime, max: idx, maxTime, maxDir}
+                    a_mesure['convert'] = a_mapping['convert']          # use our convert routines
 
                     self.__mesures.append(a_mesure)
                     break
@@ -201,12 +202,12 @@ class CsvFileSpec(ABC):
         if a_mesure['convert'] is not None and a_mesure['convert'].get('mfr_csv') is not None:
             cur_val = eval(a_mesure['convert']['mfr_csv'])(cur_val)
 
-        cur_q_val = self.getQualityCode(a_mesure.get('csv_qa_idx'), id_spec)
+        cur_q_val = self.getQualityCode(fields_array[a_mesure.get('csv_qa_idx')], id_spec)
 
         return cur_val, cur_q_val
 
     # returns cur_min, cur_min_qa, cur_min_time_local, is_it_obs_data
-    def get_valeur_min(self, cur_poste, a_mesure, fields_array, cur_val, cur_qval, obs_date_local):
+    def get_valeur_min(self, cur_poste, id_spec, a_mesure, fields_array, cur_val, cur_qval, obs_date_local):
         if a_mesure['min'] is not True:
             return None, None, None, False
 
@@ -222,9 +223,11 @@ class CsvFileSpec(ABC):
             tmp_min = fields_array[cur_min_field]
             if tmp_min != '' and tmp_min is not None:
                 cur_min = float(tmp_min.replace(',', '.'))
+                if a_mesure['convert'] is not None and a_mesure['convert'].get('mfr_csv') is not None:
+                    cur_min = eval(a_mesure['convert']['mfr_csv'])(cur_min)
                 is_it_obs_data = False
             if cur_min_field_qa is not None and cur_min_field_qa != '':
-                cur_min_qa = self.transcodeQAMeteoFrance(fields_array[cur_min_field_qa])
+                cur_min_qa = self.getQualityCode(fields_array[cur_min_field_qa], id_spec)
 
         if cur_min_time_field is not None and cur_min_time_field != '':
             tmp_min_time = fields_array[cur_min_time_field]
@@ -235,12 +238,12 @@ class CsvFileSpec(ABC):
         return cur_min, cur_min_qa, cur_min_time, is_it_obs_data
 
     # returns cur_max, cur_max_qa, cur_max_time_local, cur_max_dir, is_it_obs_data
-    def get_valeur_max(self, cur_poste, a_mesure, fields_array, cur_val, cur_qval, obs_date_local):
+    def get_valeur_max(self, cur_poste, id_spec, a_mesure, fields_array, cur_val, cur_qval, obs_date_local):
         if a_mesure['max'] is not True:
             return None, None, None, None, False
 
         cur_max = float(cur_val)
-        cur_max_qa =cur_qval
+        cur_max_qa = cur_qval
         cur_max_dir = None
         cur_max_time = obs_date_local
         cur_max_field = a_mesure['csv_minmax'].get("max")
@@ -253,9 +256,11 @@ class CsvFileSpec(ABC):
             tmp_max = fields_array[cur_max_field]
             if tmp_max != '' and tmp_max is not None:
                 cur_max = float(tmp_max.replace(',', '.'))
+                if a_mesure['convert'] is not None and a_mesure['convert'].get('mfr_csv') is not None:
+                    cur_max = eval(a_mesure['convert']['mfr_csv'])(cur_max)
                 is_it_obs_data = False
             if cur_max_field_qa is not None and cur_max_field_qa != '':
-                cur_max_qa = self.transcodeQAMeteoFrance(fields_array[cur_max_field_qa])
+                cur_max_qa = self.getQualityCode(fields_array[cur_max_field_qa], id_spec)
 
         if cur_max_time_field is not None and cur_max_time_field != '':
             tmp_max_time = fields_array[cur_max_time_field]
@@ -263,9 +268,9 @@ class CsvFileSpec(ABC):
                 cur_max_time = self.adjustTime(cur_poste, obs_date_local, tmp_max_time)
                 is_it_obs_data = False
 
-        cur_max_dir = fields_array[cur_max_dir_field] if cur_max_dir is not None else None
+        cur_max_dir = fields_array[cur_max_dir_field] if cur_max_dir_field is not None and cur_max is not None else None
 
-        return cur_max, cur_max_qa, cur_max_time, cur_max_qa, is_it_obs_data
+        return cur_max, cur_max_qa, cur_max_time, cur_max_dir, is_it_obs_data
 
     def adjustTime(self, cur_poste, obs_date_local: datetime, time_str):
         if time_str is None or time_str == '':

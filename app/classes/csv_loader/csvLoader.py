@@ -175,7 +175,7 @@ class CsvLoader:
                      cur_min_data[3],
                      cur_min_data[4],
                      cur_min_data[5],
-                     (new_ids[idx][0]) if cur_min_data[5] is False else None))
+                     (new_ids[idx][0]) if cur_min_data[6] == True else None))
 
             if cur_max_data[4] is not None:
                 # max_data_shrink = [(poste_id, date_local, mesure_id, max, max_time, qa_max, max_dir, obs_id)]
@@ -187,7 +187,7 @@ class CsvLoader:
                      cur_max_data[4],
                      cur_max_data[5],
                      cur_max_data[6],
-                     (new_ids[idx][0] if cur_max_data[6] is False else None)))
+                     (new_ids[idx][0] if cur_max_data[7] == True else None)))
             idx += 1
         data_to_flush = []
 

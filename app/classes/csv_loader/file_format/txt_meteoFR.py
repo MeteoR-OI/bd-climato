@@ -57,29 +57,34 @@ class TxtMeteoFR:
     skip_lines = 1
     move_file = True
     mappings = [
-        {'csv_field': 'RR1',       'csv_idx': RowId.RR1.value, 'qa_idx': RowId.QRR1.value,       'mesure': 'rain_utc',             'minmax': {}},
+        {'csv_field': 'RR1',       'csv_idx': RowId.RR1.value, 'qa_idx': RowId.QRR1.value,       'mesure': 'rain_utc',         'minmax': {},      "convert": {}},
         {'csv_field': 'T',         'csv_idx': RowId.T.value, 'qa_idx': RowId.QT.value,           'mesure': 'temperature',      'minmax':
-            {"min": RowId.TN.value, "qmin": RowId.QTN.value, "minTime": RowId.HTN.value, "max": RowId.TX.value, "qmax": RowId.QTX.value, "maxTine": RowId.HTX.value}},
-        {'csv_field': 'TD',        'csv_idx': RowId.TD.value, 'qa_idx': RowId.QTD.value,         'mesure': 'dewpoint',       'minmax': {}},
-        {'csv_field': 'PSTAT',     'csv_idx': RowId.PSTAT.value, 'qa_idx': RowId.QPSTAT.value,   'mesure': 'pressure',         'minmax': {}},
+            {"min": RowId.TN.value, "qmin": RowId.QTN.value, "minTime": RowId.HTN.value, "max": RowId.TX.value, "qmax": RowId.QTX.value, "maxTime": RowId.HTX.value},
+             "convert": {}},
+        {'csv_field': 'TD',        'csv_idx': RowId.TD.value, 'qa_idx': RowId.QTD.value,         'mesure': 'dewpoint',         'minmax': {},      "convert": {}},
+        {'csv_field': 'PSTAT',     'csv_idx': RowId.PSTAT.value, 'qa_idx': RowId.QPSTAT.value,   'mesure': 'pressure',         'minmax': {},      "convert": {}},
         {'csv_field': 'PMER',      'csv_idx': RowId.PMER.value, 'qa_idx': RowId.QPMER.value,     'mesure': 'barometer',        'minmax':
-            {"min": RowId.PMERMIN.value, "qmin": RowId.QPMERMIN.value}},
-        {'csv_field': 'FF',        'csv_idx': RowId.FF.value, 'qa_idx': RowId.QFF.value,         'mesure': 'wind',          'minmax':
-            {"max": RowId.FXI.value, "qmax": RowId.QFXI.value, "maxDir": RowId.DXI.value, "maxTime": RowId.HXI.value}},
-        {'csv_field': 'DD',       'csv_idx': RowId.DD.value, 'qa_idx': RowId.QDD.value,       'mesure': 'wind dir',         'minmax': {}},
-        {'csv_field': 'U',         'csv_idx': RowId.U.value, 'qa_idx': RowId.QU.value,           'mesure': 'humidity',       'minmax':
-            {"min": RowId.UN.value, "qmin": RowId.QUN.value, "minTime": RowId.HUN.value, "max": RowId.UX.value, "qmax": RowId.QUX.value, "maxTine": RowId.HUX.value}},
-        {'csv_field': 'GLO',       'csv_idx': RowId.GLO.value, 'qa_idx': RowId.QGLO.value,       'mesure': 'radiation',        'minmax': {}},
+            {"min": RowId.PMERMIN.value, "qmin": RowId.QPMERMIN.value},
+             "convert": {}},
+        {'csv_field': 'FF',        'csv_idx': RowId.FF.value, 'qa_idx': RowId.QFF.value,         'mesure': 'wind',             'minmax':
+            {"max": RowId.FXI.value, "qmax": RowId.QFXI.value, "maxDir": RowId.DXI.value, "maxTime": RowId.HXI.value},
+             "convert": {}},
+        {'csv_field': 'DD',       'csv_idx': RowId.DD.value, 'qa_idx': RowId.QDD.value,       'mesure': 'wind dir',            'minmax': {},      "convert": {}},
+        {'csv_field': 'U',         'csv_idx': RowId.U.value, 'qa_idx': RowId.QU.value,           'mesure': 'humidity',         'minmax':
+            {"min": RowId.UN.value, "qmin": RowId.QUN.value, "minTime": RowId.HUN.value, "max": RowId.UX.value, "qmax": RowId.QUX.value, "maxTime": RowId.HUX.value},
+             "convert": {}},
+        {'csv_field': 'GLO',       'csv_idx': RowId.GLO.value, 'qa_idx': RowId.QGLO.value,       'mesure': 'radiation',        'minmax': {},
+            "convert": {"mfr_csv": "lambda x: x * 3.6"}},
     ]
     qa_mapping = [
-        [['n'], Code_QA.UNSET.value],
-        [['m'], Code_QA.UNSET.value],
-        [['t'], Code_QA.VALIDATED.value],
-        [['a'], Code_QA.VALIDATED.value],
-        [['i'], Code_QA.VALIDATED.value],
-        [['v'], Code_QA.VALIDATED.value],
-        [['d'], Code_QA.UNVALIDATED.value],
-        [['f'], Code_QA.UNVALIDATED.value],
+        ['n', Code_QA.UNSET.value],
+        ['m', Code_QA.UNSET.value],
+        ['t', Code_QA.VALIDATED.value],
+        ['a', Code_QA.VALIDATED.value],
+        ['i', Code_QA.VALIDATED.value],
+        ['v', Code_QA.VALIDATED.value],
+        ['d', Code_QA.UNVALIDATED.value],
+        ['f', Code_QA.UNVALIDATED.value],
     ]
 
 # RR1	HAUTEUR DE PRECIPITATIONS HORAIRE	MILLIMETRES ET 1/10
