@@ -4,6 +4,7 @@
 # -----------------------------------------------------------------------------
 from abc import ABC, abstractmethod
 from app.tools.dateTools import str_to_datetime
+from app.models import Load_Type
 from app.classes.repository.mesureMeteor import MesureMeteor
 from app.classes.repository.posteMeteor import PosteMeteor
 from app.classes.repository.obsMeteor import ObsMeteor
@@ -43,7 +44,7 @@ class CsvFileSpec(ABC):
                 return a_pattern['idx']
         return -1
 
-    def nextBlockLines(self, id_spec):
+    def nextBlockLines(self, id_spec, load_type_filter=255):
         obs_data = []
         min_data = []
         max_data = []
@@ -90,15 +91,15 @@ class CsvFileSpec(ABC):
                     skip_poste = None
                     cur_poste = PosteMeteor.getPosteByCode(id_station)
                     last_meteor = id_station
-                    if cur_poste is None:
+                    if cur_poste is None or (((load_type_filter & cur_poste.data.load_type)& Load_Type.LOAD_CSV_FOR_METEOFR.value) !=  Load_Type.LOAD_CSV_FOR_METEOFR.value):
                         skip_poste = last_meteor
 
                 if skip_poste != last_meteor:
-                    date_already_loaded = str_to_datetime(cur_poste.data.last_obs_date) if cur_poste.data.last_obs_date is not None else datetime(1900, 1, 1)
+                    date_already_loaded = str_to_datetime(cur_poste.data.last_obs_date_local) if cur_poste.data.last_obs_date_local is not None else datetime(1900, 1, 1)
 
                     j_stop_dat_utc = self.getStopDate(id_spec, my_fields)
 
-                    if j_stop_dat_utc > date_already_loaded and ((cur_poste.data.load_type & cur_poste.LoadType.LOAD_FROM_CSV_FILE.value) == cur_poste.LoadType.LOAD_FROM_CSV_FILE.value):
+                    if j_stop_dat_utc > date_already_loaded and ((cur_poste.data.load_type & cur_poste.LoadType.LOAD_CSV_FOR_METEOFR.value) == cur_poste.LoadType.LOAD_CSV_FOR_METEOFR.value):
                         #  process row
                         self.processRow(id_spec, my_fields, cur_poste, obs_data, min_data, max_data, False, obs_data_in_db)
                         line_count += 1

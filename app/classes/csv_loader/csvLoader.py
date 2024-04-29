@@ -17,6 +17,7 @@ import json
 import os
 from app.classes.csv_loader.csv_meteoFR import CSV_MeteoFR
 from app.tools.dbTools import getPGConnexion, refreshMV
+from app.models import Load_Type
 
 
 class CsvLoader:
@@ -123,7 +124,7 @@ class CsvLoader:
         cur_provider = self.__all_providers[work_item['idx_provider']]
         pg_conn = getPGConnexion()
 
-        for data_to_flush in cur_provider.nextBlockLines(work_item['id_spec']):
+        for data_to_flush in cur_provider.nextBlockLines(work_item['id_spec'], Load_Type.LOAD_CSV_FOR_METEOFR.value):
             # data_to_flush = {
             #     'obs_data': [(poste_id, date_utc, date_local, mesure_id, duration, value, qa_value)],
             #     'min_data': [(poste_id, date_utc, date_local, mesure_id, min, min_time, is_it_obs_data)],
@@ -136,8 +137,6 @@ class CsvLoader:
             self.flush_data(pg_conn, data_to_flush)
             pg_conn.commit()
 
-        # self.flush_data(pg_conn, data_to_flush)
-        # pg_conn.commit()
         pg_conn.close()
 
     def flush_data(self, pg_conn, data_to_flush):

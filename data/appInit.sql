@@ -182,7 +182,7 @@ insert into mesures
 (62, 'uv_indice',       'uv',               'UV',                null,        null,     false,   false,    3,      false,    true,            null,        '{}'),
 (70, 'rain',            'rain',             'rain',            'skip',        null,     false,   false,    2,      false,    true,            null,
   '{"w_dump": "lambda x: x * 10"}'),
-(71, 'rain_utc',        'rain_utc',         'rain_utc',        'skip',        null,     false,   false,    2,      false,    true,            null,        '{}'),
+(71, 'rain_utc',        'rain_utc',          null,              'skip',        null,     false,   false,    2,      false,    true,            null,        '{}'),
 (72, 'rain rate',       'rain_rate',        'rainRate',          null,        null,     false,   false,    3,      false,    true,            null,        '{}'),
 (80, 'rx',              'rx',               'rxCheckPercent',    null,        null,     false,   false,    4,      false,    true,            null,        '{}'),
 (90, 'soilmoist1',      'soil_moist1',      'soilMoist1',        null,        null,     false,   false,    1,      false,    true,    'soilmoist1',        '{}'),
@@ -270,18 +270,18 @@ AS $BODY$
     select poste_id, mesure_id, max(date_local) as date_local, last(value, date_local) as value  from obs group by 1,2;
 $BODY$;
 
--- regenerer la table last_obs_date
-CREATE OR REPLACE PROCEDURE refesh_last_obs_date()
+-- regenerer la table last_obs_date_local
+CREATE OR REPLACE PROCEDURE refesh_last_obs_date_local()
 LANGUAGE SQL
 AS $BODY$
-with max_dt as (select poste_id as pid, max(date_local) as ldt from obs group by 1) update postes set last_obs_date = (select ldt from max_dt where pid=id);
+with max_dt as (select poste_id as pid, max(date_local) as ldt from obs group by 1) update postes set last_obs_date_local = (select ldt from max_dt where pid=id);
 $BODY$;
 
 -- ---------
 -- Triggers
 -- ---------
 /*
-*  maintain last_obs_date/id in poste table
+*  maintain last_obs_date_local/id in poste table
 *  update last_obs table
 */ 
 CREATE OR REPLACE FUNCTION create_obs_trigger_fn()
@@ -291,9 +291,9 @@ DECLARE
     obs_dat timestamp;
     last_obs_dat timestamp;
 BEGIN
-  select last_obs_date  into obs_dat from postes where id = NEW.poste_id;
+  select last_obs_date_local  into obs_dat from postes where id = NEW.poste_id;
   if obs_dat is null or new.date_local > obs_dat then
-    update postes set last_obs_date = NEW.date_local, last_obs_id = NEW.id where id = NEW.poste_id;
+    update postes set last_obs_date_local = NEW.date_local, last_obs_id = NEW.id where id = NEW.poste_id;
   end if;
 
   -- Update last_obs
@@ -314,7 +314,7 @@ CREATE OR REPLACE TRIGGER create_obs_trigger
   FOR EACH ROW EXECUTE PROCEDURE create_obs_trigger_fn();
 
 /*
-*  maintain last_obs_date/id in poste table
+*  maintain last_obs_date_local/id in poste table
 *  cascade qa_value to x_min/x_max tables
 *  update last_obs table
 */ 

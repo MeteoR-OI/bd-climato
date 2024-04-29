@@ -40,8 +40,8 @@ select  id, date_local, date_utc, duration from obs where poste_id = 21 and dura
  1353617 | 2023-03-26 00:00:00 | 2023-03-25 20:00:00 |        5
 
 
-select last_obs_date, last_extremes_date  from postes where meteor='MTG320';
-    last_obs_date    | last_extremes_date
+select last_obs_date_local, last_extremes_date  from postes where meteor='MTG320';
+    last_obs_date_local    | last_extremes_date
 ---------------------+---------------------
  2023-03-26 00:00:00 | 2023-03-26 00:00:00
 
@@ -54,8 +54,8 @@ select  id, date_local, date_utc, duration from obs where poste_id = 21 and dura
  1367417 | 2023-04-19 00:00:00 | 2023-04-18 20:00:00 |        5
 
 
-select last_obs_date, last_extremes_date  from postes where meteor='MTG320';
-    last_obs_date    | last_extremes_date
+select last_obs_date_local, last_extremes_date  from postes where meteor='MTG320';
+    last_obs_date_local    | last_extremes_date
 ---------------------+---------------------
  2023-04-19 00:00:00 | 2023-04-19 00:00:00
 

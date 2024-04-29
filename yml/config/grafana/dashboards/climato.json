@@ -789,7 +789,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": true,
-          "rawSql": "select p.meteor, p.lat, p.long, p.last_obs_date, o.out_temp, o.rain\nfrom postes p join obs o on o.id = p.last_obs_id\n",
+          "rawSql": "select p.meteor, p.lat, p.long, p.last_obs_date_local, o.out_temp, o.rain\nfrom postes p join obs o on o.id = p.last_obs_id\n",
           "refId": "A",
           "select": [
             [

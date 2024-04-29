@@ -21,7 +21,7 @@ class Load_Type(models.IntegerChoices):
     LOAD_FROM_DUMP = 1
     LOAD_FROM_JSON = 2
     LOAD_FROM_DUMP_THEN_JSON = 4
-    LOAD_FROM_CSV_FILE = 8
+    LOAD_CSV_FOR_METEOFR = 8
     LOAD_CSV_FOR_OVPF = 16
 
 class Aggreg_Type(models.IntegerChoices):
@@ -58,7 +58,7 @@ class Poste(models.Model):
     comment = models.TextField(null=True, default="", verbose_name="Commentaire")
 
     # information de synchronisation
-    last_obs_date = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Datetime UTC de derniere reception de donnees")
+    last_obs_date_local = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Datetime UTC de derniere reception de donnees")
     last_obs_id = models.BigIntegerField(null=True, default=0, verbose_name="ID obs de la derniere reception de donnees")
     info_sync = models.JSONField(null=True, default=dict, verbose_name="Autre info de synchro")
 

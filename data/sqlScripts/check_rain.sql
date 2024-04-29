@@ -489,5 +489,5 @@ ts_archive (ts utc)    from: 1435176420 to 1435694400
       and dateTime < 1435694400
     order by dateTime'
 
-    -- delete from x_max where poste_id = 2; delete from x_min where poste_id = 2; delete from obs where poste_id = 2; update postes set last_obs_date = null, last_obs_id = null where id = 2;
+    -- delete from x_max where poste_id = 2; delete from x_min where poste_id = 2; delete from obs where poste_id = 2; update postes set last_obs_date_local = null, last_obs_id = null where id = 2;
     

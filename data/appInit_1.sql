@@ -182,7 +182,7 @@ insert into mesures
 (62, 'uv_indice',       'uv',               'UV',                null,        null,     false,   false,    3,      false,    true,            null,        '{}'),
 (70, 'rain',            'rain',             'rain',            'skip',        null,     false,   false,    2,      false,    true,            null,
   '{"w_dump": "lambda x: x * 10"}'),
-(71, 'rain_utc',        'rain_utc',         'rain_utc',        'skip',        null,     false,   false,    2,      false,    true,            null,        '{}'),
+(71, 'rain_utc',        'rain_utc',          null,              'skip',        null,     false,   false,    2,      false,    true,            null,        '{}'),
 (72, 'rain rate',       'rain_rate',        'rainRate',          null,        null,     false,   false,    3,      false,    true,            null,        '{}'),
 (80, 'rx',              'rx',               'rxCheckPercent',    null,        null,     false,   false,    4,      false,    true,            null,        '{}'),
 (90, 'soilmoist1',      'soil_moist1',      'soilMoist1',        null,        null,     false,   false,    1,      false,    true,    'soilmoist1',        '{}'),
@@ -195,9 +195,11 @@ insert into mesures
 (97, 'soiltemp4',       'soil_temp4',       'soilTemp4',         null,        null,     false,   false,    4,      false,    true,     'soiltemp4',        '{}'),
 (100, 'voltage',         'voltage',         'consBatteryVoltage',null,        null,     false,   false,    3,      false,    true,            null,        '{}'),
 (110, 'wind dir',        'wind_dir',        'windDir',          'skip',       null,     false,   false,    0,      false,    true,            null,        '{}'),
-(111, 'wind',            'wind',            'windSpeed',        'wind',       110,      false,   true,     1,      false,    true,            null,        '{}'),
+(111, 'wind',            'wind',            'windSpeed',        'wind',       110,      false,   true,     1,      false,    true,            null,
+  '{"mfr_csv": "lambda x: x * 3.6"}'),
 (113, 'gust dir',        'wind_gust_dir',   'windGustDir',      'skip',       null,     false,   false,    0,      false,    true,  'wind_max_dir',        '{}'),
-(114, 'gust',            'wind_gust',       'windGust',         'wind',       113,      false,   true,     3,       true,    true,      'wind_max',        '{}'),
+(114, 'gust',            'wind_gust',       'windGust',         'wind',       113,      false,   true,     3,       true,    true,      'wind_max',
+  '{"mfr_csv": "lambda x: x * 3.6"}'),
 (115, 'windchill',       'windchill',       'windchill',         null,        null,     false,   false,    4,      false,    true,            null,        '{}')
 ;
 
@@ -264,22 +266,22 @@ CREATE OR REPLACE PROCEDURE refesh_last_obs()
 LANGUAGE SQL
 AS $BODY$
   delete from last_obs;
-  with max_dt as (select poste_id, mesure_id, max(date_local) as date_local from obs group by 1,2)
-   insert into last_obs(poste_id, mesure_id, date_local, value)
-     select m.poste_id, m.mesure_id, m.date_local, (select o.value from obs o where o.mesure_id = m.mesure_id and o.poste_id = m.poste_id and m.date_local = o.date_local limit 1) as value from max_dt as m;
- $BODY$;
+  insert into last_obs(poste_id, mesure_id, date_local, value)
+    select poste_id, mesure_id, max(date_local) as date_local, last(value, date_local) as value  from obs group by 1,2;
+$BODY$;
 
--- regenerer la table last_obs_date
-CREATE OR REPLACE PROCEDURE refesh_last_obs_date()
+-- regenerer la table last_obs_date_local
+CREATE OR REPLACE PROCEDURE refesh_last_obs_date_local()
 LANGUAGE SQL
 AS $BODY$
-with max_dt as (select poste_id as pid, max(date_local) as ldt from obs group by 1) update postes set last_obs_date = (select ldt from max_dt where pid=id);
+with max_dt as (select poste_id as pid, max(date_local) as ldt from obs group by 1) update postes set last_obs_date_local = (select ldt from max_dt where pid=id);
 $BODY$;
+
 -- ---------
 -- Triggers
 -- ---------
 /*
-*  maintain last_obs_date/id in poste table
+*  maintain last_obs_date_local/id in poste table
 *  update last_obs table
 */ 
 CREATE OR REPLACE FUNCTION create_obs_trigger_fn()
@@ -289,9 +291,9 @@ DECLARE
     obs_dat timestamp;
     last_obs_dat timestamp;
 BEGIN
-  select last_obs_date  into obs_dat from postes where id = NEW.poste_id;
+  select last_obs_date_local  into obs_dat from postes where id = NEW.poste_id;
   if obs_dat is null or new.date_local > obs_dat then
-    update postes set last_obs_date = NEW.date_local, last_obs_id = NEW.id where id = NEW.poste_id;
+    update postes set last_obs_date_local = NEW.date_local, last_obs_id = NEW.id where id = NEW.poste_id;
   end if;
 
   -- Update last_obs
@@ -312,7 +314,7 @@ CREATE OR REPLACE TRIGGER create_obs_trigger
   FOR EACH ROW EXECUTE PROCEDURE create_obs_trigger_fn();
 
 /*
-*  maintain last_obs_date/id in poste table
+*  maintain last_obs_date_local/id in poste table
 *  cascade qa_value to x_min/x_max tables
 *  update last_obs table
 */ 
@@ -350,3 +352,25 @@ $BODY$;
 CREATE OR REPLACE TRIGGER delete_obs_trigger
   AFTER UPDATE OR DELETE ON x_max
   FOR EACH ROW EXECUTE PROCEDURE delete_obs_trigger_fn();
+
+/********************
+* Init TimeScaleDB
+********************/
+  CREATE EXTENSION IF NOT EXISTS timescaledb;
+  ALTER TABLE obs DROP CONSTRAINT obs_pkey;
+  SELECT create_hypertable('obs',  by_range('date_local',  INTERVAL '100 days'), migrate_data => true);
+  SELECT set_chunk_time_interval('obs', INTERVAL '100 days');
+  DROP index if exists obs_poste_id_7ed1db30;
+  DROP index if exists obs_mesure_id_2198080c;
+
+  ALTER TABLE x_min DROP CONSTRAINT x_min_pkey;
+  SELECT create_hypertable('x_min', by_range('date_local',  INTERVAL '200 days'), migrate_data => true);
+  SELECT set_chunk_time_interval('x_min',  INTERVAL '200 days');
+  DROP index if exists x_min_mesure_id_915a2d2e;
+  DROP index if exists x_min_poste_id_a7ee3864;
+
+  ALTER TABLE x_max DROP CONSTRAINT x_max_pkey;
+  SELECT create_hypertable('x_max',  by_range('date_local',  INTERVAL '200 days'), migrate_data => true);
+  SELECT set_chunk_time_interval('x_max',  INTERVAL '200 days');
+  DROP index if exists x_max_mesure_id_a633699c;
+  DROP index if exists x_max_poste_id_529ea905;

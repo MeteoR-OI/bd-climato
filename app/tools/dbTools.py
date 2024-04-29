@@ -2,36 +2,46 @@ import mysql.connector
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from django.conf import settings
+import app.tools.myTools as t
 
 def getPGConnexion():
-    return psycopg2.connect(
-        host="localhost",
-        user="postgres",
-        password="Funiculi",
-        database=settings.PG_DATABASE
-    )
+    try:
+        return psycopg2.connect(
+            host="localhost",
+            user="postgres",
+            password="Funiculi",
+            database=settings.PG_DATABASE
+        )
+    except Exception as e:
+        t.logException("Error durinf mySql connection: %s" % e)
+        raise e
 
 def getMSQLConnection(meteor):
-    myconn = mysql.connector.connect(
-        host="localhost",
-        user="nico",
-        password="Funiculi",
-        database=meteor
-    )
-    if myconn.is_connected() is False:
-        raise Exception("bug in db access")
+    try:
+        myconn = mysql.connector.connect(
+            host="localhost",
+            user="nico",
+            password="Funiculi",
+            database=meteor
+        )
+        if myconn.is_connected() is False:
+            raise Exception("bug in db access")
 
-    # set session timezone to utc
-    my_cur = myconn.cursor()
-    # my_cur.execute("set time_zone = '+00:00'")
-    my_cur.execute('SET @@session.time_zone = "+00:00"')
-    myconn.commit()
-    my_cur.close()
+        # set session timezone to utc
+        my_cur = myconn.cursor()
+        # my_cur.execute("set time_zone = '+00:00'")
+        my_cur.execute('SET @@session.time_zone = "+00:00"')
+        myconn.commit()
+        my_cur.close()
 
-    myconn.time_zone = "+00:00"
-    return myconn
+        myconn.time_zone = "+00:00"
+        return myconn
+    except Exception as e:
+         t.logException("Error durinf mySql connection: %s" % e)
+         raise e
 
 def refreshMV():
+    try:
         # refresh our materialized view
         pgconn = getPGConnexion()
         pgconn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
@@ -53,3 +63,7 @@ def refreshMV():
         pg_cur.close()
         pgconn.commit()
         pgconn.close()
+
+    except Exception as e:
+         t.logException("Error during refreshMV: %s" % e)
+         raise e

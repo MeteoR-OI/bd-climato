@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from app.classes.repository.obsMeteor import QA
+from app.models import Aggreg_Type, Code_QA as QA
 from app.classes.repository.mesureMeteor import MesureMeteor
 import psycopg2
 from datetime import datetime
@@ -40,7 +40,7 @@ class BulkDataLoader(ABC):
         Exception("getMinMaxValues not implemented")
 
     @abstractmethod
-    def getNextRow(self, data_iterator):
+    def getNextRow(self, data_iterator, load_type_filter):
         Exception("getNextRow not implemented")
 
     @abstractmethod
@@ -53,20 +53,32 @@ class BulkDataLoader(ABC):
     def bulkLoad(self, cur_poste, data_iterator, load_missing_data, min_max=[]):
         pg_conn = None
         pg_cur = None
+        tmp_dt = datetime.now()
 
         try:
             pg_conn = getPGConnexion()
             pg_cur = pg_conn.cursor()
 
             min_max = self.loadObs(pg_cur, cur_poste, data_iterator, load_missing_data, min_max)
+            print('loadObs done in : ' + str(datetime.now() - tmp_dt))
+            tmp_dt = datetime.now()
 
             if min_max is not None:
                 del_cde = self.LoadMaxMin(pg_cur, cur_poste, min_max)
+                print('LoadMaxMin done in : ' + str(datetime.now() - tmp_dt))
+                tmp_dt = datetime.now()
                 min_max = None
                 for a_del_sql in del_cde:
                     pg_cur.execute(a_del_sql)
+                    print('exec delete(s) done in : ' + str(datetime.now() - tmp_dt))
+                    tmp_dt = datetime.now()
 
+            print('sending commit: ' + str(datetime.now() - tmp_dt))
+            tmp_dt = datetime.now()
             pg_conn.commit()
+            print('commit done in : ' + str(datetime.now() - tmp_dt))
+            tmp_dt = datetime.now()
+
 
         except Exception as e:
             if pg_conn is not None:
@@ -96,7 +108,7 @@ class BulkDataLoader(ABC):
 
                 date_obs_utc, date_obs_local = self.getObsDateTime(cur_row, col_mapping, cur_poste)
 
-                if load_missing_data is False and (cur_poste.data.last_obs_date is None or date_obs_local > cur_poste.data.last_obs_date):
+                if load_missing_data is False and (cur_poste.data.last_obs_date_local is None or date_obs_local > cur_poste.data.last_obs_date_local):
                     for a_mesure in self.measures:
                         if self.isMesureQualified(a_mesure) is False:
                             continue
@@ -120,7 +132,7 @@ class BulkDataLoader(ABC):
                             min_max.append({'min': cur_min, 'max': cur_max, 'date_min': date_min,
                                                  'date_max': date_max, 'mid': a_mesure['id'], 'obs_id': -1})
 
-                if load_missing_data is True and (cur_poste.data.last_obs_date is not None or date_obs_local <= cur_poste.data.last_obs_date):
+                if load_missing_data is True and (cur_poste.data.last_obs_date_local is not None or date_obs_local <= cur_poste.data.last_obs_date_local):
                     # Future chargement de donnees manquantes
                     pass
             finally:
@@ -128,6 +140,8 @@ class BulkDataLoader(ABC):
 
         if len(data_args) == 0:
             return None
+        
+        print('data_args: ' + str(len(data_args)))
 
         # cursor.mogrify() to insert multiple values
         args = ','.join(pg_cur.mogrify("( %s, %s, %s, %s, %s, %s, %s )", i).decode(
@@ -158,7 +172,7 @@ class BulkDataLoader(ABC):
             if self.isMesureQualified(a_mesure) is False:
                 continue
             mesures_hash[a_mesure['id']] = a_mesure
-            if a_mesure['agreg'] == MesureMeteor.Agreg_Type.SUM:
+            if a_mesure['agreg'] == Aggreg_Type.SUM:
                 mesure_sum_id.append(a_mesure['id'])
 
         for a_record in new_records:

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from app.classes.repository.mesureMeteor import MesureMeteor
-from app.classes.repository.obsMeteor import QA
+from app.models import Aggreg_Type, Code_QA as QA
 import psycopg2
 from datetime import timedelta
 from django.conf import settings
@@ -155,9 +155,9 @@ class JsonDataLoader(ABC):
 
         # load keys index used to look for our value in order of importance
         j_keys = [mesure_keys]
-        if a_mesure['agreg_type'] == MesureMeteor.Agreg_Type.AVG:
+        if a_mesure['agreg_type'] == Aggreg_Type.AVG:
             j_keys = [mesure_keys + suffix_avg, mesure_keys, mesure_keys + suffix_sum]
-        elif a_mesure['agreg_type'] == MesureMeteor.Agreg_Type.SUM:
+        elif a_mesure['agreg_type'] == Aggreg_Type.SUM:
             j_keys = [mesure_keys + suffix_sum, mesure_keys, mesure_keys + suffix_avg]
 
         my_val = my_val_dir = None

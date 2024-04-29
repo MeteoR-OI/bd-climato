@@ -365,7 +365,7 @@
             {
               "matcher": {
                 "id": "byName",
-                "options": "last_obs_date"
+                "options": "last_obs_date_local"
               },
               "properties": [
                 {
@@ -405,7 +405,7 @@
             "group": [],
             "metricColumn": "none",
             "rawQuery": true,
-            "rawSql": "select\n  p.meteor as meteor,\n  p.last_obs_date,\n  p.last_extremes_date\n  from postes p\n  where p.last_obs_date is not null or p.last_extremes_date is not null\n  order by 2 desc\n",
+            "rawSql": "select\n  p.meteor as meteor,\n  p.last_obs_date_local,\n  p.last_extremes_date\n  from postes p\n  where p.last_obs_date_local is not null or p.last_extremes_date is not null\n  order by 2 desc\n",
             "refId": "A",
             "select": [
               [

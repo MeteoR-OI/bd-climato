@@ -1,0 +1,36 @@
+{
+  "clientRemote": "",
+  "gitRemote": "",
+  "gitSha": "",
+  "treeEntries": [
+    {
+      "label": "chargement des min/max de weeWx",
+      "entryType": 0,
+      "author": "nico",
+      "locations": [
+        {
+          "path": "app/classes/migrate/migrate.py",
+          "startLine": 212,
+          "endLine": 282,
+          "label": "",
+          "description": ""
+        }
+      ],
+      "details": {
+        "severity": "",
+        "difficulty": "",
+        "type": "",
+        "description": "",
+        "exploit": "",
+        "recommendation": "Short term, \nLong term, \n"
+      }
+    }
+  ],
+  "auditedFiles": [
+    {
+      "path": "app/tools/dbTools.py",
+      "author": "nico"
+    }
+  ],
+  "resolvedEntries": []
+}
