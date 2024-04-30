@@ -4,6 +4,7 @@ from app.classes.repository.mesureMeteor import MesureMeteor
 import psycopg2
 from datetime import datetime
 from app.tools.dbTools import getPGConnexion
+from operator import itemgetter
 
 
 class BulkDataLoader(ABC):
@@ -97,6 +98,7 @@ class BulkDataLoader(ABC):
         minmax_other_len = len(min_max)
         data_args = []
         idx = 0
+        idx_intial = len(min_max)
         cur_row = self.getNextRow(data_iterator)
         col_mapping = self.getColMapping(data_iterator)
 
@@ -150,7 +152,7 @@ class BulkDataLoader(ABC):
         pg_cur.execute(sql_insert + args + ' returning id')
         new_ids = pg_cur.fetchall()
 
-        idx = 0
+        idx = idx_intial
         while idx < len(new_ids):
             min_max[idx + minmax_other_len]['obs_id'] = new_ids[idx][0]
             idx += 1
@@ -207,6 +209,49 @@ class BulkDataLoader(ABC):
                          a_record['max'],
                          a_record['date_max'],
                          QA.UNSET.value, a_record.get('max_dir')))
+
+        # keep only 3 min/max per day
+        min_arg_sorted = sorted(min_args, key=itemgetter(2, 3, 1, 4))
+        min_args = []
+        max_arg_sorted = sorted(max_args, key=itemgetter(2, 3, 1, 4))
+        max_args = []
+
+        tmp_date = None
+        tmp_poste_id = -1
+        tmp_mesure_id = -1
+        idx = 0
+        idx_per_mesure = 0
+        while idx < len(min_arg_sorted):
+            if tmp_poste_id != min_arg_sorted[idx][2] or tmp_mesure_id != min_arg_sorted[idx][3] or tmp_date != min_arg_sorted[idx][1]:
+                tmp_poste_id = min_arg_sorted[idx][2]
+                tmp_date = min_arg_sorted[idx][1]
+                tmp_mesure_id = min_arg_sorted[idx][3]
+                idx_per_mesure = 0
+
+            if idx_per_mesure < 3:
+                min_args.append(min_arg_sorted[idx])
+                idx_per_mesure += 1
+            idx += 1
+
+        tmp_date = None
+        tmp_poste_id = -1
+        tmp_mesure_id = -1
+        idx = len(max_arg_sorted) - 1
+        idx_per_mesure = 0
+        while idx >= 0:
+            if tmp_poste_id != max_arg_sorted[idx][2] or tmp_mesure_id != max_arg_sorted[idx][3] or tmp_date != max_arg_sorted[idx][1]:
+                tmp_poste_id = max_arg_sorted[idx][2]
+                tmp_date = max_arg_sorted[idx][1]
+                tmp_mesure_id = max_arg_sorted[idx][3]
+                idx_per_mesure = 0
+
+            if idx_per_mesure < 3:
+                max_args.append(max_arg_sorted[idx])
+                idx_per_mesure += 1
+            idx -= 1
+
+        min_arg_sorted = []
+        max_arg_sorted = []
 
         min_args_ok = ','.join(pg_cur.mogrify(
             "(%s, %s, %s, %s, %s, %s, %s)", i).decode('utf-8') for i in min_args)
