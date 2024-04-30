@@ -10,6 +10,7 @@ https://docs.djangoproject.com/en/2.0/howto/deployment/wsgi/
 import os
 
 from app.classes.workers.svcLoadCsv import SvcCsvLoader
+from app.classes.workers.svcLoadCsvPluvio import SvcPluvioLoader
 # from app.classes.workers.svcLoadJson import SvcJsonLoader
 from app.classes.workers.svcMigrate import SvcMigrate
 from django.core.wsgi import get_wsgi_application
@@ -17,6 +18,10 @@ from django.core.wsgi import get_wsgi_application
 svc_csv_loader = SvcCsvLoader()
 svc_csv_loader.Start()
 svc_csv_loader.RunMe()
+
+svc_pluvio_loader = SvcPluvioLoader()
+svc_pluvio_loader.Start()
+svc_pluvio_loader.RunMe()
 
 # svc_json_loader = SvcJsonLoader()
 # svc_json_loader.Start()

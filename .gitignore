@@ -8,7 +8,6 @@ db.sqlite3-journal
 Clim_MeteoR/settings.py
 app/tests/functional/settings.py
 static/**/*.png
-data/**/*.csv
 *.pyc
 /static/
 /media/
@@ -20,10 +19,13 @@ coverage.xml
 .coverage
 
 data/json_not_in_git
-data/json_in_git
+data/csv_auto_load
+data/csv_auto_load/**/*/
+data/csv_autoload/*.csv
 data/json_auto_load
 data/json_archive
 data/localStorage
 data/ovpf
+data/ovpf/
 
 scripts/dina/
