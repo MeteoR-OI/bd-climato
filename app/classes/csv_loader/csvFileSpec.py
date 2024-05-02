@@ -4,17 +4,19 @@
 # -----------------------------------------------------------------------------
 from abc import ABC, abstractmethod
 from app.tools.dateTools import str_to_datetime
-from app.models import Load_Type
+from app.models import Code_QA
 from app.classes.repository.mesureMeteor import MesureMeteor
 from app.classes.repository.posteMeteor import PosteMeteor
 from app.classes.repository.obsMeteor import ObsMeteor
 from datetime import timedelta, datetime
 import app.tools.myTools as t
+import os
+import os
 
 
 class CsvFileSpec(ABC):
     def __init__(self, all_formats) -> None:
-        self.__all_formats = all_formats
+        return
 
     @abstractmethod
     def getPosteData(self, idx, rows, work_item):
@@ -45,71 +47,74 @@ class CsvFileSpec(ABC):
         id_format = work_item['id_format']
 
         cur_poste = None
-        obs_data_in_db = {}
         last_meteor = 'not a meteor !@££$'
+        self.loadMesures(work_item['id_format'])
 
-        # flake8: noqa
-        with open(work_item['path'] + '/' + work_item['f'], newline='') as file:
-            line_count = 0
-            row = file.readline()
-            while row:
-                my_fields = row.split(self.all_formats[id_format].separator)
-                if line_count < self.all_formats[id_format].skip_lines:
-                    self.__header.append(row)
-                    total_line += 1
-                    line_count += 1
-                    row = file.readline()
-                    if line_count == self.all_formats[id_format].skip_lines:
-                        self.decodeHeader(id_format, self.__header, row)
-                    continue
-
-                # is it time to flush our buffers ?
-                if line_count > 500:
-                    if len(obs_data) > 0:
-                        t.logInfo('yielding data: ' + str(len(obs_data)) + ' obs, ' + 'line_cout: ' + str(line_count) + '/' + str(total_line))
-                        yield {'obs_data': obs_data, 'min_data': min_data, 'max_data': max_data}
-                        obs_data = []
-                        min_data = []
-                        max_data = []
-                    line_count = 0
-
-                # get new poste if needed
-                poste_info = self.getPosteData(id_format, my_fields, work_item)
-                if poste_info.get('meteor') is not None:
-                    id_station = poste_info['meteor']
-                else:
-                    id_station = poste_info['code']
-
-                if id_station != last_meteor:
-                    skip_poste = None
-                    cur_poste = PosteMeteor.getPosteByCode(id_station)
-                    last_meteor = id_station
-                    if cur_poste is None or (((load_type_filter & cur_poste.data.load_type)& Load_Type.LOAD_CSV_FOR_METEOFR.value) !=  Load_Type.LOAD_CSV_FOR_METEOFR.value):
-                        skip_poste = last_meteor
-
-                if skip_poste != last_meteor:
-                    date_already_loaded = str_to_datetime(cur_poste.data.last_obs_date_local) if cur_poste.data.last_obs_date_local is not None else datetime(1900, 1, 1)
-
-                    j_stop_dat_utc = self.getStopDate(id_format, my_fields)
-
-                    if j_stop_dat_utc > date_already_loaded and ((cur_poste.data.load_type & cur_poste.LoadType.LOAD_CSV_FOR_METEOFR.value) == cur_poste.LoadType.LOAD_CSV_FOR_METEOFR.value):
-                        #  process row
-                        self.processRow(id_format, my_fields, cur_poste, obs_data, min_data, max_data, False, obs_data_in_db)
-                        line_count += 1
-
-                # get next line
-                total_line += 1
+        file_path = work_item['path'] + '/' + work_item['f']
+        if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
+            # flake8: noqa
+            with open(file_path, newline='') as file:
+                line_count = 0
                 row = file.readline()
+                while row:
+                    my_fields = row.split(self.all_formats[id_format].separator)
+                    if line_count < self.all_formats[id_format].skip_lines:
+                        self.__header.append(row)
+                        total_line += 1
+                        line_count += 1
+                        row = file.readline()
+                        if line_count == self.all_formats[id_format].skip_lines:
+                            self.decodeHeader(id_format, self.__header, row)
+                        continue
 
-            if len(obs_data) > 0:
-                yield {'obs_data': obs_data, 'min_data': min_data, 'max_data': max_data}
+                    # is it time to flush our buffers ?
+                    if line_count > 500:
+                        if len(obs_data) > 0:
+                            t.logInfo('yielding data: ' + str(len(obs_data)) + ' obs, ' + 'line_cout: ' + str(line_count) + '/' + str(total_line))
+                            yield {'obs_data': obs_data, 'min_data': min_data, 'max_data': max_data}
+                            obs_data = []
+                            min_data = []
+                            max_data = []
+                        line_count = 0
 
-            t.logInfo('file: ' + work_item['f'] + ', total line processed: ' + str(total_line))
+                    # get new poste if needed
+                    poste_info = self.getPosteData(id_format, my_fields, work_item)
+                    if poste_info.get('meteor') is not None:
+                        id_station = poste_info['meteor']
+                    else:
+                        id_station = poste_info['code']
 
-    def processRow(self, id_format, my_fields, cur_poste, obs_data, min_data, max_data, b_check_obs_data_in_db, obs_data_in_db):
+                    if id_station != last_meteor:
+                        skip_poste = None
+                        cur_poste = PosteMeteor(id_station)
+                        if cur_poste is None:
+                            cur_poste = PosteMeteor.getPosteByCode(id_station)
+                        last_meteor = id_station
+                        if cur_poste is None:
+                            skip_poste = last_meteor
+
+                    if skip_poste != last_meteor:
+                        date_already_loaded = cur_poste.data.last_obs_date_local if cur_poste.data.last_obs_date_local is not None else datetime(1900, 1, 1)
+
+                        obs_date_utc, obs_date_local = self.getStopDate(id_format, my_fields, cur_poste.data.delta_timezone)
+                        
+                        if obs_date_local > date_already_loaded:
+                            #  process row
+                            self.processRow(id_format, my_fields, cur_poste, obs_data, min_data, max_data)
+                            line_count += 1
+
+                    # get next line
+                    total_line += 1
+                    row = file.readline()
+
+                if len(obs_data) > 0:
+                    yield {'obs_data': obs_data, 'min_data': min_data, 'max_data': max_data}
+
+                t.logInfo('file: ' + work_item['f'] + ', total line processed: ' + str(total_line))
+
+    def processRow(self, id_format, my_fields, cur_poste, obs_data, min_data, max_data):
         poste_id = cur_poste.data.id
-        obs_date_local = self.getStopDate(id_format, my_fields)
-        obs_date_utc = obs_date_local - timedelta(hours=cur_poste.data.delta_timezone)
+        obs_date_utc, obs_date_local = self.getStopDate(id_format, my_fields, cur_poste.data.delta_timezone)
         duration = self.all_formats[id_format].duration
 
         for a_mesure in self.__mesures:
@@ -164,8 +169,11 @@ class CsvFileSpec(ABC):
             }
             Exception('to be written')
 
+    def loadMesures(self, id_format):
         # prepare field mapping array
         self.__mesures = []
+        csv_format = self.all_formats[id_format]
+
         self.__all_mesures = MesureMeteor.getDefinitions()
         for a_mapping in csv_format.mappings:
             idx_mesure = 0
@@ -196,7 +204,10 @@ class CsvFileSpec(ABC):
         if a_mesure['convert'] is not None and a_mesure['convert'].get('mfr_csv') is not None:
             cur_val = eval(a_mesure['convert']['mfr_csv'])(cur_val)
 
-        cur_q_val = self.getQualityCode(fields_array[a_mesure.get('csv_qa_idx')], id_format)
+        if a_mesure.get('csv_qa_idx') is not None:
+            cur_q_val = self.getQualityCode(fields_array[a_mesure.get('csv_qa_idx')], id_format)
+        else:
+            cur_q_val = Code_QA.UNSET.value
 
         return cur_val, cur_q_val
 

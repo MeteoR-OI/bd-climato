@@ -1,4 +1,5 @@
 from app.models import Poste, Load_Type, Data_Source
+from datetime import datetime
 
 
 class PosteMeteor:
@@ -54,6 +55,14 @@ class PosteMeteor:
             return cur_poste
         else:
             return None
+
+    @staticmethod
+    def getOvpfStations():
+        ovpf_postes = []
+        tmp_postes = Poste.objects.filter(data_source=3).all()
+        for p in tmp_postes:
+            ovpf_postes.append({'id': p.id, 'meteor': p.meteor.lower(), 'last_obs_date_local': p.last_obs_date_local if p.last_obs_date_local is not None else datetime(2007,1,1,0,0,0)})
+        return ovpf_postes
 
     def __str__(self) -> None:
         """print myself"""

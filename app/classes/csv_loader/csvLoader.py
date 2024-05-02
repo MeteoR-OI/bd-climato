@@ -11,9 +11,11 @@
 #   failWorkItem(work_item, exc):
 #       mark the work_item as failed
 from app.classes.repository.mesureMeteor import MesureMeteor
+from app.classes.repository.posteMeteor import PosteMeteor
 import app.tools.myTools as t
 from django.conf import settings
 import json
+from datetime import datetime
 import os
 from app.classes.csv_loader.csv_meteoFR import CsvMeteoFR
 from app.classes.csv_loader.csv_OVPF import CsvOpvf
@@ -31,7 +33,7 @@ class CsvLoader:
 
         self.__all_providers = [
             CsvMeteoFR(),
-            # CsvOpvf()
+            CsvOpvf()
         ]
 
     # ----------------
@@ -60,6 +62,13 @@ class CsvLoader:
                 os.makedirs(target_dir)
 
             os.rename(work_item['path'] + "/" + work_item['f'], target_dir + work_item['f'])
+
+        # Change year when full year was processed
+        if work_item.get('fix_obs_last_date') is True:
+            if work_item['year_processed'] != datetime.now().year:
+                cur_poste = PosteMeteor(work_item['meteor'])
+                cur_poste.data.last_obs_date_local = datetime(work_item['year_processed'] + 1, 1, 1, 0, 0, 0)
+                cur_poste.save()
 
         # refresh our materialized view
         refreshMV()

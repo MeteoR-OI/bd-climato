@@ -3,11 +3,10 @@ from app.models import Code_QA
 
 class CsvOvpf:
     class RowId(Enum):
-        POSTE = 0
-        DATE = 1
+        DATE = 0
+        TIME = 1
         RR1 = 2
         QRR1 = 3
-
 
     pattern = [
         r'^.*.csv$',
@@ -17,8 +16,9 @@ class CsvOvpf:
     separator = ' '
     skip_lines = 0
     move_file = False
+    fix_obs_last_date = True
     mappings = [
-        {'csv_field': 'RR1',       'csv_idx': RowId.RR1.value, 'qa_idx': RowId.QRR1.value,       'mesure': 'rain_utc',         'minmax': {},      "convert": {}},
+        {'csv_field': 'RR1',       'csv_idx': RowId.RR1.value, 'qa_idx': None,       'mesure': 'rain_utc',         'minmax': {},      "convert": {}},
     ]
     qa_mapping = [ ]
 

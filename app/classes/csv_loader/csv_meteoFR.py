@@ -3,10 +3,12 @@ from app.tools.dateTools import str_to_datetime
 from app.classes.csv_loader.file_format.all_MeteoFR_formats import all_formats
 from app.models import Code_QA
 import app.tools.myTools as t
+from app.tools.dateTools import str_to_datetime
 import os
 from django.conf import settings
 import re
 
+from datetime import timedelta
 class CsvMeteoFR(CsvFileSpec):
 
     def __init__(self):
@@ -90,13 +92,15 @@ class CsvMeteoFR(CsvFileSpec):
     def hackHeader(self, idx, header, row):
         return
 
-    def getStopDate(self, idx, rows):
+    def getStopDate(self, idx, rows, tz_hours=0):
         tmp_dt = rows[self.all_formats[idx].RowId.DATE.value]
-        return str_to_datetime(
+        dt_local = str_to_datetime(
             tmp_dt[0:4] + '-' +
             tmp_dt[4:6] + '-' +
             tmp_dt[6:8] + 'T' +
             tmp_dt[8:10] + ':00:00')
+        dt_utc = dt_local - timedelta(hours=tz_hours)
+        return dt_utc, dt_local
 
     def getQualityCode(self, code_txt, id_format):
         if code_txt is None:
