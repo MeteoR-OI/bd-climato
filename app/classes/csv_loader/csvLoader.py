@@ -15,7 +15,8 @@ import app.tools.myTools as t
 from django.conf import settings
 import json
 import os
-from app.classes.csv_loader.csv_meteoFR import CSV_MeteoFR
+from app.classes.csv_loader.csv_meteoFR import CsvMeteoFR
+from app.classes.csv_loader.csv_OVPF import CsvOpvf
 from app.tools.dbTools import getPGConnexion, refreshMV
 from app.models import Load_Type
 
@@ -28,19 +29,9 @@ class CsvLoader:
         # boolean to stop processing files
         self.stopRequested = False
 
-        # get directories settings
-        if hasattr(settings, "CSV_AUTOLOAD") is True:
-            self.base_dir = settings.CSV_AUTOLOAD
-        else:
-            self.base_dir = (os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/../../data/csv_auto_load")
-
-        if hasattr(settings, "ARCHIVE_DIR") is True:
-            self.archive_dir = settings.ARCHIVE_DIR
-        else:
-            self.archive_dir = (os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/../../data/archive")
-
         self.__all_providers = [
-            CSV_MeteoFR()
+            CsvMeteoFR(),
+            # CsvOpvf()
         ]
 
     # ----------------
@@ -51,61 +42,24 @@ class CsvLoader:
         return
 
     def getNextWorkItem(self):
-        files_spec = []
-
-        # get json file names
-        filenames = os.listdir(self.base_dir)
-        for filename in filenames:
-            if str(filename).endswith('.csv'):
-                files_spec.append({"d": self.base_dir, "f": filename})
-
-        for filename in filenames:
-            if str(filename).endswith('.txt.data'):
-                files_spec.append({"d": self.base_dir, "f": filename})
-
-        # self.addOvpfFiles(files_spec)
-
-        # stop processing
-        if len(files_spec) == 0:
-            return None
-
-        files_spec = sorted(files_spec, key=lambda k: k['f'])
-
-        idx_file_spec = 0
-        while idx_file_spec < len(files_spec):
-            a_file_spec = files_spec[idx_file_spec]
-
-            # find our file specification
-            idx_provider = 0
-
-            while idx_provider < len(self.__all_providers):
-                id_spec = self.__all_providers[idx_provider].isItForMe(a_file_spec['d'], a_file_spec['f'])
-
-                if id_spec >= 0:
-                    return {
-                        'f': a_file_spec['f'],
-                        'path': a_file_spec['d'],
-                        'idx_provider': idx_provider,
-                        'id_spec': id_spec,
-                        'info': 'loading file: ' + a_file_spec['f'],
-                        'move_file': self.__all_providers[idx_provider].all_formats[id_spec].move_file
-                    }
-                idx_provider += 1
-
-        t.logError('csvLoader', "No file spec found for " + a_file_spec['d'] + "/" + a_file_spec['f'])
-        idx_file_spec += 1
+        idx_provider = 0
+        while idx_provider < len(self.__all_providers):
+            work_item = self.__all_providers[idx_provider].findNextWorkItem()
+            if work_item is not None:
+                work_item['idx_provider'] = idx_provider
+                return work_item
+            idx_provider += 1
         return None
 
     def succeedWorkItem(self, work_item):
         # move the file to archive
         if work_item['move_file'] is True:
-            target_dir = self.archive_dir + "/csv/"
+            target_dir = self.__all_providers[work_item['idx_provider']].getArchivePath(work_item)
+            
             if not os.path.exists(target_dir):
                 os.makedirs(target_dir)
 
-            # add station/year/month
-
-            os.rename(self.base_dir + "/" + work_item['f'], target_dir + work_item['f'])
+            os.rename(work_item['path'] + "/" + work_item['f'], target_dir + work_item['f'])
 
         # refresh our materialized view
         refreshMV()
@@ -113,10 +67,10 @@ class CsvLoader:
     def failWorkItem(self, work_item, exc):
         # move the file to failed archive
         if work_item['move_file'] is True:
-            target_dir = self.archive_dir + "/failed/csv/"
+            target_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/../../data/failed/csv/"
             if not os.path.exists(target_dir):
                 os.makedirs(target_dir)
-            os.rename(self.base_dir + "/" + work_item['f'], target_dir + work_item['f'])
+            os.rename(work_item['path'] + "/" + work_item['f'], target_dir + work_item['f'])
             t.logError('CsvLoader', "file moved to failed directory", {"filename": work_item['f'], "dest": target_dir})
 
     # Load data per block
@@ -124,7 +78,7 @@ class CsvLoader:
         cur_provider = self.__all_providers[work_item['idx_provider']]
         pg_conn = getPGConnexion()
 
-        for data_to_flush in cur_provider.nextBlockLines(work_item['id_spec'], Load_Type.LOAD_CSV_FOR_METEOFR.value):
+        for data_to_flush in cur_provider.nextBlockLines(work_item, Load_Type.LOAD_CSV_FOR_METEOFR.value):
             # data_to_flush = {
             #     'obs_data': [(poste_id, date_utc, date_local, mesure_id, duration, value, qa_value)],
             #     'min_data': [(poste_id, date_utc, date_local, mesure_id, min, min_time, is_it_obs_data)],

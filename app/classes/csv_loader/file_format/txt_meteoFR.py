@@ -86,6 +86,14 @@ class TxtMeteoFR:
         ['d', Code_QA.UNVALIDATED.value],
         ['f', Code_QA.UNVALIDATED.value],
     ]
+    def getArchiveSubDir(self, file_name):
+        # DH.RUN.2024.04.18.10.txt.data
+        splits = file_name.split('.')
+        if len(splits) < 6:
+            return '/csv/'
+        # return /<year>/<month>/
+        return '/' + splits[2] + '/' + splits[3] + '/'
+
 
 # RR1	HAUTEUR DE PRECIPITATIONS HORAIRE	MILLIMETRES ET 1/10
 # T	TEMPERATURE SOUS ABRI HORAIRE	DEG C ET 1/10

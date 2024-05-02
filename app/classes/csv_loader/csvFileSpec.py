@@ -8,18 +8,16 @@ from app.models import Load_Type
 from app.classes.repository.mesureMeteor import MesureMeteor
 from app.classes.repository.posteMeteor import PosteMeteor
 from app.classes.repository.obsMeteor import ObsMeteor
-import re
 from datetime import timedelta, datetime
 import app.tools.myTools as t
 
 
 class CsvFileSpec(ABC):
-    def __init__(self, patterns, all_formats) -> None:
+    def __init__(self, all_formats) -> None:
         self.__all_formats = all_formats
-        self.__patterns = patterns
 
     @abstractmethod
-    def getPosteData(self, idx, rows, file_name):
+    def getPosteData(self, idx, rows, work_item):
         raise NotImplementedError
 
     @abstractmethod
@@ -31,43 +29,38 @@ class CsvFileSpec(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def getQualityCode(self, code_txt, id_spec):
+    def getQualityCode(self, code_txt, id_format):
         raise NotImplementedError
 
-    # check if a file name match our patterns
-    def isItForMe(self, file_path, file_name) -> bool:
-        self.__file_path = file_path
-        self.__file_name = file_name
-        for a_pattern in self.__patterns:
-            match = re.match(a_pattern['p'], file_name)
-            if match:
-                return a_pattern['idx']
-        return -1
-
-    def nextBlockLines(self, id_spec, load_type_filter=255):
+    @abstractmethod
+    def findNextWorkItem(self):
+        raise NotImplementedError
+    
+    def nextBlockLines(self, work_item, load_type_filter=255):
         obs_data = []
         min_data = []
         max_data = []
         total_line = 0
         self.__header = []
+        id_format = work_item['id_format']
 
         cur_poste = None
         obs_data_in_db = {}
         last_meteor = 'not a meteor !@££$'
 
         # flake8: noqa
-        with open(self.__file_path + '/' + self.__file_name, newline='') as file:
+        with open(work_item['path'] + '/' + work_item['f'], newline='') as file:
             line_count = 0
             row = file.readline()
             while row:
-                my_fields = row.split(self.all_formats[id_spec].separator)
-                if line_count < self.all_formats[id_spec].skip_lines:
+                my_fields = row.split(self.all_formats[id_format].separator)
+                if line_count < self.all_formats[id_format].skip_lines:
                     self.__header.append(row)
                     total_line += 1
                     line_count += 1
                     row = file.readline()
-                    if line_count == self.all_formats[id_spec].skip_lines:
-                        self.decodeHeader(id_spec, self.__header, row)
+                    if line_count == self.all_formats[id_format].skip_lines:
+                        self.decodeHeader(id_format, self.__header, row)
                     continue
 
                 # is it time to flush our buffers ?
@@ -81,7 +74,7 @@ class CsvFileSpec(ABC):
                     line_count = 0
 
                 # get new poste if needed
-                poste_info = self.getPosteData(id_spec, my_fields, self.__file_name)
+                poste_info = self.getPosteData(id_format, my_fields, work_item)
                 if poste_info.get('meteor') is not None:
                     id_station = poste_info['meteor']
                 else:
@@ -97,11 +90,11 @@ class CsvFileSpec(ABC):
                 if skip_poste != last_meteor:
                     date_already_loaded = str_to_datetime(cur_poste.data.last_obs_date_local) if cur_poste.data.last_obs_date_local is not None else datetime(1900, 1, 1)
 
-                    j_stop_dat_utc = self.getStopDate(id_spec, my_fields)
+                    j_stop_dat_utc = self.getStopDate(id_format, my_fields)
 
                     if j_stop_dat_utc > date_already_loaded and ((cur_poste.data.load_type & cur_poste.LoadType.LOAD_CSV_FOR_METEOFR.value) == cur_poste.LoadType.LOAD_CSV_FOR_METEOFR.value):
                         #  process row
-                        self.processRow(id_spec, my_fields, cur_poste, obs_data, min_data, max_data, False, obs_data_in_db)
+                        self.processRow(id_format, my_fields, cur_poste, obs_data, min_data, max_data, False, obs_data_in_db)
                         line_count += 1
 
                 # get next line
@@ -111,16 +104,16 @@ class CsvFileSpec(ABC):
             if len(obs_data) > 0:
                 yield {'obs_data': obs_data, 'min_data': min_data, 'max_data': max_data}
 
-            t.logInfo('file: ' + self.__file_name + ', total line processed: ' + str(total_line))
+            t.logInfo('file: ' + work_item['f'] + ', total line processed: ' + str(total_line))
 
-    def processRow(self, id_spec, my_fields, cur_poste, obs_data, min_data, max_data, b_check_obs_data_in_db, obs_data_in_db):
+    def processRow(self, id_format, my_fields, cur_poste, obs_data, min_data, max_data, b_check_obs_data_in_db, obs_data_in_db):
         poste_id = cur_poste.data.id
-        obs_date_local = self.getStopDate(id_spec, my_fields)
+        obs_date_local = self.getStopDate(id_format, my_fields)
         obs_date_utc = obs_date_local - timedelta(hours=cur_poste.data.delta_timezone)
-        duration = self.all_formats[id_spec].duration
+        duration = self.all_formats[id_format].duration
 
         for a_mesure in self.__mesures:
-            cur_val, cur_q_val = self.get_valeurs(id_spec, a_mesure, my_fields)
+            cur_val, cur_q_val = self.get_valeurs(id_format, a_mesure, my_fields)
             if cur_val is None:
                 continue
 
@@ -139,25 +132,25 @@ class CsvFileSpec(ABC):
             obs_data.append(data_args)
 
             if a_mesure['min'] is True:
-                cur_min, cur_min_qa, cur_min_time_local, is_it_obs_data = self.get_valeur_min(cur_poste, id_spec, a_mesure, my_fields, cur_val, cur_q_val, obs_date_local)
+                cur_min, cur_min_qa, cur_min_time_local, is_it_obs_data = self.get_valeur_min(cur_poste, id_format, a_mesure, my_fields, cur_val, cur_q_val, obs_date_local)
                 # 'min_data': [(poste_id, date_local, mesure_id, min, min_time, qa_min, is_it_obs_data)],
                 min_data.append((poste_id, obs_date_local, a_mesure['id'], cur_min, cur_min_time_local, cur_min_qa, is_it_obs_data))
             else:
                 min_data.append((poste_id, obs_date_local, a_mesure['id'], None, None, None, False))
 
             if a_mesure['max'] is True:
-                cur_max, cur_max_qa, cur_max_time_local, cur_max_dir, is_it_obs_data = self.get_valeur_max(cur_poste, id_spec, a_mesure, my_fields, cur_val, cur_q_val, obs_date_local)
+                cur_max, cur_max_qa, cur_max_time_local, cur_max_dir, is_it_obs_data = self.get_valeur_max(cur_poste, id_format, a_mesure, my_fields, cur_val, cur_q_val, obs_date_local)
                 # 'max_data': [poste_id, date_local, mesure_id, max, qa_max, max_time, max_dir, is_it_obs_data)],
                 max_data.append((poste_id, obs_date_local, a_mesure['id'], cur_max, cur_max_time_local, cur_max_qa, cur_max_dir, is_it_obs_data))
             else:
                 max_data.append((poste_id, obs_date_local, a_mesure['id'], None, None, None, None, False))
 
-    def decodeHeader(self, id_spec, hdr, row):
+    def decodeHeader(self, id_format, hdr, row):
         # Change header if needed
-        self.__header = self.hackHeader(id_spec, hdr, row)
+        self.__header = self.hackHeader(id_format, hdr, row)
 
         # Decode data
-        csv_format = self.all_formats[id_spec]
+        csv_format = self.all_formats[id_format]
 
         if csv_format.poste_strategy == 1:
             pass
@@ -194,7 +187,7 @@ class CsvFileSpec(ABC):
                 raise Exception('Mesure not found: ' + a_mapping['mesure'])
 
     #  returns cur_val, cur_q_val, obs_date_utc
-    def get_valeurs(self, id_spec, a_mesure, fields_array):
+    def get_valeurs(self, id_format, a_mesure, fields_array):
         if fields_array[a_mesure['csv_row_idx']] is None or fields_array[a_mesure['csv_row_idx']] == '':
             return None, None
 
@@ -203,12 +196,12 @@ class CsvFileSpec(ABC):
         if a_mesure['convert'] is not None and a_mesure['convert'].get('mfr_csv') is not None:
             cur_val = eval(a_mesure['convert']['mfr_csv'])(cur_val)
 
-        cur_q_val = self.getQualityCode(fields_array[a_mesure.get('csv_qa_idx')], id_spec)
+        cur_q_val = self.getQualityCode(fields_array[a_mesure.get('csv_qa_idx')], id_format)
 
         return cur_val, cur_q_val
 
     # returns cur_min, cur_min_qa, cur_min_time_local, is_it_obs_data
-    def get_valeur_min(self, cur_poste, id_spec, a_mesure, fields_array, cur_val, cur_qval, obs_date_local):
+    def get_valeur_min(self, cur_poste, id_format, a_mesure, fields_array, cur_val, cur_qval, obs_date_local):
         if a_mesure['min'] is not True:
             return None, None, None, False
 
@@ -228,7 +221,7 @@ class CsvFileSpec(ABC):
                     cur_min = eval(a_mesure['convert']['mfr_csv'])(cur_min)
                 is_it_obs_data = False
             if cur_min_field_qa is not None and cur_min_field_qa != '':
-                cur_min_qa = self.getQualityCode(fields_array[cur_min_field_qa], id_spec)
+                cur_min_qa = self.getQualityCode(fields_array[cur_min_field_qa], id_format)
 
         if cur_min_time_field is not None and cur_min_time_field != '':
             tmp_min_time = fields_array[cur_min_time_field]
@@ -239,7 +232,7 @@ class CsvFileSpec(ABC):
         return cur_min, cur_min_qa, cur_min_time, is_it_obs_data
 
     # returns cur_max, cur_max_qa, cur_max_time_local, cur_max_dir, is_it_obs_data
-    def get_valeur_max(self, cur_poste, id_spec, a_mesure, fields_array, cur_val, cur_qval, obs_date_local):
+    def get_valeur_max(self, cur_poste, id_format, a_mesure, fields_array, cur_val, cur_qval, obs_date_local):
         if a_mesure['max'] is not True:
             return None, None, None, None, False
 
@@ -261,7 +254,7 @@ class CsvFileSpec(ABC):
                     cur_max = eval(a_mesure['convert']['mfr_csv'])(cur_max)
                 is_it_obs_data = False
             if cur_max_field_qa is not None and cur_max_field_qa != '':
-                cur_max_qa = self.getQualityCode(fields_array[cur_max_field_qa], id_spec)
+                cur_max_qa = self.getQualityCode(fields_array[cur_max_field_qa], id_format)
 
         if cur_max_time_field is not None and cur_max_time_field != '':
             tmp_max_time = fields_array[cur_max_time_field]
@@ -272,6 +265,12 @@ class CsvFileSpec(ABC):
         cur_max_dir = fields_array[cur_max_dir_field] if cur_max_dir_field is not None and cur_max is not None else None
 
         return cur_max, cur_max_qa, cur_max_time, cur_max_dir, is_it_obs_data
+
+    def getArchivePath(self, work_item):
+        target_dir = self.archive_dir 
+
+        target_sub_dir = self.all_formats[work_item['id_format']].getArchiveSubDir(work_item['f'])
+        return target_dir + target_sub_dir
 
     def adjustTime(self, cur_poste, obs_date_local: datetime, time_str):
         if time_str is None or time_str == '':

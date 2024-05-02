@@ -187,17 +187,17 @@ SELECT add_continuous_aggregate_policy('x_max_month',
   schedule_interval => INTERVAL '1 day');
 
 -- refresh all materialized views
-CREATE OR REPLACE PROCEDURE refresh_all_mv(start_date timestamp = null)
+CREATE OR REPLACE PROCEDURE refresh_all_mv(start_date timestamp = null, end_date timestamp = null)
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  CALL refresh_continuous_aggregate('obs_hour', start_date, null);
-  CALL refresh_continuous_aggregate('obs_day', start_date, null);
-  CALL refresh_continuous_aggregate('obs_month', start_date, null);
-  CALL refresh_continuous_aggregate('x_min_day', start_date, null);
-  CALL refresh_continuous_aggregate('x_min_month', start_date, null);
-  CALL refresh_continuous_aggregate('x_max_day', start_date, null);
-  CALL refresh_continuous_aggregate('x_max_month', start_date, null);
+  CALL refresh_continuous_aggregate('obs_hour', start_date, end_date);
+  CALL refresh_continuous_aggregate('obs_day', start_date, end_date);
+  CALL refresh_continuous_aggregate('obs_month', start_date, end_date);
+  CALL refresh_continuous_aggregate('x_min_day', start_date, end_date);
+  CALL refresh_continuous_aggregate('x_min_month', start_date, end_date);
+  CALL refresh_continuous_aggregate('x_max_day', start_date, end_date);
+  CALL refresh_continuous_aggregate('x_max_month', start_date, end_date);
 END; $$;
 
 -- create materialized view compare_month WITH (timescaledb.continuous) as
