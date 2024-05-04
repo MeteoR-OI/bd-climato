@@ -169,20 +169,14 @@ LOGGING = {
             'level': 'DEBUG'
         },
         'log_prod': {
-            'handlers': ['console_prod', 'logFile_hdl'],
+            'handlers': ['console_prod'],
             'level': 'DEBUG'
         }
     },
     'handlers': {
-        'logFile_hdl': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': LOG_FILE_DIR + '/django.log',
-            'formatter': 'file_fmt'
-        },
         'console_prod': {
             'class': 'logging.StreamHandler',
-            'formatter': 'file_fmt',
+            'formatter': 'console_fmt',
             'level': 'ERROR'
         },
         'console_dev': {
@@ -193,10 +187,6 @@ LOGGING = {
     },
     'formatters': {
         'console_fmt': {
-            'format': '{levelname} {message}',
-            'style': '{'
-        },
-        'file_fmt': {
             'format': '{levelname} {message}',
             'style': '{'
         }
