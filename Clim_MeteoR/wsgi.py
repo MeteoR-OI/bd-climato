@@ -7,8 +7,10 @@ For more information on this file, see
 https://docs.djangoproject.com/en/2.0/howto/deployment/wsgi/
 """
 
-import os
+import django
+django.setup()
 
+import os
 # from app.classes.workers.svcLoadCsv import SvcCsvLoader
 # from app.classes.workers.svcLoadJson import SvcJsonLoader
 from app.classes.workers.svcMigrate import SvcMigrate
@@ -29,8 +31,6 @@ svc_migrate.RunMe()
 # from prometheus_client import make_wsgi_app
 # from wsgiref.simple_server import make_server
 
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Clim_MeteoR.settings")
 
 application = get_wsgi_application()
 
