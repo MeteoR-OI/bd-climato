@@ -1,0 +1,11 @@
+{
+  "apps": [
+    {
+      "app_id": "app_cf063d59-db35-4a14-83c5-8b47ecfc6b4e",
+      "org_id": "orga_3fec1295-2308-4a56-abc0-e07405b62eb6",
+      "deploy_url": "https://github.com/MeteoR-OI/bd-climato.git",
+      "name": "bd-climato",
+      "alias": "cc-bdclim"
+    }
+  ]
+}
