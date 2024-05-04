@@ -11,7 +11,7 @@ def getPGConnexion():
             host=settings.PG_ADDON_HOST,
             user=settings.PG_ADDON_USER,
             password=settings.PG_ADDON_PASSWORD,
-            port=int(settings.PG_ADDON_PORT),
+            port=settings.PG_ADDON_PORT,
             database=settings.PG_DATABASE
         )
     except Exception as e:
@@ -25,7 +25,7 @@ def getMSQLConnection(meteor):
             host=settings.MS_SQL_HOST,
             user=settings.MS_SQL_USER,
             password=settings.MS_SQL_PASS,
-            port=int(settings.MS_SQL_PORT),
+            port=settings.MS_SQL_PORT,
             database=meteor
         )
         if myconn.is_connected() is False:

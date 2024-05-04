@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from app.classes.repository.mesureMeteor import MesureMeteor
 from app.models import Aggreg_Type, Code_QA as QA
-import psycopg2
 from datetime import timedelta
 from django.conf import settings
 import os

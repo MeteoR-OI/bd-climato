@@ -92,7 +92,7 @@ TEMPLATES = [
 PG_ADDON_USER = os.getenv('POSTGRESQL_ADDON_USER', 'postgres'),
 PG_ADDON_PASSWORD = os.getenv('POSTGRESQL_ADDON_PASSWORD', 'Funiculi'),
 PG_ADDON_HOST = os.getenv('POSTGRESQL_ADDON_HOST', 'localhost'),
-PG_ADDON_PORT = os.getenv('POSTGRESQL_ADDON_PORT','5432'),
+PG_ADDON_PORT = int(os.getenv('POSTGRESQL_ADDON_PORT','5432')),
 PG_DATABASE = os.getenv('POSTGRESQL_ADDON_DB', 'climato')
 
 DATABASES = {
@@ -109,7 +109,7 @@ DATABASES = {
 MS_SQL_HOST = os.getenv('MYSQL_ADDON_HOST', 'localhost')
 MS_SQL_USER = os.getenv('MYSQL_ADDON_USER', 'nico')
 MS_SQL_PASS = os.getenv('MYSQL_ADDON_PASSWORD', 'Funiculi')
-MS_SQL_PORT = os.getenv('MYSQL_ADDON_PORT', '3306')
+MS_SQL_PORT = int(os.getenv('MYSQL_ADDON_PORT', '3306'))
 MS_SQL_DB = os.getenv('MYSQL_ADDON_DB', '??')
 
 
