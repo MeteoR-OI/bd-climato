@@ -25,7 +25,10 @@ class Command(BaseCommand):
             raise CommandError('Error ' + str(ex))
 
     def callService(self, service_name: str, action: str, params: json):
-        url = "http://localhost:8000/app/svc"
+        if hasattr(settings, "CC_PYTHON_MODULE") is True:
+            url = "http://localhost:8080/app/svc"
+        else:
+            url = "http://localhost:8000/app/svc"
         data = {"svc": service_name, "action": action, "params": params}
         headers = {'content-type': 'application/json'}
         r = requests.post(url, data=json.dumps(data), headers=headers)

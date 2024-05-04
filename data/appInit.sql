@@ -36,6 +36,7 @@ insert into postes
 ('MVP860',   4, 0, 'VP2', 'Jack Quillet', 'micka@meteor-oi.re', '0612345678', 'Mare à Vieille Place', 'Salazie', 'la réunion',  860, -21.025844, 55.515549, 1),
 ('NDLP1520', 4, 0, 'VP2', 'Association', 'micka@meteor-oi.re', '0612345678', 'Nogtre Dame de la Paix', 'Le Tampon', 'la réunion',  1520, -21.250525, 55.584708, 1),
 ('PAH575',   4, 0, 'VP2', 'Association', 'micka@meteor-oi.re', '0612345678', 'Piton Armand les Hauts', 'Saint Benoit', 'la réunion',  575,  -21.122265, 55.703658, 1),
+('PDO1600',  4, 0, 'VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'quartier', 'Bourg Murat', 'la réunion',  280, 0, 0, 1),
 ('PFD040',   4, 0, 'VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'quartier', 'Commune', 'la réunion',  40,  -21.300325, 55.418679, 1),
 ('PSL310',   4, 0, 'VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'quartier', 'Commune', 'la réunion',  310,  -21.300325, 55.418679, 1),
 ('RAM450',   4, 0, 'VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'quartier', 'Commune', 'la réunion',  450,  -20.928899, 55.365116, 1),
