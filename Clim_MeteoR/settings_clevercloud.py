@@ -30,7 +30,7 @@ SECRET_KEY = 'n=m9oh3l5np7o!63#ad5tgjy_r7*tqlm6l!%lzjw#^=pue0ba)'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-        'dina.meteor-oi.re',
+        'climato.meteor-oi.re',
         '127.0.0.1',
         'localhost',
 ]
