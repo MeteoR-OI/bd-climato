@@ -8,10 +8,10 @@ from django.conf import settings
 def getPGConnexion():
     try:
         return psycopg2.connect(
-            host=settings.POSTGRESQL_ADDON_HOST,
-            user=settings.POSTGRESQL_ADDON_USER,
-            password=settings.POSTGRESQL_ADDON_PASSWORD,
-            port=settings.POSTGRESQL_ADDON_PORT,
+            host=settings.PG_ADDON_HOST,
+            user=settings.PG_ADDON_USER,
+            password=settings.PG_ADDON_PASSWORD,
+            port=settings.PG_ADDON_PORT,
             database=settings.PG_DATABASE
         )
     except Exception as e:

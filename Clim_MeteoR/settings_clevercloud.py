@@ -88,16 +88,21 @@ TEMPLATES = [
 ]
 
 # Database
+
+PG_ADDON_USER = os.getenv('POSTGRESQL_ADDON_USER', 'postgres'),
+PG_ADDON_PASSWORD = os.getenv('POSTGRESQL_ADDON_PASSWORD', 'Funiculi'),
+PG_ADDON_HOST = os.getenv('POSTGRESQL_ADDON_HOST', 'localhost'),
+PG_ADDON_PORT = os.getenv('POSTGRESQL_ADDON_PORT','5432'),
 PG_DATABASE = os.getenv('POSTGRESQL_ADDON_DB', 'climato')
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': PG_DATABASE,
-        'USER': os.getenv('POSTGRESQL_ADDON_USER', 'postgres'),
-        'PASSWORD': os.getenv('POSTGRESQL_ADDON_PASSWORD', 'Funiculi'),
-        'HOST': os.getenv('POSTGRESQL_ADDON_HOST', 'localhost'),
-        'PORT': os.getenv('POSTGRESQL_ADDON_PORT','5432'),
+        'USER': PG_ADDON_USER,
+        'PASSWORD': PG_ADDON_PASSWORD,
+        'HOST': PG_ADDON_HOST,
+        'PORT': PG_ADDON_PORT,
     }
 }
 

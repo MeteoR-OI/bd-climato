@@ -9,8 +9,12 @@ https://docs.djangoproject.com/en/2.0/howto/deployment/wsgi/
 
 import django
 django.setup()
-
 import os
+from django.conf import settings
+
+if hasattr(settings, "CC_PYTHON_MODULE") is False:
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Clim_MeteoR.settings")
+
 # from app.classes.workers.svcLoadCsv import SvcCsvLoader
 # from app.classes.workers.svcLoadJson import SvcJsonLoader
 from app.classes.workers.svcMigrate import SvcMigrate
