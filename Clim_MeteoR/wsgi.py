@@ -12,7 +12,7 @@ django.setup()
 import os
 from django.conf import settings
 
-if hasattr(settings, "CC_PYTHON_MODULE") is False:
+if os.getenv("CC_PYTHON_MODULE") is None:
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Clim_MeteoR.settings")
 
 # from app.classes.workers.svcLoadCsv import SvcCsvLoader
