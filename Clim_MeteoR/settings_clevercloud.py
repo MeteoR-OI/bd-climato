@@ -89,10 +89,10 @@ TEMPLATES = [
 
 # Database
 
-PG_ADDON_USER = os.getenv('POSTGRESQL_ADDON_USER', 'postgres'),
-PG_ADDON_PASSWORD = os.getenv('POSTGRESQL_ADDON_PASSWORD', 'Funiculi'),
-PG_ADDON_HOST = os.getenv('POSTGRESQL_ADDON_HOST', 'localhost'),
-PG_ADDON_PORT = int(os.getenv('POSTGRESQL_ADDON_PORT','5432')),
+PG_ADDON_USER = os.getenv('POSTGRESQL_ADDON_USER', 'postgres')
+PG_ADDON_PASSWORD = os.getenv('POSTGRESQL_ADDON_PASSWORD', 'Funiculi')
+PG_ADDON_HOST = os.getenv('POSTGRESQL_ADDON_HOST', 'localhost')
+PG_ADDON_PORT = int(os.getenv('POSTGRESQL_ADDON_PORT','5432'))
 PG_DATABASE = os.getenv('POSTGRESQL_ADDON_DB', 'climato')
 
 DATABASES = {
