@@ -26,7 +26,7 @@ def getMSQLConnection(meteor):
             user=settings.MS_SQL_USER,
             password=settings.MS_SQL_PASS,
             port=settings.MS_SQL_PORT,
-            database=settings.MS_SQL_DB
+            database=db_name
         )
         if myconn.is_connected() is False:
             raise Exception("bug in db access")
