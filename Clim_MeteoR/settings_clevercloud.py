@@ -87,9 +87,6 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'Clim_MeteoR.wsgi.application'
-
-
 # Database
 PG_DATABASE = os.getenv('POSTGRESQL_ADDON_DB', 'climato')
 

@@ -3,7 +3,7 @@ import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from django.conf import settings
 import app.tools.myTools as t
-from django import settings
+from django.conf import settings
 
 def getPGConnexion():
     try:
