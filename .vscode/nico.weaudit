@@ -24,6 +24,50 @@
         "exploit": "",
         "recommendation": "Short term, \nLong term, \n"
       }
+    },
+    {
+      "label": "ne pas lancer plus d'une fois par jour... Attendre 6:00 UTC pour le 1er run",
+      "entryType": 0,
+      "author": "nico",
+      "locations": [
+        {
+          "path": "app/classes/csv_loader/csv_OVPF.py",
+          "startLine": 25,
+          "endLine": 25,
+          "label": "",
+          "description": ""
+        }
+      ],
+      "details": {
+        "severity": "",
+        "difficulty": "",
+        "type": "",
+        "description": "",
+        "exploit": "",
+        "recommendation": "Short term, \nLong term, \n"
+      }
+    },
+    {
+      "label": "remise a zero d'une base mysql pour celvercloud",
+      "entryType": 0,
+      "author": "nico",
+      "locations": [
+        {
+          "path": "app/tools/dbTools.py",
+          "startLine": 22,
+          "endLine": 22,
+          "label": "",
+          "description": ""
+        }
+      ],
+      "details": {
+        "severity": "",
+        "difficulty": "",
+        "type": "",
+        "description": "",
+        "exploit": "",
+        "recommendation": "Short term, \nLong term, \n"
+      }
     }
   ],
   "auditedFiles": [

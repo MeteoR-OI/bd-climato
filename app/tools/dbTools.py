@@ -3,25 +3,29 @@ import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from django.conf import settings
 import app.tools.myTools as t
+from django import settings
 
 def getPGConnexion():
     try:
         return psycopg2.connect(
-            host="localhost",
-            user="postgres",
-            password="Funiculi",
+            host=settings.POSTGRESQL_ADDON_HOST,
+            user=settings.POSTGRESQL_ADDON_USER,
+            password=settings.POSTGRESQL_ADDON_PASSWORD,
+            port=settings.POSTGRESQL_ADDON_PORT,
             database=settings.PG_DATABASE
         )
     except Exception as e:
-        t.logException("Error durinf mySql connection: %s" % e)
+        t.logException("Error durinf postgres connection: %s" % e)
         raise e
 
 def getMSQLConnection(meteor):
     try:
+        db_name = settings.MS_SQL_DB if settings.MS_SQL_DB != '??' else meteor
         myconn = mysql.connector.connect(
-            host="localhost",
-            user="nico",
-            password="Funiculi",
+            host=settings.MS_SQL_HOST,
+            user=settings.MS_SQL_USER,
+            password=settings.MS_SQL_PASS,
+            port=settings.MS_SQL_PORT,
             database=meteor
         )
         if myconn.is_connected() is False:
