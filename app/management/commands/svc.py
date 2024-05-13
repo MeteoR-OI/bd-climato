@@ -34,7 +34,6 @@ class Command(BaseCommand):
         r = requests.post(url, data=json.dumps(data), headers=headers)
 
         # if r.status_code
-
         rj = r.json()
         if rj['status'] == 'ok':
             self.stdout.write('ok')
