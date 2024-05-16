@@ -173,7 +173,7 @@ class WorkerRoot:
             if a_worker['name'] == self.name:
                 try:
                     info = a_worker['class'].addNewWorkItem(work_item)
-                    t.logInfo(self.display + " new item in queue", {"svc": self.display, "info": info})
+                    t.logInfo(self.display + " new item in queue - " + info, {"svc": self.display, "info": info})
 
                 except Exception as exc:
                     t.logException(exc, None)

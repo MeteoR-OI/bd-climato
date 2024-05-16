@@ -17,8 +17,8 @@
 import app.tools as t
 from app.tools.myTools import FromTimestampToDateTime, AsTimezone, GetFirstDayNextMonthFromTs
 from app.classes.repository.posteMeteor import PosteMeteor
-from app.models import Load_Type, Aggreg_Type
-from app.classes.data_loader.dl_weewx import DlWeewx
+from app.models import Load_Type
+from app.classes.migrate.bulk_data_loader import BulkDataLoader
 from app.tools.dbTools import getMSQLConnection, refreshMV
 from datetime import datetime, timedelta
 # import cProfile
@@ -32,7 +32,6 @@ from datetime import datetime, timedelta
 class MigrateDB:
     def __init__(self):
         self._meteors_to_process = []
-        self._bulk_dl = DlWeewx()
         self.stopRequested = False
 
     # -----------------------------------
@@ -45,6 +44,7 @@ class MigrateDB:
             'bd': meteor,
             'spanID': 'Start ' + meteor + ' migration'
         })
+        return meteor
 
     # -----------------------------
     # get next item form our queue
@@ -90,36 +90,27 @@ class MigrateDB:
 
             work_item['pid'] = cur_poste.data.id
             work_item['tz'] = cur_poste.data.delta_timezone
-            work_item['stop_date_utc'] = cur_poste.data.stop_date if cur_poste.data.stop_date is None else AsTimezone(cur_poste.data.stop_date, 0)
 
             self.getNewDateBracket(cur_poste, work_item)
 
+            # get a cursor to our archive db
+            myconn = getMSQLConnection(work_item['meteor'])
+            my_cur = myconn.cursor()
+
+            self._bulk_dl = BulkDataLoader()
+
             # loop per year
             while work_item['archive_first_ts'] < current_ts:
-
                 start_dt = datetime.now()
 
-                # Load obs, records from archive
-                query_my = self.getWeewxSelectSql(work_item)
-
                 # load records data from weewx
-                minmax = []
                 minmax = self.loadMinMaxFromWeeWX( work_item)
 
-                # get a cursor to our archive db
-                myconn = getMSQLConnection(work_item['meteor'])
-                my_cur = myconn.cursor()
-
+                # create an iterator to get the data
                 query_my = self.getWeewxSelectSql(work_item)
-
-                # execute the select statement
                 my_cur.execute(query_my)
 
                 self._bulk_dl.bulkLoad(cur_poste, my_cur, False, minmax)
-                # my_cur.fetchall()
-
-                my_cur.close()
-                my_cur = None
 
                 print("     Done in : " + str(datetime.now() - start_dt) + " for " + str(work_item['start_dt_archive_utc']))
                 self.getNewDateBracket(cur_poste, work_item)
@@ -127,6 +118,8 @@ class MigrateDB:
         finally:
             if my_cur is not None:
                 my_cur.close()
+
+            self._bulk_dl = None
 
             # profiler.disable()
             # stats = pstats.Stats(profiler)

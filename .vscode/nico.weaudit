@@ -68,6 +68,28 @@
         "exploit": "",
         "recommendation": "Short term, \nLong term, \n"
       }
+    },
+    {
+      "label": "Add reset last_obs_id",
+      "entryType": 0,
+      "author": "nico",
+      "locations": [
+        {
+          "path": "data/appInit.sql",
+          "startLine": 271,
+          "endLine": 271,
+          "label": "",
+          "description": ""
+        }
+      ],
+      "details": {
+        "severity": "",
+        "difficulty": "",
+        "type": "",
+        "description": "",
+        "exploit": "",
+        "recommendation": "Short term, \nLong term, \n"
+      }
     }
   ],
   "auditedFiles": [
