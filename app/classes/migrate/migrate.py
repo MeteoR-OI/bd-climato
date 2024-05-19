@@ -110,7 +110,7 @@ class MigrateDB:
                 query_my = self.getWeewxSelectSql(work_item)
                 my_cur.execute(query_my)
 
-                self._bulk_dl.bulkLoad(cur_poste, my_cur, False, minmax)
+                self._bulk_dl.bulkLoad(cur_poste, my_cur, minmax)
 
                 print("     Done in : " + str(datetime.now() - start_dt) + " for " + str(work_item['start_dt_archive_utc']))
                 self.getNewDateBracket(cur_poste, work_item)

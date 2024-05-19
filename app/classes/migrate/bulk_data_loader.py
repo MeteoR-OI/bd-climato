@@ -9,7 +9,7 @@ from app.tools.dbTools import getPGConnexion
 
 class BulkDataLoader():
     def __init__(self):
-        self.measures = self.getMeasur
+        self.measures = self.getMeasuresInitial()
         self.insert_cde = None
         self.col_mapping = None
 
@@ -79,25 +79,19 @@ class BulkDataLoader():
     def isMesureQualified(self, a_measure):
         return False if a_measure['archive_col'] is None else True
 
-    def getValues(self, cur_row, col_mapping, a_mesure):
-        cur_val = cur_row[col_mapping[a_mesure['archive_col']]]
+    def getValues(self, cur_row, a_mesure):
+        cur_val = cur_row[self.col_mapping[a_mesure['archive_col']]]
         if cur_val is None or cur_val == '' or (cur_val == 0 and a_mesure['zero'] is False):
-            return None, None, None
+            return None, None
         if a_mesure['convert'] is not None and a_mesure['convert'].get(self.getConvertKey()) is not None:
             cur_val = eval(a_mesure['convert'][self.getConvertKey()])(cur_val)
         cur_qa_val = QA.UNSET.value
         return cur_val, cur_qa_val
 
-    def getMinMaxValues(self, cur_row, col_mapping, a_mesure, cur_val, date_obs_local):
-        max_dir = None if a_mesure['diridx'] is None else cur_row[col_mapping[self.measures[a_mesure['diridx']]['archive_col']]]
+    def getMinMaxValues(self, cur_row, a_mesure, cur_val, date_obs_local):
+        max_dir = None if a_mesure['diridx'] is None else cur_row[self.col_mapping[self.measures[a_mesure['diridx']]['archive_col']]]
 
         return cur_val, date_obs_local, cur_val, date_obs_local, max_dir
-
-    def getNextRow(self, data_iterator):
-        next_row = data_iterator.fetchone()
-        if next_row is None:
-            data_iterator.close()
-        return next_row
 
     def fixMinMax(self, str_mesure_list, cur_poste, x_max_min_date, x_min_min_date):
         return ["delete from x_max where obs_id is not null and mesure_id in " + str_mesure_list +
@@ -112,7 +106,7 @@ class BulkDataLoader():
                 " and poste_id = " + str(cur_poste.data.id) + ")"
                 ]
 
-    def bulkLoad(self, cur_poste, data_iterator, load_missing_data, min_max=[]):
+    def bulkLoad(self, cur_poste, data_iterator, min_max=[]):
         pg_conn = None
         pg_cur = None
         tmp_dt = datetime.now()
@@ -121,7 +115,7 @@ class BulkDataLoader():
             pg_conn = getPGConnexion()
             pg_cur = pg_conn.cursor()
 
-            min_max = self.loadObs(pg_cur, cur_poste, data_iterator, load_missing_data, min_max)
+            min_max = self.loadObs(pg_cur, cur_poste, data_iterator, min_max)
             print('loadObs done in : ' + str(datetime.now() - tmp_dt))
             tmp_dt = datetime.now()
 
@@ -146,67 +140,64 @@ class BulkDataLoader():
         finally:
             if pg_conn is not None:
                 pg_conn.close()
-                if pg_cur is not None:
-                    pg_cur.close()
+
     def loadSqlInsert(self):
         if self.insert_cde is None:
             self.insert_cde = {
-                "sql": "insert into obs(poste_id, date_obs_utc, date_obs_local, duration",
+                "sql": "insert into obs(poste_id, date_utc, date_local, duration",
                 "mog": "(%s, %s, %s, %s"
             }
             for a_mesure in self.measures:
                 if self.isMesureQualified(a_mesure) is False:
                     continue
-                self.insert_cde['sql'] += ", " + a_mesure['json_input']
+                self.insert_cde['sql'] += ", " + a_mesure['field']
                 self.insert_cde['mog'] += ", %s"
 
             self.insert_cde['sql'] += ", qa_all) values "
             self.insert_cde['mog'] += ", %s)"
 
-    def loadObs(self, pg_cur, cur_poste, data_iterator, load_missing_data, min_max):
+    def loadObs(self, pg_cur, cur_poste, data_iterator, min_max):
         self.loadSqlInsert()
+            
+        self.loadColMapping(data_iterator)
 
         minmax_other_len = len(min_max)
         data_args = []
         idx = 0
         obs_count = 0
         idx_intial = len(min_max)
-        cur_row = self.getNextRow(data_iterator)
+        cur_row = data_iterator.fetchone()
 
-        self.loadColMapping(data_iterator)
 
         while cur_row is not None:
             try:
-                if self.col_mapping.get('usUnits') is not None and cur_row[self.col_mapping['usUnits']] != 16:
-                    raise Exception('bad usUnits: ' + str(
-                        cur_row[self.col_mapping['usUnits']]) + ', dateTime(UTC): ' + str(cur_row[self.col_mapping['date_utc']]))
+                if cur_row[self.col_mapping['usUnits']] != 16:
+                    raise Exception('bad usUnits: ' + str(cur_row[self.col_mapping['usUnits']]) +\
+                                    ', dateTime(UTC): ' + str(cur_row[self.col_mapping['date_utc']]))
 
                 date_obs_utc, date_obs_local = self.getObsDateTime(cur_row, cur_poste)
                 qa_all = QA.UNSET.value
                 qa_j = {}
 
-                values_arg = [cur_poste.id, date_obs_utc, date_obs_local, cur_row[self.col_mapping['interval']]]
-nico =>
-                if load_missing_data is False and \
-                    (cur_poste.data.last_obs_date_local is None or date_obs_local > cur_poste.data.last_obs_date_local):
-                    
+                values_arg = [cur_poste.data.id, str(date_obs_utc), str(date_obs_local), cur_row[self.col_mapping['interval']]]
+
+                if (cur_poste.data.last_obs_date_local is None or date_obs_local > cur_poste.data.last_obs_date_local):
                     for a_mesure in self.measures:
                         if self.isMesureQualified(a_mesure) is False:
                             continue
 
-                        cur_val, cur_qa_val = self.getValues(cur_row, self.col_mapping, a_mesure)
+                        cur_val, cur_qa_val = self.getValues(cur_row, a_mesure)
 
                         if cur_val is None:
-                            values_arg += ", NULL"
+                            values_arg.append(None)
                         else:
-                            values_arg = "," + str(cur_val)
+                            values_arg.append(cur_val)
                             if cur_qa_val != QA.UNSET.value:
                                 qa_j[a_mesure['archive_col']] = cur_qa_val
                                 if cur_qa_val > qa_all:
                                     qa_all = cur_qa_val
 
-                            cur_min, date_min, cur_max, date_max, max_dir = self.getMinMaxValues(
-                                cur_row, self.col_mapping, a_mesure, cur_val, date_obs_local)
+                            cur_min, date_min, cur_max, date_max, max_dir = self.getMinMaxValues(cur_row, a_mesure, cur_val, date_obs_local)
 
                             if cur_qa_val != QA.UNVALIDATED.value:
                                 if a_mesure['iswind'] is True:
@@ -217,13 +208,11 @@ nico =>
                                                     'date_max': date_max, 'mid': a_mesure['id'], 'obs_id': obs_count})
 
                     obs_count += 1
-                    args.append(values_arg + ", " + str(qa_all))
+                    values_arg.append(qa_all)
+                    data_args.append(tuple(values_arg))
 
-                if load_missing_data is True and (cur_poste.data.last_obs_date_local is not None or date_obs_local <= cur_poste.data.last_obs_date_local):
-                    # Future chargement de donnees manquantes
-                    pass
             finally:
-                cur_row = self.getNextRow(data_iterator)
+                cur_row = data_iterator.fetchone()
 
         if len(data_args) == 0:
             return None
@@ -237,7 +226,8 @@ nico =>
 
         idx = idx_intial
         while idx < len(new_ids):
-            min_max[idx + minmax_other_len]['obs_id'] = new_ids[idx][0]
+            my_minmax = min_max[idx + minmax_other_len]
+            my_minmax['obs_id'] = new_ids[my_minmax['obs_id']][0]
             idx += 1
 
         return min_max
@@ -349,4 +339,3 @@ nico =>
 
         # (Load Need to remove min/max k=linked with obs, when mesure is a sum
         return self.fixMinMax(str_mesure_list, cur_poste, x_max_min_date, x_min_min_date)
-
