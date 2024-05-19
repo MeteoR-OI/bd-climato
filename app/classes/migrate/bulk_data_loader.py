@@ -116,21 +116,21 @@ class BulkDataLoader():
             pg_cur = pg_conn.cursor()
 
             min_max = self.loadObs(pg_cur, cur_poste, data_iterator, min_max)
-            print('loadObs done in : ' + str(datetime.now() - tmp_dt))
+            # print('loadObs done in : ' + str(datetime.now() - tmp_dt))
             tmp_dt = datetime.now()
 
             if min_max is not None:
                 del_cde = self.LoadMaxMin(pg_cur, cur_poste, min_max)
-                print('LoadMaxMin done in : ' + str(datetime.now() - tmp_dt))
+                # print('LoadMaxMin done in : ' + str(datetime.now() - tmp_dt))
                 min_max = None
                 for a_del_sql in del_cde:
                     tmp_dt = datetime.now()
                     pg_cur.execute(a_del_sql)
-                    print('exec delete(s) done in : ' + str(datetime.now() - tmp_dt))
+                    # print('exec delete(s) done in : ' + str(datetime.now() - tmp_dt))
     
             tmp_dt = datetime.now()
             pg_conn.commit()
-            print('commit done in : ' + str(datetime.now() - tmp_dt))
+            # print('commit done in : ' + str(datetime.now() - tmp_dt))
     
         except Exception as e:
             if pg_conn is not None:
@@ -158,10 +158,8 @@ class BulkDataLoader():
 
     def loadObs(self, pg_cur, cur_poste, data_iterator, min_max):
         self.loadSqlInsert()
-            
         self.loadColMapping(data_iterator)
 
-        minmax_other_len = len(min_max)
         data_args = []
         idx = 0
         obs_count = 0
@@ -217,7 +215,7 @@ class BulkDataLoader():
         if len(data_args) == 0:
             return None
         
-        print('data_args: ' + str(len(data_args)))
+        # print('data_args: ' + str(len(data_args)))
 
         # cursor.mogrify() to insert multiple values
         args = ','.join(pg_cur.mogrify(self.insert_cde['mog'], i).decode('utf-8') for i in data_args)
@@ -226,7 +224,7 @@ class BulkDataLoader():
 
         idx = idx_intial
         while idx < len(new_ids):
-            my_minmax = min_max[idx + minmax_other_len]
+            my_minmax = min_max[idx]
             my_minmax['obs_id'] = new_ids[my_minmax['obs_id']][0]
             idx += 1
 

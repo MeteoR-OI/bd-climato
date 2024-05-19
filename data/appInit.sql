@@ -268,8 +268,8 @@ select 'nb annotations: ' || count(*) from annotations;
 CREATE OR REPLACE PROCEDURE refesh_last_obs_date_local()
 LANGUAGE SQL
 AS $BODY$
-with max_dt as (select poste_id as pid, max(date_local) as ldt from obs group by 1)
-  update postes set last_obs_date_local = (select ldt from max_dt where pid=id)
+with max_dt as (select poste_id as pid, max(id) as mid, max(date_local) as ldt from obs group by 1)
+  update postes set last_obs_date_local = (select ldt from max_dt where pid=id), last_obs_id = (select mid from max_dt where pid=id);
   ;
 $BODY$;
 
