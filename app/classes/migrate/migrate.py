@@ -282,13 +282,13 @@ class MigrateDB:
                     my_cur.close()
                     if nb_record_processed > 0:
                         process_length = datetime.now() - start_time
-                        print(
-                            'meteor: ' + work_item['meteor'] + ', weewx.archive_day_' + str(table_name) +\
-                            " new records: " + str(nb_record_processed) + ' en ' + str(process_length/1000) + ' ms')
+                        # print(
+                        #     'meteor: ' + work_item['meteor'] + ', weewx.archive_day_' + str(table_name) +\
+                        #     " new records: " + str(nb_record_processed) + ' en ' + str(process_length/1000) + ' ms')
 
         finally:
             myconn.close()
-            print('loadMinMaxFromWeeWx, min_max len: ' + str(len(min_max)))
+            # print('loadMinMaxFromWeeWx, min_max len: ' + str(len(min_max)))
             return min_max
 
     # --------------------------------
