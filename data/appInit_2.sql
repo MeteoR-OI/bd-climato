@@ -1,24 +1,3 @@
-/********************
-* Init TimeScaleDB
-********************/
-  CREATE EXTENSION IF NOT EXISTS timescaledb;
-  ALTER TABLE obs DROP CONSTRAINT obs_pkey;
-  SELECT create_hypertable('obs',  by_range('date_local',  INTERVAL '100 days'), migrate_data => true);
-  SELECT set_chunk_time_interval('obs', INTERVAL '100 days');
-  DROP index if exists obs_poste_id_7ed1db30;
-  DROP index if exists obs_mesure_id_2198080c;
-
-  ALTER TABLE x_min DROP CONSTRAINT x_min_pkey;
-  SELECT create_hypertable('x_min', by_range('date_local',  INTERVAL '200 days'), migrate_data => true);
-  SELECT set_chunk_time_interval('x_min',  INTERVAL '200 days');
-  DROP index if exists x_min_mesure_id_915a2d2e;
-  DROP index if exists x_min_poste_id_a7ee3864;
-
-  ALTER TABLE x_max DROP CONSTRAINT x_max_pkey;
-  SELECT create_hypertable('x_max',  by_range('date_local',  INTERVAL '200 days'), migrate_data => true);
-  SELECT set_chunk_time_interval('x_max',  INTERVAL '200 days');
-  DROP index if exists x_max_mesure_id_a633699c;
-  DROP index if exists x_max_poste_id_529ea905;
 
 /*
 * obs_hour
@@ -27,19 +6,62 @@ create materialized view obs_hour WITH (timescaledb.continuous) as
   select
         timescaledb_experimental.time_bucket_ng('1 hour', o.date_local, origin => '1950-01-01') as date_local,
         o.poste_id as poste_id,
-        o.mesure_id as mesure_id,
-        m.agreg_type as agreg_type,
-        sum(o.duration) as duration,
-        CASE
-          WHEN m.agreg_type = 1 THEN avg(o.value)
-          WHEN m.agreg_type = 2 THEN sum(o.value)
-          WHEN m.agreg_type = 3 THEN max(o.value)
-          WHEN m.agreg_type = 4 THEN min(o.value)
-           END AS value
-  from obs o join mesures m on m.id = mesure_id
-  where qa_value != 9 and duration <= 60 and m.agreg_type != 0
-  group by 1,2,3,4
-  order by 1,2,3
+        avg(o.duration) as duration,
+        avg(o.barometer) as barometer,
+        avg(o.pressure) as pressure,
+        avg(o.in_temp) as in_temp,
+        avg(o.out_temp) as out_temp,
+        avg(o.dewpoint) as dewpoint,
+        sum(o.etp) as etp,
+        max(o.heatindex) as heatindex,
+        avg(o.extra_temp1) as extra_temp1,
+        avg(o.extra_temp2) as extra_temp2,
+        avg(o.extra_temp3) as extra_temp3,
+        avg(o.in_humidity) as in_humidity,
+        avg(o.out_humidity) as out_humidity,
+        avg(o.extra_humid1) as extra_humid1,
+        avg(o.extra_humid2) as extra_humid2,
+        avg(o.leaf_temp1) as leaf_temp1,
+        avg(o.leaf_temp2) as leaf_temp2,
+        avg(o.leaf_wet1) as leaf_wet1,
+        avg(o.leaf_wet2) as leaf_wet2,
+        avg(o.radiation) as radiation,
+        max(o.radiation_rate) as radiation_rate,
+        max(o.uv) as uv,
+        sum(o.rain) as rain,
+        sum(o.rain_utc) as rain_utc,
+        max(o.rain_rate) as rain_rate,
+        min(o.rx) as rx,
+        avg(o.soil_moist1) as soil_moist1,
+        avg(o.soil_moist2) as soil_moist2,
+        avg(o.soil_moist3) as soil_moist4,
+        avg(o.soil_moist4) as soil_moist3,
+        min(o.soil_temp1) as soil_temp1,
+        min(o.soil_temp2) as soil_temp2,
+        min(o.soil_temp3) as soil_temp3,
+        min(o.soil_temp4) as soil_temp4,
+        max(o.voltage) as voltage,
+        avg(o.wind) as wind,
+        max(o.wind_gust) as wind_gust,
+        avg(o.wind10) as wind10,
+        avg(o.wind10_dir) as wind10_dir,
+        avg(o.wind10_omm) as wind10_omm,
+        min(o.windchill) as windchill ,
+        avg(o.zone_1) as zone_1,
+        avg(o.zone_2) as zone_2,
+        avg(o.zone_3) as zone_3,
+        avg(o.zone_4) as zone_4,
+        avg(o.zone_5) as zone_5,
+        avg(o.zone_6) as zone_6,
+        avg(o.zone_7) as zone_7,
+        avg(o.zone_8) as zone_8,
+        avg(o.zone_9) as zone_9,
+        avg(o.zone_10) as zone_10
+
+  from obs o
+  where qa_all != 9 and duration <= 60
+  group by 1,2
+  order by 1,2
 ;
 
 ALTER MATERIALIZED VIEW obs_hour set (timescaledb.materialized_only = false);
@@ -56,19 +78,62 @@ create materialized view obs_day WITH (timescaledb.continuous) as
   select
         timescaledb_experimental.time_bucket_ng('1 day', o.date_local, origin => '1950-01-01') as date_local,
         o.poste_id as poste_id,
-        o.mesure_id as mesure_id,
-        m.agreg_type as agreg_type,
-        sum(o.duration) as duration,
-        CASE
-          WHEN m.agreg_type = 1 THEN avg(o.value)
-          WHEN m.agreg_type = 2 THEN sum(o.value)
-          WHEN m.agreg_type = 3 THEN max(o.value)
-          WHEN m.agreg_type = 4 THEN min(o.value)
-           END AS value
-  from obs o join mesures m on m.id = mesure_id
-  where qa_value != 9 and m.agreg_type != 0
-  group by 1,2,3,4
-  order by 1,2,3
+        avg(o.duration) as duration,
+        avg(o.barometer) as barometer,
+        avg(o.pressure) as pressure,
+        avg(o.in_temp) as in_temp,
+        avg(o.out_temp) as out_temp,
+        avg(o.dewpoint) as dewpoint,
+        sum(o.etp) as etp,
+        max(o.heatindex) as heatindex,
+        avg(o.extra_temp1) as extra_temp1,
+        avg(o.extra_temp2) as extra_temp2,
+        avg(o.extra_temp3) as extra_temp3,
+        avg(o.in_humidity) as in_humidity,
+        avg(o.out_humidity) as out_humidity,
+        avg(o.extra_humid1) as extra_humid1,
+        avg(o.extra_humid2) as extra_humid2,
+        avg(o.leaf_temp1) as leaf_temp1,
+        avg(o.leaf_temp2) as leaf_temp2,
+        avg(o.leaf_wet1) as leaf_wet1,
+        avg(o.leaf_wet2) as leaf_wet2,
+        avg(o.radiation) as radiation,
+        max(o.radiation_rate) as radiation_rate,
+        max(o.uv) as uv,
+        sum(o.rain) as rain,
+        sum(o.rain_utc) as rain_utc,
+        max(o.rain_rate) as rain_rate,
+        min(o.rx) as rx,
+        avg(o.soil_moist1) as soil_moist1,
+        avg(o.soil_moist2) as soil_moist2,
+        avg(o.soil_moist3) as soil_moist4,
+        avg(o.soil_moist4) as soil_moist3,
+        min(o.soil_temp1) as soil_temp1,
+        min(o.soil_temp2) as soil_temp2,
+        min(o.soil_temp3) as soil_temp3,
+        min(o.soil_temp4) as soil_temp4,
+        max(o.voltage) as voltage,
+        avg(o.wind) as wind,
+        max(o.wind_gust) as wind_gust,
+        avg(o.wind10) as wind10,
+        avg(o.wind10_dir) as wind10_dir,
+        avg(o.wind10_omm) as wind10_omm,
+        min(o.windchill) as windchill ,
+        avg(o.zone_1) as zone_1,
+        avg(o.zone_2) as zone_2,
+        avg(o.zone_3) as zone_3,
+        avg(o.zone_4) as zone_4,
+        avg(o.zone_5) as zone_5,
+        avg(o.zone_6) as zone_6,
+        avg(o.zone_7) as zone_7,
+        avg(o.zone_8) as zone_8,
+        avg(o.zone_9) as zone_9,
+        avg(o.zone_10) as zone_10
+
+  from obs o
+  where qa_all != 9
+  group by 1,2
+  order by 1,2
 ;
 
 ALTER MATERIALIZED VIEW obs_day set (timescaledb.materialized_only = false);
@@ -84,19 +149,63 @@ SELECT add_continuous_aggregate_policy('obs_day',
 create materialized view obs_month WITH (timescaledb.continuous) as
   select
         timescaledb_experimental.time_bucket_ng('1 month', o.date_local, origin => '1950-01-01') as date_local,
-        o.poste_id,
-        o.mesure_id,
-        o.agreg_type,
-        sum(o.duration) as duration,
-        CASE
-          WHEN o.agreg_type = 1 THEN avg(o.value)
-          WHEN o.agreg_type = 2 THEN sum(o.value)
-          WHEN o.agreg_type = 3 THEN max(o.value)
-          WHEN o.agreg_type = 4 THEN min(o.value)
-           END AS value
-  from obs_day o join mesures m on m.id = mesure_id
-  group by 1,2,3,4
-  order by 1,2,3
+        o.poste_id as poste_id,
+        avg(o.duration) as duration,
+        avg(o.barometer) as barometer,
+        avg(o.pressure) as pressure,
+        avg(o.in_temp) as in_temp,
+        avg(o.out_temp) as out_temp,
+        avg(o.dewpoint) as dewpoint,
+        sum(o.etp) as etp,
+        max(o.heatindex) as heatindex,
+        avg(o.extra_temp1) as extra_temp1,
+        avg(o.extra_temp2) as extra_temp2,
+        avg(o.extra_temp3) as extra_temp3,
+        avg(o.in_humidity) as in_humidity,
+        avg(o.out_humidity) as out_humidity,
+        avg(o.extra_humid1) as extra_humid1,
+        avg(o.extra_humid2) as extra_humid2,
+        avg(o.leaf_temp1) as leaf_temp1,
+        avg(o.leaf_temp2) as leaf_temp2,
+        avg(o.leaf_wet1) as leaf_wet1,
+        avg(o.leaf_wet2) as leaf_wet2,
+        avg(o.radiation) as radiation,
+        max(o.radiation_rate) as radiation_rate,
+        max(o.uv) as uv,
+        sum(o.rain) as rain,
+        sum(o.rain_utc) as rain_utc,
+        max(o.rain_rate) as rain_rate,
+        min(o.rx) as rx,
+        avg(o.soil_moist1) as soil_moist1,
+        avg(o.soil_moist2) as soil_moist2,
+        avg(o.soil_moist3) as soil_moist4,
+        avg(o.soil_moist4) as soil_moist3,
+        min(o.soil_temp1) as soil_temp1,
+        min(o.soil_temp2) as soil_temp2,
+        min(o.soil_temp3) as soil_temp3,
+        min(o.soil_temp4) as soil_temp4,
+        max(o.voltage) as voltage,
+        avg(o.wind) as wind,
+        max(o.wind_gust) as wind_gust,
+        avg(o.wind10) as wind10,
+        avg(o.wind10_dir) as wind10_dir,
+        avg(o.wind10_omm) as wind10_omm,
+        min(o.windchill) as windchill ,
+        avg(o.zone_1) as zone_1,
+        avg(o.zone_2) as zone_2,
+        avg(o.zone_3) as zone_3,
+        avg(o.zone_4) as zone_4,
+        avg(o.zone_5) as zone_5,
+        avg(o.zone_6) as zone_6,
+        avg(o.zone_7) as zone_7,
+        avg(o.zone_8) as zone_8,
+        avg(o.zone_9) as zone_9,
+        avg(o.zone_10) as zone_10
+
+  from obs o
+  where qa_all != 9
+  group by 1,2
+  order by 1,2
 ;
 
 ALTER MATERIALIZED VIEW obs_month set (timescaledb.materialized_only = false);
@@ -209,17 +318,17 @@ SELECT add_continuous_aggregate_policy('x_max_month',
   schedule_interval => INTERVAL '1 day');
 
 -- refresh all materialized views
-CREATE OR REPLACE PROCEDURE refresh_all_mv(start_date timestamp = null, end_date timestamp = null)
+CREATE OR REPLACE PROCEDURE refresh_all_mv(start_date timestamp = null)
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  CALL refresh_continuous_aggregate('obs_hour', start_date, end_date);
-  CALL refresh_continuous_aggregate('obs_day', start_date, end_date);
-  CALL refresh_continuous_aggregate('obs_month', start_date, end_date);
-  CALL refresh_continuous_aggregate('x_min_day', start_date, end_date);
-  CALL refresh_continuous_aggregate('x_min_month', start_date, end_date);
-  CALL refresh_continuous_aggregate('x_max_day', start_date, end_date);
-  CALL refresh_continuous_aggregate('x_max_month', start_date, end_date);
+  CALL refresh_continuous_aggregate('obs_hour', start_date, null);
+  CALL refresh_continuous_aggregate('obs_day', start_date, null);
+  CALL refresh_continuous_aggregate('obs_month', start_date, null);
+  CALL refresh_continuous_aggregate('x_min_day', start_date, null);
+  CALL refresh_continuous_aggregate('x_min_month', start_date, null);
+  CALL refresh_continuous_aggregate('x_max_day', start_date, null);
+  CALL refresh_continuous_aggregate('x_max_month', start_date, null);
 END; $$;
 
 -- create materialized view compare_month WITH (timescaledb.continuous) as

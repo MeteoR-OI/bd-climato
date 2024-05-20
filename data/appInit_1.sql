@@ -36,6 +36,7 @@ insert into postes
 ('MVP860',   4, 0, 'VP2', 'Jack Quillet', 'micka@meteor-oi.re', '0612345678', 'Mare à Vieille Place', 'Salazie', 'la réunion',  860, -21.025844, 55.515549, 1),
 ('NDLP1520', 4, 0, 'VP2', 'Association', 'micka@meteor-oi.re', '0612345678', 'Nogtre Dame de la Paix', 'Le Tampon', 'la réunion',  1520, -21.250525, 55.584708, 1),
 ('PAH575',   4, 0, 'VP2', 'Association', 'micka@meteor-oi.re', '0612345678', 'Piton Armand les Hauts', 'Saint Benoit', 'la réunion',  575,  -21.122265, 55.703658, 1),
+('PDO1600',  4, 0, 'VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'quartier', 'Bourg Murat', 'la réunion',  280, 0, 0, 1),
 ('PFD040',   4, 0, 'VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'quartier', 'Commune', 'la réunion',  40,  -21.300325, 55.418679, 1),
 ('PSL310',   4, 0, 'VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'quartier', 'Commune', 'la réunion',  310,  -21.300325, 55.418679, 1),
 ('RAM450',   4, 0, 'VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'quartier', 'Commune', 'la réunion',  450,  -20.928899, 55.365116, 1),
@@ -180,9 +181,9 @@ insert into mesures
   '{"w_dump": "lambda x: x * 0.03"}'),
 (61, 'radiation_rate', 'radiation_rate',    'radiation',         null,        null,     false,   false,    3,      false,    true,            null,        '{}'),
 (62, 'uv_indice',       'uv',               'UV',                null,        null,     false,   false,    3,      false,    true,            null,        '{}'),
-(70, 'rain',            'rain',             'rain',            'skip',        null,     false,   false,    2,      false,    true,            null,
+(70, 'rain',            'rain',             'rain',              null,        null,     false,   false,    2,      false,    true,            null,
   '{"w_dump": "lambda x: x * 10"}'),
-(71, 'rain_utc',        'rain_utc',          null,              'skip',        null,     false,   false,    2,      false,    true,            null,        '{}'),
+(71, 'rain_utc',        'rain_utc',          null,              'skip',       null,     false,   false,    2,      false,    true,            null,        '{}'),
 (72, 'rain rate',       'rain_rate',        'rainRate',          null,        null,     false,   false,    3,      false,    true,            null,        '{}'),
 (80, 'rx',              'rx',               'rxCheckPercent',    null,        null,     false,   false,    4,      false,    true,            null,        '{}'),
 (90, 'soilmoist1',      'soil_moist1',      'soilMoist1',        null,        null,     false,   false,    1,      false,    true,    'soilmoist1',        '{}'),
@@ -261,20 +262,15 @@ select 'nb annotations: ' || count(*) from annotations;
 /****************
 *  PROCEDURES
 ****************/
--- regenerer la table last_obs
-CREATE OR REPLACE PROCEDURE refesh_last_obs()
-LANGUAGE SQL
-AS $BODY$
-  delete from last_obs;
-  insert into last_obs(poste_id, mesure_id, date_local, value)
-    select poste_id, mesure_id, max(date_local) as date_local, last(value, date_local) as value  from obs group by 1,2;
-$BODY$;
+
 
 -- regenerer la table last_obs_date_local
 CREATE OR REPLACE PROCEDURE refesh_last_obs_date_local()
 LANGUAGE SQL
 AS $BODY$
-with max_dt as (select poste_id as pid, max(date_local) as ldt from obs group by 1) update postes set last_obs_date_local = (select ldt from max_dt where pid=id);
+with max_dt as (select poste_id as pid, max(date_local) as ldt from obs group by 1)
+  update postes set last_obs_date_local = (select ldt from max_dt where pid=id)
+  ;
 $BODY$;
 
 -- ---------
@@ -296,15 +292,6 @@ BEGIN
     update postes set last_obs_date_local = NEW.date_local, last_obs_id = NEW.id where id = NEW.poste_id;
   end if;
 
-  -- Update last_obs
-  select date_local from last_obs where poste_id = NEW.poste_id and mesure_id = NEW.mesure_id into obs_dat;
-
-  if obs_dat is null then
-    insert into last_obs (poste_id, mesure_id, date_local, value) values (NEW.poste_id, NEW.mesure_id, NEW.date_local, NEW.value);
-  elsif obs_dat < NEW.date_local then
-    update last_obs set date_local = NEW.date_local, value = NEW.value where poste_id = NEW.poste_id and mesure_id = NEW.mesure_id;
-  end if;
-
   return NEW;
 END
 $BODY$;
@@ -318,22 +305,22 @@ CREATE OR REPLACE TRIGGER create_obs_trigger
 *  cascade qa_value to x_min/x_max tables
 *  update last_obs table
 */ 
-CREATE OR REPLACE FUNCTION update_obs_trigger_fn()
-  RETURNS TRIGGER LANGUAGE PLPGSQL AS
-$BODY$
-DECLARE
-BEGIN
-  if NEW.qa_value <> OLD.qa_value then
-    update x_min set qa_min = NEW.qa_value where obs_id = NEW.id;
-    update x_max set qa_max = NEW.qa_value where obs_id = NEW.id;
-  end if;
-  return NEW;
-END
-$BODY$;
+-- CREATE OR REPLACE FUNCTION update_obs_trigger_fn()
+--   RETURNS TRIGGER LANGUAGE PLPGSQL AS
+-- $BODY$
+-- DECLARE
+-- BEGIN
+--   if NEW.qa_value <> OLD.qa_value then
+--     update x_min set qa_min = NEW.qa_value where obs_id = NEW.id;
+--     update x_max set qa_max = NEW.qa_value where obs_id = NEW.id;
+--   end if;
+--   return NEW;
+-- END
+-- $BODY$;
 
-CREATE OR REPLACE TRIGGER update_obs_trigger
-  AFTER UPDATE ON obs
-  FOR EACH ROW EXECUTE PROCEDURE update_obs_trigger_fn();
+-- CREATE OR REPLACE TRIGGER update_obs_trigger
+--   AFTER UPDATE ON obs
+--   FOR EACH ROW EXECUTE PROCEDURE update_obs_trigger_fn();
 
 /*
 *  cascade delete obs to x_min/x_max
@@ -353,3 +340,27 @@ CREATE OR REPLACE TRIGGER delete_obs_trigger
   AFTER UPDATE OR DELETE ON x_max
   FOR EACH ROW EXECUTE PROCEDURE delete_obs_trigger_fn();
 
+/********************
+* Init TimeScaleDB
+********************/
+  CREATE EXTENSION IF NOT EXISTS timescaledb;
+  ALTER TABLE obs DROP CONSTRAINT obs_pkey;
+  -- SELECT create_hypertable('obs',  by_range('date_local',  INTERVAL '100 days'), migrate_data => true);
+  SELECT create_hypertable('obs',  'date_local', migrate_data => true);
+  SELECT set_chunk_time_interval('obs', INTERVAL '100 days');
+  DROP index if exists obs_poste_id_7ed1db30;
+  DROP index if exists obs_mesure_id_2198080c;
+
+  ALTER TABLE x_min DROP CONSTRAINT x_min_pkey;
+  -- SELECT create_hypertable('x_min', by_range('date_local',  INTERVAL '200 days'), migrate_data => true);
+  SELECT create_hypertable('x_min', 'date_local', migrate_data => true);
+  SELECT set_chunk_time_interval('x_min',  INTERVAL '200 days');
+  DROP index if exists x_min_mesure_id_915a2d2e;
+  DROP index if exists x_min_poste_id_a7ee3864;
+
+  ALTER TABLE x_max DROP CONSTRAINT x_max_pkey;
+  -- SELECT create_hypertable('x_max',  by_range('date_local',  INTERVAL '200 days'), migrate_data => true);
+  SELECT create_hypertable('x_max',  'date_local', migrate_data => true);
+  SELECT set_chunk_time_interval('x_max',  INTERVAL '200 days');
+  DROP index if exists x_max_mesure_id_a633699c;
+  DROP index if exists x_max_poste_id_529ea905;

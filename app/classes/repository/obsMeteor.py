@@ -27,8 +27,6 @@ class ObsMeteor():
 
     def save(self):
         """ save Poste and Exclusions """
-        if self.data.id is not None:
-            self.data.qa_modifications += 1
         self.data.save()
 
     def delete(self):
@@ -49,4 +47,4 @@ class ObsMeteor():
 
     def __str__(self):
         """print myself"""
-        return "ObsMeteor id: " + str(self.data.id) + ", poste_id: " + str(self.data.poste_id) + ", time: " + str(self.data.time)
+        return "ObsMeteor id: " + str(self.data.id) + ", poste_id: " + str(self.data.poste_id) + ", date locale: " + str(self.data.date_local) + ", duration: " + str(self.data.duration)

@@ -84,6 +84,7 @@ class Mesure(models.Model):
     is_wind = models.BooleanField(null=True, default=False, verbose_name="Calcul du wind_dir")
     allow_zero = models.BooleanField(null=True, default=True, verbose_name="Zero est une valeur valide")
     convert = models.JSONField(null=True, default=dict, verbose_name="Conversion")
+    j = models.JSONField(null=True, default=dict, verbose_name="json data")
 
     def __str__(self):
         return "Mesure id: " + str(self.id) + ", name: " + self.name + ", agreg_type: " + str(self.agreg_type)
@@ -97,10 +98,71 @@ class Observation(models.Model):
     date_local = DateTimeFieldNoTZ(null=False, verbose_name="datetime locale fin période observation")
     date_utc = DateTimeFieldNoTZ(null=False, verbose_name="datetime UTC fin période observation")
     poste = models.ForeignKey(null=False, to="Poste", on_delete=models.PROTECT)
-    mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.PROTECT)
     duration = models.SmallIntegerField(null=False, verbose_name="durée mesure")
-    value = models.FloatField(null=False, verbose_name="valeur")
-    qa_value = models.SmallIntegerField(choices=Code_QA.choices, default=Code_QA.UNSET, verbose_name="Code Qualité")
+
+    barometer = models.FloatField(null=True, verbose_name="pression niveau mer")
+    pressure = models.FloatField(null=True, verbose_name="pression station")
+    in_temp = models.FloatField(null=True, verbose_name="température intérieure")
+    out_temp = models.FloatField(null=True, verbose_name="température extérieure")
+    dewpoint = models.FloatField(null=True, verbose_name="point de rosée")
+    etp = models.FloatField(null=True, verbose_name="somme etp")
+    heatindex = models.FloatField(null=True, verbose_name="heatindex")
+    # heating_temp = models.FloatField(null=True, verbose_name="heating temp")
+    extra_temp1 = models.FloatField(null=True, verbose_name="extra temperature 1")
+    extra_temp2 = models.FloatField(null=True, verbose_name="extra temperature 2")
+    extra_temp3 = models.FloatField(null=True, verbose_name="extra temperature 3")
+    in_humidity = models.FloatField(null=True, verbose_name="humidité intérieure")
+    out_humidity = models.FloatField(null=True, verbose_name="humidité")
+    extra_humid1 = models.FloatField(null=True, verbose_name="extra humidité 1")
+    extra_humid2 = models.FloatField(null=True, verbose_name="extra humidité 2")
+    leaf_temp1 = models.FloatField(null=True, verbose_name="temp des feuilles no 1")
+    leaf_temp2 = models.FloatField(null=True, verbose_name="temp des feuilles no 2")
+    leaf_wet1 = models.FloatField(null=True, verbose_name="humidité des feuilles no 1")
+    leaf_wet2 = models.FloatField(null=True, verbose_name="humidité des feuilles no 2")
+    radiation = models.FloatField(null=True, verbose_name="radiation")
+    radiation_rate = models.FloatField(null=True, verbose_name="radiation rate")
+    uv = models.FloatField(null=True, verbose_name="indice UV")
+    rain = models.FloatField(null=True, verbose_name="pluie")
+    rain_utc = models.FloatField(null=True, verbose_name="pluie")
+    rain_rate = models.FloatField(null=True, verbose_name="rain_rate")
+    rx = models.FloatField(null=True, verbose_name="taux reception station")
+    soil_moist1 = models.FloatField(null=True, verbose_name="humidité du sol niveau du sol")
+    soil_moist2 = models.FloatField(null=True, verbose_name="humidité du sol niveau 2")
+    soil_moist3 = models.FloatField(null=True, verbose_name="humidité du sol niveau 3")
+    soil_moist4 = models.FloatField(null=True, verbose_name="humidité du sol niveau 4")
+    soil_temp1 = models.FloatField(null=True, verbose_name="température du sol niveau du sol")
+    soil_temp2 = models.FloatField(null=True, verbose_name="température du sol niveau 2")
+    soil_temp3 = models.FloatField(null=True, verbose_name="température du sol niveau 3")
+    soil_temp4 = models.FloatField(null=True, verbose_name="température du sol niveau 4")
+    voltage = models.FloatField(null=True, verbose_name="voltage")
+    wind_dir = models.FloatField(null=True, verbose_name="direction moyenne du vent sur la période")
+    wind = models.FloatField(null=True, verbose_name="vitesse moyenne du vent sur la période")
+    wind_gust_dir = models.FloatField(null=True, verbose_name="direction de la rafale max")
+    wind_gust = models.FloatField(null=True, verbose_name="rafale max")
+    wind10 = models.FloatField(null=True, verbose_name="vent moyen sur 10")
+    wind10_dir = models.FloatField(null=True, verbose_name="direction moyenne du vent sur 10 mn")
+    wind10_omm = models.FloatField(null=True, verbose_name="vent moyen 10 mn OMM")
+    windchill = models.FloatField(null=True, verbose_name="windchill")
+
+    # hail = models.FloatField(null=True, verbose_name="hail")
+    # hail_rate = models.FloatField(null=True, verbose_name="hail rate")
+    zone_1 = models.FloatField(null=True, verbose_name="zone 1")
+    zone_2 = models.FloatField(null=True, verbose_name="zone 2")
+    zone_3 = models.FloatField(null=True, verbose_name="zone 3")
+    zone_4 = models.FloatField(null=True, verbose_name="zone 4")
+    zone_5 = models.FloatField(null=True, verbose_name="zone 5")
+    zone_6 = models.FloatField(null=True, verbose_name="zone 6")
+    zone_7 = models.FloatField(null=True, verbose_name="zone 7")
+    zone_8 = models.FloatField(null=True, verbose_name="zone 8")
+    zone_9 = models.FloatField(null=True, verbose_name="zone 9")
+    zone_10 = models.FloatField(null=True, verbose_name="zone 10")
+
+    j = models.JSONField(null=True, default=dict, verbose_name="données autres")
+
+    # quality fields
+    qa_all = models.IntegerField(null=True, default=Code_QA.UNSET.value, verbose_name='qa_modifications')
+    qa_details = models.JSONField(null=True, default=dict, verbose_name="details de qualite par champs")
+    qa_modifications = models.IntegerField(null=True, default=0, verbose_name='nombre de modifications')
 
     def __str__(self):
         return "Observation id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", date_local " + str(self.date_local) + ", mesure: " + str(self.mesure.name) + ", value: " + str(self.value) + " qa_value:" + str(self.qa_value)
@@ -108,23 +170,6 @@ class Observation(models.Model):
     class Meta:
         db_table = "obs"
         unique_together = (['id', 'date_local'],)
-
-
-class LastObs(models.Model):
-    id = models.BigAutoField(primary_key=True, null=False, verbose_name="id du minimum")
-    date_local = DateTimeFieldNoTZ(null=False, verbose_name="datetime locale derniere valeur de la mesure")
-    poste = models.ForeignKey(null=False, to="Poste", on_delete=models.PROTECT)
-    mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.PROTECT)
-    value = models.FloatField(null=False, verbose_name="valeur")
-
-    def __str__(self):
-        return "LastObs id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.date_local) + ", mesure: " + str(self.mesure.name)
-
-    class Meta:
-        db_table = "last_obs"
-        indexes = [
-            Index(name='last_obs_poste_id', fields=['poste', 'mesure'])
-        ]
 
 
 class XMin(models.Model):
@@ -135,7 +180,7 @@ class XMin(models.Model):
     mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.PROTECT)
     min = models.FloatField(null=False, verbose_name="valeur minimum")
     min_time = DateTimeFieldNoTZ(null=False, verbose_name="date locale de l'extrême")
-    qa_min = models.SmallIntegerField(choices=Code_QA.choices, default=Code_QA.UNSET, verbose_name="Code Qualité")
+    qa_min = models.SmallIntegerField(choices=Code_QA.choices, default=Code_QA.UNSET.value, verbose_name="Code Qualité")
 
     def __str__(self):
         return "Extreme Min id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.date_local) + ", mesure: " + str(self.mesure.name)
@@ -156,7 +201,7 @@ class XMax(models.Model):
     max = models.FloatField(null=False, verbose_name="valeur maximum")
     max_time = DateTimeFieldNoTZ(null=False, verbose_name="date locale de l'extrême")
     max_dir = models.SmallIntegerField(null=True, verbose_name="direction du maximum")
-    qa_max = models.SmallIntegerField(choices=Code_QA.choices, default=Code_QA.UNSET, verbose_name="Code Qualité")
+    qa_max = models.SmallIntegerField(choices=Code_QA.choices, default=Code_QA.UNSET.value, verbose_name="Code Qualité")
 
     def __str__(self):
         return "Extreme Max id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.date_local) + ", mesure: " + str(self.mesure.name)
