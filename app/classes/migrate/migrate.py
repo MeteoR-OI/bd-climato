@@ -215,7 +215,12 @@ class MigrateDB:
     # ------------------------------------
     def loadMinMaxFromWeeWX(self, work_item):
         min_max = []
-        myconn = getMSQLConnection(work_item['meteor'])
+        try:
+            myconn = getMSQLConnection(work_item['meteor'])
+        except Exception as e:
+            print('Error durinf mySql connection: %s' % e)
+            raise e
+
         my_cur = None
         start_time = datetime.now()
 
@@ -277,12 +282,13 @@ class MigrateDB:
                     my_cur.close()
                     if nb_record_processed > 0:
                         process_length = datetime.now() - start_time
-                        # print(
-                        #     'meteor: ' + work_item['meteor'] + ', weewx.archive_day_' + str(table_name) +\
-                        #     " new records: " + str(nb_record_processed) + ' en ' + str(process_length/1000) + ' ms')
+                        print(
+                            'meteor: ' + work_item['meteor'] + ', weewx.archive_day_' + str(table_name) +\
+                            " new records: " + str(nb_record_processed) + ' en ' + str(process_length/1000) + ' ms')
 
         finally:
             myconn.close()
+            print('loadMinMaxFromWeeWx, min_max len: ' + str(len(min_max)))
             return min_max
 
     # --------------------------------
