@@ -31,7 +31,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
         'climato.meteor-oi.re',
-        '10.2.239.6',
+        '10.2.243.105'
         '127.0.0.1',
         'localhost',
 ]
