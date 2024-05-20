@@ -36,6 +36,8 @@ ALLOWED_HOSTS = [
         'localhost',
 ]
 
+ALLOWED_CIDR_NETS = ['10.2.0.0/16']
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "app", "static"),
 ]
@@ -54,6 +56,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'allow_cidr.middleware.AllowCIDRMiddleware',
     # 'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
