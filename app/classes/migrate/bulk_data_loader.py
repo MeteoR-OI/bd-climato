@@ -224,6 +224,7 @@ class BulkDataLoader():
 
         idx = idx_intial
         tmp_l = str(len(new_ids))
+        print('idx_intial: ' + str(idx_intial) + ', len(new_ids): ' + tmp_l + ', len(min_max): ' + str(len(min_max)))
         while idx < len(new_ids):
             my_minmax = min_max[idx]
             print ('idx: ' + str(idx) + ', len(new_ids): ' + tmp_l + ', id in my_minmax: ' + str(my_minmax['obs_id']))
