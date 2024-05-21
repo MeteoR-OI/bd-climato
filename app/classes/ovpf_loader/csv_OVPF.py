@@ -1,4 +1,4 @@
-from app.classes.csv_loader.csvFileSpec import CsvFileSpec
+from app.classes.txt_loader.csvFileSpec import CsvFileSpec
 from app.tools.dateTools import str_to_datetime
 from app.classes.csv_loader.file_format.all_OVPF_formats import all_formats
 from app.classes.repository.posteMeteor import PosteMeteor

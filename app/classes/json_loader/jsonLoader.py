@@ -12,7 +12,7 @@
 #       mark the work_item as failed
 from app.models import Load_Type
 from app.classes.repository.posteMeteor import PosteMeteor
-from app.classes.data_loader.json_data_loader import JsonDataLoader
+from app.classes.json_loader.json_data_loader import JsonDataLoader
 from app.tools.jsonValidator import checkJson
 from app.tools.dateTools import str_to_datetime
 import app.tools.myTools as t
