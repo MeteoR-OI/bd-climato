@@ -1,7 +1,6 @@
 
 
 from app.classes.data_loader.bulk_data_loader import BulkDataLoader
-from app.tools.myTools import FromTimestampToDateTime
 from app.classes.repository.obsMeteor import QA
 
 class DlCsv(BulkDataLoader):

@@ -3,7 +3,7 @@ from app.models import Aggreg_Type, Code_QA as QA
 from datetime import datetime
 from app.tools.dbTools import getPGConnexion
 from operator import itemgetter
-from app.tools.myTools import FromTimestampToDateTime
+from app.tools.dateTools import FromTimestampToLocalDateTime, FromTimestampToUTCDateTime
 from app.models import Code_QA as QA
 from app.tools.dbTools import getPGConnexion
 
@@ -14,8 +14,8 @@ class BulkDataLoader():
         self.col_mapping = None
 
     def getObsDateTime(self, row2, cur_poste):
-        date_obs_utc = FromTimestampToDateTime(row2[self.col_mapping['date_obs']])
-        date_obs_local = FromTimestampToDateTime(row2[self.col_mapping['date_obs']], cur_poste.data.delta_timezone)
+        date_obs_utc = FromTimestampToUTCDateTime(row2[self.col_mapping['date_obs']])
+        date_obs_local = FromTimestampToLocalDateTime(row2[self.col_mapping['date_obs']], cur_poste.data.delta_timezone)
         return date_obs_utc, date_obs_local
 
     def getConvertKey(self):
