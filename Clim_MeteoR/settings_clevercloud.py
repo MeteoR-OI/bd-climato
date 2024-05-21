@@ -31,7 +31,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
         'climato.meteor-oi.re',
-        '10.2.243.105'
         '127.0.0.1',
         'localhost',
 ]
@@ -151,11 +150,11 @@ MEDIA_ROOT = "/srv/beta_data/meteor_oi/bd_climato/bd-climato/media"
 DATA_FS_PATH = os.path.join(MEDIA_ROOT, 'data')
 
 # App settings
-JSON_AUTOLOAD = "./data/json_auto_load"         # in symc with dc-telemetry.yaml
-CSV_AUTOLOAD = "./data/csv_auto_load"           # in symc with dc-telemetry.yaml
-OVPF_FILES = "./data/ovpf"                    # in symc with dc-telemetry.yaml
-ARCHIVE_DIR = "./data/json_archive"             # in symc with dc-telemetry.yaml
-
+JSON_AUTOLOAD = "./data/json_auto_load"
+CSV_AUTOLOAD = "./data/csv_auto_load"
+OVPF_FILES = "./data/ovpf"
+ARCHIVE_DIR = "./data/json_archive"
+FAILED_DIR = "./data/erreur"
 
 TELEMETRY_PROVIDER = False          # None, Console, Jaeger, Thrift
 TELEMETRY_HOST = "localhost"
@@ -163,7 +162,7 @@ JAEGER_PORT = 14250
 THRIFT_PORT = 14250
 
 PROD = False
-LOG_FILE_DIR = "./data/localStorage/log"    # log storage
+LOG_FILE_DIR = "./data/log"    # log storage
 
 # see comments in mytools.py(LogMe class definition)
 LOGGING = {

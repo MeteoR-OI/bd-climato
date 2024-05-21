@@ -50,19 +50,31 @@ class MesureMeteor():
             m_item = {
                 'id': a_data['id'],
                 'name': a_data['name'],
-                'col': a_data['json_input'],
-                'col2': a_data['json_input_bis'],
-                'field': a_data['archive_col'],
+                'table': a_data['table'],
+                'diridx': a_data['field_dir'],
+                'json_input': a_data['json_input'],
+                'json_input_bis': a_data['json_input_bis'],
+                'archive_col': a_data['archive_col'],
                 'min': a_data['min'],
                 'max': a_data['max'],
-                # 'isavg': a_data['is_avg'],
-                'agreg': a_data['agreg_type'],
-                'iswind': a_data['is_wind'],
+                'agreg_type': a_data['agreg_type'],
+                'is_wind': a_data['is_wind'],
                 'zero': a_data['allow_zero'],
                 'convert': a_data['convert']
             }
 
             def_mesures.append(m_item)
+        for a_mesure in def_mesures:
+            if a_mesure['diridx'] is not None:
+                fi_dir = a_mesure['diridx']
+                a_mesure['diridx'] = None
+                dir_idx = 0
+                while dir_idx < len(def_mesures):
+                    if def_mesures[dir_idx]['id'] == fi_dir:
+                        a_mesure['diridx'] = dir_idx
+                        dir_idx = len(def_mesures)
+                    dir_idx += 1
+
         MesureMeteor.all_defs = def_mesures
 
     def __str__(self):
