@@ -4,6 +4,7 @@ certifi==2024.2.2
 charset-normalizer==3.3.2
 Deprecated==1.2.14
 Django==5.0.2
+django-allow-cidr==0.7.1
 django-json-widget==1.1.1
 flake8==7.0.0
 future==0.18.3
