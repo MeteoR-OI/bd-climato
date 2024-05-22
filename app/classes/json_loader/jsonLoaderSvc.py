@@ -30,9 +30,9 @@ class JsonLoader(JsonLoaderABC):
         self.stopRequested = False
 
         # get directories settings
-        self.json_dir = self.getSettingValue("JSON_AUTOLOAD")
-        self.archive_dir = self.getSettingValue("ARCHIVE_DIR")
-        self.failed_dir = self.getSettingValue("FAILED_DIR")
+        self.json_dir = getSettingValue("JSON_AUTOLOAD")
+        self.archive_dir = getSettingValue("ARCHIVE_DIR")
+        self.failed_dir = getSettingValue("FAILED_DIR")
 
     # ----------------
     # public methods

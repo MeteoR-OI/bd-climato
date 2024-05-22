@@ -50,7 +50,7 @@ class MesureMeteor():
             m_item = {
                 'id': a_data['id'],
                 'name': a_data['name'],
-                'table': a_data['table'],
+                'table': a_data['archive_table'],
                 'diridx': a_data['field_dir'],
                 'json_input': a_data['json_input'],
                 'json_input_bis': a_data['json_input_bis'],

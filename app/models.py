@@ -200,7 +200,7 @@ class XMax(models.Model):
     mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.PROTECT)
     max = models.FloatField(null=False, verbose_name="valeur maximum")
     max_time = DateTimeFieldNoTZ(null=False, verbose_name="date locale de l'extrême")
-    max_dir = models.SmallIntegerField(null=True, verbose_name="direction du maximum")
+    max_dir = models.FloatField(null=True, verbose_name="direction du maximum")
     qa_max = models.SmallIntegerField(null=True, choices=Code_QA.choices, db_default=Code_QA.UNSET.value, verbose_name="Code Qualité")
 
     def __str__(self):

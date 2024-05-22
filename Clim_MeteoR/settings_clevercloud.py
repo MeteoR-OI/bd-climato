@@ -150,11 +150,11 @@ MEDIA_ROOT = "/srv/beta_data/meteor_oi/bd_climato/bd-climato/media"
 DATA_FS_PATH = os.path.join(MEDIA_ROOT, 'data')
 
 # App settings
-JSON_AUTOLOAD = "./data/json_auto_load"
-CSV_AUTOLOAD = "./data/csv_auto_load"
-OVPF_FILES = "./data/ovpf"
-ARCHIVE_DIR = "./data/json_archive"
-FAILED_DIR = "./data/erreur"
+JSON_AUTOLOAD = "./data/climato/json_auto_load"
+CSV_AUTOLOAD = "./data/climato/csv_auto_load"
+OVPF_FILES = "./data/climato/ovpf"
+ARCHIVE_DIR = "./data/climato/json_archive"
+FAILED_DIR = "./data/climato/erreur"
 
 TELEMETRY_PROVIDER = False          # None, Console, Jaeger, Thrift
 TELEMETRY_HOST = "localhost"
@@ -162,7 +162,7 @@ JAEGER_PORT = 14250
 THRIFT_PORT = 14250
 
 PROD = False
-LOG_FILE_DIR = "./data/log"    # log storage
+LOG_FILE_DIR = "./data/climato/log"    # log storage
 
 # see comments in mytools.py(LogMe class definition)
 LOGGING = {

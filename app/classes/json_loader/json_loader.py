@@ -32,7 +32,8 @@ class JsonLoaderABC(ABC):
     def __init__(self):
         # save mesures definition
         self.mesures = MesureMeteor.getDefinitions()
-
+        self.insert_cde = None
+        
         # boolean to stop processing files
         self.stopRequested = False
 
@@ -82,7 +83,7 @@ class JsonLoaderABC(ABC):
                                 t.logInfo('info', 'jsonload: ' + meteor + ' waiting for an older json file, skipping file ' + filename + ', stop_date: ' + stop_date)
                                 return
 
-                        if j_stop_dat_local <= cur_poste.data.last_obs_date_local:
+                        if cur_poste.data.last_obs_date_local is not None and j_stop_dat_local <= cur_poste.data.last_obs_date_local:
                             t.logInfo('jsonload: ' + meteor + ' skipping data already loaded from ' + filename + ', stop_date: ' + stop_date + ', last_obs_date_local: ' + str(cur_poste.data.last_obs_date_local))
                             return
 
@@ -106,42 +107,48 @@ class JsonLoaderABC(ABC):
 
         try:
             stop_date_utc = stop_dat_local - timedelta(hours=cur_poste.data.delta_timezone)
-            values_arg = [cur_poste.data.id, str(stop_date_utc), str(stop_dat_local), duration]
+            values_arg = [str(cur_poste.data.id), str(stop_date_utc), str(stop_dat_local), str(duration)]
 
             for a_mesure in self.mesures:
-                cur_vals = self.get_valeurs(a_mesure, j_data, stop_dat_local)
+                if self.isMesureQualified(a_mesure) is False:
+                    continue
+
+                if a_mesure['json_input'] == 'rain_utc':
+                    continue
+
+                cur_vals = self.get_valeurs(a_mesure, j_data, stop_dat_local, duration)
                 if cur_vals[0] is None:
                     if a_mesure.get("json_input_bis") is not None and a_mesure['json_input_bis'] is not None:
-                        cur_vals = self.get_valeurs(a_mesure, j_data, stop_dat_local, True)
+                        cur_vals = self.get_valeurs(a_mesure, j_data, stop_dat_local, duration, True)
 
                 if cur_vals[0] is None:
                     values_arg.append(None)
                     continue
 
-                values_arg.append(cur_vals[0])
+                values_arg.append(str(cur_vals[0]))
 
                 if a_mesure['min'] is not None and a_mesure['min'] is True:
                     min_data.append([
-                        None,
-                        stop_dat_local.date(),
-                        cur_poste.data.id,
-                        a_mesure['id'],
-                        cur_vals[IDX.IDX_VALMIN.value],
-                        cur_vals[IDX.IDX_MIN_TIME.value],
-                        cur_vals[IDX.IDX_QVALMIN.value]])
+                        str(cur_vals[IDX.IDX_OBS_MIN.value]) if cur_vals[IDX.IDX_OBS_MIN.value] is not None else None,
+                        str(stop_dat_local.date()),
+                        str(cur_poste.data.id),
+                        str(a_mesure['id']),
+                        str(cur_vals[IDX.IDX_VALMIN.value]),
+                        str(cur_vals[IDX.IDX_MIN_TIME.value]),
+                        str(cur_vals[IDX.IDX_QVALMIN.value])])
 
                 if a_mesure['max'] is not None and a_mesure['max'] is True:
                     max_data.append([
-                        None,
-                        stop_dat_local.date(),
-                        cur_poste.data.id,
-                        a_mesure['id'],
-                        cur_vals[IDX.IDX_VALMAX.value],
-                        cur_vals[IDX.IDX_MAX_TIME.value],
-                        cur_vals[IDX.IDX_QVALMAX.value],
-                        cur_vals[IDX.IDX_MAX_DIR.value]])
+                        str(cur_vals[IDX.IDX_OBS_MAX.value]) if cur_vals[IDX.IDX_OBS_MAX.value] is not None else None,
+                        str(stop_dat_local.date()),
+                        str(cur_poste.data.id),
+                        str(a_mesure['id']),
+                        str(cur_vals[IDX.IDX_VALMAX.value]),
+                        str(cur_vals[IDX.IDX_MAX_TIME.value]),
+                        str(cur_vals[IDX.IDX_QVALMAX.value]),
+                        str(cur_vals[IDX.IDX_MAX_DIR.value]) if cur_vals[IDX.IDX_MAX_DIR.value] is not None else None])
 
-            values_arg.append(QA.UNSET.value)
+            values_arg.append(str(QA.UNSET.value))
             data_args.append(tuple(values_arg))
 
             # cursor.mogrify() to insert multiple values
@@ -152,10 +159,10 @@ class JsonLoaderABC(ABC):
 
             idx = 0
             while idx < len(new_ids):
-                if  min_data[idx][IDX.IDX_OBS_MIN] is not None:
-                    min_data[idx][IDX.IDX_OBS_MIN] = new_ids[0][0]
-                if  min_data[idx][IDX.IDX_OBS_MAX] is not None:
-                    min_data[idx][IDX.IDX_OBS_MAX] = new_ids[0][0]
+                if  min_data[idx][0] is not None:
+                    min_data[idx][0] = new_ids[0][0]
+                if  min_data[idx][0] is not None:
+                    min_data[idx][0] = new_ids[0][0]
                 idx += 1
 
             min_args_ok = ','.join(pg_cur.mogrify(self.insert_cde_min_mog, i).decode('utf-8') for i in min_data)
@@ -174,7 +181,7 @@ class JsonLoaderABC(ABC):
             pg_cur.close()
             pg_conn.close()
 
-    def get_valeurs(self, a_mesure, valeurs, stop_dat, use_second_input_key=False):
+    def get_valeurs(self, a_mesure, valeurs, stop_dat, duration, use_second_input_key=False):
         #  [0]  [1]     [2]        [3]      [4]      [5]     [6]      [7]      [8]      [9]     [10]      [11]
         # val, qval, dir|None, adir|None, valmin, qvalmin, min_time, valmax, qvalmax, max_time, max_dir, duration
 
@@ -203,7 +210,9 @@ class JsonLoaderABC(ABC):
         for a_key in j_keys:
             if valeurs.get(a_key) is not None:
                 my_val = valeurs[a_key]
-                my_duration = a_mesure[a_key + '_s']
+                my_duration = duration
+                if a_mesure.get(a_key + '_s') is not None:
+                    my_duration = a_mesure[a_key + '_s']
                 if a_mesure['convert'] is not None and a_mesure['convert'].get('json') is not None:
                     my_val = eval(a_mesure['convert']['json'])(my_val)
                 if valeurs.get('Q' + a_key) is not None:
@@ -262,13 +271,17 @@ class JsonLoaderABC(ABC):
   
     def loadSqlInsert(self):
         if self.insert_cde is None:
+            # mog has a suppl parameter for qa_all
             self.insert_cde = {
                 "sql": "insert into obs(poste_id, date_utc, date_local, duration",
                 "mog": "(%s, %s, %s, %s"
             }
-            for a_mesure in self.measures:
+            for a_mesure in self.mesures:
                 if self.isMesureQualified(a_mesure) is False:
                     continue
+                if a_mesure['json_input'] == 'rain_utc':
+                    continue
+
                 self.insert_cde['sql'] += ", " + a_mesure['json_input']
                 self.insert_cde['mog'] += ", %s"
 
@@ -278,3 +291,6 @@ class JsonLoaderABC(ABC):
         self.insert_cde_min_mog = "(%s, %s, %s, %s, %s, %s, %s)"
         self.insert_cde_max = "insert into x_max(obs_id, date_local, poste_id, mesure_id, max, max_time, qa_max, max_dir) values "
         self.insert_cde_max_mog = "(%s, %s, %s, %s, %s, %s, %s, %s)"
+
+    def isMesureQualified(self, a_measure):
+        return False if a_measure['archive_col'] is None else True

@@ -114,10 +114,10 @@ def get_trace_info(exc, nb_levels: int = 3):
     return str(exc.__class__) + ':' + str(exc), ''.join(stack)
 
 
-def getSettingValue(self, setting_name):
+def getSettingValue(setting_name):
     if hasattr(settings, setting_name) is True:
         return getattr(settings, setting_name)
-    return self.base_dir + "/" + setting_name
+    Exception("getSettingValue", "setting not found: " + setting_name)
 
 
 class LogMe:
