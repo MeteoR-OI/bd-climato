@@ -370,6 +370,7 @@ CREATE OR REPLACE TRIGGER delete_obs_trigger
 */
 create materialized view obs_hour WITH (timescaledb.continuous) as
   select
+        -- time_bucket('1 hour', o.date_local, origin => '1950-01-01') as date_local,
         timescaledb_experimental.time_bucket_ng('1 hour', o.date_local, origin => '1950-01-01') as date_local,
         o.poste_id as poste_id,
         avg(o.duration) as duration,
@@ -442,6 +443,7 @@ SELECT add_continuous_aggregate_policy('obs_hour',
 */
 create materialized view obs_day WITH (timescaledb.continuous) as
   select
+        -- time_bucket('1 day', o.date_local, origin => '1950-01-01') as date_local,
         timescaledb_experimental.time_bucket_ng('1 day', o.date_local, origin => '1950-01-01') as date_local,
         o.poste_id as poste_id,
         avg(o.duration) as duration,
@@ -514,6 +516,7 @@ SELECT add_continuous_aggregate_policy('obs_day',
 */
 create materialized view obs_month WITH (timescaledb.continuous) as
   select
+        -- time_bucket('1 month', o.date_local, origin => '1950-01-01') as date_local,
         timescaledb_experimental.time_bucket_ng('1 month', o.date_local, origin => '1950-01-01') as date_local,
         o.poste_id as poste_id,
         avg(o.duration) as duration,
@@ -586,6 +589,7 @@ SELECT add_continuous_aggregate_policy('obs_month',
 */
 create materialized view x_min_day WITH (timescaledb.continuous) as
   select
+        -- time_bucket('1 day', x.date_local, origin => '1950-01-01') as date_local,
         timescaledb_experimental.time_bucket_ng('1 day', x.date_local, origin => '1950-01-01') as date_local,
         x.poste_id as poste_id,
         x.mesure_id as mesure_id,
@@ -613,6 +617,7 @@ SELECT add_continuous_aggregate_policy('x_min_day',
 */
 create materialized view x_min_month WITH (timescaledb.continuous) as
   select
+        -- time_bucket('1 month', date_local) as date_local,
         timescaledb_experimental.time_bucket_ng('1 month', date_local, origin => '1950-01-01') as date_local,
         poste_id as poste_id,
         mesure_id as mesure_id,
@@ -636,6 +641,7 @@ SELECT add_continuous_aggregate_policy('x_min_month',
 */
 create materialized view x_max_day WITH (timescaledb.continuous) as
   select
+        -- time_bucket('1 day', x.date_local, origin => '1950-01-01') as date_local,
         timescaledb_experimental.time_bucket_ng('1 day', x.date_local, origin => '1950-01-01') as date_local,
         x.poste_id as poste_id,
         x.mesure_id as mesure_id,
@@ -664,6 +670,7 @@ SELECT add_continuous_aggregate_policy('x_max_day',
 */
 create materialized view x_max_month WITH (timescaledb.continuous) as
   select
+        -- time_bucket('1 month', date_local, origin => '1950-01-01') as date_local,
         timescaledb_experimental.time_bucket_ng('1 month', date_local, origin => '1950-01-01') as date_local,
         poste_id as poste_id,
         mesure_id as mesure_id,
@@ -701,8 +708,9 @@ END; $$;
 -- materialized view does not support left join...
 
 --  select
---         timescaledb_experimental.time_bucket_ng('1 month', o.date_local, origin => '1950-01-01') as date_local,
---         o.poste_id,
+--      -- timescaledb_experimental.time_bucket_ng('1 month', o.date_local, origin => '1950-01-01') as date_local,
+        -- timescaledb_experimental.time_bucket_ng('1 month', o.date_local, origin => '1950-01-01') as date_local,
+        -- o.poste_id,
 --         avg(o.value) as avg_value,
 --         min(mi.min),
 --         first(mi.min_time, mi.min) as min_time,
@@ -713,11 +721,11 @@ END; $$;
 --         o.poste_id = mi.poste_id
 --         and o.mesure_id = mi.mesure_id
 --         and timescaledb_experimental.time_bucket_ng('1 month', mi.date_local, origin => '1950-01-01') = timescaledb_experimental.time_bucket_ng('1 month', mi.date_local, origin => '1950-01-01')
---       left join x_max_month ma on 
+      -- left join x_max_month ma on 
 --         o.poste_id = ma.poste_id
 --         and o.mesure_id = ma.mesure_id
 --         and timescaledb_experimental.time_bucket_ng('1 month', ma.date_local, origin => '1950-01-01') = timescaledb_experimental.time_bucket_ng('1 month', ma.date_local, origin => '1950-01-01')
---     where o.mesure_id = 1
+    -- where o.mesure_id = 1
 -- --       Important to add a where on each table => 
 -- --           timescale can limit the search in the underlying chunks for each table
 --       and o.date_local > '202-12-01'
