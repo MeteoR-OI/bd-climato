@@ -1,6 +1,6 @@
 
 
-from app.classes.json_loader.jsonLoader import JsonLoader
+from app.classes.json_loader.jsonLoaderSvc import JsonLoader
 from app.classes.workers.workerRoot import WorkerRoot
 import json
 

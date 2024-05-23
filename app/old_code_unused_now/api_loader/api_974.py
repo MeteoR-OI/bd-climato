@@ -1,4 +1,4 @@
-from app.classes.csv_loader.csvFileSpec import CsvFileSpec
+from app.classes.txt_loader.csvFileSpec import CsvFileSpec
 from app.tools.dateTools import str_to_datetime
 from enum import Enum
 

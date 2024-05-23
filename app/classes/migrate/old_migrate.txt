@@ -457,7 +457,7 @@ class MigrateDB:
 
                     # We need to use mintime/maxtime as the date of the record
                     # the mintime and maxtime can be on two different days...
-                    if a_mesure['iswind'] is False:
+                    if a_mesure['is_wind'] is False:
                         my_query = \
                             'select min, mintime, max, maxtime, null as max_dir, ' + str(mid) + ' as mid, dateTime ' + \
                             ' from archive_day_' + table_name +\
@@ -691,7 +691,7 @@ class MigrateDB:
             if cached_extreme[self.row_cache_max] is None or row[self.row_virtual_max] > cached_extreme[self.row_cache_max]:
                 cached_extreme[self.row_cache_max] = row[self.row_virtual_max]
                 cached_extreme[self.row_cache_max_local_dt] = FromTsToLocalDateTime(row[self.row_virtual_maxtime], tz).strftime('%Y-%m-%d %H:%M:%S')
-                if a_mesure['iswind'] is True:
+                if a_mesure['is_wind'] is True:
                     cached_extreme[self.row_cache_maxdir] = row[self.row_virtual_maxdir]
                 cached_extreme[self.row_cache_obsid_max] = row[self.row_virtual_obsid]
 
@@ -832,7 +832,7 @@ class MigrateDB:
                 'max': row[8],
                 'maxdk': row[9],
                 'isavg': row[10],
-                'iswind': row[11],
+                'is_wind': row[11],
                 'zero': row[12],
                 'ommidx': None
             }

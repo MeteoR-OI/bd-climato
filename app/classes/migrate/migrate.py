@@ -14,13 +14,14 @@
 # ---------------
 # more info on wind vs windGust: https://github-wiki-see.page/m/weewx/weewx/wiki/windgust
 # ---------------
-import app.tools as t
-from app.tools.myTools import FromTimestampToDateTime, AsTimezone, GetFirstDayNextMonthFromTs
+from app.classes.migrate.bulk_data_loader import BulkDataLoader
+from app.classes.repository.mesureMeteor import MesureMeteor
 from app.classes.repository.posteMeteor import PosteMeteor
 from app.models import Load_Type
-from app.classes.migrate.bulk_data_loader import BulkDataLoader
+from app.tools.dateTools import FromTimestampToLocalDateTime, FromTimestampToUTCDateTime, GetFirstDayNextMonthFromTs
 from app.tools.dbTools import getMSQLConnection, refreshMV
 from datetime import datetime, timedelta
+import app.tools as t
 # import cProfile
 # import pstats
 
@@ -147,7 +148,7 @@ class MigrateDB:
         work_item['old_load_raw_data'] = False
 
         # 1/1/2100 00:00 UTC
-        max_date = AsTimezone(datetime(2100, 1, 1, 4), 0)
+        max_date = FromTimestampToUTCDateTime(4102444800)
         max_ts = int(max_date.timestamp())
 
         try:
@@ -171,7 +172,7 @@ class MigrateDB:
                     # stop to scan at stop_date if exists
                     work_item['global_last_ts'] = min(work_item['global_last_ts'], stop_ts_utc)
                 print('Global (ts utc)     from: ' + str(work_item['global_first_ts']) + ' to ' + str(work_item['global_last_ts']))
-                print('Global (-> dt utc)  from: ' + str(FromTimestampToDateTime(work_item['global_first_ts'])) + ' to ' + str(FromTimestampToDateTime(work_item['global_last_ts'])))
+                print('Global (-> dt utc)  from: ' + str(FromTimestampToUTCDateTime(work_item['global_first_ts'])) + ' to ' + str(FromTimestampToUTCDateTime(work_item['global_last_ts'])))
 
             # Get start_dt/archive_first_ts
             if work_item.get('archive_last_ts') is None:
@@ -188,20 +189,19 @@ class MigrateDB:
             # tz is needed to get the first day of next month in local time
             work_item['archive_last_ts'] = int(GetFirstDayNextMonthFromTs(work_item['archive_first_ts'], work_item['tz']).timestamp())
 
-            work_item['minmax_first_ts'] = (FromTimestampToDateTime(work_item['archive_first_ts']) - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
-            work_item['minmax_last_ts'] = (FromTimestampToDateTime(work_item['archive_last_ts']) + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
+            work_item['minmax_first_ts'] = (FromTimestampToUTCDateTime(work_item['archive_first_ts']) - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
+            work_item['minmax_last_ts'] = (FromTimestampToUTCDateTime(work_item['archive_last_ts']) + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
             
             t.myTools.logInfo(
                 'ts_archive (ts utc)    from: ' + str(work_item['archive_first_ts']) + ' to ' + str(work_item['archive_last_ts']),
                 {"svc": "migrate", "meteor":  work_item['meteor']})
 
-            work_item['start_dt_archive_utc'] = FromTimestampToDateTime(work_item['archive_first_ts'])
+            work_item['start_dt_archive_utc'] = FromTimestampToUTCDateTime(work_item['archive_first_ts'])
             print('Archive (ts utc)    from: ' + str(work_item['archive_first_ts']) + ' to ' + str(work_item['archive_last_ts']))
-            print('Archive (=> dt utc) from: ' + str(FromTimestampToDateTime(work_item['archive_first_ts'])) + ' to ' + str(FromTimestampToDateTime(work_item['archive_last_ts'])))
+            print('Archive (=> dt utc) from: ' + str(FromTimestampToUTCDateTime(work_item['archive_first_ts'])) + ' to ' + str(FromTimestampToUTCDateTime(work_item['archive_last_ts'])))
             print('MinMax (ts utc)     from: ' + str(work_item['minmax_first_ts']) + ' to ' + str(work_item['minmax_last_ts']))
-            print('MinMax (=> dt utc)  from: ' + str(FromTimestampToDateTime(work_item['minmax_first_ts'])) + ' to ' + str(FromTimestampToDateTime(work_item['minmax_last_ts'])))
+            print('MinMax (=> dt utc)  from: ' + str(FromTimestampToUTCDateTime(work_item['minmax_first_ts'])) + ' to ' + str(FromTimestampToUTCDateTime(work_item['minmax_last_ts'])))
             print('-------------------------------------------------')
-
             return
 
         except Exception as ex:
@@ -225,14 +225,11 @@ class MigrateDB:
         start_time = datetime.now()
 
         try:
-            for a_mesure in self._bulk_dl.getMeasures():
-                # debug
-                # if a_mesure['id'] in (74,):
-                #     pass
-                # else:
-                #     continue
+            for a_mesure in MesureMeteor.getDefinitions():
                 if a_mesure.get('table') == 'skip':
                     continue
+                if a_mesure['json_input'] == 'rain_utc':
+                    pass
                 nb_record_processed = 0
                 mid = a_mesure['id']
                 my_cur = myconn.cursor()
@@ -244,7 +241,7 @@ class MigrateDB:
 
                     # We need to use mintime/maxtime as the date of the record
                     # the mintime and maxtime can be on two different days...
-                    if a_mesure['iswind'] is False:
+                    if a_mesure['is_wind'] is False:
                         my_query = \
                             'select min, mintime, max, maxtime, null as max_dir, ' + str(mid) + ' as mid, dateTime ' + \
                             ' from archive_day_' + table_name +\
@@ -264,13 +261,13 @@ class MigrateDB:
                     while row is not None:
                         if row[self.row_extreme_max] is not None or row[self.row_extreme_min] is not None:
                             tmp_ts = row[self.row_extreme_maxtime] if row[self.row_extreme_maxtime] is not None else row[self.row_extreme_dateTime]
-                            date_max = FromTimestampToDateTime(tmp_ts, work_item['tz'])
+                            date_max = FromTimestampToLocalDateTime(tmp_ts, work_item['tz'])
                             tmp_ts = row[self.row_extreme_mintime] if row[self.row_extreme_mintime] is not None else row[self.row_extreme_dateTime]
-                            date_min = FromTimestampToDateTime(tmp_ts, work_item['tz'])
+                            date_min = FromTimestampToLocalDateTime(tmp_ts, work_item['tz'])
 
                             nb_record_processed += 1
 
-                        if a_mesure['iswind'] is True:
+                        if a_mesure['is_wind'] is True:
                             min_max.append({'min': row[self.row_extreme_min], 'max': row[self.row_extreme_max], 'date_min': date_min,
                                                  'date_max': date_max, 'max_dir': row[self.row_extreme_maxdir], 'mid': a_mesure['id'], 'obs_id': -1})
                         else:
@@ -298,8 +295,8 @@ class MigrateDB:
         query_my = "select dateTime, usUnits, `interval`"
 
         # load an array of query args
-        for a_mesure in self._bulk_dl.getMeasures():
-            if a_mesure['field'] == 'rain_utc':
+        for a_mesure in MesureMeteor.getDefinitions():
+            if a_mesure['json_input'] == 'rain_utc':
                 pass
             if a_mesure['archive_col'] is not None:
                 # add field name into our select statement for weewx

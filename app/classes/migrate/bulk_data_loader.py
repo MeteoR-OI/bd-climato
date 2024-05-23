@@ -1,68 +1,24 @@
 # from abc import ABC, abstractmethod
+from app.classes.repository.mesureMeteor import MesureMeteor
 from app.models import Aggreg_Type, Code_QA as QA
+from app.tools.dateTools import FromTimestampToLocalDateTime, FromTimestampToUTCDateTime
+from app.tools.dbTools import getPGConnexion
 from datetime import datetime
-from app.tools.dbTools import getPGConnexion
 from operator import itemgetter
-from app.tools.myTools import FromTimestampToDateTime
-from app.models import Code_QA as QA
-from app.tools.dbTools import getPGConnexion
 
 class BulkDataLoader():
     def __init__(self):
-        self.measures = self.getMeasuresInitial()
+        self.measures = MesureMeteor.getDefinitions()
         self.insert_cde = None
         self.col_mapping = None
 
     def getObsDateTime(self, row2, cur_poste):
-        date_obs_utc = FromTimestampToDateTime(row2[self.col_mapping['date_obs']])
-        date_obs_local = FromTimestampToDateTime(row2[self.col_mapping['date_obs']], cur_poste.data.delta_timezone)
+        date_obs_utc = FromTimestampToUTCDateTime(row2[self.col_mapping['date_obs']])
+        date_obs_local = FromTimestampToLocalDateTime(row2[self.col_mapping['date_obs']], cur_poste.data.delta_timezone)
         return date_obs_utc, date_obs_local
 
     def getConvertKey(self):
         return 'w_dump'
-
-    def getMeasuresInitial(self):
-        mesures = []
-        pg_query = "select id, archive_col, archive_table, field_dir, json_input, min, max, agreg_type, is_wind, allow_zero, convert from mesures order by id"
-
-        pgconn = getPGConnexion()
-        pg_cur = pgconn.cursor()
-        pg_cur.execute(pg_query)
-
-        row = pg_cur.fetchone()
-        while row is not None:
-            one_mesure = {
-                'id': row[0],
-                'archive_col': row[1],
-                'table': row[2],
-                'diridx': row[3],
-                'field': row[4],
-                'min': row[5],
-                'max': row[6],
-                'agreg': row[7],
-                'iswind': row[8],
-                'zero': row[9],
-                'convert': row[10]
-            }
-            mesures.append(one_mesure)
-            row = pg_cur.fetchone()
-        pg_cur.close()
-
-        # Link wind speed mesures with the linked wind dir mesure
-        for a_mesure in mesures:
-            if a_mesure['diridx'] is not None:
-                fi_dir = a_mesure['diridx']
-                a_mesure['diridx'] = None
-                dir_idx = 0
-                while dir_idx < len(mesures):
-                    if mesures[dir_idx]['id'] == fi_dir:
-                        a_mesure['diridx'] = dir_idx
-                        dir_idx = len(mesures)
-                    dir_idx += 1
-        return mesures
-
-    def getMeasures(self):
-        return self.measures
 
     def loadColMapping(self, my_cur):
         if self.col_mapping is None:
@@ -150,7 +106,7 @@ class BulkDataLoader():
             for a_mesure in self.measures:
                 if self.isMesureQualified(a_mesure) is False:
                     continue
-                self.insert_cde['sql'] += ", " + a_mesure['field']
+                self.insert_cde['sql'] += ", " + a_mesure['json_input']
                 self.insert_cde['mog'] += ", %s"
 
             self.insert_cde['sql'] += ", qa_all) values "
@@ -198,7 +154,7 @@ class BulkDataLoader():
                             cur_min, date_min, cur_max, date_max, max_dir = self.getMinMaxValues(cur_row, a_mesure, cur_val, date_obs_local)
 
                             if cur_qa_val != QA.UNVALIDATED.value:
-                                if a_mesure['iswind'] is True:
+                                if a_mesure['is_wind'] is True:
                                     min_max.append({'min': cur_min, 'max': cur_max, 'date_min': date_min,
                                                     'date_max': date_max, 'max_dir': max_dir, 'mid': a_mesure['id'], 'obs_id': obs_count})
                                 else:
@@ -249,12 +205,12 @@ class BulkDataLoader():
             if self.isMesureQualified(a_mesure) is False:
                 continue
             mesures_hash[a_mesure['id']] = a_mesure
-            if a_mesure['agreg'] == Aggreg_Type.SUM:
+            if a_mesure['agreg_type'] == Aggreg_Type.SUM:
                 mesure_sum_id.append(a_mesure['id'])
 
         for a_record in new_records:
             cur_mesure = mesures_hash[a_record['mid']]
-            if cur_mesure['agreg'] == 0:
+            if cur_mesure['agreg_type'] == 0:
                 continue
 
             if cur_mesure['min'] is True:

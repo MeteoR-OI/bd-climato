@@ -18,7 +18,7 @@ import json
 from datetime import datetime
 import os
 from app.classes.csv_loader.csv_meteoFR import CsvMeteoFR
-from app.classes.csv_loader.csv_OVPF import CsvOpvf
+from app.classes.ovpf_loader.csv_OVPF import CsvOpvf
 from app.tools.dbTools import getPGConnexion, refreshMV
 from app.models import Load_Type
 

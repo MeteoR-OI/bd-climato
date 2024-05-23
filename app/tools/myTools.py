@@ -114,22 +114,10 @@ def get_trace_info(exc, nb_levels: int = 3):
     return str(exc.__class__) + ':' + str(exc), ''.join(stack)
 
 
-def GetFirstDayNextMonthFromTs(ts, delta_hours=0):
-    # Convert to local date
-    dt_local = FromTimestampToDateTime(int(ts), delta_hours)
-    # return first day next month in local timezone
-    return datetime.datetime(dt_local.year + (dt_local.month // 12), (dt_local.month % 12) + 1, 1, 0, 0, 0, 0) - datetime.timedelta(hours=delta_hours)
-
-
-def FromTimestampToDateTime(ts, delta_hours=0):
-    """Load a timestamp to a datetime, as local time, or utc time (no tz given)"""
-    return datetime.datetime.fromtimestamp(ts + delta_hours * 3600).replace(tzinfo=None)
-
-
-def AsTimezone(dt, delta_hours=0):
-    if type(dt) is datetime.date:
-        return dt
-    return dt + datetime.timedelta(hours=delta_hours)
+def getSettingValue(setting_name):
+    if hasattr(settings, setting_name) is True:
+        return getattr(settings, setting_name)
+    Exception("getSettingValue", "setting not found: " + setting_name)
 
 
 class LogMe:

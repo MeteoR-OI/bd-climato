@@ -65,3 +65,17 @@ def isRoundedHourInDuration(start_datetime, duration_seconds):
     # print("date " + str(start_datetime) + " before : " + str(start_datetime > begin_datetime))
     # print("date " + str(start_datetime) + " after : " + str(start_datetime <= end_datetime))
     return (start_datetime > begin_datetime) and (start_datetime <= end_datetime)
+
+def FromTimestampToLocalDateTime(ts, delta_hours=0):
+    """Load a timestamp to a datetime, as local time, or utc time (no tz given)"""
+    return datetime.datetime.fromtimestamp(ts + delta_hours * 3600).replace(tzinfo=None)
+
+def FromTimestampToUTCDateTime(ts):
+    """Load a timestamp to a datetime, as local time, or utc time (no tz given)"""
+    return datetime.datetime.fromtimestamp(ts).replace(tzinfo=None)
+
+def GetFirstDayNextMonthFromTs(ts, delta_hours=0):
+    # Convert to local date
+    dt_local = FromTimestampToLocalDateTime(int(ts), delta_hours)
+    # return first day next month in local timezone
+    return datetime.datetime(dt_local.year + (dt_local.month // 12), (dt_local.month % 12) + 1, 1, 0, 0, 0, 0) - datetime.timedelta(hours=delta_hours)

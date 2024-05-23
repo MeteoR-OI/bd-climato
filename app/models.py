@@ -36,31 +36,31 @@ class Poste(models.Model):
     id = models.SmallAutoField(primary_key=True)
     meteor = models.CharField(null=False, max_length=50, verbose_name="Code station")
     delta_timezone = models.SmallIntegerField(null=False, verbose_name="delta heure locale et UTC")
-    data_source = models.IntegerField(choices=Data_Source.choices, default=Data_Source.NONE, verbose_name="Source des donnees")
-    load_type = models.IntegerField(choices=Load_Type.choices, default=Load_Type.NONE, verbose_name="Type de chargement des donnees")
+    data_source = models.IntegerField(null=True, choices=Data_Source.choices, db_default=Data_Source.NONE.value, verbose_name="Source des donnees")
+    load_type = models.IntegerField(null=True, choices=Load_Type.choices, db_default=Load_Type.NONE, verbose_name="Type de chargement des donnees")
 
     # optional fields
-    type = models.CharField(null=True, max_length=50, default="", verbose_name="Type de station")
-    altitude = models.FloatField(null=True, default=0, verbose_name="Altitude")
-    lat = models.FloatField(null=True, default=0, verbose_name="Latitude")
-    long = models.FloatField(null=True, default=0, verbose_name="Longitude")
-    info = models.JSONField(null=True, default=dict, verbose_name="autre info station")
+    type = models.CharField(null=True, max_length=50, db_default="", verbose_name="Type de station")
+    altitude = models.FloatField(null=True, db_default=0, verbose_name="Altitude")
+    lat = models.FloatField(null=True, db_default=0, verbose_name="Latitude")
+    long = models.FloatField(null=True, db_default=0, verbose_name="Longitude")
+    info = models.JSONField(null=True, verbose_name="autre info station")
     stop_date = DateTimeFieldNoTZ(null=True, verbose_name="Datetime local d'arret de la station")
 
     # la suite n'est pas utilise par climato - a revoir pour pages html...
-    other_code = models.CharField(null=True, max_length=50, default="", verbose_name="Autre code utilisé dans la data source")
-    owner = models.CharField(null=True, max_length=50, default="", verbose_name="Propriétaire")
-    email = models.CharField(null=True, max_length=50, default="", verbose_name="E-Mail")
-    phone = models.CharField(null=True, max_length=50, default="", verbose_name="Téléphone")
-    quartier = models.CharField(null=True, max_length=50, default="", verbose_name="Addresse")
-    city = models.CharField(null=True, max_length=50, default="", verbose_name="Ville")
-    country = models.CharField(null=True, max_length=50, default="", verbose_name="Pays")
-    comment = models.TextField(null=True, default="", verbose_name="Commentaire")
+    other_code = models.CharField(null=True, max_length=50, db_default="", verbose_name="Autre code utilisé dans la data source")
+    owner = models.CharField(null=True, max_length=50, db_default="", verbose_name="Propriétaire")
+    email = models.CharField(null=True, max_length=50, db_default="", verbose_name="E-Mail")
+    phone = models.CharField(null=True, max_length=50, db_default="", verbose_name="Téléphone")
+    quartier = models.CharField(null=True, max_length=50, db_default="", verbose_name="Addresse")
+    city = models.CharField(null=True, max_length=50, db_default="", verbose_name="Ville")
+    country = models.CharField(null=True, max_length=50, db_default="", verbose_name="Pays")
+    comment = models.TextField(null=True, db_default="", verbose_name="Commentaire")
 
     # information de synchronisation
-    last_obs_date_local = DateTimeFieldNoTZ(null=True, default="2000-01-01T00:00:00", verbose_name="Datetime UTC de derniere reception de donnees")
-    last_obs_id = models.BigIntegerField(null=True, default=0, verbose_name="ID obs de la derniere reception de donnees")
-    info_sync = models.JSONField(null=True, default=dict, verbose_name="Autre info de synchro")
+    last_obs_date_local = DateTimeFieldNoTZ(null=True, db_default="2000-01-01T00:00:00", verbose_name="Datetime UTC de derniere reception de donnees")
+    last_obs_id = models.BigIntegerField(null=True, db_default=0, verbose_name="ID obs de la derniere reception de donnees")
+    info_sync = models.JSONField(null=True, verbose_name="Autre info de synchro")
 
 
     def __str__(self):
@@ -76,15 +76,15 @@ class Mesure(models.Model):
     json_input = models.CharField(null=True, max_length=20, verbose_name="Clé utilisée dans le json")
     json_input_bis = models.CharField(null=True, max_length=20, verbose_name="Autre clé utilisée dans le json")
     archive_col = models.CharField(null=True, max_length=20, verbose_name="nom colonne table weewx.archive")
-    archive_table = models.CharField(null=True, default=None, max_length=20, verbose_name="nom table weewx.archive")
+    archive_table = models.CharField(null=True, db_default=None, max_length=20, verbose_name="nom table weewx.archive")
     field_dir = models.SmallIntegerField(null=True, verbose_name="id de la mesure wind dans table weewx.archive")
-    max = models.BooleanField(null=True, default=True, verbose_name="Calcul des max")
-    min = models.BooleanField(null=True, default=True, verbose_name="Calcul des min")
-    agreg_type = models.IntegerField(choices=Aggreg_Type.choices, default=Aggreg_Type.NONE, verbose_name="Type d'agregation des donnees")
-    is_wind = models.BooleanField(null=True, default=False, verbose_name="Calcul du wind_dir")
-    allow_zero = models.BooleanField(null=True, default=True, verbose_name="Zero est une valeur valide")
-    convert = models.JSONField(null=True, default=dict, verbose_name="Conversion")
-    j = models.JSONField(null=True, default=dict, verbose_name="json data")
+    max = models.BooleanField(null=True, db_default=True, verbose_name="Calcul des max")
+    min = models.BooleanField(null=True, db_default=True, verbose_name="Calcul des min")
+    agreg_type = models.IntegerField(null=True, choices=Aggreg_Type.choices, db_default=Aggreg_Type.NONE, verbose_name="Type d'agregation des donnees")
+    is_wind = models.BooleanField(null=True, db_default=False, verbose_name="Calcul du wind_dir")
+    allow_zero = models.BooleanField(null=True, db_default=True, verbose_name="Zero est une valeur valide")
+    convert = models.JSONField(null=True, verbose_name="Conversion")
+    j = models.JSONField(null=True, verbose_name="json data")
 
     def __str__(self):
         return "Mesure id: " + str(self.id) + ", name: " + self.name + ", agreg_type: " + str(self.agreg_type)
@@ -157,12 +157,12 @@ class Observation(models.Model):
     zone_9 = models.FloatField(null=True, verbose_name="zone 9")
     zone_10 = models.FloatField(null=True, verbose_name="zone 10")
 
-    j = models.JSONField(null=True, default=dict, verbose_name="données autres")
+    j = models.JSONField(null=True, verbose_name="données autres")
 
     # quality fields
-    qa_all = models.IntegerField(null=True, default=Code_QA.UNSET.value, verbose_name='qa_modifications')
-    qa_details = models.JSONField(null=True, default=dict, verbose_name="details de qualite par champs")
-    qa_modifications = models.IntegerField(null=True, default=0, verbose_name='nombre de modifications')
+    qa_all = models.IntegerField(null=True, db_default=Code_QA.UNSET.value, verbose_name='qa_modifications')
+    qa_details = models.JSONField(null=True, verbose_name="details de qualite par champs")
+    qa_modifications = models.IntegerField(null=True, db_default=0, verbose_name='nombre de modifications')
 
     def __str__(self):
         return "Observation id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", date_local " + str(self.date_local) + ", mesure: " + str(self.mesure.name) + ", value: " + str(self.value) + " qa_value:" + str(self.qa_value)
@@ -180,7 +180,7 @@ class XMin(models.Model):
     mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.PROTECT)
     min = models.FloatField(null=False, verbose_name="valeur minimum")
     min_time = DateTimeFieldNoTZ(null=False, verbose_name="date locale de l'extrême")
-    qa_min = models.SmallIntegerField(choices=Code_QA.choices, default=Code_QA.UNSET.value, verbose_name="Code Qualité")
+    qa_min = models.SmallIntegerField(null=True, choices=Code_QA.choices, db_default=0, verbose_name="Code Qualité")
 
     def __str__(self):
         return "Extreme Min id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.date_local) + ", mesure: " + str(self.mesure.name)
@@ -200,8 +200,8 @@ class XMax(models.Model):
     mesure = models.ForeignKey(null=False, to="Mesure", on_delete=models.PROTECT)
     max = models.FloatField(null=False, verbose_name="valeur maximum")
     max_time = DateTimeFieldNoTZ(null=False, verbose_name="date locale de l'extrême")
-    max_dir = models.SmallIntegerField(null=True, verbose_name="direction du maximum")
-    qa_max = models.SmallIntegerField(choices=Code_QA.choices, default=Code_QA.UNSET.value, verbose_name="Code Qualité")
+    max_dir = models.FloatField(null=True, verbose_name="direction du maximum")
+    qa_max = models.SmallIntegerField(null=True, choices=Code_QA.choices, db_default=Code_QA.UNSET.value, verbose_name="Code Qualité")
 
     def __str__(self):
         return "Extreme Max id: " + str(self.id) + ", poste: " + str(self.poste.meteor) + ", time " + str(self.date_local) + ", mesure: " + str(self.mesure.name)
@@ -221,9 +221,9 @@ class Incident(models.Model):
     # error, critical, exception
 
     reason = models.TextField(null=False, verbose_name='raison')
-    details = models.JSONField(null=False, default=dict, verbose_name="details")
+    details = models.JSONField(null=True, verbose_name="details")
     # stack for exception
-    active = models.BooleanField(null=True, default=True, verbose_name='active')
+    active = models.BooleanField(null=True, db_default=True, verbose_name='active')
 
     def __str__(self):
         return "Incident id: " + str(self.id) + ", date: " + str(self.date_utc) + ", Source: " + str(self.source) + ", Reason: " + str(self.reason)
