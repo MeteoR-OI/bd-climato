@@ -155,6 +155,7 @@ CSV_AUTOLOAD = "./clevercloud/climato/csv_auto_load"
 OVPF_FILES = "./clevercloud/climato/ovpf"
 ARCHIVE_DIR = "./clevercloud/climato/json_archive"
 FAILED_DIR = "./clevercloud/climato/erreur"
+NO_DELETE_JSON = True                # do not delete json file after processing
 
 TELEMETRY_PROVIDER = False          # None, Console, Jaeger, Thrift
 TELEMETRY_HOST = "localhost"
