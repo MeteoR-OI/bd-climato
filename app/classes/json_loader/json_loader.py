@@ -158,11 +158,15 @@ class JsonLoaderABC(ABC):
             new_ids = pg_cur.fetchall()
 
             idx = 0
-            while idx < len(new_ids):
+            while idx <len(min_data):
                 if  min_data[idx][0] is not None:
                     min_data[idx][0] = new_ids[0][0]
-                if  min_data[idx][0] is not None:
-                    min_data[idx][0] = new_ids[0][0]
+                idx += 1
+
+            idx = 0
+            while idx <len(max_data):
+                if  max_data[idx][0] is not None:
+                    max_data[idx][0] = new_ids[0][0]
                 idx += 1
 
             min_args_ok = ','.join(pg_cur.mogrify(self.insert_cde_min_mog, i).decode('utf-8') for i in min_data)
@@ -189,16 +193,21 @@ class JsonLoaderABC(ABC):
         suffix_sum = '_s'
         my_duration = None
 
-        mesure_keys = a_mesure['json_input']
+        mesure_primary_key = mesure_key = a_mesure['json_input']
+
+        # switch to json_imput_bis
         if use_second_input_key is True and a_mesure.get('json_input_bis') is not None:
-            mesure_keys = a_mesure['json_input_bis']
+            mesure_key = a_mesure['json_input_bis']
+            # hack for measure gust -> wind_max, with max in wind_max_time/wind_max_dir
+            if mesure_key.endswith('_max') or mesure_key.endswith('_min'):
+                mesure_primary_key = mesure_key[:-4]
 
         # load keys index used to look for our value in order of importance
-        j_keys = [mesure_keys]
+        j_keys = [mesure_key]
         if a_mesure['agreg_type'] == Aggreg_Type.AVG:
-            j_keys = [mesure_keys + suffix_avg, mesure_keys, mesure_keys + suffix_sum]
+            j_keys = [mesure_key + suffix_avg, mesure_key, mesure_key + suffix_sum]
         elif a_mesure['agreg_type'] == Aggreg_Type.SUM:
-            j_keys = [mesure_keys + suffix_sum, mesure_keys, mesure_keys + suffix_avg]
+            j_keys = [mesure_key + suffix_sum, mesure_key, mesure_key + suffix_avg]
 
         my_val = my_val_dir = None
         my_qval = my_qval_dir = QA.UNSET.value
@@ -223,34 +232,29 @@ class JsonLoaderABC(ABC):
                         my_qval_dir = valeurs['Q' + a_key + '_dir']
                 break
 
-        min_obs_id = max_obs_id = -1
-
         # get our min
-        if valeurs.get(mesure_keys + '_min') is not None:
-            my_val_min = valeurs[mesure_keys + '_min']
-            my_val_min_time = valeurs[mesure_keys + '_min_time']
-            min_obs_id = None
-            if valeurs.get('Q' + mesure_keys + '_min') is not None:
-                my_qval_min = valeurs['Q' + mesure_keys + '_min']
+        if valeurs.get(mesure_primary_key + '_min') is not None or (a_mesure.get('agreg_type') == Aggreg_Type.MIN and valeurs.get(mesure_primary_key + '_min') is not None):
+            my_val_min = valeurs[mesure_primary_key + '_min']
+            my_val_min_time = valeurs[mesure_primary_key + '_min_time']
+            if valeurs.get('Q' + mesure_primary_key + '_min') is not None:
+                my_qval_min = valeurs['Q' + mesure_primary_key + '_min']
         else:
             if my_val is not None:
                 my_val_min = my_val
                 my_val_min_time = stop_dat
 
         # get our max
-        if valeurs.get(mesure_keys + '_max') is not None:
-            my_val_max = valeurs[mesure_keys + '_max']
-            my_val_max_time = valeurs[mesure_keys + '_max_time']
-            max_obs_id = None
-            if valeurs.get('Q' + mesure_keys + '_max') is not None:
-                my_qval_max = valeurs['Q' + mesure_keys + '_max']
-            if a_mesure['is_wind'] is True and valeurs.get(mesure_keys + '_max_dir') is not None:
-                my_val_max_dir = valeurs[mesure_keys + '_max_dir']
+        if valeurs.get(mesure_primary_key + '_max') is not None or (a_mesure.get('agreg_type') == Aggreg_Type.MAX and valeurs.get(mesure_primary_key + '_max') is not None):
+            my_val_max = valeurs[mesure_primary_key + '_max']
+            my_val_max_time = valeurs[mesure_primary_key + '_max_time']
+            if valeurs.get('Q' + mesure_primary_key + '_max') is not None:
+                my_qval_max = valeurs['Q' + mesure_primary_key + '_max']
+            if a_mesure['is_wind'] is True and valeurs.get(mesure_primary_key + '_max_dir') is not None:
+                my_val_max_dir = valeurs[mesure_primary_key + '_max_dir']
         else:
-            if my_val is not None:
-                my_val_max = my_val
-                my_val_max_time = stop_dat
-                my_val_max_dir = my_val_dir
+            my_val_max = my_val
+            my_val_max_time = stop_dat
+            my_val_max_dir = my_val_dir
 
         return [
             my_val,
@@ -265,8 +269,8 @@ class JsonLoaderABC(ABC):
             my_val_max_time,
             my_val_max_dir,
             my_duration,
-            min_obs_id,
-            max_obs_id
+            -1,
+            -1
         ]
   
     def loadSqlInsert(self):

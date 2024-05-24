@@ -18,6 +18,7 @@ from app.tools.jsonPlus import JsonPlus
 from django.conf import settings
 from app.tools.myTools import getSettingValue
 from app.tools.dbTools import refreshMV
+from django.conf import settings
 import json
 import os
 
@@ -87,7 +88,12 @@ class JsonLoader(JsonLoaderABC):
             return
 
         # delete the file
-        os.remove(self.json_dir + "/" + work_item['f'])
+        if hasattr(settings, 'NO_DELETE_JSON') is True and settings.NO_DELETE_JSON is True:
+            if not os.path.exists(self.archive_dir + "/" + work_item['meteor'] + "/"):
+                os.makedirs(self.archive_dir + "/" + work_item['meteor'] + "/")
+            os.rename(self.json_dir + "/" + work_item['f'], self.archive_dir + "/" + work_item['meteor'] + "/" + work_item['f'])
+        else:
+            os.remove(self.json_dir + "/" + work_item['f'])
 
         # refresh our materialized view
         refreshMV()
