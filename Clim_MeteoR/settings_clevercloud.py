@@ -92,9 +92,9 @@ TEMPLATES = [
 
 # Database
 
+PG_ADDON_HOST = os.getenv('POSTGRESQL_ADDON_HOST', 'localhost')
 PG_ADDON_USER = os.getenv('POSTGRESQL_ADDON_USER', 'postgres')
 PG_ADDON_PASSWORD = os.getenv('POSTGRESQL_ADDON_PASSWORD', 'Funiculi')
-PG_ADDON_HOST = os.getenv('POSTGRESQL_ADDON_HOST', 'localhost')
 PG_ADDON_PORT = int(os.getenv('POSTGRESQL_ADDON_PORT','5432'))
 PG_DATABASE = os.getenv('POSTGRESQL_ADDON_DB', 'climato')
 
@@ -109,12 +109,12 @@ DATABASES = {
     }
 }
 
-MS_SQL_HOST = os.getenv('MYSQL_ADDON_HOST', 'localhost')
-MS_SQL_USER = os.getenv('MYSQL_ADDON_USER', 'nico')
-MS_SQL_PASS = os.getenv('MYSQL_ADDON_PASSWORD', 'Funiculi')
-MS_SQL_PORT = int(os.getenv('MYSQL_ADDON_PORT', '3306'))
-MS_SQL_DB = os.getenv('MYSQL_ADDON_DB', '??')
-
+# mysql weewx dump db server
+MS_SQL_HOST = os.getenv('MYSQL_DINA_HOST', 'localhost')
+MS_SQL_USER = os.getenv('MYSQL_DINA_USER', 'nico')
+MS_SQL_PASS = os.getenv('MYSQL_DINA_PASSWORD', 'Funiculi')
+MS_SQL_PORT = int(os.getenv('MYSQL_DINA_PORT', '3306'))
+MS_SQL_DB = os.getenv('MYSQL_DINA_DB', '??')
 
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
