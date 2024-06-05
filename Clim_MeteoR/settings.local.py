@@ -30,6 +30,7 @@ SECRET_KEY = 'n=m9oh3l5np7o!63#ad5tgjy_r7*tqlm6l!%lzjw#^=pue0ba)'
 DEBUG = True
 
 ALLOWED_HOSTS = [
+        'climato.meteor-oi.re',
         'dina.meteor-oi.re',
         '127.0.0.1',
         'localhost',
@@ -91,18 +92,28 @@ WSGI_APPLICATION = 'Clim_MeteoR.wsgi.application'
 
 
 # Database
+PG_ADDON_USER = os.getenv('POSTGRESQL_ADDON_USER', 'postgres')
+PG_ADDON_PASSWORD = os.getenv('POSTGRESQL_ADDON_PASSWORD', 'Funiculi')
+PG_ADDON_HOST = os.getenv('POSTGRESQL_ADDON_HOST', 'localhost')
+PG_ADDON_PORT = int(os.getenv('POSTGRESQL_ADDON_PORT','5432'))
+PG_DATABASE = os.getenv('POSTGRESQL_ADDON_DB', 'climato')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        # 'ENGINE': 'django_prometheus.db.backends.postgresql_psycopg2',
-        'NAME': 'climato',
-        'USER': os.getenv('PGUSER', 'postgres'),
-        'PASSWORD': os.getenv('PGPASS', 'Funiculi'),
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': PG_DATABASE,
+        'USER': PG_ADDON_USER,
+        'PASSWORD': PG_ADDON_PASSWORD,
+        'HOST': PG_ADDON_HOST,
+        'PORT': PG_ADDON_PORT,
     }
 }
 
+MS_SQL_HOST = os.getenv('MYSQL_DINA_HOST', 'localhost')
+MS_SQL_USER = os.getenv('MYSQL_DINA_USER', 'nico')
+MS_SQL_PASS = os.getenv('MYSQL_DINA_PASSWORD', 'Funiculi')
+MS_SQL_PORT = int(os.getenv('MYSQL_DINA_PORT', '3306'))
+MS_SQL_DB = os.getenv('MYSQL_DINA_DB', '??')
 
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
@@ -120,7 +131,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'fr-fr'
 
-TIME_ZONE = 'Indian/Reunion'
+TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
@@ -138,9 +149,13 @@ MEDIA_ROOT = "/srv/beta_data/meteor_oi/bd_climato/bd-climato/media"
 DATA_FS_PATH = os.path.join(MEDIA_ROOT, 'data')
 
 # App settings
-JSON_AUTOLOAD = "./data/json_auto_load"          # in symc with dc-telemetry.yaml
-ARCHIVE_DIR = "./data/json_archive"             # in symc with dc-telemetry.yaml
-
+JSON_AUTOLOAD = "./data/json_auto_load"
+JSON_WAITING_JSON = "./data/waiting_json"
+CSV_AUTOLOAD = "./data/csv_auto_load"
+OVPF_FILES = "./data/ovpf"
+ARCHIVE_DIR = "./data/json_archive"
+FAILED_DIR = "./data/erreur"
+NO_DELETE_JSON = True                # do not delete json file after processing
 
 TELEMETRY_PROVIDER = False          # None, Console, Jaeger, Thrift
 TELEMETRY_HOST = "localhost"
@@ -171,24 +186,24 @@ LOGGING = {
             'filename': LOG_FILE_DIR + '/django.log',
             'formatter': 'file_fmt'
         },
-        'console_dev': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'file_fmt',
-            'level': 'DEBUG'
-        },
         'console_prod': {
             'class': 'logging.StreamHandler',
-            'formatter': 'console_fmt',
+            'formatter': 'file_fmt',
             'level': 'ERROR'
+        },
+        'console_dev': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'console_fmt',
+            'level': 'DEBUG'
         }
     },
     'formatters': {
         'console_fmt': {
-            'format': '{levelname} line:{lineno} msg:{message}',
+            'format': '{levelname} {message}',
             'style': '{'
         },
         'file_fmt': {
-            'format': '{message}',
+            'format': '{levelname} {message}',
             'style': '{'
         }
     }

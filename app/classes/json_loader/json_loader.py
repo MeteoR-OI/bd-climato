@@ -5,11 +5,11 @@ from app.models import Aggreg_Type, Code_QA as QA, Load_Type
 from app.tools.dateTools import str_to_datetime
 from app.tools.dbTools import getPGConnexion
 from app.tools.jsonValidator import checkJson
-from datetime import timedelta
+from datetime import datetime, timedelta
 from enum import Enum
 import app.tools.myTools as t
 import json
-import os
+
 
 class IDX(Enum):
     IDX_VAL = 0
@@ -58,7 +58,7 @@ class JsonLoaderABC(ABC):
                     if cur_poste.data is None or cur_poste.data.load_type is None:
                         raise Exception("code meteor inconnu: " + meteor + ', idx_global: ' + str(idx_global) + ' dans le fichier: ' + filename)
 
-                    if (cur_poste.data.load_type & Load_Type.LOAD_FROM_JSON.value) == 0:
+                    if (cur_poste.data.load_type & Load_Type.LOAD_FROM_JSON.value) != Load_Type.LOAD_FROM_JSON.value:
                         t.logInfo('jsonload: ' + meteor + ' inactif json_load is False), skipping file ' + filename)
                         return
 
@@ -77,9 +77,17 @@ class JsonLoaderABC(ABC):
                         if (cur_poste.data.load_type & Load_Type.LOAD_FROM_DUMP_THEN_JSON.value) == Load_Type.LOAD_FROM_DUMP_THEN_JSON.value:
                             if j_stop_dat_local <= cur_poste.data.last_obs_date_local:
                                 cur_poste.data.load_type = Load_Type.LOAD_FROM_JSON.value
+                                # reset older json date
+                                cur_poste.data.last_json_date_local = str_to_datetime("2100-01-01T00:00:00")
                                 cur_poste.data.save()
+                                # reload the waiting json
+                                work_item['SWITCH_TO_JSON'] = True
                                 t.notifyAdmin('info', 'jsonload: ' + meteor + ' switching to Load_From_Json, data from ' + filename + ', stop_date: ' + stop_date)
                             else:
+                                # Keep the older JSON date
+                                if cur_poste.data.last_json_date_local > j_stop_dat_local:
+                                    cur_poste.data.last_json_date_local = j_stop_dat_local
+                                    cur_poste.data.save()
                                 t.logInfo('info', 'jsonload: ' + meteor + ' waiting for an older json file, skipping file ' + filename + ', stop_date: ' + stop_date)
                                 return
 

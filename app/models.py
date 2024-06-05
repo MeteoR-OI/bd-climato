@@ -60,6 +60,7 @@ class Poste(models.Model):
     # information de synchronisation
     last_obs_date_local = DateTimeFieldNoTZ(null=True, db_default="2000-01-01T00:00:00", verbose_name="Datetime UTC de derniere reception de donnees")
     last_obs_id = models.BigIntegerField(null=True, db_default=0, verbose_name="ID obs de la derniere reception de donnees")
+    last_json_date_local = DateTimeFieldNoTZ(null=True, db_default="2100-01-01T00:00:00", verbose_name="Datetime UTC du premier JSON archivé")
     info_sync = models.JSONField(null=True, verbose_name="Autre info de synchro")
 
 
