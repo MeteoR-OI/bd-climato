@@ -16,7 +16,7 @@ from app.classes.json_loader.json_loader import JsonLoaderABC
 import app.tools.myTools as t
 from app.tools.jsonPlus import JsonPlus
 from django.conf import settings
-from app.tools.myTools import getSettingValue
+from app.tools.myTools import getDirNameInSettings
 from app.tools.dbTools import refreshMV
 from django.conf import settings
 import json
@@ -31,10 +31,10 @@ class JsonLoader(JsonLoaderABC):
         self.stopRequested = False
 
         # get directories settings
-        self.json_dir = getSettingValue("JSON_AUTOLOAD")
-        self.archive_dir = getSettingValue("ARCHIVE_DIR")
-        self.failed_dir = getSettingValue("FAILED_DIR")
-        self.waiting_dir = getSettingValue("JSON_WAITING_JSON")
+        self.json_dir = getDirNameInSettings("JSON_AUTOLOAD")
+        self.archive_dir = getDirNameInSettings("ARCHIVE_DIR")
+        self.failed_dir = getDirNameInSettings("FAILED_DIR")
+        self.waiting_dir = getDirNameInSettings("JSON_WAITING_JSON")
 
     # ----------------
     # public methods

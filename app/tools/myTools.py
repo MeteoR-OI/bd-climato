@@ -5,6 +5,7 @@ import datetime
 import inspect
 import logging
 import json
+import os
 
 # logException(e, params):
 # logCritical(source, message: str, params):
@@ -114,10 +115,13 @@ def get_trace_info(exc, nb_levels: int = 3):
     return str(exc.__class__) + ':' + str(exc), ''.join(stack)
 
 
-def getSettingValue(setting_name):
+def getDirNameInSettings(setting_name):
     if hasattr(settings, setting_name) is True:
-        return getattr(settings, setting_name)
-    Exception("getSettingValue", "setting not found: " + setting_name)
+        dir_name = getattr(settings, setting_name)
+        if not os.path.exists(dir_name):
+            os.makedirs(dir_name)
+        return dir_name
+    Exception("getDirNameInSettings", "setting not found: " + setting_name)
 
 
 class LogMe:
