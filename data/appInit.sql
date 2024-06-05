@@ -44,7 +44,7 @@ insert into postes
 ('SPC010',   4, 1, 'Vue', 'Micka', 'micka@meteor-oi.re', '0612345678', 'quartier', 'Commune', 'la réunion',  10, -21.053141, 55.695668, 1),
 ('SBBM100',  4, 1, 'VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'quartier', 'Commune', 'la réunion',  100, -21.053141, 55.695668, 1),
 ('TAM1790',  4, 1, 'VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'quartier', 'Commune', 'la réunion',  1790,  -21.106126, 55.362666, 1),
-('TAN1270',  4, 1, 'VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'quartier', 'Commune', 'la réunion',  1270,  -21.106126, 55.362666, 1),
+('TAN1270',  3, 1, 'VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'quartier', 'Commune', 'la réunion',  1270,  -21.106126, 55.362666, 1),
 ('TAR600',   4, 1, 'VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'quartier', 'Commune', 'la réunion',  600,  -21.059972, 55.289673, 1),
 ('TBL105',   4, 1, 'VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'quartier', 'Commune', 'la réunion',  105, -21.317372, 55.800674, 1),
 ('TRG170',   4, 1, 'VP2', 'Micka', 'micka@meteor-oi.re', '0612345678', 'quartier', 'Commune', 'la réunion',  170, -21.338827, 55.51276, 1),

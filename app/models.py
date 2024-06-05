@@ -58,7 +58,7 @@ class Poste(models.Model):
     comment = models.TextField(null=True, db_default="", verbose_name="Commentaire")
 
     # information de synchronisation
-    last_obs_date_local = DateTimeFieldNoTZ(null=True, db_default="2000-01-01T00:00:00", verbose_name="Datetime UTC de derniere reception de donnees")
+    last_obs_date_local = DateTimeFieldNoTZ(null=True, db_default="2000-01-01T00:00:00", verbose_name="Datetime local de derniere reception de donnees")
     last_obs_id = models.BigIntegerField(null=True, db_default=0, verbose_name="ID obs de la derniere reception de donnees")
     last_json_date_local = DateTimeFieldNoTZ(null=True, db_default="2100-01-01T00:00:00", verbose_name="Datetime UTC du premier JSON archivé")
     info_sync = models.JSONField(null=True, verbose_name="Autre info de synchro")
@@ -142,10 +142,9 @@ class Observation(models.Model):
     wind_gust = models.FloatField(null=True, verbose_name="rafale max")
     wind10 = models.FloatField(null=True, verbose_name="vent moyen sur 10")
     wind10_dir = models.FloatField(null=True, verbose_name="direction moyenne du vent sur 10 mn")
-    wind10_omm = models.FloatField(null=True, verbose_name="vent moyen 10 mn OMM")
     windchill = models.FloatField(null=True, verbose_name="windchill")
 
-    # hail = models.FloatField(null=True, verbose_name="hail")
+    hail = models.FloatField(null=True, verbose_name="grele (mm)")
     # hail_rate = models.FloatField(null=True, verbose_name="hail rate")
     zone_1 = models.FloatField(null=True, verbose_name="zone 1")
     zone_2 = models.FloatField(null=True, verbose_name="zone 2")
