@@ -81,6 +81,7 @@ class JsonLoaderABC(ABC):
                                 cur_poste.data.last_json_date_local = str_to_datetime("2100-01-01T00:00:00")
                                 cur_poste.data.save()
                                 # reload the waiting json
+    # Nico: a mettre dans load dump
                                 work_item['SWITCH_TO_JSON'] = True
                                 t.notifyAdmin('info', 'jsonload: ' + meteor + ' switching to Load_From_Json, data from ' + filename + ', stop_date: ' + stop_date)
                             else:
