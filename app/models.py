@@ -38,6 +38,7 @@ class Poste(models.Model):
     delta_timezone = models.SmallIntegerField(null=False, verbose_name="delta heure locale et UTC")
     data_source = models.IntegerField(null=True, choices=Data_Source.choices, db_default=Data_Source.NONE.value, verbose_name="Source des donnees")
     load_type = models.IntegerField(null=True, choices=Load_Type.choices, db_default=Load_Type.NONE, verbose_name="Type de chargement des donnees")
+    api_key = models.CharField(null=True, max_length=50, verbose_name="Api Key")
 
     # optional fields
     type = models.CharField(null=True, max_length=50, db_default="", verbose_name="Type de station")
