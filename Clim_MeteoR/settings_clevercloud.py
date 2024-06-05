@@ -151,7 +151,7 @@ DATA_FS_PATH = os.path.join(MEDIA_ROOT, 'data')
 
 # App settings
 JSON_AUTOLOAD = "./clevercloud/climato/json_auto_load"
-JSON_WAITING_JSON = "./data/waiting_json"
+JSON_WAITING = "./clevercloud/climato/waiting_json"
 CSV_AUTOLOAD = "./clevercloud/climato/csv_auto_load"
 OVPF_FILES = "./clevercloud/climato/ovpf"
 ARCHIVE_DIR = "./clevercloud/climato/json_archive"

@@ -34,7 +34,7 @@ class JsonLoader(JsonLoaderABC):
         self.json_dir = getDirNameInSettings("JSON_AUTOLOAD")
         self.archive_dir = getDirNameInSettings("ARCHIVE_DIR")
         self.failed_dir = getDirNameInSettings("FAILED_DIR")
-        self.waiting_dir = getDirNameInSettings("JSON_WAITING_JSON")
+        self.waiting_dir = getDirNameInSettings("JSON_WAITING")
 
     # ----------------
     # public methods
