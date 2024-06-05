@@ -257,13 +257,12 @@ class WorkerRoot:
                         start_ts = datetime.now()
                         in_use = True
                         a_worker['class'].processWorkItem(work_item)
-                        if work_item['SWITCH_TO_JSON'] is None or  work_item['SWITCH_TO_JSON'] is not True:
-                            a_worker['class'].succeedWorkItem(work_item)
-                            t.logInfo("item processed ok", {
-                                "svc": self.display,
-                                "info": work_item['info'],
-                                "duration": datetime.now() - start_ts,
-                            })
+                        a_worker['class'].succeedWorkItem(work_item)
+                        t.logInfo("item processed ok", {
+                            "svc": self.display,
+                            "info": work_item['info'],
+                            "duration": datetime.now() - start_ts,
+                        })
 
                     except Exception as exc:
                         t.logException(exc, {"svc": self.display, "info": work_item.get('info')})
