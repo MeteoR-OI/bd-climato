@@ -89,7 +89,7 @@ class JsonLoader(JsonLoaderABC):
             os.makedirs(self.archive_dir + "/" + work_item['meteor'] + "/")
 
         # Reactivate wainting json files
-        if work_item['SWITCH_TO_JSON'] is not None and  work_item['SWITCH_TO_JSON'] is True:
+        if work_item.get('WAITING_LIST') is not None and  work_item['WAITING_LIST'] is True:
             files = os.listdir(self.waiting_dir + '/' + work_item['meteor'])
 
             # Iterate over the files and copy the JSON files to the /destination directory

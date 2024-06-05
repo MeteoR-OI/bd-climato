@@ -11,16 +11,14 @@ import os
 # restServer.py
 
 
-API_KEY = 'your_api_key'
-
 @csrf_exempt
-@require_POST
+# @require_POST
 def upload_file(request):
     try:
         json_dir = getDirNameInSettings("JSON_AUTOLOAD")
         
-        meteor = request.POST.get('meteor', None)
-        file_name = request.POST.get('file_name', None)
+        meteor = request.GET.get('meteor', None)
+        file_name = request.GET.get('filename', None)
         if meteor is None or file_name is None:
             return JsonResponse({'error': 'Missing parameters'}, status=400)
         

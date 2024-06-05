@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from app.classes.repository.mesureMeteor import MesureMeteor
 from app.classes.repository.posteMeteor import PosteMeteor
+from app.classes.repository.obsMeteor import ObsMeteor
 from app.models import Aggreg_Type, Code_QA as QA, Load_Type
 from app.tools.dateTools import str_to_datetime
 from app.tools.dbTools import getPGConnexion
@@ -75,24 +76,22 @@ class JsonLoaderABC(ABC):
                         j_duration = a_work_item["duration"]
 
                         if (cur_poste.data.load_type & Load_Type.LOAD_FROM_DUMP_THEN_JSON.value) == Load_Type.LOAD_FROM_DUMP_THEN_JSON.value:
-                            if j_stop_dat_local <= cur_poste.data.last_obs_date_local:
-                                cur_poste.data.load_type = Load_Type.LOAD_FROM_JSON.value
-                                # reset older json date
-                                cur_poste.data.last_json_date_local = str_to_datetime("2100-01-01T00:00:00")
-                                cur_poste.data.save()
-                                # reload the waiting json
-    # Nico: a mettre dans load dump
-                                work_item['SWITCH_TO_JSON'] = True
-                                t.notifyAdmin('info', 'jsonload: ' + meteor + ' switching to Load_From_Json, data from ' + filename + ', stop_date: ' + stop_date)
-                            else:
+                            if j_stop_dat_local >= cur_poste.data.last_obs_date_local:
                                 # Keep the older JSON date
                                 if cur_poste.data.last_json_date_local > j_stop_dat_local:
                                     cur_poste.data.last_json_date_local = j_stop_dat_local
                                     cur_poste.data.save()
-                                t.logInfo('info', 'jsonload: ' + meteor + ' waiting for an older json file, skipping file ' + filename + ', stop_date: ' + stop_date)
+                                work_item['WAITING_LIST'] = True
+                                t.logInfo('info', 'jsonload: ' + meteor + ' file ' + filename + ' moved to waiting directory, stop_date: ')
                                 return
 
-                        if cur_poste.data.last_obs_date_local is not None and j_stop_dat_local <= cur_poste.data.last_obs_date_local:
+                        if work_item.get('FORCE_LOAD') is not None and work_item['FORCE_LOAD'] is True:
+                            if ObsMeteor.count_obs_poste_local(cur_poste.data.id, stop_date) > 0:
+                                raise Exception("jsonload: " + meteor + " skipping data already loaded from " + filename + ", stop_date: " + stop_date)
+                            else:
+                                # we process our file
+                                pass
+                        elif cur_poste.data.last_obs_date_local is not None and j_stop_dat_local <= cur_poste.data.last_obs_date_local:
                             t.logInfo('jsonload: ' + meteor + ' skipping data already loaded from ' + filename + ', stop_date: ' + stop_date + ', last_obs_date_local: ' + str(cur_poste.data.last_obs_date_local))
                             return
 
