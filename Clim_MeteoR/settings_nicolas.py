@@ -150,7 +150,7 @@ DATA_FS_PATH = os.path.join(MEDIA_ROOT, 'data')
 
 # App settings
 JSON_AUTOLOAD = "./data/json_auto_load"
-JSON_WAITING_JSON = "./data/waiting_json"
+JSON_WAITING = "./data/waiting_json"
 CSV_AUTOLOAD = "./data/csv_auto_load"
 OVPF_FILES = "./data/ovpf"
 ARCHIVE_DIR = "./data/json_archive"
