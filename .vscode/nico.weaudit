@@ -24,6 +24,28 @@
         "exploit": "",
         "recommendation": "Short term, \nLong term, \n"
       }
+    },
+    {
+      "label": "recupere tous les autres parametres, et les passer au service...",
+      "entryType": 0,
+      "author": "nico",
+      "locations": [
+        {
+          "path": "app/management/commands/svc.py",
+          "startLine": 13,
+          "endLine": 13,
+          "label": "",
+          "description": ""
+        }
+      ],
+      "details": {
+        "severity": "",
+        "difficulty": "",
+        "type": "",
+        "description": "",
+        "exploit": "",
+        "recommendation": "Short term, \nLong term, \n"
+      }
     }
   ],
   "auditedFiles": [

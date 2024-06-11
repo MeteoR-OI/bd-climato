@@ -10,28 +10,28 @@ class Command(BaseCommand):
         # Positional arguments
         parser.add_argument('action',                  default='status', type=str, help='list, start, stop, run, status, add_param')
         parser.add_argument('service_name', nargs='?', default='--help', type=str, help='service name')
-        parser.add_argument('option',       nargs='?', default={},       type=str, help='json passed to the service-only with run, add_param')
-        parser.add_argument('force',        nargs='?', default=False,    type=bool, help='Force le chargement du JSON si pas deja chargé')
+        parser.add_argument('option',       nargs='?', default={},       type=str, help='parameter used only with run, add_param')
+        parser.add_argument('option2',      nargs='?', default=None,     type=str, help='supplemental parameter used only with run, add_param')
 
     def handle(self, *args, **options):
         try:
             name = options['service_name']
             action = options['action']
             param = options['option']
-            force_param = options['force']
+            option2 = options['option2']
 
             # print(name, action, param)
-            self.callService(name, action, param, force_param)
+            self.callService(name, action, param, option2)
 
         except Exception as ex:
             raise CommandError('Error ' + str(ex))
 
-    def callService(self, service_name: str, action: str, params: json, force_param: bool):
+    def callService(self, service_name: str, action: str, params: json, option2: json):
         if os.getenv("CC_PYTHON_MODULE") is None:
             url = "http://localhost:8000/app/svc"
         else:
             url = "http://localhost:8080/app/svc"
-        data = {"svc": service_name, "action": action, "params": params, "force": force_param}
+        data = {"svc": service_name, "action": action, "params": params, "params2": option2}
         headers = {'content-type': 'application/json'}
         r = requests.post(url, data=json.dumps(data), headers=headers)
 

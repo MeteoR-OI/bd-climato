@@ -88,12 +88,3 @@ class SvcCtrl:
                     tmp_name = str(tmp_name[3:])
                 svc_list.append(tmp_name)
         return svc_list
-
-# svc_loader = SvcJsonLoader()
-# svc_loader.Start()
-# svc_loader.RunMe()
-
-# svc_migrate = SvcMigrate()
-# svc_migrate.Start()
-# svc_migrate.AddWorkItem("BBF015")
-# svc_migrate.RunMe()
