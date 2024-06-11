@@ -21,7 +21,6 @@ from app.tools.dbTools import refreshMV
 from django.conf import settings
 import json
 import os
-import shutil
 
 class JsonLoader(JsonLoaderABC):
     def __init__(self):
@@ -90,18 +89,6 @@ class JsonLoader(JsonLoaderABC):
         cur_poste = PosteMeteor(work_item['meteor'])
         if not os.path.exists(self.archive_dir + "/" + work_item['meteor'] + "/"):
             os.makedirs(self.archive_dir + "/" + work_item['meteor'] + "/")
-
-        # Reactivate wainting json files
-        if work_item.get('MOVE_TO_WAIT_LIST') is not None and work_item['MOVE_TO_WAIT_LIST'] is True:
-            files = os.listdir(self.waiting_dir + '/' + work_item['meteor'])
-
-            # Iterate over the files and copy the JSON files to the /destination directory
-            for file in files:
-                if file.endswith('.json'):
-                    source = os.path.join(self.waiting_dir + '/' + work_item['meteor'], file)
-                    destination = os.path.join(self.json_dir, work_item['meteor'], file)
-                    shutil.copy(source, destination)
-            return
 
         # Move the json file to the waiting directory
         if (cur_poste.data.load_type & Load_Type.LOAD_FROM_DUMP_THEN_JSON) == Load_Type.LOAD_FROM_DUMP_THEN_JSON:

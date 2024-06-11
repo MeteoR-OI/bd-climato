@@ -33,6 +33,8 @@ class BulkDataLoader():
 
 
     def isMesureQualified(self, a_measure):
+        if a_measure['json_input'] == 'rain_utc':
+            return False
         return False if a_measure['archive_col'] is None else True
 
     def getValues(self, cur_row, a_mesure):

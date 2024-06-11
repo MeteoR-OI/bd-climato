@@ -6,7 +6,7 @@ from app.models import Aggreg_Type, Code_QA as QA, Load_Type
 from app.tools.dateTools import str_to_datetime
 from app.tools.dbTools import getPGConnexion
 from app.tools.jsonValidator import checkJson
-from datetime import datetime, timedelta
+from datetime import timedelta
 from enum import Enum
 import app.tools.myTools as t
 import json
@@ -76,14 +76,12 @@ class JsonLoaderABC(ABC):
                         j_duration = a_work_item["duration"]
 
                         if (cur_poste.data.load_type & Load_Type.LOAD_FROM_DUMP_THEN_JSON.value) == Load_Type.LOAD_FROM_DUMP_THEN_JSON.value:
-                            if j_stop_dat_local >= cur_poste.data.last_obs_date_local:
-                                # Keep the older JSON date
-                                if cur_poste.data.last_json_date_local > j_stop_dat_local:
-                                    cur_poste.data.last_json_date_local = j_stop_dat_local
-                                    cur_poste.data.save()
-                                work_item['MOVE_TO_WAIT_LIST'] = True
-                                t.logInfo('info', 'jsonload: ' + meteor + ' file ' + filename + ' moved to waiting directory, stop_date: ')
-                                return
+                            # Keep the older JSON date
+                            if cur_poste.data.last_json_date_local > j_stop_dat_local:
+                                cur_poste.data.last_json_date_local = j_stop_dat_local
+                                cur_poste.data.save()
+                            t.logInfo('info', 'jsonload: ' + meteor + ' file ' + filename + ' moved to waiting directory, stop_date: ' + str(j_stop_dat_local))
+                            return
 
                         if work_item.get('FORCE_LOAD') is not None and work_item['FORCE_LOAD'] is True:
                             if ObsMeteor.count_obs_poste_local(cur_poste.data.id, stop_date) > 0:
@@ -119,9 +117,6 @@ class JsonLoaderABC(ABC):
 
             for a_mesure in self.mesures:
                 if self.isMesureQualified(a_mesure) is False:
-                    continue
-
-                if a_mesure['json_input'] == 'rain_utc':
                     continue
 
                 cur_vals = self.get_valeurs(a_mesure, j_data, stop_dat_local, duration)
@@ -291,8 +286,6 @@ class JsonLoaderABC(ABC):
             for a_mesure in self.mesures:
                 if self.isMesureQualified(a_mesure) is False:
                     continue
-                if a_mesure['json_input'] == 'rain_utc':
-                    continue
 
                 self.insert_cde['sql'] += ", " + a_mesure['json_input']
                 self.insert_cde['mog'] += ", %s"
@@ -305,4 +298,6 @@ class JsonLoaderABC(ABC):
         self.insert_cde_max_mog = "(%s, %s, %s, %s, %s, %s, %s, %s)"
 
     def isMesureQualified(self, a_measure):
+        if a_measure['json_input'] == 'rain_utc':
+            return False
         return False if a_measure['archive_col'] is None else True

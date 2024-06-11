@@ -20,8 +20,12 @@ from app.classes.repository.posteMeteor import PosteMeteor
 from app.models import Load_Type
 from app.tools.dateTools import FromTimestampToLocalDateTime, FromTimestampToUTCDateTime, GetFirstDayNextMonthFromTs
 from app.tools.dbTools import getMSQLConnection, refreshMV
+from app.tools.dateTools import str_to_datetime
+from app.tools.myTools import getDirNameInSettings
 from datetime import datetime, timedelta
 import app.tools as t
+import os
+import shutil
 # import cProfile
 # import pstats
 
@@ -34,6 +38,8 @@ class MigrateDB:
     def __init__(self):
         self._meteors_to_process = []
         self.stopRequested = False
+        self.json_dir = getDirNameInSettings("JSON_AUTOLOAD")
+        self.waiting_dir = getDirNameInSettings("JSON_WAITING")
 
         # row_id for extreme data
         self.row_extreme_min = 0
@@ -70,6 +76,17 @@ class MigrateDB:
     # process was succesful
     # ---------------------
     def succeedWorkItem(self, work_item):
+        # Reactivate waiting json files
+        if work_item.get('RESTORE_FROM_WAITING_LIST') is not None and work_item['RESTORE_FROM_WAITING_LIST'] is True:
+            files = os.listdir(self.waiting_dir + '/' + work_item['meteor'])
+
+            # Iterate over the files and copy the JSON files to the /destination directory
+            for file in files:
+                if file.endswith('.json'):
+                    source = os.path.join(self.waiting_dir, work_item['meteor'], file)
+                    destination = os.path.join(self.json_dir, work_item['meteor'], file)
+                    shutil.move(source, destination)
+
         refreshMV()
         return
 
@@ -94,8 +111,17 @@ class MigrateDB:
             if cur_poste.data.id is None:
                 raise Exception('station ' + meteor + ' not found')
 
+            if (cur_poste.data.load_type & Load_Type.LOAD_FROM_DUMP_THEN_JSON.value) == Load_Type.LOAD_FROM_DUMP_THEN_JSON.value:
+                if cur_poste.data.last_json_date_local <= cur_poste.data.last_obs_date_local:
+                    # Keep the older JSON date
+                    cur_poste.data.last_json_date_local = str_to_datetime("2100-01-01T00:00:00")
+                    cur_poste.data.load_type = Load_Type.LOAD_FROM_JSON
+                    cur_poste.data.save()
+                    work_item['RESTORE_FROM_WAITING_LIST'] = True
+                    t.logInfo('info', 'migrate: ' + meteor + ' switch to load_from_json mode')
+                
             if (cur_poste.data.load_type & Load_Type.LOAD_FROM_DUMP.value) == 0:
-                t.logInfo(meteor, {'status': 'Migration stopped, station load_dump is False'})
+                t.logInfo(meteor, {'status': 'Migration stopped, station load_from_dump is False'})
                 return
 
             work_item['pid'] = cur_poste.data.id
@@ -114,7 +140,7 @@ class MigrateDB:
                 start_dt = datetime.now()
 
                 # load records data from weewx
-                minmax = self.loadMinMaxFromWeeWX( work_item)
+                minmax = self.loadMinMaxFromWeeWX(work_item)
 
                 # create an iterator to get the data
                 query_my = self.getWeewxSelectSql(work_item)
