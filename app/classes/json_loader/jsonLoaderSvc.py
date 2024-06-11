@@ -42,26 +42,19 @@ class JsonLoader(JsonLoaderABC):
     def addNewWorkItem(self, work_item):
         work_item['info'] = "chargement de json "
         return
-
+    
     def getNextWorkItem(self):
         file_names = []
 
-        # get json file names
-        filenames = os.listdir(self.json_dir)
-        for filename in filenames:
-            if str(filename).endswith('.json'):
-                file_names.append(filename)
-
-        # stop processing
-        if len(file_names) == 0:
+        # get json first json file
+        root_file, a_filename = self.search_json_file(self.json_dir)
+        if a_filename is None:
             return None
 
-        file_names = sorted(file_names)
-        a_filename = file_names[0]
         # load the first json file
         texte = ""
 
-        with open(self.json_dir + '/' + a_filename, "r") as f:
+        with open(os.path.join(root_file, a_filename), "r") as f:
             lignes = f.readlines()
             for aligne in lignes:
                 texte += str(aligne)
@@ -73,13 +66,20 @@ class JsonLoader(JsonLoaderABC):
         try:
             meteor = str(a_filename).split(".")[1]
         except Exception:
+            try:
+                # meteor could be the name of the sub directory
+                if len(root_file.split('/')) > 3:
+                    meteor = root_file.split('/')[-1]
+            except Exception:
+                pass
             pass
 
         return {
             'f': a_filename,
+            'r': root_file,
             'json': my_json,
             'meteor': meteor,
-            'info': "chargement du json " + filename
+            'info': "chargement du json " + os.path.join(root_file, a_filename)
         }
 
     def succeedWorkItem(self, work_item):
@@ -89,27 +89,27 @@ class JsonLoader(JsonLoaderABC):
             os.makedirs(self.archive_dir + "/" + work_item['meteor'] + "/")
 
         # Reactivate wainting json files
-        if work_item.get('WAITING_LIST') is not None and  work_item['WAITING_LIST'] is True:
+        if work_item.get('MOVE_TO_WAIT_LIST') is not None and work_item['MOVE_TO_WAIT_LIST'] is True:
             files = os.listdir(self.waiting_dir + '/' + work_item['meteor'])
 
             # Iterate over the files and copy the JSON files to the /destination directory
             for file in files:
                 if file.endswith('.json'):
                     source = os.path.join(self.waiting_dir + '/' + work_item['meteor'], file)
-                    destination = os.path.join(self.json_dir, file)
+                    destination = os.path.join(self.json_dir, work_item['meteor'], file)
                     shutil.copy(source, destination)
             return
 
         # Move the json file to the waiting directory
         if (cur_poste.data.load_type & Load_Type.LOAD_FROM_DUMP_THEN_JSON) == Load_Type.LOAD_FROM_DUMP_THEN_JSON:
-            os.rename(self.json_dir + "/" + work_item['f'], self.waiting_dir + "/" + work_item['meteor'] + "/" + work_item['f'])
+            os.rename(os.path.join(work_item['r'], work_item['f']), self.waiting_dir + "/" + work_item['meteor'] + "/" + work_item['f'])
             return
 
         # delete the file
         if hasattr(settings, 'NO_DELETE_JSON') is True and settings.NO_DELETE_JSON is True:
-            os.rename(self.json_dir + "/" + work_item['f'], self.archive_dir + "/" + work_item['meteor'] + "/" + work_item['f'])
+            os.rename(os.path.join(work_item['r'], work_item['f']), os.path.join(self.archive_dir, work_item['meteor'], work_item['f']))
         else:
-            os.remove(self.json_dir + "/" + work_item['f'])
+            os.remove(os.path.join(work_item['r'], work_item['f']))
 
         # refresh our materialized view
         refreshMV()
@@ -119,10 +119,21 @@ class JsonLoader(JsonLoaderABC):
 
         if not os.path.exists(self.failed_dir + "/" + meteor + "/"):
             os.makedirs(self.failed_dir + "/" + meteor + "/")
-        os.rename(self.json_dir + "/" + work_item['f'], self.failed_dir + "/" + meteor + "/" + work_item['f'])
 
-        j_info = {"filename": work_item['f'], "dest": self.archive_dir + "/" + meteor + "/failed/" + work_item['f']}
-        t.logError('jsonloader', "file moved to fail directory", j_info)
+        dest_file = os.path.join(self.failed_dir, meteor, work_item['f'])
+
+        os.rename(os.path.join(work_item['r'], work_item['f']), dest_file)
+        t.logError('jsonloader', "file moved to fail directory", {"filename": work_item['f'], "dest": dest_file})
 
     def processWorkItem(self, work_item: json):
         self.processJson(work_item)
+
+    def search_json_file(self, directory):
+        for root, dirs, files in os.walk(directory):
+            for file in files:
+                if file.endswith('.json'):
+                    return root, file 
+            for dir in dirs:
+                print ('searching in ' + root + '/' + dir + ', directory: ' + directory)
+                self.search_json_file(root + '/' + dir)
+        return None, None

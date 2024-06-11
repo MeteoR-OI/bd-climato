@@ -81,7 +81,7 @@ class JsonLoaderABC(ABC):
                                 if cur_poste.data.last_json_date_local > j_stop_dat_local:
                                     cur_poste.data.last_json_date_local = j_stop_dat_local
                                     cur_poste.data.save()
-                                work_item['WAITING_LIST'] = True
+                                work_item['MOVE_TO_WAIT_LIST'] = True
                                 t.logInfo('info', 'jsonload: ' + meteor + ' file ' + filename + ' moved to waiting directory, stop_date: ')
                                 return
 
