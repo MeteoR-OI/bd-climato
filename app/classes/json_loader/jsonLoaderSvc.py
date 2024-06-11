@@ -64,15 +64,18 @@ class JsonLoader(JsonLoaderABC):
 
         meteor = 'inconnu'
         try:
-            meteor = str(a_filename).split(".")[1]
-        except Exception:
-            try:
-                # meteor could be the name of the sub directory
-                if len(root_file.split('/')) > 3:
+            if len(root_file.split('/')) > 3:
+                if str(a_filename).split(".")[1] == root_file.split('/')[-1]:
                     meteor = root_file.split('/')[-1]
-            except Exception:
-                pass
+            else:
+                # old style...
+                meteor = str(a_filename).split(".")[1]
+        except Exception:
             pass
+        
+        if meteor == 'inconnu':
+            t.logError('jsonloader', "meteor name not found", {"filename": a_filename, "root": root_file})
+            raise Exception("meteor name not found")
 
         return {
             'f': a_filename,

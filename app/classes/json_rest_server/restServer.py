@@ -40,7 +40,11 @@ def upload_file(request):
         file = request.FILES['file']
 
         # Generate a random unique file name
-        file_name = os.path.join(json_dir, str(uuid.uuid4()) + '.tmp_json')
+
+        file_name = os.path.join(json_dir, cur_poste.data.meteor, file_name)
+        if os.file.exists(file_name):
+            return JsonResponse({'error': 'File already exists'}, status=400)
+        file_name = file_name.replace ('.json', '.tmp_json')
 
         # Save the file locally with the generated file name
         with open(file_name, 'wb') as f:
