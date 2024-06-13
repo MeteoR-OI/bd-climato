@@ -12,22 +12,22 @@ import os
 
 
 @csrf_exempt
-# @require_POST
+@require_POST
 def upload_file(request):
     try:
         json_dir = getDirNameInSettings("JSON_AUTOLOAD")
-        
-        meteor = request.GET.get('meteor', None)
-        file_name = request.GET.get('filename', None)
+
+        meteor = request.POST.get('meteor', None)
+        file_name = request.POST.get('filename', None)
         if meteor is None or file_name is None:
             return JsonResponse({'error': 'Missing parameters'}, status=400)
-        
+
         cur_poste = PosteMeteor(meteor)
         if cur_poste is None:
             return JsonResponse({'error': 'Invalid meteor'}, status=400)
 
         if meteor not in file_name:
-            return JsonResponse({'error': 'Invalid file name'}, status=400)   
+            return JsonResponse({'error': 'Invalid file name'}, status=400)
 
         # Check if the API key is provided in the request headers
         if 'X-API-Key' not in request.headers or request.headers['X-API-Key'] != cur_poste.data.api_key:
@@ -44,7 +44,7 @@ def upload_file(request):
         file_name = os.path.join(json_dir, cur_poste.data.meteor, file_name)
         if os.file.exists(file_name):
             return JsonResponse({'error': 'File already exists'}, status=400)
-        file_name = file_name.replace ('.json', '.tmp_json')
+        file_name = file_name.replace('.json', '.tmp_json')
 
         # Save the file locally with the generated file name
         with open(file_name, 'wb') as f:
