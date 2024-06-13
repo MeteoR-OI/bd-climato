@@ -39,8 +39,11 @@ def upload_file(request):
 
         file = request.FILES['file']
 
-        # Generate a random unique file name
+        dir_name = os.path.join(json_dir, cur_poste.data.meteor)
+        if not os.path.isdir(dir_name):
+            os.makedirs(dir_name)
 
+        # Generate a random unique file name
         file_name = os.path.join(json_dir, cur_poste.data.meteor, file_name)
         if os.path.isfile(file_name):
             return JsonResponse({'error': 'File already exists'}, status=400)
