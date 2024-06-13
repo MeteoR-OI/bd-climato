@@ -42,7 +42,7 @@ def upload_file(request):
         # Generate a random unique file name
 
         file_name = os.path.join(json_dir, cur_poste.data.meteor, file_name)
-        if os.file.exists(file_name):
+        if os.path.isfile(file_name):
             return JsonResponse({'error': 'File already exists'}, status=400)
         file_name = file_name.replace('.json', '.tmp_json')
 
