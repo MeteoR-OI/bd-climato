@@ -181,8 +181,8 @@ class MigrateDB:
         max_ts = int(max_date.timestamp())
 
         try:
-            print('-------------------------------------------------')
-            print('Meteor: ' + work_item['meteor'])
+            # print('-------------------------------------------------')
+            # print(      'Meteor: ' + work_item['meteor'])
 
             # Get scan limit
             if work_item.get('global_first_ts') is None:
@@ -200,8 +200,8 @@ class MigrateDB:
                     stop_ts_utc = (cur_poste.data.stop_date.timestamp() + 1)  - work_item['tz'] * 3600
                     # stop to scan at stop_date if exists
                     work_item['global_last_ts'] = min(work_item['global_last_ts'], stop_ts_utc)
-                print('Global (ts utc)     from: ' + str(work_item['global_first_ts']) + ' to ' + str(work_item['global_last_ts']))
-                print('Global (-> dt utc)  from: ' + str(FromTimestampToUTCDateTime(work_item['global_first_ts'])) + ' to ' + str(FromTimestampToUTCDateTime(work_item['global_last_ts'])))
+                # print('Global (ts utc)     from: ' + str(work_item['global_first_ts']) + ' to ' + str(work_item['global_last_ts']))
+                # print('Global (-> dt utc)  from: ' + str(FromTimestampToUTCDateTime(work_item['global_first_ts'])) + ' to ' + str(FromTimestampToUTCDateTime(work_item['global_last_ts'])))
 
             # Get start_dt/archive_first_ts
             if work_item.get('archive_last_ts') is None:
@@ -226,11 +226,12 @@ class MigrateDB:
                 {"svc": "migrate", "meteor":  work_item['meteor']})
 
             work_item['start_dt_archive_utc'] = FromTimestampToUTCDateTime(work_item['archive_first_ts'])
-            print('Archive (ts utc)    from: ' + str(work_item['archive_first_ts']) + ' to ' + str(work_item['archive_last_ts']))
-            print('Archive (=> dt utc) from: ' + str(FromTimestampToUTCDateTime(work_item['archive_first_ts'])) + ' to ' + str(FromTimestampToUTCDateTime(work_item['archive_last_ts'])))
-            print('MinMax (ts utc)     from: ' + str(work_item['minmax_first_ts']) + ' to ' + str(work_item['minmax_last_ts']))
-            print('MinMax (=> dt utc)  from: ' + str(FromTimestampToUTCDateTime(work_item['minmax_first_ts'])) + ' to ' + str(FromTimestampToUTCDateTime(work_item['minmax_last_ts'])))
-            print('-------------------------------------------------')
+            # print('Archive (ts utc)    from: ' + str(work_item['archive_first_ts']) + ' to ' + str(work_item['archive_last_ts']))
+            # print('    Archive (=> dt utc) from: ' + str(FromTimestampToUTCDateTime(work_item['archive_first_ts'])) + ' to ' + str(FromTimestampToUTCDateTime(work_item['archive_last_ts'])))
+            # print('MinMax (ts utc)     from: ' + str(work_item['minmax_first_ts']) + ' to ' + str(work_item['minmax_last_ts']))
+            # print('MinMax (=> dt utc)  from: ' + str(FromTimestampToUTCDateTime(work_item['minmax_first_ts'])) + ' to ' + str(FromTimestampToUTCDateTime(work_item['minmax_last_ts'])))
+            # print('-------------------------------------------------')
+            t.logInfo('Meteor: ' + work_item['meteor']) + ', from(UTC): ' + str(FromTimestampToUTCDateTime(work_item['archive_first_ts'])) + ' to ' + str(FromTimestampToUTCDateTime(work_item['archive_last_ts']))
             return
 
         except Exception as ex:
@@ -247,7 +248,7 @@ class MigrateDB:
         try:
             myconn = getMSQLConnection(work_item['meteor'])
         except Exception as e:
-            print('Error durinf mySql connection: %s' % e)
+            print('Error during mySql connection: %s' % e)
             raise e
 
         my_cur = None

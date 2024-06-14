@@ -5,6 +5,7 @@ from app.tools.dateTools import FromTimestampToLocalDateTime, FromTimestampToUTC
 from app.tools.dbTools import getPGConnexion
 from datetime import datetime
 from operator import itemgetter
+from app.tools.myTools import t
 
 class BulkDataLoader():
     def __init__(self):
@@ -74,22 +75,23 @@ class BulkDataLoader():
             pg_cur = pg_conn.cursor()
 
             min_max = self.loadObs(pg_cur, cur_poste, data_iterator, min_max)
-            print('loadObs done in : ' + '{0}'.format(datetime.now() - tmp_dt) + ', len(min_max): ' + '{0}'.format(len(min_max) if min_max is not None else 0   ))
+            # print('loadObs done in : ' + '{0}'.format(datetime.now() - tmp_dt) + ', len(min_max): ' + '{0}'.format(len(min_max) if min_max is not None else 0   ))
 
-            tmp_dt = datetime.now()
+            # tmp_dt = datetime.now()
 
             if min_max is not None:
                 del_cde = self.LoadMaxMin(pg_cur, cur_poste, min_max)
-                print('LoadMaxMin done in : ' + '{0}'.format(datetime.now() - tmp_dt) + ', len(min_max): ' + '{0}'.format(len(min_max)))
+                # print('LoadMaxMin done in : ' + '{0}'.format(datetime.now() - tmp_dt) + ', len(min_max): ' + '{0}'.format(len(min_max)))
                 min_max = None
                 for a_del_sql in del_cde:
-                    tmp_dt = datetime.now()
+                    # tmp_dt = datetime.now()
                     pg_cur.execute(a_del_sql)
                     # print('exec delete(s) done in : ' + '{0}'.format(datetime.now() - tmp_dt))
     
-            tmp_dt = datetime.now()
+            # tmp_dt = datetime.now()
             pg_conn.commit()
-            print('commit done in : ' + '{0}'.format(datetime.now() - tmp_dt))
+            # print('commit done in : ' + '{0}'.format(datetime.now() - tmp_dt))
+            t.logInfo('Chargement ' + cur_poste.data.meteor + ' fait en : ' + '{0}'.format(datetime.now() - tmp_dt))
     
         except Exception as e:
             if pg_conn is not None:
@@ -188,11 +190,11 @@ class BulkDataLoader():
 
         idx = idx_initial
         tmp_l = '{0}'.format(len(new_ids))
-        print('idx_initial: ' + '{0}'.format(idx_initial) + ', len(new_ids): ' + tmp_l + ', len(min_max): ' + '{0}'.format(len(min_max)))
+        # print('idx_initial: ' + '{0}'.format(idx_initial) + ', len(new_ids): ' + tmp_l + ', len(min_max): ' + '{0}'.format(len(min_max)))
         while idx < len(new_ids):
             try:
                 my_minmax = min_max[idx]
-                str = 'idx: ' + '{0}'.format(idx) + ', id in my_minmax: ' + '{0}'.format(my_minmax['obs_id']),' obs_id: ' + '{0}'.format(my_minmax['obs_id']) + ' => ' + '{0}'.format(new_ids[my_minmax['obs_id']][0])
+                # str = 'idx: ' + '{0}'.format(idx) + ', id in my_minmax: ' + '{0}'.format(my_minmax['obs_id']),' obs_id: ' + '{0}'.format(my_minmax['obs_id']) + ' => ' + '{0}'.format(new_ids[my_minmax['obs_id']][0])
             except Exception as e:
                 print('   error during print command: ' + '{0}'.format(e))
                 print('   idx: ' + '{0}'.format(idx))

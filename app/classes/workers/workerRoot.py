@@ -275,7 +275,7 @@ class WorkerRoot:
                 except Exception as exc:
                     in_use = False
                     t.logException(exc)
-                    print('#$##$#$#$##$#')
+                    print('#$##$#$#$##$# in workerRoot')
                     print('Exception in ' + self.display + '=>' + '{0}'.format(exc))
                     print('#$##$#$#$##$#')
 
