@@ -7,13 +7,21 @@ from django.conf import settings
 
 def getPGConnexion():
     try:
+        keepalive_kwargs = {
+            "keepalives": 1,
+            "keepalives_idle": 60,
+            "keepalives_interval": 10,
+            "keepalives_count": 5
+        }
         return psycopg2.connect(
             host=settings.PG_ADDON_HOST,
             user=settings.PG_ADDON_USER,
             password=settings.PG_ADDON_PASSWORD,
             port=settings.PG_ADDON_PORT,
-            database=settings.PG_DATABASE
+            database=settings.PG_DATABASE,
+            **keepalive_kwargs
         )
+
     except Exception as e:
         t.logException("Error during postgres connection: %s" % e)
         raise e
