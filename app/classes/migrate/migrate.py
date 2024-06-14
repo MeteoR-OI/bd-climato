@@ -230,12 +230,11 @@ class MigrateDB:
             # print('    Archive (=> dt utc) from: ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['archive_first_ts'])) + ' to ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['archive_last_ts'])))
             # print('MinMax (ts utc)     from: ' + '{0}'.format(work_item['minmax_first_ts']) + ' to ' + '{0}'.format(work_item['minmax_last_ts']))
             # print('MinMax (=> dt utc)  from: ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['minmax_first_ts'])) + ' to ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['minmax_last_ts'])))
-            print('-------------------------------------------------')
-            print(
+            # print('-------------------------------------------------')
+            t.logInfo(
                 '   Meteor: ' + work_item['meteor']) +\
-                ', from(UTC): ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['archive_first_ts'])) +\
-                ' to ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['archive_last_ts']))
-            print('-------------------------------------------------')
+                ', from(UTC): ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['archive_first_ts']) +\
+                ' to ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['archive_last_ts'])))
             return
 
         except Exception as ex:
