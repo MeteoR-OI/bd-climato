@@ -74,12 +74,13 @@ class BulkDataLoader():
             pg_cur = pg_conn.cursor()
 
             min_max = self.loadObs(pg_cur, cur_poste, data_iterator, min_max)
-            # print('loadObs done in : ' + str(datetime.now() - tmp_dt))
+            print('loadObs done in : ' + str(datetime.now() - tmp_dt) + ', len(min_max): ' + str(len(min_max)))
+
             tmp_dt = datetime.now()
 
             if min_max is not None:
                 del_cde = self.LoadMaxMin(pg_cur, cur_poste, min_max)
-                # print('LoadMaxMin done in : ' + str(datetime.now() - tmp_dt))
+                print('LoadMaxMin done in : ' + str(datetime.now() - tmp_dt) + ', len(min_max): ' + str(len(min_max)))
                 min_max = None
                 for a_del_sql in del_cde:
                     tmp_dt = datetime.now()
@@ -88,7 +89,7 @@ class BulkDataLoader():
     
             tmp_dt = datetime.now()
             pg_conn.commit()
-            # print('commit done in : ' + str(datetime.now() - tmp_dt))
+            print('commit done in : ' + str(datetime.now() - tmp_dt))
     
         except Exception as e:
             if pg_conn is not None:
@@ -167,6 +168,9 @@ class BulkDataLoader():
                     values_arg.append(qa_all)
                     data_args.append(tuple(values_arg))
 
+            except Exception as e:
+                raise e
+
             finally:
                 cur_row = data_iterator.fetchone()
 
@@ -198,13 +202,13 @@ class BulkDataLoader():
             try:
                 my_minmax = min_max[idx]
                 my_minmax['obs_id'] = new_ids[my_minmax['obs_id']][0]
+                idx += 1
+                str = None
+
             except Exception as e:
                 print('error: ' + str(e))
                 pg_cur.rollback()
                 raise e
-            finally:
-                idx += 1
-                str = None
 
         return min_max
 
