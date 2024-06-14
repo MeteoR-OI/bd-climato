@@ -192,12 +192,16 @@ class BulkDataLoader():
                 print('   id in my_minmax: ' + str(my_minmax['obs_id']))
                 print('   obs_id: ' + str(my_minmax['obs_id']))
                 print('   => ' + str(new_ids[my_minmax['obs_id']][0]))
+                pg_cur.rollback()
+                raise e
 
             try:
                 my_minmax = min_max[idx]
                 my_minmax['obs_id'] = new_ids[my_minmax['obs_id']][0]
             except Exception as e:
                 print('error: ' + str(e))
+                pg_cur.rollback()
+                raise e
             finally:
                 idx += 1
                 str = None
