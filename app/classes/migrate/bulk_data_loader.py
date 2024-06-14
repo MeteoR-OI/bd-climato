@@ -5,7 +5,7 @@ from app.tools.dateTools import FromTimestampToLocalDateTime, FromTimestampToUTC
 from app.tools.dbTools import getPGConnexion
 from datetime import datetime
 from operator import itemgetter
-from app.tools.myTools import t
+import app.tools.myTools as t
 
 class BulkDataLoader():
     def __init__(self):
