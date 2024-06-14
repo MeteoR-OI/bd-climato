@@ -151,7 +151,9 @@ class MigrateDB:
 
                 self._bulk_dl.bulkLoad(cur_poste, my_cur, minmax)
 
-                # print("     Done in : " + '{0}'.format(datetime.now() - start_dt) + " for " + '{0}'.format(work_item['start_dt_archive_utc']))
+                t.logInfo(work_item['meteor'] +\
+                        " migration a partir de " + '{0}'.format(work_item['start_dt_archive_utc']) +\
+                        ", duration: " + '{0}'.format(datetime.now() - start_dt))
                 self.getNewDateBracket(cur_poste, work_item)
 
         finally:
@@ -221,9 +223,9 @@ class MigrateDB:
             work_item['minmax_first_ts'] = (FromTimestampToUTCDateTime(work_item['archive_first_ts']) - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
             work_item['minmax_last_ts'] = (FromTimestampToUTCDateTime(work_item['archive_last_ts']) + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
             
-            t.logInfo(
-                'ts_archive (ts utc)    from: ' + '{0}'.format(work_item['archive_first_ts']) + ' to ' + '{0}'.format(work_item['archive_last_ts']),
-                {"svc": "migrate", "meteor":  work_item['meteor']})
+            # t.logInfo(
+            #     'ts_archive (ts utc)    from: ' + '{0}'.format(work_item['archive_first_ts']) + ' to ' + '{0}'.format(work_item['archive_last_ts']),
+            #     {"svc": "migrate", "meteor":  work_item['meteor']})
 
             work_item['start_dt_archive_utc'] = FromTimestampToUTCDateTime(work_item['archive_first_ts'])
             # print('Archive (ts utc)    from: ' + '{0}'.format(work_item['archive_first_ts']) + ' to ' + '{0}'.format(work_item['archive_last_ts']))
@@ -231,10 +233,12 @@ class MigrateDB:
             # print('MinMax (ts utc)     from: ' + '{0}'.format(work_item['minmax_first_ts']) + ' to ' + '{0}'.format(work_item['minmax_last_ts']))
             # print('MinMax (=> dt utc)  from: ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['minmax_first_ts'])) + ' to ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['minmax_last_ts'])))
             # print('-------------------------------------------------')
-            t.logInfo(
-                '   Meteor: ' + work_item['meteor'] +\
-                ', from(UTC): ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['archive_first_ts'])) +\
-                ' to ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['archive_last_ts'])))
+
+            # t.logInfo(
+            #     '   Meteor: ' + work_item['meteor'] +\
+            #     ', from(UTC): ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['archive_first_ts'])) +\
+            #     ' to ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['archive_last_ts'])))
+
             return
 
         except Exception as ex:

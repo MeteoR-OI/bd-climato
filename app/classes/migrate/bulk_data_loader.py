@@ -91,7 +91,7 @@ class BulkDataLoader():
             # tmp_dt = datetime.now()
             pg_conn.commit()
             # print('commit done in : ' + '{0}'.format(datetime.now() - tmp_dt))
-            t.logInfo('Chargement ' + cur_poste.data.meteor + ' fait en : ' + '{0}'.format(datetime.now() - tmp_dt))
+            # t.logInfo('Chargement ' + cur_poste.data.meteor + ' fait en : ' + '{0}'.format(datetime.now() - tmp_dt))
     
         except Exception as e:
             if pg_conn is not None:
