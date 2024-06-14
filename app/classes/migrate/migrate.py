@@ -232,8 +232,8 @@ class MigrateDB:
             # print('MinMax (=> dt utc)  from: ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['minmax_first_ts'])) + ' to ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['minmax_last_ts'])))
             # print('-------------------------------------------------')
             t.logInfo(
-                '   Meteor: ' + work_item['meteor']) +\
-                ', from(UTC): ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['archive_first_ts']) +\
+                '   Meteor: ' + work_item['meteor'] +\
+                ', from(UTC): ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['archive_first_ts'])) +\
                 ' to ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['archive_last_ts'])))
             return
 
