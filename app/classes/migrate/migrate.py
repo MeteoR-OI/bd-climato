@@ -78,6 +78,8 @@ class MigrateDB:
     def succeedWorkItem(self, work_item):
         # Reactivate waiting json files
         if work_item.get('RESTORE_FROM_WAITING_LIST') is not None and work_item['RESTORE_FROM_WAITING_LIST'] is True:
+            if not os.path.exists(self.waiting_dir + "/" + work_item['meteor'] + "/"):
+                os.makedirs(self.waiting_dir + "/" + work_item['meteor'] + "/")
             files = os.listdir(self.waiting_dir + '/' + work_item['meteor'])
             files.sort()
 

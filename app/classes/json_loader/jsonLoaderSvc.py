@@ -90,6 +90,9 @@ class JsonLoader(JsonLoaderABC):
         if not os.path.exists(self.archive_dir + "/" + work_item['meteor'] + "/"):
             os.makedirs(self.archive_dir + "/" + work_item['meteor'] + "/")
 
+        if not os.path.exists(self.waiting_dir + "/" + work_item['meteor'] + "/"):
+            os.makedirs(self.waiting_dir + "/" + work_item['meteor'] + "/")
+
         # Move the json file to the waiting directory
         if work_item.get('WAIT_LIST') is not None and work_item['WAIT_LIST'] is True:
             os.rename(os.path.join(work_item['r'], work_item['f']), self.waiting_dir + "/" + work_item['meteor'] + "/" + work_item['f'])
