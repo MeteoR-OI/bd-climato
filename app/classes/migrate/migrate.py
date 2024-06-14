@@ -79,6 +79,7 @@ class MigrateDB:
         # Reactivate waiting json files
         if work_item.get('RESTORE_FROM_WAITING_LIST') is not None and work_item['RESTORE_FROM_WAITING_LIST'] is True:
             files = os.listdir(self.waiting_dir + '/' + work_item['meteor'])
+            files.sort()
 
             # Iterate over the files and copy the JSON files to the /destination directory
             for file in files:
