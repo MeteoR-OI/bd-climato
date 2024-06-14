@@ -20,9 +20,9 @@ class Load_Type(models.IntegerChoices):
     NONE = 0
     LOAD_FROM_DUMP = 1
     LOAD_FROM_JSON = 2
-    LOAD_FROM_DUMP_THEN_JSON = 4
-    LOAD_CSV_FOR_METEOFR = 8
-    LOAD_CSV_FOR_OVPF = 16
+    LOAD_FROM_DUMP_THEN_JSON = 3
+    LOAD_CSV_FOR_METEOFR = 4
+    LOAD_CSV_FOR_OVPF = 8
 
 class Aggreg_Type(models.IntegerChoices):
     NONE = 0

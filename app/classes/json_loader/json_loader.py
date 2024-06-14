@@ -76,11 +76,13 @@ class JsonLoaderABC(ABC):
                         j_duration = a_work_item["duration"]
 
                         if (cur_poste.data.load_type & Load_Type.LOAD_FROM_DUMP_THEN_JSON.value) == Load_Type.LOAD_FROM_DUMP_THEN_JSON.value:
-                            # Keep the older JSON date
                             if cur_poste.data.last_json_date_local > j_stop_dat_local:
                                 cur_poste.data.last_json_date_local = j_stop_dat_local
                                 cur_poste.data.save()
-                            t.logInfo('info', 'jsonload: ' + meteor + ' file ' + filename + ' moved to waiting directory, stop_date: ' + str(j_stop_dat_local))
+                            if j_stop_dat_local > cur_poste.data.last_obs_date_local:
+                                work_item['WAIT_LIST'] = True
+                                # Keep the older JSON date
+                                t.logInfo('jsonload: ' + meteor + ' file ' + filename + ' moved to waiting directory, stop_date: ' + str(j_stop_dat_local))
                             return
 
                         if work_item.get('FORCE_LOAD') is not None and work_item['FORCE_LOAD'] is True:

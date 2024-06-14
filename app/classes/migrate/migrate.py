@@ -23,7 +23,7 @@ from app.tools.dbTools import getMSQLConnection, refreshMV
 from app.tools.dateTools import str_to_datetime
 from app.tools.myTools import getDirNameInSettings
 from datetime import datetime, timedelta
-import app.tools as t
+import app.tools.myTools as t
 import os
 import shutil
 # import cProfile
@@ -118,7 +118,7 @@ class MigrateDB:
                     cur_poste.data.load_type = Load_Type.LOAD_FROM_JSON
                     cur_poste.data.save()
                     work_item['RESTORE_FROM_WAITING_LIST'] = True
-                    t.logInfo('info', 'migrate: ' + meteor + ' switch to load_from_json mode')
+                    t.logInfo('migrate: ' + meteor + ' switch to load_from_json mode')
                 
             if (cur_poste.data.load_type & Load_Type.LOAD_FROM_DUMP.value) == 0:
                 t.logInfo(meteor, {'status': 'Migration stopped, station load_from_dump is False'})
@@ -218,7 +218,7 @@ class MigrateDB:
             work_item['minmax_first_ts'] = (FromTimestampToUTCDateTime(work_item['archive_first_ts']) - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
             work_item['minmax_last_ts'] = (FromTimestampToUTCDateTime(work_item['archive_last_ts']) + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
             
-            t.myTools.logInfo(
+            t.logInfo(
                 'ts_archive (ts utc)    from: ' + str(work_item['archive_first_ts']) + ' to ' + str(work_item['archive_last_ts']),
                 {"svc": "migrate", "meteor":  work_item['meteor']})
 
@@ -231,7 +231,7 @@ class MigrateDB:
             return
 
         except Exception as ex:
-            print("exception: " + str(ex))
+            # print("exception: " + str(ex))
             raise ex
 
         finally:

@@ -24,9 +24,9 @@ from django.core.wsgi import get_wsgi_application
 # svc_csv_loader.Start()
 # svc_csv_loader.RunMe()
 
-# svc_json_loader = SvcJsonLoader()
-# svc_json_loader.Start()
-# svc_json_loader.RunMe()
+svc_json_loader = SvcJsonLoader()
+svc_json_loader.Start()
+svc_json_loader.RunMe()
 
 svc_migrate = SvcMigrate()
 svc_migrate.Start()

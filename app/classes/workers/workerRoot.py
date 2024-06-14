@@ -45,8 +45,7 @@ class WorkerRoot:
         # check globally that only one instance was created for the name
         if self.ref_mgr.IncrementRef("Svc_" + name) > 1:
             IncidentMeteor().new('worker ' + name, 'CRITICAL', 'Multiple instance')
-            t.logError('WorkerRoot::__init__', 'multiple instances of ' + name, {"svc": self.display})
-            raise Exception(name, 'Multiple instances called')
+            raise Exception(name, 'Multiple instances of ' + name + ' called')
 
         self.frequency = frequency
         self.synonym = synonym
@@ -134,7 +133,7 @@ class WorkerRoot:
 
                     except Exception as exc:
                         a_worker['threadRunning'] = False
-                        t.logError('Start', self.display + ": Exception", {"svc": self.display, "exception": str(exc)})
+                        # t.logError('Start', self.display + ": Exception", {"svc": self.display, "exception": str(exc)})
                         raise exc
 
         finally:

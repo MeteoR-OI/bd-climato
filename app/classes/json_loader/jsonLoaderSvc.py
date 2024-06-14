@@ -73,8 +73,8 @@ class JsonLoader(JsonLoaderABC):
             pass
         
         if meteor == 'inconnu':
-            t.logError('jsonloader', "meteor name not found", {"filename": a_filename, "root": root_file})
-            raise Exception("meteor name not found")
+            os.remove(os.path.join(root_file, a_filename))
+            raise Exception("meteor name not found, deleting file")
 
         return {
             'f': a_filename,
@@ -91,8 +91,13 @@ class JsonLoader(JsonLoaderABC):
             os.makedirs(self.archive_dir + "/" + work_item['meteor'] + "/")
 
         # Move the json file to the waiting directory
-        if (cur_poste.data.load_type & Load_Type.LOAD_FROM_DUMP_THEN_JSON) == Load_Type.LOAD_FROM_DUMP_THEN_JSON:
+        if work_item.get('WAIT_LIST') is not None and work_item['WAIT_LIST'] is True:
             os.rename(os.path.join(work_item['r'], work_item['f']), self.waiting_dir + "/" + work_item['meteor'] + "/" + work_item['f'])
+            return
+
+        # delete the non usable file
+        if (cur_poste.data.load_type & Load_Type.LOAD_FROM_DUMP_THEN_JSON) == Load_Type.LOAD_FROM_DUMP_THEN_JSON:
+            os.remove(os.path.join(work_item['r'], work_item['f']))
             return
 
         # delete the file
@@ -120,6 +125,7 @@ class JsonLoader(JsonLoaderABC):
 
     def search_json_file(self, directory):
         for root, dirs, files in os.walk(directory):
+            files.sort()
             for file in files:
                 if file.endswith('.json'):
                     return root, file 
