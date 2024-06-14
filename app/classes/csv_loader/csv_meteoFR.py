@@ -40,7 +40,7 @@ class CsvMeteoFR(CsvFileSpec):
         # get json file names
         filenames = os.listdir(self.base_dir)
         for filename in filenames:
-            if str(filename).endswith('.txt.data'):
+            if '{0}'.format(filename).endswith('.txt.data'):
                 files_spec.append({"d": self.base_dir, "f": filename})
 
         # stop processing

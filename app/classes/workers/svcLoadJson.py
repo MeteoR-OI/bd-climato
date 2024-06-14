@@ -16,7 +16,7 @@ class SvcJsonLoader(WorkerRoot):
         # call parent __init__
         super(SvcJsonLoader, self).__init__(
             self,
-            str(SvcJsonLoader),
+            '{0}'.format(SvcJsonLoader),
             JsonLoader(),
             30,
             ['svcJsonLoader', 'autoload', 'auto', 'load', 'loadjson', 'json'],

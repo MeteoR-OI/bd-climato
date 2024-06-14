@@ -5,12 +5,12 @@ def addNewAngle(angle, ang_nb=0, ang_sin=0, ang_cos=0):
     ''' addNewAngle : add new angle to average (from https://en.wikipedia.org/wiki/Circular_mean) '''
     angle = math.radians(angle)
 
-    # print('before => si: ' + str(ang_sin) + ', co:  ' + str(ang_cos) + ', nb: ' + str(ang_nb) + ' -> mean: ' + str(getMeanAngle(ang_nb, ang_sin, ang_cos)))
-    # print('adding => si: ' + str(math.sin(angle)) + ', co:  ' + str(math.cos(angle)))
+    # print('before => si: ' + '{0}'.format(ang_sin) + ', co:  ' + '{0}'.format(ang_cos) + ', nb: ' + '{0}'.format(ang_nb) + ' -> mean: ' + '{0}'.format(getMeanAngle(ang_nb, ang_sin, ang_cos)))
+    # print('adding => si: ' + '{0}'.format(math.sin(angle)) + ', co:  ' + '{0}'.format(math.cos(angle)))
     ang_sin += math.sin(angle)
     ang_cos += math.cos(angle)
     ang_nb += 1
-    # print('after  => si: ' + str(ang_sin) + ', co:  ' + str(ang_cos) + ', nb: ' + str(ang_nb) + ' -> mean: ' + str(getMeanAngle(ang_nb, ang_sin, ang_cos)))
+    # print('after  => si: ' + '{0}'.format(ang_sin) + ', co:  ' + '{0}'.format(ang_cos) + ', nb: ' + '{0}'.format(ang_nb) + ' -> mean: ' + '{0}'.format(getMeanAngle(ang_nb, ang_sin, ang_cos)))
     return ang_nb, round(ang_sin, 3), round(ang_cos, 3)
 
 
@@ -21,11 +21,11 @@ def removeAngle(angle, ang_nb=0, ang_sin=0, ang_cos=0):
 
     angle = math.radians(angle)
 
-    # print('before => si: ' + str(ang_sin) + ', co:  ' + str(ang_cos) + ', nb: ' + str(ang_nb) + ' -> mean: ' + str(getMeanAngle(ang_nb, ang_sin, ang_cos)))
-    # print('adding => si: ' + str(math.sin(angle)) + ', co:  ' + str(math.cos(angle)))
+    # print('before => si: ' + '{0}'.format(ang_sin) + ', co:  ' + '{0}'.format(ang_cos) + ', nb: ' + '{0}'.format(ang_nb) + ' -> mean: ' + '{0}'.format(getMeanAngle(ang_nb, ang_sin, ang_cos)))
+    # print('adding => si: ' + '{0}'.format(math.sin(angle)) + ', co:  ' + '{0}'.format(math.cos(angle)))
     ang_sin -= math.sin(angle)
     ang_cos -= math.cos(angle)
-    # print('after  => si: ' + str(ang_sin) + ', co:  ' + str(ang_cos) + ', nb: ' + str(ang_nb) + ' -> mean: ' + str(getMeanAngle(ang_nb, ang_sin, ang_cos)))
+    # print('after  => si: ' + '{0}'.format(ang_sin) + ', co:  ' + '{0}'.format(ang_cos) + ', nb: ' + '{0}'.format(ang_nb) + ' -> mean: ' + '{0}'.format(getMeanAngle(ang_nb, ang_sin, ang_cos)))
     return round(ang_sin, 3), round(ang_cos, 3)
 
 

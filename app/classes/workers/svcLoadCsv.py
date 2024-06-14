@@ -14,7 +14,7 @@ class SvcCsvLoader(WorkerRoot):
         # call parent __init__
         super(SvcCsvLoader, self).__init__(
             self,
-            str(SvcCsvLoader),
+            '{0}'.format(SvcCsvLoader),
             CsvLoader(),
             30,
             ['svcCsvLoader', 'autoloadcsv', 'loadcsv', 'csv'],

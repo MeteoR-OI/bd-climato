@@ -115,15 +115,15 @@
 #             Add an attribute in the span
 #         """
 #         if k == "file_processed":
-#             v = str(v).split("/")[-1::1][0]
-#         t.logInfo(f"{k} = {str(v)}")
+#             v = '{0}'.format(v).split("/")[-1::1][0]
+#         t.logInfo(f"{k} = {'{0}'.format(v)}")
 
 #     def add_event(self, event_name: str, j_val: json):
 #         """
 #         add_event
 #             Add event in the span
 #         """
-#         t.logInfo(f"events: {event_name}, val: {str(j_val)}")
+#         t.logInfo(f"events: {event_name}, val: {'{0}'.format(j_val)}")
 
 #     def get_span_context(self):
 #         return self.ctx

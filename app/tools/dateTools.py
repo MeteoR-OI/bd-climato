@@ -30,7 +30,7 @@ def str_to_datetime(dt_str: str) -> datetime.datetime:
     if isinstance(dt_str, datetime.datetime) is True:
         return dt_str
     if isinstance(dt_str, str) is False:
-        raise Exception('str_to_date', 'bad param, type: ' + str(type(dt_str)))
+        raise Exception('str_to_date', 'bad param, type: ' + '{0}'.format(type(dt_str)))
     if dt_str.find("+") > -1:
         dt_str = dt_str[:dt_str.find("+")]
     tmp_dt = dateutil.parser.parse(dt_str)
@@ -48,9 +48,9 @@ def change_tz(dt: datetime.datetime, tz: int) -> datetime.datetime:
         timezone string
     """
     if isinstance(dt, datetime.datetime) is False:
-        raise Exception('change_tz', 'bad param, type: ' + str(type(dt)))
+        raise Exception('change_tz', 'bad param, type: ' + '{0}'.format(type(dt)))
     if isinstance(tz, int) is False:
-        raise Exception('change_tz', 'bad param, type: ' + str(type(tz)))
+        raise Exception('change_tz', 'bad param, type: ' + '{0}'.format(type(tz)))
     return dt + datetime.timedelta(hours=tz)
 
 
@@ -61,9 +61,9 @@ def isRoundedHourInDuration(start_datetime, duration_seconds):
         tmp_datetime = (start_datetime + datetime.timedelta(hours=1))
         end_datetime = tmp_datetime.replace(minute=0, second=0, microsecond=0)
     begin_datetime = end_datetime - datetime.timedelta(seconds=duration_seconds)
-    # print('range: ' + str(begin_datetime) + ' to ' + str(end_datetime))
-    # print("date " + str(start_datetime) + " before : " + str(start_datetime > begin_datetime))
-    # print("date " + str(start_datetime) + " after : " + str(start_datetime <= end_datetime))
+    # print('range: ' + '{0}'.format(begin_datetime) + ' to ' + '{0}'.format(end_datetime))
+    # print("date " + '{0}'.format(start_datetime) + " before : " + '{0}'.format(start_datetime > begin_datetime))
+    # print("date " + '{0}'.format(start_datetime) + " after : " + '{0}'.format(start_datetime <= end_datetime))
     return (start_datetime > begin_datetime) and (start_datetime <= end_datetime)
 
 def FromTimestampToLocalDateTime(ts, delta_hours=0):

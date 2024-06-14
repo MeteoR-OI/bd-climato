@@ -42,4 +42,4 @@ if __name__ == "__main__":
             pretty2.append(pretty[idx])
         print('==>' + ''.join(pretty2))
         # print(''.format(exc.__class__, exc))
-        print('=> ' + str(exc.__class__) + ':' + str(exc))
+        print('=> ' + '{0}'.format(exc.__class__) + ':' + '{0}'.format(exc))

@@ -35,7 +35,7 @@ class WorkerRoot:
         self.run_once = run_once
         self.ref_mgr = RefManager.GetInstance()
         try:
-            self.display = str(name).replace("<class 'app.classes.workers.", "")
+            self.display = '{0}'.format(name).replace("<class 'app.classes.workers.", "")
             self.display = self.display.split('.')[0]
             t.logInfo('worker ' + self.display + ' new instance', {"svc": self.display})
         except Exception:
@@ -71,9 +71,9 @@ class WorkerRoot:
     def GetInstance(myClass):
         # return the instance
         ref_mgr = RefManager.GetInstance()
-        if ref_mgr.GetRef(str(myClass)) is None:
-            ref_mgr.AddRef(str(myClass), myClass())
-        return ref_mgr.GetRef(str(myClass))
+        if ref_mgr.GetRef('{0}'.format(myClass)) is None:
+            ref_mgr.AddRef('{0}'.format(myClass), myClass())
+        return ref_mgr.GetRef('{0}'.format(myClass))
 
     @staticmethod
     def GetSynonym():
@@ -133,7 +133,7 @@ class WorkerRoot:
 
                     except Exception as exc:
                         a_worker['threadRunning'] = False
-                        # t.logError('Start', self.display + ": Exception", {"svc": self.display, "exception": str(exc)})
+                        # t.logError('Start', self.display + ": Exception", {"svc": self.display, "exception": '{0}'.format(exc)})
                         raise exc
 
         finally:
@@ -276,7 +276,7 @@ class WorkerRoot:
                     in_use = False
                     t.logException(exc)
                     print('#$##$#$#$##$#')
-                    print('Exception in ' + self.display + '=>' + str(exc))
+                    print('Exception in ' + self.display + '=>' + '{0}'.format(exc))
                     print('#$##$#$#$##$#')
 
         finally:

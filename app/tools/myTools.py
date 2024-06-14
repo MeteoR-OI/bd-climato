@@ -57,9 +57,9 @@ def logInfo(message: str, params: json = {}):
 
 
 def CopyJson(src: json, dest: json):
-    if "'list'" in str(type(src)):
+    if "'list'" in '{0}'.format(type(src)):
         for one_src in src:
-            type_val = str(type(one_src))
+            type_val = '{0}'.format(type(one_src))
             if "'dict'" in type_val:
                 new_array = {}
                 dest.append(new_array)
@@ -76,14 +76,14 @@ def CopyJson(src: json, dest: json):
 
 
 def _copyJson(src: json, dest: json, k: str, v):
-    type_val = str(type(v))
+    type_val = '{0}'.format(type(v))
     if "'dict'" in type_val:
         if dest.__contains__(k) is False:
             dest[k] = {}
-        elif str(type(dest[k])).index("'dict'") is False:
+        elif '{0}'.format(type(dest[k])).index("'dict'") is False:
             raise Exception(
                 "CopyJson",
-                "type michmatch on key: " + str(k) + " type: " + str(type(dest[k])),
+                "type michmatch on key: " + '{0}'.format(k) + " type: " + '{0}'.format(type(dest[k])),
             )
         CopyJson(src[k], dest[k])
         return
@@ -91,10 +91,10 @@ def _copyJson(src: json, dest: json, k: str, v):
     if "'list'" in type_val:
         if dest.__contains__(k) is False:
             dest[k] = []
-        elif str(type(dest[k])).index("'list'") is False:
+        elif '{0}'.format(type(dest[k])).index("'list'") is False:
             raise Exception(
                 "CopyJson",
-                "type michmatch on key: " + str(k) + " type: " + str(type(dest[k])),
+                "type michmatch on key: " + '{0}'.format(k) + " type: " + '{0}'.format(type(dest[k])),
             )
         CopyJson(src[k], dest[k])
         return
@@ -112,7 +112,7 @@ def get_trace_info(exc, nb_levels: int = 3):
         idx_stack -= 1
         stack.append(pretty[idx_stack])
 
-    return str(exc.__class__) + ':' + str(exc), ''.join(stack)
+    return '{0}'.format(exc.__class__) + ':' + '{0}'.format(exc), ''.join(stack)
 
 
 def getDirNameInSettings(setting_name):
@@ -192,14 +192,14 @@ class LogMe:
         if level.lower() not in ["info", "error", "critical"]:
             level = "info"
 
-        msg = 'timestamp=' + '"' + str(datetime.datetime.now()) + '" '
+        msg = 'timestamp=' + '"' + '{0}'.format(datetime.datetime.now()) + '" '
         msg += 'pyFile=' + filename + " "
-        msg += 'pyLine=' + str(line_no) + " "
+        msg += 'pyLine=' + '{0}'.format(line_no) + " "
         msg += 'pyFunc=' + module + " "
         msg += 'msg="' + self.CleanUpMessage(message) + '" '
         if params != {}:
             for key in params:
-                msg += key + '="' + str(params[key]) + '" '
+                msg += key + '="' + '{0}'.format(params[key]) + '" '
 
         if level == 'info':
             self.log.info(msg)

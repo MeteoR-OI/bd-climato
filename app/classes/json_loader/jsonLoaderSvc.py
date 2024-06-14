@@ -57,19 +57,19 @@ class JsonLoader(JsonLoaderABC):
         with open(os.path.join(root_file, a_filename), "r") as f:
             lignes = f.readlines()
             for aligne in lignes:
-                texte += str(aligne)
+                texte += '{0}'.format(aligne)
         my_json = JsonPlus().loads(texte)
-        if 'dict' in str(type(my_json)):
+        if 'dict' in '{0}'.format(type(my_json)):
             my_json = [my_json]
 
         meteor = 'inconnu'
         try:
             if len(root_file.split('/')) > 3:
-                if str(a_filename).split(".")[1] == root_file.split('/')[-1]:
+                if '{0}'.format(a_filename).split(".")[1] == root_file.split('/')[-1]:
                     meteor = root_file.split('/')[-1]
             else:
                 # old style...
-                meteor = str(a_filename).split(".")[1]
+                meteor = '{0}'.format(a_filename).split(".")[1]
         except Exception:
             pass
         

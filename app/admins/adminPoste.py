@@ -28,5 +28,5 @@ class PosteAdmin(admin.ModelAdmin):
     )
 
     def view_observations(self, obj):
-        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/observation/?poste__id__exact=" + str(obj.id), 'Obs')
+        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/observation/?poste__id__exact=" + '{0}'.format(obj.id), 'Obs')
     view_observations.short_description = "Obs"

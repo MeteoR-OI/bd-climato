@@ -70,7 +70,7 @@ class CsvFileSpec(ABC):
                     # is it time to flush our buffers ?
                     if line_count > 500:
                         if len(obs_data) > 0:
-                            t.logInfo('yielding data: ' + str(len(obs_data)) + ' obs, ' + 'line_cout: ' + str(line_count) + '/' + str(total_line))
+                            t.logInfo('yielding data: ' + '{0}'.format(len(obs_data)) + ' obs, ' + 'line_cout: ' + '{0}'.format(line_count) + '/' + '{0}'.format(total_line))
                             yield {'obs_data': obs_data, 'min_data': min_data, 'max_data': max_data}
                             obs_data = []
                             min_data = []
@@ -110,7 +110,7 @@ class CsvFileSpec(ABC):
                 if len(obs_data) > 0:
                     yield {'obs_data': obs_data, 'min_data': min_data, 'max_data': max_data}
 
-                t.logInfo('file: ' + work_item['f'] + ', total line processed: ' + str(total_line))
+                t.logInfo('file: ' + work_item['f'] + ', total line processed: ' + '{0}'.format(total_line))
 
     def processRow(self, id_format, my_fields, cur_poste, obs_data, min_data, max_data):
         poste_id = cur_poste.data.id
@@ -126,7 +126,7 @@ class CsvFileSpec(ABC):
 
             # Check if mesure already loaded in obs
             # if b_check_obs_data_in_db:
-            #     str_obs_date_local = str(obs_date_local)
+            #     str_obs_date_local = '{0}'.format(obs_date_local)
             #     if obs_data_in_db.get(str_obs_date_local) is not None:
             #         for a_mid in obs_data_in_db[str_obs_date_local]['mids']:
             #             if a_mid == a_mesure['id']:
@@ -289,7 +289,7 @@ class CsvFileSpec(ABC):
         obs_date_local = obs_date_local - timedelta(hours=1)
         while len(time_str) < 4:
             time_str = '0' + time_str
-        tmp_dt = str(obs_date_local)
+        tmp_dt = '{0}'.format(obs_date_local)
         return str_to_datetime(tmp_dt[0:4] + '-' + tmp_dt[5:7] + '-' + tmp_dt[8:10] + 'T' + tmp_dt[11:13] + ':' + time_str[0:2] + ':' + time_str[2:4])
 
     def transcodeQAMeteoFrance(self, qa_meteoFR):

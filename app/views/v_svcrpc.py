@@ -57,7 +57,7 @@ def viewControlSvc(request):
         raise Exception('unknown action')
 
     except Exception as inst:
-        j_resp = {"status": "err", "result": [str(inst)]}
+        j_resp = {"status": "err", "result": ['{0}'.format(inst)]}
 
     finally:
         return HttpResponse(JsonPlus().dumps(j_resp))
@@ -71,10 +71,10 @@ class SvcCtrl:
 
     def GetSvcInstance(self, name):
         for k in self.class_info:
-            if str(k).startswith('Inst_'):
+            if '{0}'.format(k).startswith('Inst_'):
                 tmp_name = self.class_info[k].GetDisplayName()
                 if tmp_name.startswith('svc'):
-                    tmp_name = str(tmp_name[3:]).lower()
+                    tmp_name = '{0}'.format(tmp_name[3:]).lower()
                 if tmp_name == name:
                     return self.class_info[k]
         raise Exception('service ' + name + ' not found')
@@ -82,9 +82,9 @@ class SvcCtrl:
     def ListSvc(self):
         svc_list = []
         for k in self.class_info:
-            if str(k).startswith('Inst_'):
+            if '{0}'.format(k).startswith('Inst_'):
                 tmp_name = self.class_info[k].GetDisplayName().lower()
                 if tmp_name.startswith('svc'):
-                    tmp_name = str(tmp_name[3:])
+                    tmp_name = '{0}'.format(tmp_name[3:])
                 svc_list.append(tmp_name)
         return svc_list

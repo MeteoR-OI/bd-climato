@@ -28,20 +28,20 @@ class CsvOpvf(CsvFileSpec):
         for a_station in ovpf_stations:
             cur_year =  datetime.now().year
             while cur_year >= 2007:
-                if os.path.exists(self.base_dir + '/' + str(cur_year) + '/' + a_station['meteor'] + '.csv'):
+                if os.path.exists(self.base_dir + '/' + '{0}'.format(cur_year) + '/' + a_station['meteor'] + '.csv'):
                     break
                 cur_year -= 1
-            line = subprocess.check_output(['tail', '-1', self.base_dir + '/' + str(cur_year) + '/' + a_station['meteor'] + '.csv'])
-            line = str(line)[2:len(line)+1]
+            line = subprocess.check_output(['tail', '-1', self.base_dir + '/' + '{0}'.format(cur_year) + '/' + a_station['meteor'] + '.csv'])
+            line = '{0}'.format(line)[2:len(line)+1]
             last_csv_date = datetime.strptime(line[0:10] + ' 00:00:00', '%Y-%m-%d %H:%M:%S')
             if last_csv_date > a_station['last_obs_date_local']:
                 year_to_process = a_station['last_obs_date_local'].year
                 return {
-                    'f': str(year_to_process) + '/' + a_station['meteor'] + '.csv',
+                    'f': '{0}'.format(year_to_process) + '/' + a_station['meteor'] + '.csv',
                     'path': self.base_dir,
                     'meteor': a_station['meteor'].upper(),
                     'id_format': 0,
-                    'info': 'loading file: ' + str(a_station['last_obs_date_local'].year) + '/' + a_station['meteor'] + '.csv',
+                    'info': 'loading file: ' + '{0}'.format(a_station['last_obs_date_local'].year) + '/' + a_station['meteor'] + '.csv',
                     'move_file': self.all_formats[0].move_file,
                     'year_processed': year_to_process,
                     'fix_obs_last_date': self.all_formats[0].fix_obs_last_date

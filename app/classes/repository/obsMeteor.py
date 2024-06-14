@@ -20,7 +20,7 @@ class ObsMeteor():
     CodeQA = Code_QA
 
     def __init__(self, obs_id: int):
-        if 'int' in str(type(obs_id)) and Observation.objects.filter(id=obs_id).exists():
+        if 'int' in '{0}'.format(type(obs_id)) and Observation.objects.filter(id=obs_id).exists():
             self.data = Observation.objects.filter(id=obs_id).first()
         else:
             self.data = Observation()
@@ -47,4 +47,4 @@ class ObsMeteor():
 
     def __str__(self):
         """print myself"""
-        return "ObsMeteor id: " + str(self.data.id) + ", poste_id: " + str(self.data.poste_id) + ", date locale: " + str(self.data.date_local) + ", duration: " + str(self.data.duration)
+        return "ObsMeteor id: " + '{0}'.format(self.data.id) + ", poste_id: " + '{0}'.format(self.data.poste_id) + ", date locale: " + '{0}'.format(self.data.date_local) + ", duration: " + '{0}'.format(self.data.duration)

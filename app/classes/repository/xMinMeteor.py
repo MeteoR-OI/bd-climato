@@ -30,4 +30,4 @@ class xMinMeteor():
 
     def __str__(self):
         """print myself"""
-        return "Extreme Min id: " + str(self.data.id) + ", poste_id: " + str(self.data.poste_id) + ", mesure: " + str(self.data.mesure_id) + ", time: " + str(self.data.date_local)
+        return "Extreme Min id: " + '{0}'.format(self.data.id) + ", poste_id: " + '{0}'.format(self.data.poste_id) + ", mesure: " + '{0}'.format(self.data.mesure_id) + ", time: " + '{0}'.format(self.data.date_local)

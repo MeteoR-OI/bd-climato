@@ -16,7 +16,7 @@ class PosteMeteor:
     DataSource = Data_Source
 
     def __init__(self, key):
-        if 'int' in str(type(key)):
+        if 'int' in '{0}'.format(type(key)):
             """ load our instance from db """
             if Poste.objects.filter(id=key).exists():
                 self.data = Poste.objects.get(id=key)
@@ -66,4 +66,4 @@ class PosteMeteor:
 
     def __str__(self) -> None:
         """print myself"""
-        return "PosteMeteor id: " + str(self.data.id) + ", meteor: " + self.data.meteor
+        return "PosteMeteor id: " + '{0}'.format(self.data.id) + ", meteor: " + self.data.meteor

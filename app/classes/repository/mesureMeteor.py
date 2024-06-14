@@ -19,7 +19,7 @@ class MesureMeteor():
         if hasattr(MesureMeteor, "all_defs") is False:
             self.loadMesureDefs()
 
-        if 'int' in str(type(key)):
+        if 'int' in '{0}'.format(type(key)):
             """ load our instance from db """
             if Mesure.objects.filter(id=key).exists():
                 self.data = Mesure.objects.get(id=key)
@@ -79,4 +79,4 @@ class MesureMeteor():
 
     def __str__(self):
         """print myself"""
-        return "MesureMeteor id: " + str(self.data.id) + ", name: " + str(self.name)
+        return "MesureMeteor id: " + '{0}'.format(self.data.id) + ", name: " + '{0}'.format(self.name)

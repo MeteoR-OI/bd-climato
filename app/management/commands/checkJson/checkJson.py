@@ -17,7 +17,7 @@ if __name__ == "__main__":
             file_content = f.readlines()
             json_str = ''
             for one_line in file_content:
-                json_str += str(one_line)
+                json_str += '{0}'.format(one_line)
 
             j_content = JsonPlus().loads(json_str)
 

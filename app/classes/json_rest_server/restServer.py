@@ -58,4 +58,4 @@ def upload_file(request):
         return JsonResponse({'message': 'File uploaded successfully'}, status=200)
 
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({'error': '{0}'.format(e)}, status=500)

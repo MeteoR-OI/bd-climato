@@ -20,7 +20,7 @@ def checkJson(j_arr: json, filename: str = "???") -> str:
         ret = _checkJsonOneItem(j, meteor)
 
         if ret is not None:
-            return "file: " + filename + ", item " + str(idx) + " error =>" + ret
+            return "file: " + filename + ", item " + '{0}'.format(idx) + " error =>" + ret
         idx += 1
     return None
 
@@ -45,11 +45,11 @@ def _checkJsonOneItem(j: json, meteor: str) -> str:
         return "no info key"
     j_info = j["info"]
     if j.get("info") is None or j_info["version"] not in (1, 2):
-        return "unsupported version number: " + str(j_info.get("version"))
+        return "unsupported version number: " + '{0}'.format(j_info.get("version"))
 
     json_type = j_info.get("json_type")
-    if str(json_type) not in ["O", "C"]:
-        return "invalid json_type: " + str(json_type)
+    if '{0}'.format(json_type) not in ["O", "C"]:
+        return "invalid json_type: " + '{0}'.format(json_type)
 
     # check data, loop for each item
     while idx < j["data"].__len__():
@@ -60,9 +60,9 @@ def _checkJsonOneItem(j: json, meteor: str) -> str:
             return "missing stop_dat !"
 
         tmp_stop_dat = a_data_item.get("stop_dat")
-        if str(tmp_stop_dat) in stop_dat_list:
-            return "stop_dat: " + str(tmp_stop_dat) + " present twice"
-        stop_dat_list.append(str(tmp_stop_dat))
+        if '{0}'.format(tmp_stop_dat) in stop_dat_list:
+            return "stop_dat: " + '{0}'.format(tmp_stop_dat) + " present twice"
+        stop_dat_list.append('{0}'.format(tmp_stop_dat))
 
         if a_data_item.get("start_dat") is not None:
             return "remove start_dat for json_type " + json_type
@@ -82,7 +82,7 @@ def _checkJsonOneItem(j: json, meteor: str) -> str:
         for key in j_valeurs.__iter__():
             j_value = j_valeurs.get(key)
             # check obs data
-            if str(key).endswith("_max") or str(key).endswith("_min"):
+            if '{0}'.format(key).endswith("_max") or '{0}'.format(key).endswith("_min"):
                 # add a time entry if not present
                 if j_valeurs.__contains__(key + "_time") is False:
                     new_val = {
@@ -96,14 +96,14 @@ def _checkJsonOneItem(j: json, meteor: str) -> str:
                     try:
                         str_to_datetime(j_valeurs.get(key + '_time'))
                     except Exception:
-                        return 'Invalid date format for "' + key + '": "' + str(j_value) + '"'
+                        return 'Invalid date format for "' + key + '": "' + '{0}'.format(j_value) + '"'
                 if isinstance(j_valeurs[key], float) is False and isinstance(j_valeurs[key], int) is False:
-                    return "key " + key + " should be a float or an integer. Current value: " + str(j_valeurs[key]) + ", type: " + str(type(j_valeurs[key]))
+                    return "key " + key + " should be a float or an integer. Current value: " + '{0}'.format(j_valeurs[key]) + ", type: " + '{0}'.format(type(j_valeurs[key]))
 
             # change xxx_sum into xxx_s
-            if str(key).endswith("_sum"):
+            if '{0}'.format(key).endswith("_sum"):
                 new_val = {
-                    "k": str(key).replace("_sum", "_s"),
+                    "k": '{0}'.format(key).replace("_sum", "_s"),
                     "v": j_valeurs[key],
                     "idx": idx,
                     "k2": "valeurs",
@@ -111,31 +111,31 @@ def _checkJsonOneItem(j: json, meteor: str) -> str:
                 valeurs_to_add.append(new_val)
 
             # change xx_duration into xxx_d
-            if str(key).endswith("_duration"):
+            if '{0}'.format(key).endswith("_duration"):
                 new_val = {
-                    "k": str(key).replace("_duration", "_d"),
+                    "k": '{0}'.format(key).replace("_duration", "_d"),
                     "v": j_valeurs[key],
                     "idx": idx,
                     "k2": "valeurs",
                 }
                 valeurs_to_add.append(new_val)
                 if isinstance(j_valeurs[key], int) is False:
-                    return "key " + key + " should be an integer. Current value: " + str(j_valeurs[key]) + ", type: " + str(type(j_valeurs[key]))
+                    return "key " + key + " should be an integer. Current value: " + '{0}'.format(j_valeurs[key]) + ", type: " + '{0}'.format(type(j_valeurs[key]))
 
             # for all json_type
-            if str(key).endswith("_s") or str(key).endswith("_avg") or str(key).endswith("_max") or str(key).endswith("_min"):
+            if '{0}'.format(key).endswith("_s") or '{0}'.format(key).endswith("_avg") or '{0}'.format(key).endswith("_max") or '{0}'.format(key).endswith("_min"):
                 if isinstance(j_valeurs[key], float) is False and isinstance(j_valeurs[key], int) is False:
-                    return "key " + key + " should be a float or an integer. Current value: " + str(j_valeurs[key]) + ", type: " + str(type(j_valeurs[key]))
+                    return "key " + key + " should be a float or an integer. Current value: " + '{0}'.format(j_valeurs[key]) + ", type: " + '{0}'.format(type(j_valeurs[key]))
 
             # check date format
             if key.endswith("_time"):
                 try:
                     str_to_datetime(j_value)
                 except Exception:
-                    return 'Invalid date format for "' + key + '": "' + str(j_value) + '"'
+                    return 'Invalid date format for "' + key + '": "' + '{0}'.format(j_value) + '"'
                 
             # change radiation_max and radiation_max_time into radiation_rate_max and radiation_rate_max_time
-            if str(key).__contains__("radiation_max_time"):
+            if '{0}'.format(key).__contains__("radiation_max_time"):
                 new_val = {
                         "k": "radiation_rate_max_time",
                         "v": j_value,
@@ -143,7 +143,7 @@ def _checkJsonOneItem(j: json, meteor: str) -> str:
                         "k2": "valeurs",
                     }
                 valeurs_to_add.append(new_val)
-            elif str(key).__contains__("radiation_max"):
+            elif '{0}'.format(key).__contains__("radiation_max"):
                 new_val = {
                         "k": "radiation_rate_max",
                         "v": j_value,
@@ -167,30 +167,30 @@ def _checkJsonOneItem(j: json, meteor: str) -> str:
             j_value = an_extreme[key]
 
             # rename _sum into _s
-            if str(key).endswith("_sum"):
-                if str(key).endswith("_s") is False:
+            if '{0}'.format(key).endswith("_sum"):
+                if '{0}'.format(key).endswith("_s") is False:
                     new_val_xtreme = {
-                        "k": str(key).replace("_sum", "_s"),
+                        "k": '{0}'.format(key).replace("_sum", "_s"),
                         "v": an_extreme[key],
                     }
                     extremes_to_add.append(new_val_xtreme)
 
             # a xxx_time is required with xxx_max/xxx_min values
-            if str(key).endswith("_max") or str(key).endswith("_min"):
+            if '{0}'.format(key).endswith("_max") or '{0}'.format(key).endswith("_min"):
                 if an_extreme.__contains__(key + "_time") is False:
                     return "max/min for " + key + " does not have a " + key + "_time key"
 
             # check number format
-            if str(key).endswith("_s") or str(key).endswith("_avg") or str(key).endswith("_max") or str(key).endswith("_min"):
+            if '{0}'.format(key).endswith("_s") or '{0}'.format(key).endswith("_avg") or '{0}'.format(key).endswith("_max") or '{0}'.format(key).endswith("_min"):
                 if isinstance(j_valeurs[key], float) is False and isinstance(j_valeurs[key], int) is False:
-                    return "key " + key + " should be a float or an integer. Current value: " + str(j_valeurs[key]) + ", type: " + str(type(j_valeurs[key]))
+                    return "key " + key + " should be a float or an integer. Current value: " + '{0}'.format(j_valeurs[key]) + ", type: " + '{0}'.format(type(j_valeurs[key]))
 
             # check date format
             if key.endswith("_time"):
                 try:
                     str_to_datetime(j_value)
                 except Exception:
-                    return 'Invalid date format for "' + key + '": "' + str(j_value) + '"'
+                    return 'Invalid date format for "' + key + '": "' + '{0}'.format(j_value) + '"'
 
     # add missing key/value
     for my_val in valeurs_to_add:

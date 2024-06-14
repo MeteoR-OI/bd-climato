@@ -40,9 +40,9 @@ class IncidentMeteor():
         clean_j = {}
         # change datetime to string...
         for ki in j.keys():
-            j_type = str(type(j[ki]))
+            j_type = '{0}'.format(type(j[ki]))
             if "datetime" in j_type:
-                clean_j[ki] = str(j[ki])
+                clean_j[ki] = '{0}'.format(j[ki])
                 continue
             if "class 'dict" in j_type:
                 clean_j[ki] = self.fix_json(j[ki])
@@ -52,6 +52,6 @@ class IncidentMeteor():
 
     def __str__(self):
         """print myself"""
-        ret = "Incident id: " + str(self.data.id) + ", dat: " + str(self.data.date_utc) + ", source: " + str(self.data.source)
-        ret += ", level: " + self.data.level + ", reason: " + str(self.data.reason)
+        ret = "Incident id: " + '{0}'.format(self.data.id) + ", dat: " + '{0}'.format(self.data.date_utc) + ", source: " + '{0}'.format(self.data.source)
+        ret += ", level: " + self.data.level + ", reason: " + '{0}'.format(self.data.reason)
         return ret

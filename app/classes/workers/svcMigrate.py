@@ -14,7 +14,7 @@ class SvcMigrate(WorkerRoot):
         # call parent __init__
         super(SvcMigrate, self).__init__(
             self,
-            str(SvcMigrate),
+            '{0}'.format(SvcMigrate),
             MigrateDB(),
             120,
             ['migrate'],

@@ -53,15 +53,15 @@ class BulkDataLoader():
 
     def fixMinMax(self, str_mesure_list, cur_poste, x_max_min_date, x_min_min_date):
         return ["delete from x_max where obs_id is not null and mesure_id in " + str_mesure_list +
-                " and poste_id = " + str(cur_poste.data.id) + " and date_local in " +
+                " and poste_id = " + '{0}'.format(cur_poste.data.id) + " and date_local in " +
                 " (select date_local from x_max where obs_id is null and date_local >= '" +
                 x_max_min_date.strftime("%Y/%m/%d, %H:%M:%S") + "' and mesure_id in " + str_mesure_list +
-                " and poste_id = " + str(cur_poste.data.id) + ")",
+                " and poste_id = " + '{0}'.format(cur_poste.data.id) + ")",
                 "delete from x_min where obs_id is not null and mesure_id in " + str_mesure_list +
-                " and poste_id = " + str(cur_poste.data.id) + " and date_local in " +
+                " and poste_id = " + '{0}'.format(cur_poste.data.id) + " and date_local in " +
                 " (select date_local from x_min where obs_id is null and date_local >= '" +
                 x_min_min_date.strftime("%Y/%m/%d, %H:%M:%S") + "' and mesure_id in " + str_mesure_list +
-                " and poste_id = " + str(cur_poste.data.id) + ")"
+                " and poste_id = " + '{0}'.format(cur_poste.data.id) + ")"
                 ]
 
     def bulkLoad(self, cur_poste, data_iterator, min_max=[]):
@@ -74,22 +74,22 @@ class BulkDataLoader():
             pg_cur = pg_conn.cursor()
 
             min_max = self.loadObs(pg_cur, cur_poste, data_iterator, min_max)
-            print('loadObs done in : ' + str(datetime.now() - tmp_dt) + ', len(min_max): ' + str(len(min_max)))
+            print('loadObs done in : ' + '{0}'.format(datetime.now() - tmp_dt) + ', len(min_max): ' + '{0}'.format(len(min_max) if min_max is not None else 0   ))
 
             tmp_dt = datetime.now()
 
             if min_max is not None:
                 del_cde = self.LoadMaxMin(pg_cur, cur_poste, min_max)
-                print('LoadMaxMin done in : ' + str(datetime.now() - tmp_dt) + ', len(min_max): ' + str(len(min_max)))
+                print('LoadMaxMin done in : ' + '{0}'.format(datetime.now() - tmp_dt) + ', len(min_max): ' + '{0}'.format(len(min_max)))
                 min_max = None
                 for a_del_sql in del_cde:
                     tmp_dt = datetime.now()
                     pg_cur.execute(a_del_sql)
-                    # print('exec delete(s) done in : ' + str(datetime.now() - tmp_dt))
+                    # print('exec delete(s) done in : ' + '{0}'.format(datetime.now() - tmp_dt))
     
             tmp_dt = datetime.now()
             pg_conn.commit()
-            print('commit done in : ' + str(datetime.now() - tmp_dt))
+            print('commit done in : ' + '{0}'.format(datetime.now() - tmp_dt))
     
         except Exception as e:
             if pg_conn is not None:
@@ -129,14 +129,16 @@ class BulkDataLoader():
         while cur_row is not None:
             try:
                 if cur_row[self.col_mapping['usUnits']] != 16:
-                    raise Exception('bad usUnits: ' + str(cur_row[self.col_mapping['usUnits']]) +\
-                                    ', dateTime(UTC): ' + str(cur_row[self.col_mapping['date_utc']]))
+                    raise Exception('bad usUnits: ' + '{0}'.format(cur_row[self.col_mapping['usUnits']]) +\
+                                    ', dateTime(UTC): ' + '{0}'.format(cur_row[self.col_mapping['date_utc']]))
 
                 date_obs_utc, date_obs_local = self.getObsDateTime(cur_row, cur_poste)
                 qa_all = QA.UNSET.value
                 qa_j = {}
 
-                values_arg = [cur_poste.data.id, str(date_obs_utc), str(date_obs_local), cur_row[self.col_mapping['interval']]]
+                date_utc_str = date_obs_utc.strftime("%Y/%m/%d %H:%M:%S")
+                date_local_str = date_obs_local.strftime("%Y/%m/%d %H:%M:%S")
+                values_arg = [cur_poste.data.id, date_utc_str, date_local_str, cur_row[self.col_mapping['interval']]]
 
                 if (cur_poste.data.last_obs_date_local is None or date_obs_local > cur_poste.data.last_obs_date_local):
                     for a_mesure in self.measures:
@@ -177,7 +179,7 @@ class BulkDataLoader():
         if len(data_args) == 0:
             return None
         
-        # print('data_args: ' + str(len(data_args)))
+        # print('data_args: ' + '{0}'.format(len(data_args)))
 
         # cursor.mogrify() to insert multiple values
         args = ','.join(pg_cur.mogrify(self.insert_cde['mog'], i).decode('utf-8') for i in data_args)
@@ -185,28 +187,28 @@ class BulkDataLoader():
         new_ids = pg_cur.fetchall()
 
         idx = idx_initial
-        tmp_l = str(len(new_ids))
-        print('idx_initial: ' + str(idx_initial) + ', len(new_ids): ' + tmp_l + ', len(min_max): ' + str(len(min_max)))
+        tmp_l = '{0}'.format(len(new_ids))
+        print('idx_initial: ' + '{0}'.format(idx_initial) + ', len(new_ids): ' + tmp_l + ', len(min_max): ' + '{0}'.format(len(min_max)))
         while idx < len(new_ids):
             try:
-                str = 'idx: ' + str(idx) + ', id in my_minmax: ' + str(my_minmax['obs_id']),' obs_id: ' + str(my_minmax['obs_id']) + ' => ' + str(new_ids[my_minmax['obs_id']][0])
+                my_minmax = min_max[idx]
+                str = 'idx: ' + '{0}'.format(idx) + ', id in my_minmax: ' + '{0}'.format(my_minmax['obs_id']),' obs_id: ' + '{0}'.format(my_minmax['obs_id']) + ' => ' + '{0}'.format(new_ids[my_minmax['obs_id']][0])
             except Exception as e:
-                print('   error during print command: ' + str(e))
-                print('   idx: ' + str(idx))
-                print('   id in my_minmax: ' + str(my_minmax['obs_id']))
-                print('   obs_id: ' + str(my_minmax['obs_id']))
-                print('   => ' + str(new_ids[my_minmax['obs_id']][0]))
+                print('   error during print command: ' + '{0}'.format(e))
+                print('   idx: ' + '{0}'.format(idx))
+                print('   id in my_minmax: ' + '{0}'.format(my_minmax['obs_id']))
+                print('   obs_id: ' + '{0}'.format(my_minmax['obs_id']))
+                print('   => ' + '{0}'.format(new_ids[my_minmax['obs_id']][0]))
                 pg_cur.rollback()
                 raise e
 
             try:
-                my_minmax = min_max[idx]
                 my_minmax['obs_id'] = new_ids[my_minmax['obs_id']][0]
                 idx += 1
                 str = None
 
             except Exception as e:
-                print('error: ' + str(e))
+                print('error: ' + '{0}'.format(e))
                 pg_cur.rollback()
                 raise e
 
@@ -315,7 +317,7 @@ class BulkDataLoader():
         pg_cur.execute(insert_cde_max + max_args_ok)
 
         # for sum mesures, remove data from obs, when a record is inserted in x_min/x_max from archive_day_xxx
-        str_mesure_list = "(" + ','.join(str(x) for x in mesure_sum_id) + ")"
+        str_mesure_list = "(" + ','.join('{0}'.format(x) for x in mesure_sum_id) + ")"
 
         # (Load Need to remove min/max k=linked with obs, when mesure is a sum
         return self.fixMinMax(str_mesure_list, cur_poste, x_max_min_date, x_min_min_date)

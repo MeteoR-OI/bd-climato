@@ -90,15 +90,15 @@ class DlCsv(BulkDataLoader):
 
     def fixMinMax(self, str_mesure_list, cur_poste, x_max_min_date, x_min_min_date):
         return ["delete from x_max where obs_id is not null and mesure_id in " + str_mesure_list +
-                " and poste_id = " + str(cur_poste.data.id) + " and date_local in " +
+                " and poste_id = " + '{0}'.format(cur_poste.data.id) + " and date_local in " +
                 " (select date_local from x_max where obs_id is null and date_local >= '" +
                 x_max_min_date.strftime("%Y/%m/%d, %H:%M:%S") + "' and mesure_id in " + str_mesure_list +
-                " and poste_id = " + str(cur_poste.data.id) + ")",
+                " and poste_id = " + '{0}'.format(cur_poste.data.id) + ")",
                 "delete from x_min where obs_id is not null and mesure_id in " + str_mesure_list +
-                " and poste_id = " + str(cur_poste.data.id) + " and date_local in " +
+                " and poste_id = " + '{0}'.format(cur_poste.data.id) + " and date_local in " +
                 " (select date_local from x_min where obs_id is null and date_local >= '" +
                 x_min_min_date.strftime("%Y/%m/%d, %H:%M:%S") + "' and mesure_id in " + str_mesure_list +
-                " and poste_id = " + str(cur_poste.data.id) + ")"
+                " and poste_id = " + '{0}'.format(cur_poste.data.id) + ")"
                 ]
 
 

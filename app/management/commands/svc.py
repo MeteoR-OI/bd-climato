@@ -24,7 +24,7 @@ class Command(BaseCommand):
             self.callService(name, action, param, option2)
 
         except Exception as ex:
-            raise CommandError('Error ' + str(ex))
+            raise CommandError('Error ' + '{0}'.format(ex))
 
     def callService(self, service_name: str, action: str, params: json, option2: json):
         if os.getenv("CC_PYTHON_MODULE") is None:

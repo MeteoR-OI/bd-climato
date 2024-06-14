@@ -52,12 +52,12 @@ class JsonLoaderABC(ABC):
         while idx_global < jsons_to_load.__len__():
             try:
                 json_to_load = jsons_to_load[idx_global]
-                meteor = str(json_to_load.get("meteor"))
+                meteor = '{0}'.format(json_to_load.get("meteor"))
 
                 if meteor != cur_meteor:
                     cur_poste = PosteMeteor(meteor)
                     if cur_poste.data is None or cur_poste.data.load_type is None:
-                        raise Exception("code meteor inconnu: " + meteor + ', idx_global: ' + str(idx_global) + ' dans le fichier: ' + filename)
+                        raise Exception("code meteor inconnu: " + meteor + ', idx_global: ' + '{0}'.format(idx_global) + ' dans le fichier: ' + filename)
 
                     if (cur_poste.data.load_type & Load_Type.LOAD_FROM_JSON.value) != Load_Type.LOAD_FROM_JSON.value:
                         t.logInfo('jsonload: ' + meteor + ' inactif json_load is False), skipping file ' + filename)
@@ -82,7 +82,7 @@ class JsonLoaderABC(ABC):
                             if j_stop_dat_local > cur_poste.data.last_obs_date_local:
                                 work_item['WAIT_LIST'] = True
                                 # Keep the older JSON date
-                                t.logInfo('jsonload: ' + meteor + ' file ' + filename + ' moved to waiting directory, stop_date: ' + str(j_stop_dat_local))
+                                t.logInfo('jsonload: ' + meteor + ' file ' + filename + ' moved to waiting directory, stop_date: ' + '{0}'.format(j_stop_dat_local))
                             return
 
                         if work_item.get('FORCE_LOAD') is not None and work_item['FORCE_LOAD'] is True:
@@ -92,7 +92,7 @@ class JsonLoaderABC(ABC):
                                 # we process our file
                                 pass
                         elif cur_poste.data.last_obs_date_local is not None and j_stop_dat_local <= cur_poste.data.last_obs_date_local:
-                            t.logInfo('jsonload: ' + meteor + ' skipping data already loaded from ' + filename + ', stop_date: ' + stop_date + ', last_obs_date_local: ' + str(cur_poste.data.last_obs_date_local))
+                            t.logInfo('jsonload: ' + meteor + ' skipping data already loaded from ' + filename + ', stop_date: ' + stop_date + ', last_obs_date_local: ' + '{0}'.format(cur_poste.data.last_obs_date_local))
                             return
 
                         self.loadObsData(cur_poste, a_work_item['valeurs'], j_stop_dat_local, j_duration)
@@ -115,7 +115,7 @@ class JsonLoaderABC(ABC):
 
         try:
             stop_date_utc = stop_dat_local - timedelta(hours=cur_poste.data.delta_timezone)
-            values_arg = [str(cur_poste.data.id), str(stop_date_utc), str(stop_dat_local), str(duration)]
+            values_arg = ['{0}'.format(cur_poste.data.id), '{0}'.format(stop_date_utc), '{0}'.format(stop_dat_local), '{0}'.format(duration)]
 
             for a_mesure in self.mesures:
                 if self.isMesureQualified(a_mesure) is False:
@@ -130,30 +130,30 @@ class JsonLoaderABC(ABC):
                     values_arg.append(None)
                     continue
 
-                values_arg.append(str(cur_vals[0]))
+                values_arg.append('{0}'.format(cur_vals[0]))
 
                 if a_mesure['min'] is not None and a_mesure['min'] is True:
                     min_data.append([
-                        str(cur_vals[IDX.IDX_OBS_MIN.value]) if cur_vals[IDX.IDX_OBS_MIN.value] is not None else None,
-                        str(stop_dat_local.date()),
-                        str(cur_poste.data.id),
-                        str(a_mesure['id']),
-                        str(cur_vals[IDX.IDX_VALMIN.value]),
-                        str(cur_vals[IDX.IDX_MIN_TIME.value]),
-                        str(cur_vals[IDX.IDX_QVALMIN.value])])
+                        '{0}'.format(cur_vals[IDX.IDX_OBS_MIN.value]) if cur_vals[IDX.IDX_OBS_MIN.value] is not None else None,
+                        '{0}'.format(stop_dat_local.date()),
+                        '{0}'.format(cur_poste.data.id),
+                        '{0}'.format(a_mesure['id']),
+                        '{0}'.format(cur_vals[IDX.IDX_VALMIN.value]),
+                        '{0}'.format(cur_vals[IDX.IDX_MIN_TIME.value]),
+                        '{0}'.format(cur_vals[IDX.IDX_QVALMIN.value])])
 
                 if a_mesure['max'] is not None and a_mesure['max'] is True:
                     max_data.append([
-                        str(cur_vals[IDX.IDX_OBS_MAX.value]) if cur_vals[IDX.IDX_OBS_MAX.value] is not None else None,
-                        str(stop_dat_local.date()),
-                        str(cur_poste.data.id),
-                        str(a_mesure['id']),
-                        str(cur_vals[IDX.IDX_VALMAX.value]),
-                        str(cur_vals[IDX.IDX_MAX_TIME.value]),
-                        str(cur_vals[IDX.IDX_QVALMAX.value]),
-                        str(cur_vals[IDX.IDX_MAX_DIR.value]) if cur_vals[IDX.IDX_MAX_DIR.value] is not None else None])
+                        '{0}'.format(cur_vals[IDX.IDX_OBS_MAX.value]) if cur_vals[IDX.IDX_OBS_MAX.value] is not None else None,
+                        '{0}'.format(stop_dat_local.date()),
+                        '{0}'.format(cur_poste.data.id),
+                        '{0}'.format(a_mesure['id']),
+                        '{0}'.format(cur_vals[IDX.IDX_VALMAX.value]),
+                        '{0}'.format(cur_vals[IDX.IDX_MAX_TIME.value]),
+                        '{0}'.format(cur_vals[IDX.IDX_QVALMAX.value]),
+                        '{0}'.format(cur_vals[IDX.IDX_MAX_DIR.value]) if cur_vals[IDX.IDX_MAX_DIR.value] is not None else None])
 
-            values_arg.append(str(QA.UNSET.value))
+            values_arg.append('{0}'.format(QA.UNSET.value))
             data_args.append(tuple(values_arg))
 
             # cursor.mogrify() to insert multiple values

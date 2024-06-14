@@ -48,9 +48,9 @@ class ObservationAdmin(admin.ModelAdmin):
         post = Poste.objects.filter(id=obj.poste_id).first()
         if post is None:
             return 'n/a'
-        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/poste/" + str(obj.poste_id) + "/change/", str(obj.poste_id))
+        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/poste/" + '{0}'.format(obj.poste_id) + "/change/", '{0}'.format(obj.poste_id))
     show_clickage_poste_id.short_description = "poste"
 
     def view_aggregations(self, obj):
-        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/agghistobyobs/?q=" + str(obj.id), 'Aggs')
+        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/agghistobyobs/?q=" + '{0}'.format(obj.id), 'Aggs')
     view_aggregations.short_description = "Agg"
