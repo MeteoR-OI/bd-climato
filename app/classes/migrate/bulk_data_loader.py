@@ -185,13 +185,22 @@ class BulkDataLoader():
         print('idx_initial: ' + str(idx_initial) + ', len(new_ids): ' + tmp_l + ', len(min_max): ' + str(len(min_max)))
         while idx < len(new_ids):
             try:
+                str = 'idx: ' + str(idx) + ', id in my_minmax: ' + str(my_minmax['obs_id']),' obs_id: ' + str(my_minmax['obs_id']) + ' => ' + str(new_ids[my_minmax['obs_id']][0])
+            except Exception as e:
+                print('   error during print command: ' + str(e))
+                print('   idx: ' + str(idx))
+                print('   id in my_minmax: ' + str(my_minmax['obs_id']))
+                print('   obs_id: ' + str(my_minmax['obs_id']))
+                print('   => ' + str(new_ids[my_minmax['obs_id']][0]))
+
+            try:
                 my_minmax = min_max[idx]
                 my_minmax['obs_id'] = new_ids[my_minmax['obs_id']][0]
             except Exception as e:
                 print('error: ' + str(e))
-                print ('idx: ' + str(idx) + ', id in my_minmax: ' + str(my_minmax['obs_id']),' obs_id: ' + str(my_minmax['obs_id']) + ' => ' + str(new_ids[my_minmax['obs_id']][0]))
             finally:
                 idx += 1
+                str = None
 
         return min_max
 
