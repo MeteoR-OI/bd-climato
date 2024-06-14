@@ -90,12 +90,12 @@ class JsonLoader(JsonLoaderABC):
         if not os.path.exists(self.archive_dir + "/" + work_item['meteor'] + "/"):
             os.makedirs(self.archive_dir + "/" + work_item['meteor'] + "/")
 
-        if not os.path.exists(self.waiting_dir + "/" + work_item['meteor'] + "/"):
-            os.makedirs(self.waiting_dir + "/" + work_item['meteor'] + "/")
+        if not os.path.exists(os.path.join(self.waiting_dir, work_item['meteor'])):
+            os.makedirs(os.path.join(self.waiting_dir, work_item['meteor']))
 
         # Move the json file to the waiting directory
         if work_item.get('WAIT_LIST') is not None and work_item['WAIT_LIST'] is True:
-            os.rename(os.path.join(work_item['r'], work_item['f']), self.waiting_dir + "/" + work_item['meteor'] + "/" + work_item['f'])
+            os.rename(os.path.join(work_item['r'], work_item['f']), os.path.join(self.waiting_dir, work_item['meteor']) + "/" + work_item['f'])
             return
 
         # delete the non usable file
@@ -133,6 +133,6 @@ class JsonLoader(JsonLoaderABC):
                 if file.endswith('.json'):
                     return root, file 
             for dir in dirs:
-                print ('searching in ' + root + '/' + dir + ', directory: ' + directory)
+                # print ('searching in ' + root + '/' + dir + ', directory: ' + directory)
                 self.search_json_file(root + '/' + dir)
         return None, None

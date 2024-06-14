@@ -121,7 +121,7 @@ class BulkDataLoader():
         data_args = []
         idx = 0
         obs_count = 0
-        idx_intial = len(min_max)
+        idx_initial = len(min_max)
         cur_row = data_iterator.fetchone()
 
 
@@ -180,13 +180,13 @@ class BulkDataLoader():
         pg_cur.execute(self.insert_cde['sql'] + args + ' returning id')
         new_ids = pg_cur.fetchall()
 
-        idx = idx_intial
+        idx = idx_initial
         tmp_l = str(len(new_ids))
-        # print('idx_intial: ' + str(idx_intial) + ', len(new_ids): ' + tmp_l + ', len(min_max): ' + str(len(min_max)))
+        print('idx_initial: ' + str(idx_initial) + ', len(new_ids): ' + tmp_l + ', len(min_max): ' + str(len(min_max)))
         while idx < len(new_ids):
             my_minmax = min_max[idx]
-            # print ('idx: ' + str(idx) + ', len(new_ids): ' + tmp_l + ', id in my_minmax: ' + str(my_minmax['obs_id']))
-            # print('    old obs_id: ' + str(my_minmax['obs_id']) + ' => ' + str(new_ids[my_minmax['obs_id']][0]))
+            print ('idx: ' + str(idx) + ', len(new_ids): ' + tmp_l + ', id in my_minmax: ' + str(my_minmax['obs_id']))
+            print('    old obs_id: ' + str(my_minmax['obs_id']) + ' => ' + str(new_ids[my_minmax['obs_id']][0]))
             my_minmax['obs_id'] = new_ids[my_minmax['obs_id']][0]
             idx += 1
 
