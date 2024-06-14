@@ -151,7 +151,7 @@ class MigrateDB:
 
                 self._bulk_dl.bulkLoad(cur_poste, my_cur, minmax)
 
-                # print("     Done in : " + str(datetime.now() - start_dt) + " for " + str(work_item['start_dt_archive_utc']))
+                # print("     Done in : " + '{0}'.format(datetime.now() - start_dt) + " for " + '{0}'.format(work_item['start_dt_archive_utc']))
                 self.getNewDateBracket(cur_poste, work_item)
 
         finally:
@@ -200,8 +200,8 @@ class MigrateDB:
                     stop_ts_utc = (cur_poste.data.stop_date.timestamp() + 1)  - work_item['tz'] * 3600
                     # stop to scan at stop_date if exists
                     work_item['global_last_ts'] = min(work_item['global_last_ts'], stop_ts_utc)
-                # print('Global (ts utc)     from: ' + str(work_item['global_first_ts']) + ' to ' + str(work_item['global_last_ts']))
-                # print('Global (-> dt utc)  from: ' + str(FromTimestampToUTCDateTime(work_item['global_first_ts'])) + ' to ' + str(FromTimestampToUTCDateTime(work_item['global_last_ts'])))
+                # print('Global (ts utc)     from: ' + '{0}'.format(work_item['global_first_ts']) + ' to ' + '{0}'.format(work_item['global_last_ts']))
+                # print('Global (-> dt utc)  from: ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['global_first_ts'])) + ' to ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['global_last_ts'])))
 
             # Get start_dt/archive_first_ts
             if work_item.get('archive_last_ts') is None:
@@ -222,20 +222,24 @@ class MigrateDB:
             work_item['minmax_last_ts'] = (FromTimestampToUTCDateTime(work_item['archive_last_ts']) + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
             
             t.logInfo(
-                'ts_archive (ts utc)    from: ' + str(work_item['archive_first_ts']) + ' to ' + str(work_item['archive_last_ts']),
+                'ts_archive (ts utc)    from: ' + '{0}'.format(work_item['archive_first_ts']) + ' to ' + '{0}'.format(work_item['archive_last_ts']),
                 {"svc": "migrate", "meteor":  work_item['meteor']})
 
             work_item['start_dt_archive_utc'] = FromTimestampToUTCDateTime(work_item['archive_first_ts'])
-            # print('Archive (ts utc)    from: ' + str(work_item['archive_first_ts']) + ' to ' + str(work_item['archive_last_ts']))
-            # print('    Archive (=> dt utc) from: ' + str(FromTimestampToUTCDateTime(work_item['archive_first_ts'])) + ' to ' + str(FromTimestampToUTCDateTime(work_item['archive_last_ts'])))
-            # print('MinMax (ts utc)     from: ' + str(work_item['minmax_first_ts']) + ' to ' + str(work_item['minmax_last_ts']))
-            # print('MinMax (=> dt utc)  from: ' + str(FromTimestampToUTCDateTime(work_item['minmax_first_ts'])) + ' to ' + str(FromTimestampToUTCDateTime(work_item['minmax_last_ts'])))
-            # print('-------------------------------------------------')
-            t.logInfo('Meteor: ' + work_item['meteor']) + ', from(UTC): ' + str(FromTimestampToUTCDateTime(work_item['archive_first_ts'])) + ' to ' + str(FromTimestampToUTCDateTime(work_item['archive_last_ts']))
+            # print('Archive (ts utc)    from: ' + '{0}'.format(work_item['archive_first_ts']) + ' to ' + '{0}'.format(work_item['archive_last_ts']))
+            # print('    Archive (=> dt utc) from: ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['archive_first_ts'])) + ' to ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['archive_last_ts'])))
+            # print('MinMax (ts utc)     from: ' + '{0}'.format(work_item['minmax_first_ts']) + ' to ' + '{0}'.format(work_item['minmax_last_ts']))
+            # print('MinMax (=> dt utc)  from: ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['minmax_first_ts'])) + ' to ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['minmax_last_ts'])))
+            print('-------------------------------------------------')
+            print(
+                '   Meteor: ' + work_item['meteor']) +\
+                ', from(UTC): ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['archive_first_ts'])) +\
+                ' to ' + '{0}'.format(FromTimestampToUTCDateTime(work_item['archive_last_ts']))
+            print('-------------------------------------------------')
             return
 
         except Exception as ex:
-            # print("exception: " + str(ex))
+            # print("exception: " + '{0}'.format(ex))
             raise ex
 
         finally:
@@ -273,17 +277,17 @@ class MigrateDB:
                     # the mintime and maxtime can be on two different days...
                     if a_mesure['is_wind'] is False:
                         my_query = \
-                            'select min, mintime, max, maxtime, null as max_dir, ' + str(mid) + ' as mid, dateTime ' + \
+                            'select min, mintime, max, maxtime, null as max_dir, ' + '{0}'.format(mid) + ' as mid, dateTime ' + \
                             ' from archive_day_' + table_name +\
-                            " where dateTime >= " + str(work_item['minmax_first_ts']) +\
-                            " and dateTime < " + str(work_item['minmax_last_ts']) +\
+                            " where dateTime >= " + '{0}'.format(work_item['minmax_first_ts']) +\
+                            " and dateTime < " + '{0}'.format(work_item['minmax_last_ts']) +\
                             " order by dateTime"
                     else:
                         my_query = \
-                            'select min, mintime, max, maxtime, max_dir, ' + str(mid) + ' as mid, dateTime ' + \
+                            'select min, mintime, max, maxtime, max_dir, ' + '{0}'.format(mid) + ' as mid, dateTime ' + \
                             ' from archive_day_' + table_name +\
-                            " where dateTime >= " + str(work_item['minmax_first_ts']) +\
-                            " and dateTime < " + str(work_item['minmax_last_ts']) +\
+                            " where dateTime >= " + '{0}'.format(work_item['minmax_first_ts']) +\
+                            " and dateTime < " + '{0}'.format(work_item['minmax_last_ts']) +\
                             " order by dateTime"
 
                     my_cur.execute(my_query)
@@ -310,12 +314,12 @@ class MigrateDB:
                     if nb_record_processed > 0:
                         process_length = datetime.now() - start_time
                         # print(
-                        #     'meteor: ' + work_item['meteor'] + ', weewx.archive_day_' + str(table_name) +\
-                        #     " new records: " + str(nb_record_processed) + ' en ' + str(process_length/1000) + ' ms')
+                        #     'meteor: ' + work_item['meteor'] + ', weewx.archive_day_' + '{0}'.format(table_name) +\
+                        #     " new records: " + '{0}'.format(nb_record_processed) + ' en ' + '{0}'.format(process_length/1000) + ' ms')
 
         finally:
             myconn.close()
-            # print('loadMinMaxFromWeeWx, min_max len: ' + str(len(min_max)))
+            # print('loadMinMaxFromWeeWx, min_max len: ' + '{0}'.format(len(min_max)))
             return min_max
 
     # --------------------------------
@@ -333,8 +337,8 @@ class MigrateDB:
                 query_my += ', ' + a_mesure['archive_col']
 
         # finalize sql statements
-        query_my += " from archive where dateTime >= " + str(work_item['archive_first_ts'])
-        query_my += " and dateTime < " + str(work_item['archive_last_ts'])
+        query_my += " from archive where dateTime >= " + '{0}'.format(work_item['archive_first_ts'])
+        query_my += " and dateTime < " + '{0}'.format(work_item['archive_last_ts'])
 
         # query_my += " order by dateTime"""
         query_my += " order by dateTime"
