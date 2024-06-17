@@ -23,7 +23,7 @@ def getPGConnexion():
         )
 
     except Exception as e:
-        t.logException("Error during postgres connection: %s" % e)
+        t.logException(e, "getPGConnexion")
         raise e
 
 def getMSQLConnection(meteor):
@@ -49,7 +49,7 @@ def getMSQLConnection(meteor):
         myconn.time_zone = "+00:00"
         return myconn
     except Exception as e:
-         t.logException("Error during mySql connection: %s" % e)
+         t.logException(e, "getMSQLConnection")
          raise e
 
 def refreshMV():
@@ -77,5 +77,5 @@ def refreshMV():
         pgconn.close()
 
     except Exception as e:
-         t.logException("Error during refreshMV: %s" % e)
+         t.logException(e, "refreshMV")
          raise e

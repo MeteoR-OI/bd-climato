@@ -52,7 +52,7 @@ class AggHourAdmin(admin.ModelAdmin):
         if agg is None:
             return 'n/a'
         url = reverse("admin:app_aggday_change", args=(agg.id,))
-        return format_html('<a href="{}">{}</a>', url, str(agg.start_dat)[0:10])
+        return format_html('<a href="{}">{}</a>', url, '{0}'.format(agg.start_dat)[0:10])
     show_clickage_agg_day.short_description = "goto day"
 
     def view_aggregations(self, obj):
@@ -104,7 +104,7 @@ class AggDayAdmin(admin.ModelAdmin):
         if agg is None:
             return 'n/a'
         url = reverse("admin:app_aggmonth_change", args=(agg.id,))
-        return format_html('<a href="{}">{}</a>', url, str(agg.start_dat)[0:7])
+        return format_html('<a href="{}">{}</a>', url, '{0}'.format(agg.start_dat)[0:7])
     show_clickage_agg_month.short_description = "goto Month"
 
     def view_aggregations(self, obj):
@@ -155,7 +155,7 @@ class AggMonthAdmin(admin.ModelAdmin):
         if agg is None:
             return 'n/a'
         url = reverse("admin:app_aggyear_change", args=(agg.id,))
-        return format_html('<a href="{}">{}</a>', url, str(agg.start_dat)[0:4])
+        return format_html('<a href="{}">{}</a>', url, '{0}'.format(agg.start_dat)[0:4])
     show_clickage_agg_year.short_description = "goto Year"
 
 
@@ -276,12 +276,12 @@ class AggHistoAdminByObs(admin.ModelAdmin):
 
     def show_clickage_agg_id(self, obj):
         if obj.agg_level[0] == "H":
-            return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/agghour/" + str(obj.agg_id) + "/change/", str(obj.agg_id))
-        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/aggday/" + str(obj.agg_id) + "/change/", str(obj.agg_id))
+            return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/agghour/" + '{0}'.format(obj.agg_id) + "/change/", '{0}'.format(obj.agg_id))
+        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/aggday/" + '{0}'.format(obj.agg_id) + "/change/", '{0}'.format(obj.agg_id))
     show_clickage_agg_id.short_description = "agg_id"
 
     def show_clickage_obs_id(self, obj):
-        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/observation/" + str(obj.obs_id) + "/change/", str(obj.obs_id))
+        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/observation/" + '{0}'.format(obj.obs_id) + "/change/", '{0}'.format(obj.obs_id))
     show_clickage_obs_id.short_description = "obs_id"
 
 
@@ -318,10 +318,10 @@ class AggHistoAdminByAgg(admin.ModelAdmin):
 
     def show_clickage_agg_id(self, obj):
         if obj.agg_level == "H":
-            return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/agghour/" + str(obj.agg_id) + "/change/", str(obj.agg_id))
-        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/aggday/" + str(obj.agg_id) + "/change/", str(obj.agg_id))
+            return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/agghour/" + '{0}'.format(obj.agg_id) + "/change/", '{0}'.format(obj.agg_id))
+        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/aggday/" + '{0}'.format(obj.agg_id) + "/change/", '{0}'.format(obj.agg_id))
     show_clickage_agg_id.short_description = "agg_id"
 
     def show_clickage_obs_id(self, obj):
-        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/observation/" + str(obj.obs_id) + "/change/", str(obj.obs_id))
+        return format_html('<a href="{}">{}</a>', "http://127.0.0.1:8000/admin/app/observation/" + '{0}'.format(obj.obs_id) + "/change/", '{0}'.format(obj.obs_id))
     show_clickage_obs_id.short_description = "obs_id"

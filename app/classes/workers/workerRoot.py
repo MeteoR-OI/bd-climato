@@ -274,10 +274,7 @@ class WorkerRoot:
 
                 except Exception as exc:
                     in_use = False
-                    t.logException(exc)
-                    print('#$##$#$#$##$# in workerRoot')
-                    print('Exception in ' + self.display + '=>' + '{0}'.format(exc))
-                    print('#$##$#$#$##$#')
+                    t.logException(exc, {"svc": self.display})
 
         finally:
             WorkerRoot.wrks_lock.acquire()
