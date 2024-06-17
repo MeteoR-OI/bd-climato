@@ -12,7 +12,9 @@ import os
 
 
 def notifyAdmin(type, message: str, params: json = {}, create_info_log: bool = True):
+    print("!@£$^$£!&*&$^$£@£%!@!$£%$^%&^^*$&%^$%£!@%£$^%&*$^%&£^%")
     print("notifyAdmin:", type + ' =>', message, params)
+    print("!@£$^$£!&*&$^$£@£%!@!$£%$^%&^^*$&%^$%£!@%£$^%&*$^%&£^%")
     if create_info_log is True:
         return LogMe.GetInstance().LogMe(message, "info", params)
 
