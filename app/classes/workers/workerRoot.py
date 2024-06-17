@@ -253,12 +253,13 @@ class WorkerRoot:
                         work_item['info'] = self.display
                     if work_item.get("meteor") is None:
                         work_item['meteor'] = "?"
-
+                    step = 0
                     # call the service handler
                     try:
                         start_ts = datetime.now()
                         in_use = True
                         a_worker['class'].processWorkItem(work_item)
+                        step = 1
                         a_worker['class'].succeedWorkItem(work_item)
                         t.logInfo("item processed ok", {
                             "svc": self.display,
@@ -268,7 +269,8 @@ class WorkerRoot:
 
                     except Exception as exc:
                         t.logException(exc, {"svc": self.display, "info": work_item.get('info')})
-                        a_worker['class'].failWorkItem(work_item, exc)
+                        if step < 1:
+                            a_worker['class'].failWorkItem(work_item, exc)
 
                     finally:
                         in_use = False
