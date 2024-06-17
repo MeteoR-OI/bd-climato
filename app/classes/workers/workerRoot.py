@@ -175,7 +175,7 @@ class WorkerRoot:
                     t.logInfo(self.display + " new item in queue - " + info, {"svc": self.display, "info": info})
 
                 except Exception as exc:
-                    t.logException(exc, None)
+                    t.logException(exc,  {"svc": self.display, "info": info})
 
                 finally:
                     pass
