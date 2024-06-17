@@ -189,6 +189,9 @@ class WorkerRoot:
                     return a_worker['threadRunning']
             t.logError('workerRoot::IsRunning', 'Service ' + self.display + " not found", {"svc": self.display})
 
+        except Exception as exc:
+            t.logException(exc,  {"svc": self.display})
+
         finally:
             WorkerRoot.wrks_lock.release()
 
