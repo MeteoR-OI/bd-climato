@@ -30,12 +30,16 @@ def logException(e, params: json = {}):
     line_no = msg_line[5][:-1]
     module = msg_line[7]
     params['code'] = params['stack'].split('\n')[1]
-    IncidentMeteor.new(
-        'exception',
-        'critical',
-        message.split(':')[1],
-        params,
-    )
+    try:
+        IncidentMeteor.new(
+            'exception',
+            'critical',
+            message.split(':')[1],
+            params,
+        )
+    except Exception as e:
+        print("logException: ", str(e))
+
     notifyAdmin('exception', message.split(':')[1], params, False)
     # filename, line_no, module = self.GetStackInfo(5 if level == "critical" else 2)
     return LogMe.GetInstance().LogMeOut(filename, line_no, module, message.split(':')[1], 'critical', params)
