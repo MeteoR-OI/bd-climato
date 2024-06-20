@@ -268,10 +268,13 @@ class WorkerRoot:
 
 
                 except Exception as exc:
-                    if in_use is True:
-                        a_worker['class'].failWorkItem(work_item, exc)
-                    in_use = False
-                    t.logException(exc, {"svc": self.display})
+                    try:
+                        if in_use is True:
+                            a_worker['class'].failWorkItem(work_item, exc)
+                        in_use = False
+                        t.logException(exc, {"svc": self.display})
+                    except Exception as exc:
+                        print("Exception in __unSvc", str(exc))
 
                 finally:
                     self.eventRunMe.set()
