@@ -106,6 +106,7 @@ DATABASES = {
         'PASSWORD': PG_ADDON_PASSWORD,
         'HOST': PG_ADDON_HOST,
         'PORT': PG_ADDON_PORT,
+        'CONN_MAX_AGE': None,
     }
 }
 
