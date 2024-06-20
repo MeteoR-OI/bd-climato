@@ -8,6 +8,7 @@ insert into postes
 ('BER605',   4, 1, 'VP2', 'Véronique', 'contact@meteor-oi.re', '0612345678', 'Bérive', 'Le Tampon', 'La Réunion',  605, -21.30833, 55.53887, 1, 'mon api key 007'),
 ('BOCO1370', 4, 1, 'VP2', 'Donny', 'contact@meteor-oi.re', '0612345678', 'Bois court', 'Le Tampon', 'La Réunion',  1370,  -21.196061, 55.53827, 1, 'mon api key 007'),
 ('BOMU1610', 4, 1, 'VP2', 'Patrice', 'contact@meteor-oi.re', '0612345678', 'Bourg Murat', 'Le Tampon', 'La Réunion',  1610, -21.192665, 55.576251, 1, 'mon api key 007'),
+('BDN240',   4, 1, 'VP2', '??', 'contact@meteor-oi.re', '0612345678', '?', '?', 'La Réunion',  605, 0, 0, 1, 'mon api key 007'),
 ('BP130',    4, 1, 'VP2', 'Alexandre Nativel', 'contact@meteor-oi.re', '0612345678', 'Bassin Plat', 'Saint-Pierre', 'La Réunion',  135, -21.330492, 55.489393, 1, 'mon api key 007'),
 ('BPN100',   4, 1, 'Vue', 'Ami de Jack Quillet', 'contact@meteor-oi.re', '0612345678', 'La Caroline', 'Bras Panon', 'La Réunion',  100, -21.002163, 55.652502, 1, 'mon api key 007'),
 ('BRL030',   4, 1, 'VP2', 'Geoffroy', 'contact@meteor-oi.re', '0612345678', 'Baril', 'Saint-Philippe', 'La Réunion',  80, -21.362132, 55.725414, 1, 'mon api key 007'),
