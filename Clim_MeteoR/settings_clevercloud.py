@@ -151,12 +151,12 @@ MEDIA_ROOT = "/srv/beta_data/meteor_oi/bd_climato/bd-climato/media"
 DATA_FS_PATH = os.path.join(MEDIA_ROOT, 'data')
 
 # App settings
-JSON_AUTOLOAD = "./clevercloud/climato/json_auto_load"
-JSON_WAITING = "./clevercloud/climato/waiting_json"
-CSV_AUTOLOAD = "./clevercloud/climato/csv_auto_load"
-OVPF_FILES = "./clevercloud/climato/ovpf"
-ARCHIVE_DIR = "./clevercloud/climato/json_archive"
-FAILED_DIR = "./clevercloud/climato/erreur"
+JSON_AUTOLOAD = "./fs_bucket/climato/json_auto_load"
+JSON_WAITING = "./fs_bucket/climato/waiting_json"
+CSV_AUTOLOAD = "./fs_bucket/climato/csv_auto_load"
+OVPF_FILES = "./fs_bucket/climato/ovpf"
+ARCHIVE_DIR = "./fs_bucket/climato/json_archive"
+FAILED_DIR = "./fs_bucket/climato/erreur"
 NO_DELETE_JSON = True                # do not delete json file after processing
 
 TELEMETRY_PROVIDER = False          # None, Console, Jaeger, Thrift
@@ -165,7 +165,7 @@ JAEGER_PORT = 14250
 THRIFT_PORT = 14250
 
 PROD = False
-LOG_FILE_DIR = "./clevercloud/climato/log"    # log storage
+LOG_FILE_DIR = "./fs_bucket/climato/log"    # log storage
 
 # see comments in mytools.py(LogMe class definition)
 LOGGING = {
