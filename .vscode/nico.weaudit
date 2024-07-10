@@ -4,14 +4,14 @@
   "gitSha": "",
   "treeEntries": [
     {
-      "label": "ne pas lancer plus d'une fois par jour... Attendre 6:00 UTC pour le 1er run",
+      "label": "recupere tous les autres parametres, et les passer au service...",
       "entryType": 0,
       "author": "nico",
       "locations": [
         {
-          "path": "app/classes/csv_loader/csv_OVPF.py",
-          "startLine": 25,
-          "endLine": 25,
+          "path": "app/management/commands/svc.py",
+          "startLine": 13,
+          "endLine": 13,
           "label": "",
           "description": ""
         }
@@ -26,14 +26,14 @@
       }
     },
     {
-      "label": "recupere tous les autres parametres, et les passer au service...",
+      "label": "Auto restart after an exception",
       "entryType": 0,
       "author": "nico",
       "locations": [
         {
-          "path": "app/management/commands/svc.py",
-          "startLine": 13,
-          "endLine": 13,
+          "path": "app/classes/workers/workerRoot.py",
+          "startLine": 276,
+          "endLine": 276,
           "label": "",
           "description": ""
         }

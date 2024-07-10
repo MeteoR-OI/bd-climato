@@ -164,7 +164,7 @@ TELEMETRY_HOST = "localhost"
 JAEGER_PORT = 14250
 THRIFT_PORT = 14250
 
-PROD = False
+PROD = True
 LOG_FILE_DIR = "./fs_bucket/climato/log"    # log storage
 
 # see comments in mytools.py(LogMe class definition)
