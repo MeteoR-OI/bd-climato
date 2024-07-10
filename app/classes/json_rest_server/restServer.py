@@ -7,6 +7,7 @@ from app.classes.repository.posteMeteor import PosteMeteor
 from app.tools.myTools import getDirNameInSettings
 import uuid
 import os
+import app.tools.myTools as t
 
 # restServer.py
 
@@ -58,4 +59,5 @@ def upload_file(request):
         return JsonResponse({'message': 'File uploaded successfully'}, status=200)
 
     except Exception as e:
+        t.logException(e, {'meteor': meteor, 'file_name': file_name})
         return JsonResponse({'error': '{0}'.format(e)}, status=500)
