@@ -24,28 +24,6 @@
         "exploit": "",
         "recommendation": "Short term, \nLong term, \n"
       }
-    },
-    {
-      "label": "Auto restart after an exception",
-      "entryType": 0,
-      "author": "nico",
-      "locations": [
-        {
-          "path": "app/classes/workers/workerRoot.py",
-          "startLine": 276,
-          "endLine": 276,
-          "label": "",
-          "description": ""
-        }
-      ],
-      "details": {
-        "severity": "",
-        "difficulty": "",
-        "type": "",
-        "description": "",
-        "exploit": "",
-        "recommendation": "Short term, \nLong term, \n"
-      }
     }
   ],
   "auditedFiles": [

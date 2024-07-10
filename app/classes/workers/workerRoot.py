@@ -274,7 +274,10 @@ class WorkerRoot:
                         in_use = False
                         t.logException(exc, {"svc": self.display})
                     except Exception as exc:
-                        print("Exception in __unSvc", str(exc))
+                        t.logException(exc, {"svc": self.display, "status": "restarting"})
+                        # Restart Service
+                        self.Stop()
+                        self.Start()
 
                 finally:
                     self.eventRunMe.set()
