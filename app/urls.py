@@ -1,8 +1,9 @@
-from django.urls import path
+from django.urls import path, re_path
 # from app.views import views
 # from django.conf import settings
 # from django.conf.urls.static import static
-# from app.views.views_telemetry_test import home_page_view
+from django.views.generic import RedirectView
+from app.views.views_telemetry_test import home_page_view
 from app.views.v_svcrpc import viewControlSvc
 from app.classes.json_rest_server.restServer import upload_file
 

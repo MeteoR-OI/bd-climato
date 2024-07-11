@@ -60,7 +60,7 @@ class JsonLoaderABC(ABC):
                         raise Exception("code meteor inconnu: " + meteor + ', idx_global: ' + '{0}'.format(idx_global) + ' dans le fichier: ' + filename)
 
                     if (cur_poste.data.load_type & Load_Type.LOAD_FROM_JSON.value) != Load_Type.LOAD_FROM_JSON.value:
-                        t.logInfo('jsonload: ' + meteor + ' inactif json_load is False), skipping file ' + filename)
+                        work_item['info'] = 'jsonload: ' + meteor + ' inactif json_load is False), skipping file ' + filename
                         return
 
                     cur_meteor = meteor
@@ -82,7 +82,7 @@ class JsonLoaderABC(ABC):
                             if j_stop_dat_local > cur_poste.data.last_obs_date_local:
                                 work_item['WAIT_LIST'] = True
                                 # Keep the older JSON date
-                                t.logInfo('jsonload: ' + meteor + ' file ' + filename + ' moved to waiting directory, stop_date: ' + '{0}'.format(j_stop_dat_local))
+                                work_item['info'] = 'jsonload: ' + meteor + ' file ' + filename + ' moved to waiting directory, stop_date: ' + '{0}'.format(j_stop_dat_local)
                             return
 
                         if work_item.get('FORCE_LOAD') is not None and work_item['FORCE_LOAD'] is True:
@@ -92,7 +92,7 @@ class JsonLoaderABC(ABC):
                                 # we process our file
                                 pass
                         elif cur_poste.data.last_obs_date_local is not None and j_stop_dat_local <= cur_poste.data.last_obs_date_local:
-                            t.logInfo('jsonload: ' + meteor + ' skipping data already loaded from ' + filename + ', stop_date: ' + stop_date + ', last_obs_date_local: ' + '{0}'.format(cur_poste.data.last_obs_date_local))
+                            work_item['info'] = 'jsonload: ' + meteor + ' skipping data already loaded from ' + filename + ', stop_date: ' + stop_date + ', last_obs_date_local: ' + '{0}'.format(cur_poste.data.last_obs_date_local)
                             return
 
                         self.loadObsData(cur_poste, a_work_item['valeurs'], j_stop_dat_local, j_duration)
