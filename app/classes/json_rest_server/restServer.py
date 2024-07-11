@@ -8,6 +8,7 @@ from app.tools.myTools import getDirNameInSettings
 import uuid
 import os
 import app.tools.myTools as t
+import app.tools.dbTools as dbt
 
 # restServer.py
 
@@ -17,21 +18,30 @@ import app.tools.myTools as t
 def upload_file(request):
     try:
         json_dir = getDirNameInSettings("JSON_AUTOLOAD")
+        pg_cxion = dbt.getPGConnexion()
 
-        meteor = request.POST.get('meteor', None)
+        try:
+            pg_cur = pg_cxion.cursor()
+
+        except Exception as e:
+            t.logError("upload_file", "Invalid PG connexion, trying to reconnect")
+            pg_cxion = dbt.getPGConnexion()
+            pg_cur = pg_cxion.cursor()
+            
+        meteor_requested = request.POST.get('meteor', None)
         file_name = request.POST.get('filename', None)
-        if meteor is None or file_name is None:
+        if meteor_requested is None or file_name is None:
             return JsonResponse({'error': 'Missing parameters'}, status=400)
 
-        cur_poste = PosteMeteor(meteor)
-        if cur_poste is None:
+        meteor, api_key = pg_cur.execute("select meteor, api_key from poste_meteor where meteor = %s", (meteor_requested),).fetchone()
+        if meteor is None or api_key is None:
             return JsonResponse({'error': 'Invalid meteor'}, status=400)
 
         if meteor not in file_name:
             return JsonResponse({'error': 'Invalid file name'}, status=400)
 
         # Check if the API key is provided in the request headers
-        if 'X-API-Key' not in request.headers or request.headers['X-API-Key'] != cur_poste.data.api_key:
+        if 'X-API-Key' not in request.headers or request.headers['X-API-Key'] != api_key:
             return JsonResponse({'error': 'Invalid Credentials'}, status=401)
 
         # Check if the file parameter exists in the request
@@ -40,12 +50,12 @@ def upload_file(request):
 
         file = request.FILES['file']
 
-        dir_name = os.path.join(json_dir, cur_poste.data.meteor)
+        dir_name = os.path.join(json_dir, meteor)
         if not os.path.isdir(dir_name):
             os.makedirs(dir_name)
 
         # Generate a random unique file name
-        file_name = os.path.join(json_dir, cur_poste.data.meteor, file_name)
+        file_name = os.path.join(json_dir, meteor, file_name)
         if os.path.isfile(file_name):
             return JsonResponse({'error': 'File already exists'}, status=400)
         file_name = file_name.replace('.json', '.tmp_json')
