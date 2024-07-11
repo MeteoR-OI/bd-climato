@@ -23,9 +23,9 @@ def upload_file(request):
         if meteor is None or file_name is None:
             return JsonResponse({'error': 'Missing parameters'}, status=400)
 
-        cur_poste = PosteMeteor(meteor)
-        if cur_poste is None:
-            return JsonResponse({'error': 'Invalid meteor'}, status=400)
+        # cur_poste = PosteMeteor(meteor)
+        # if cur_poste is None:
+        #     return JsonResponse({'error': 'Invalid meteor'}, status=400)
 
         if meteor not in file_name:
             return JsonResponse({'error': 'Invalid file name'}, status=400)
@@ -40,12 +40,12 @@ def upload_file(request):
 
         file = request.FILES['file']
 
-        dir_name = os.path.join(json_dir, cur_poste.data.meteor)
+        dir_name = os.path.join(json_dir, meteor)
         if not os.path.isdir(dir_name):
             os.makedirs(dir_name)
 
         # Generate a random unique file name
-        file_name = os.path.join(json_dir, cur_poste.data.meteor, file_name)
+        file_name = os.path.join(json_dir, meteor, file_name)
         if os.path.isfile(file_name):
             return JsonResponse({'error': 'File already exists'}, status=400)
         file_name = file_name.replace('.json', '.tmp_json')
