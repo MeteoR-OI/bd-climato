@@ -11,12 +11,15 @@ import app.tools.myTools as t
 import app.tools.dbTools as dbt
 
 # restServer.py
+# pg_pool is required...
 
 
 @csrf_exempt
 @require_POST
 def upload_file(request):
     try:
+        pg_cxion = pg_cur = None
+
         json_dir = getDirNameInSettings("JSON_AUTOLOAD")
         pg_cxion = dbt.getPGConnexion()
 
@@ -33,7 +36,7 @@ def upload_file(request):
         if meteor_requested is None or file_name is None:
             return JsonResponse({'error': 'Missing parameters'}, status=400)
 
-        meteor, api_key = pg_cur.execute("select meteor, api_key from poste_meteor where meteor = %s", (meteor_requested),).fetchone()
+        meteor, api_key = pg_cur.execute("select meteor, api_key from postes where meteor = '%s'", (meteor_requested),).fetchone()
         if meteor is None or api_key is None:
             return JsonResponse({'error': 'Invalid meteor'}, status=400)
 
@@ -71,3 +74,9 @@ def upload_file(request):
     except Exception as e:
         t.logException(e, {'meteor': meteor, 'file_name': file_name})
         return JsonResponse({'error': '{0}'.format(e)}, status=500)
+
+    finally:
+        if pg_cur is not None:
+            pg_cur.close()
+        if pg_cxion is not None:
+            pg_cxion.close()
