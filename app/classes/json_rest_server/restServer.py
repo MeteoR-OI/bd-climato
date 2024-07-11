@@ -22,6 +22,17 @@ def upload_file(request):
 
         json_dir = getDirNameInSettings("JSON_AUTOLOAD")
         pg_cxion = dbt.getPGConnexion()
+         
+        meteor_requested = request.POST.get('meteor', None)
+        file_name = request.POST.get('filename', None)
+        if meteor_requested is None or file_name is None:
+            return JsonResponse({'error': 'Missing parameters'}, status=400)
+        
+        if str(meteor_requested).__contains__("'") or str(meteor_requested).__contains__(";"):
+            return JsonResponse({'error': 'Invalid meteor'}, status=400)
+
+        my_select = "select meteor, api_key from postes where meteor = '" + meteor_requested + "'"
+        print ("my_select: ", my_select)
 
         try:
             pg_cur = pg_cxion.cursor()
@@ -30,14 +41,20 @@ def upload_file(request):
             t.logError("upload_file", "Invalid PG connexion, trying to reconnect")
             pg_cxion = dbt.getPGConnexion()
             pg_cur = pg_cxion.cursor()
-            
-        meteor_requested = request.POST.get('meteor', None)
-        file_name = request.POST.get('filename', None)
-        if meteor_requested is None or file_name is None:
-            return JsonResponse({'error': 'Missing parameters'}, status=400)
 
-        meteor, api_key = pg_cur.execute("select meteor, api_key from postes where meteor = '%s'", (meteor_requested),).fetchone()
+        cur_row = pg_cur.execute(my_select).fetchone()
+
+        if cur_row is None:
+            return JsonResponse({'error': 'Invalid meteor'}, status=400)
+
+        meteor = cur_row[0]
+        api_key = cur_row[1]
+
+        while cur_row is not None:
+            cur_row.fetchone()
+
         print ("meteor: ", meteor, ", api_key: ", api_key)
+
         if meteor is None or api_key is None:
             return JsonResponse({'error': 'Invalid meteor'}, status=400)
 
