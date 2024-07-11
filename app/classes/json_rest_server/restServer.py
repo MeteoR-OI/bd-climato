@@ -32,7 +32,6 @@ def upload_file(request):
             return JsonResponse({'error': 'Invalid meteor'}, status=400)
 
         my_select = "select meteor, api_key from postes where meteor = '" + meteor_requested + "'"
-        print ("my_select: ", my_select)
 
         try:
             pg_cur = pg_cxion.cursor()
@@ -42,7 +41,8 @@ def upload_file(request):
             pg_cxion = dbt.getPGConnexion()
             pg_cur = pg_cxion.cursor()
 
-        cur_row = pg_cur.execute(my_select).fetchone()
+        pg_cur.execute(my_select)
+        cur_row = pg_cur.fetchone()
 
         if cur_row is None:
             return JsonResponse({'error': 'Invalid meteor'}, status=400)
@@ -51,7 +51,7 @@ def upload_file(request):
         api_key = cur_row[1]
 
         while cur_row is not None:
-            cur_row.fetchone()
+            cur_row = pg_cur.fetchone()
 
         print ("meteor: ", meteor, ", api_key: ", api_key)
 
