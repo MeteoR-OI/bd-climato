@@ -37,6 +37,7 @@ def upload_file(request):
             return JsonResponse({'error': 'Missing parameters'}, status=400)
 
         meteor, api_key = pg_cur.execute("select meteor, api_key from postes where meteor = '%s'", (meteor_requested),).fetchone()
+        print ("meteor: ", meteor, ", api_key: ", api_key)
         if meteor is None or api_key is None:
             return JsonResponse({'error': 'Invalid meteor'}, status=400)
 
