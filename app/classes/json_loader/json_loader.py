@@ -82,17 +82,17 @@ class JsonLoaderABC(ABC):
                             if j_stop_dat_local > cur_poste.data.last_obs_date_local:
                                 work_item['WAIT_LIST'] = True
                                 # Keep the older JSON date
-                                work_item['info'] = 'jsonload: ' + meteor + ' file ' + filename + ' moved to waiting directory, stop_date: ' + '{0}'.format(j_stop_dat_local)
+                                work_item['info'] = 'jsonload: ' + meteor + ' file ' + filename + ' moved to waiting directory, stop_date: ' + '{0}'.format(stop_date)
                             return
 
                         if work_item.get('FORCE_LOAD') is not None and work_item['FORCE_LOAD'] is True:
                             if ObsMeteor.count_obs_poste_local(cur_poste.data.id, stop_date) > 0:
-                                raise Exception("jsonload: " + meteor + " skipping data already loaded from " + filename + ", stop_date: " + stop_date)
+                                raise Exception("jsonload: " + meteor + " skipping data already loaded from " + filename + ", stop_date: " +  '{0}'.format(stop_date) )
                             else:
                                 # we process our file
                                 pass
                         elif cur_poste.data.last_obs_date_local is not None and j_stop_dat_local <= cur_poste.data.last_obs_date_local:
-                            work_item['info'] = 'jsonload: ' + meteor + ' skipping data already loaded from ' + filename + ', stop_date: ' + stop_date + ', last_obs_date_local: ' + '{0}'.format(cur_poste.data.last_obs_date_local)
+                            work_item['info'] = 'jsonload: ' + meteor + ' skipping data already loaded from ' + filename + ', stop_date: ' + '{0}'.format(stop_date) + ', last_obs_date_local: ' + '{0}'.format(cur_poste.data.last_obs_date_local)
                             return
 
                         self.loadObsData(cur_poste, a_work_item['valeurs'], j_stop_dat_local, j_duration)

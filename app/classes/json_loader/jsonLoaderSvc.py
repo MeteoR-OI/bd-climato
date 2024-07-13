@@ -25,7 +25,6 @@ import os
 class JsonLoader(JsonLoaderABC):
     def __init__(self):
         super().__init__()
-        print("JsonLoader init")
 
         # boolean to stop processing files
         self.stopRequested = False
