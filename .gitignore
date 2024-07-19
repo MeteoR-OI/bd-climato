@@ -18,7 +18,5 @@ htmlcov
 coverage.xml
 .coverage
 
-data
 data/**/*/
-
-scripts/dina/
+data

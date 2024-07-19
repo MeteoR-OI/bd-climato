@@ -8,7 +8,7 @@
 #       Process the work item
 #   succeedWorkItem(work_item):
 #       Mark the work_item as processed
-#   failWorkItem(work_item, exc):
+#   failWorkItem(work_item):
 #       mark the work_item as failed
 
 # ---------------
@@ -96,7 +96,7 @@ class MigrateDB:
     # ---------------
     # process failed
     # ---------------
-    def failWorkItem(self, work_item, exc):
+    def failWorkItem(self, work_item):
         return
 
     # -----------------

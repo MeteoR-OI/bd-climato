@@ -8,7 +8,7 @@
 #       Process the work item
 #   succeedWorkItem(work_item):
 #       Mark the work_item as processed
-#   failWorkItem(work_item, exc):
+#   failWorkItem(work_item):
 #       mark the work_item as failed
 from app.classes.repository.mesureMeteor import MesureMeteor
 from app.classes.repository.posteMeteor import PosteMeteor
@@ -73,7 +73,7 @@ class CsvLoader:
         # refresh our materialized view
         refreshMV()
 
-    def failWorkItem(self, work_item, exc):
+    def failWorkItem(self, work_item):
         # move the file to failed archive
         if work_item['move_file'] is True:
             target_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/../../data/failed/csv/"

@@ -8,17 +8,16 @@
 #       Process the work item
 #   succeedWorkItem(work_item):
 #       Mark the work_item as processed
-#   failWorkItem(work_item, exc):
+#   failWorkItem(work_item):
 #       mark the work_item as failed
 from app.models import Load_Type
-from app.classes.repository.posteMeteor import PosteMeteor
-from app.classes.json_loader.json_loader import JsonLoaderABC
+from app.classes.repository_sql.posteSQL import PosteSQL
+from app.classes.json_loader.json_loaderABC import JsonLoaderABC
 import app.tools.myTools as t
 from app.tools.jsonPlus import JsonPlus
 from django.conf import settings
 from app.tools.myTools import getDirNameInSettings
-from app.tools.dbTools import refreshMV
-from django.conf import settings
+from app.tools.dbTools import refreshMV, getPGConnexion
 import json
 import os
 
@@ -72,11 +71,7 @@ class JsonLoader(JsonLoaderABC):
         except Exception:
             pass
         
-        if meteor == 'inconnu':
-            os.remove(os.path.join(root_file, a_filename))
-            raise Exception("meteor name not found, deleting file")
-
-        return {
+        work_item = {
             'f': a_filename,
             'r': root_file,
             'json': my_json,
@@ -84,16 +79,31 @@ class JsonLoader(JsonLoaderABC):
             'info': "chargement du json " + os.path.join(root_file, a_filename)
         }
 
+        if meteor == 'inconnu':
+            self.failWorkItem(work_item)
+
+        return work_item
+
     def succeedWorkItem(self, work_item):
-        # Don't move JSON files if we are in a "dump then json mode"
-        cur_poste = PosteMeteor(work_item['meteor'])
+        pg_cur, pg_conn = None
+
+        try:
+            pg_conn = getPGConnexion()
+            pg_cur = pg_conn.cursor()
+            cur_poste = PosteSQL(pg_cur, work_item['meteor'])
+        finally:
+            if pg_cur is not None:
+                pg_cur.close()
+            if pg_conn is not None:
+                pg_conn.close()
+
         if not os.path.exists(self.archive_dir + "/" + work_item['meteor'] + "/"):
             os.makedirs(self.archive_dir + "/" + work_item['meteor'] + "/")
 
         if not os.path.exists(os.path.join(self.waiting_dir, work_item['meteor'])):
             os.makedirs(os.path.join(self.waiting_dir, work_item['meteor']))
 
-        # Move the json file to the waiting directory
+        # Move the json file to the waiting directory if needed
         if work_item.get('WAIT_LIST') is not None and work_item['WAIT_LIST'] is True:
             os.rename(os.path.join(work_item['r'], work_item['f']), os.path.join(self.waiting_dir, work_item['meteor']) + "/" + work_item['f'])
             return
@@ -103,7 +113,7 @@ class JsonLoader(JsonLoaderABC):
             os.remove(os.path.join(work_item['r'], work_item['f']))
             return
 
-        # delete the file
+        # delete or move the file
         if hasattr(settings, 'NO_DELETE_JSON') is True and settings.NO_DELETE_JSON is True:
             os.rename(os.path.join(work_item['r'], work_item['f']), os.path.join(self.archive_dir, work_item['meteor'], work_item['f']))
         else:
@@ -112,7 +122,7 @@ class JsonLoader(JsonLoaderABC):
         # refresh our materialized view
         refreshMV()
 
-    def failWorkItem(self, work_item, exc):
+    def failWorkItem(self, work_item):
         meteor = work_item['meteor']
 
         if not os.path.exists(self.failed_dir + "/" + meteor + "/"):

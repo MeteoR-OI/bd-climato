@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from app.classes.repository.mesureMeteor import MesureMeteor
-from app.classes.repository.posteMeteor import PosteMeteor
-from app.classes.repository.obsMeteor import ObsMeteor
+from app.classes.repository_sql.mesureSQL import MesureSQL
+from app.classes.repository_sql.posteSQL import PosteSQL
+from app.classes.repository_sql.obsSQL import ObsSQL
 from app.models import Aggreg_Type, Code_QA as QA, Load_Type
 from app.tools.dateTools import str_to_datetime
 from app.tools.dbTools import getPGConnexion
@@ -31,12 +31,22 @@ class IDX(Enum):
 
 class JsonLoaderABC(ABC):
     def __init__(self):
-        # save mesures definition
-        self.mesures = MesureMeteor.getDefinitions()
         self.insert_cde = None
-        
         # boolean to stop processing files
         self.stopRequested = False
+        pg_conn = pg_cur = None
+        
+        try:
+            pg_conn = getPGConnexion()
+            pg_cur = pg_conn.cursor()
+            # save mesures definition
+            self.mesures = MesureSQL.getDefinitions(pg_cur)
+
+        finally:
+            if pg_cur is not None:
+                pg_cur.close()
+            if pg_conn is not None:
+                pg_conn.close()
 
     def processJson(self, work_item: json):
         work_item['is_loaded'] = False
@@ -49,71 +59,82 @@ class JsonLoaderABC(ABC):
         if check_result is not None:
             raise Exception("Error in Json file: " + filename + ": " + check_result)
 
-        while idx_global < jsons_to_load.__len__():
-            try:
-                json_to_load = jsons_to_load[idx_global]
-                meteor = '{0}'.format(json_to_load.get("meteor"))
+        pg_conn = pg_cur = None
+        try:
+            pg_conn = getPGConnexion()
+            pg_cur = pg_conn.cursor()
 
-                if meteor != cur_meteor:
-                    cur_poste = PosteMeteor(meteor)
-                    if cur_poste.data is None or cur_poste.data.load_type is None:
-                        raise Exception("code meteor inconnu: " + meteor + ', idx_global: ' + '{0}'.format(idx_global) + ' dans le fichier: ' + filename)
+            while idx_global < jsons_to_load.__len__():
+                try:
+                    json_to_load = jsons_to_load[idx_global]
+                    meteor = '{0}'.format(json_to_load.get("meteor"))
 
-                    if (cur_poste.data.load_type & Load_Type.LOAD_FROM_JSON.value) != Load_Type.LOAD_FROM_JSON.value:
-                        work_item['info'] = 'jsonload: ' + meteor + ' inactif json_load is False), skipping file ' + filename
-                        return
+                    if meteor != cur_meteor:
+                        cur_poste = PosteSQL(pg_cur, meteor)
+                        if cur_poste.data.id == 0:
+                            raise Exception("code meteor inconnu: " + meteor + ', idx_global: ' + '{0}'.format(idx_global) + ' dans le fichier: ' + filename)
 
-                    cur_meteor = meteor
-
-                idx_data = 0
-                while idx_data < json_to_load['data'].__len__():
-                    try:
-                        a_work_item = json_to_load['data'][idx_data]
-
-                        # get data from our json item
-                        j_stop_dat_local = a_work_item["stop_dat"]
-                        stop_date = str_to_datetime(j_stop_dat_local)
-                        j_duration = a_work_item["duration"]
-
-                        if (cur_poste.data.load_type & Load_Type.LOAD_FROM_DUMP_THEN_JSON.value) == Load_Type.LOAD_FROM_DUMP_THEN_JSON.value:
-                            if cur_poste.data.last_json_date_local > j_stop_dat_local:
-                                cur_poste.data.last_json_date_local = j_stop_dat_local
-                                cur_poste.data.save()
-                            if j_stop_dat_local > cur_poste.data.last_obs_date_local:
-                                work_item['WAIT_LIST'] = True
-                                # Keep the older JSON date
-                                work_item['info'] = 'jsonload: ' + meteor + ' file ' + filename + ' moved to waiting directory, stop_date: ' + '{0}'.format(stop_date)
+                        if (cur_poste.data.load_type & Load_Type.LOAD_FROM_JSON.value) != Load_Type.LOAD_FROM_JSON.value:
+                            work_item['info'] = 'jsonload: ' + meteor + ' inactif json_load is False), skipping file ' + filename
                             return
 
-                        if work_item.get('FORCE_LOAD') is not None and work_item['FORCE_LOAD'] is True:
-                            if ObsMeteor.count_obs_poste_local(cur_poste.data.id, stop_date) > 0:
-                                raise Exception("jsonload: " + meteor + " skipping data already loaded from " + filename + ", stop_date: " +  '{0}'.format(stop_date) )
-                            else:
-                                # we process our file
-                                pass
-                        elif cur_poste.data.last_obs_date_local is not None and j_stop_dat_local <= cur_poste.data.last_obs_date_local:
-                            work_item['info'] = 'jsonload: ' + meteor + ' skipping data already loaded from ' + filename + ', stop_date: ' + '{0}'.format(stop_date) + ', last_obs_date_local: ' + '{0}'.format(cur_poste.data.last_obs_date_local)
-                            return
+                        cur_meteor = meteor
 
-                        self.loadObsData(cur_poste, a_work_item['valeurs'], j_stop_dat_local, j_duration)
+                    idx_data = 0
+                    while idx_data < json_to_load['data'].__len__():
+                        try:
+                            a_work_item = json_to_load['data'][idx_data]
 
-                    finally:
-                        idx_data += 1
+                            # get data from our json item
+                            j_stop_dat_local = a_work_item["stop_dat"]
+                            stop_date = str_to_datetime(j_stop_dat_local)
+                            j_duration = a_work_item["duration"]
 
-            finally:
-                idx_global += 1
+                            if (cur_poste.data.load_type & Load_Type.LOAD_FROM_DUMP_THEN_JSON.value) == Load_Type.LOAD_FROM_DUMP_THEN_JSON.value:
+                                if cur_poste.data.last_json_date_local > j_stop_dat_local:
+                                    cur_poste.update_last_json_date_local(pg_cur, j_stop_dat_local)
+                                if j_stop_dat_local > cur_poste.data.last_obs_date_local:
+                                    work_item['WAIT_LIST'] = True
+                                    # Keep the older JSON date
+                                    work_item['info'] = 'jsonload: ' + meteor + ' file ' + filename + ' moved to waiting directory, stop_date: ' + '{0}'.format(stop_date)
+                                return
 
+                            if work_item.get('FORCE_LOAD') is not None and work_item['FORCE_LOAD'] is True:
+                                if ObsSQL.count_obs_poste_local(pg_cur, cur_poste.data.id, stop_date) > 0:
+                                    raise Exception("jsonload: " + meteor + " skipping data already loaded from " + filename + ", stop_date: " +  '{0}'.format(stop_date) )
+                                else:
+                                    # we process our file
+                                    pass
+                            elif cur_poste.data.last_obs_date_local is not None and j_stop_dat_local <= cur_poste.data.last_obs_date_local:
+                                work_item['info'] = 'jsonload: ' + meteor + ' skipping data already loaded from ' + filename + ', stop_date: ' + '{0}'.format(stop_date) + ', last_obs_date_local: ' + '{0}'.format(cur_poste.data.last_obs_date_local)
+                                return
+
+                            self.loadObsData(cur_poste, a_work_item['valeurs'], j_stop_dat_local, j_duration)
+
+                        finally:
+                            idx_data += 1
+
+                finally:
+                    idx_global += 1
+
+        finally:
+            if pg_cur is not None:
+                pg_cur.close()
+            if pg_conn is not None:
+                pg_conn.close()
+    
         work_item['is_loaded'] = True
 
     def loadObsData(self, cur_poste, j_data, stop_dat_local, duration):
         data_args = []
         min_data = []
         max_data = []
-        pg_conn = getPGConnexion()
-        pg_cur = pg_conn.cursor()
         self.loadSqlInsert()
+        pg_conn = pg_cur = None
 
         try:
+            pg_conn = getPGConnexion()
+            pg_cur = pg_conn.cursor()
             stop_date_utc = stop_dat_local - timedelta(hours=cur_poste.data.delta_timezone)
             values_arg = ['{0}'.format(cur_poste.data.id), '{0}'.format(stop_date_utc), '{0}'.format(stop_dat_local), '{0}'.format(duration)]
 
@@ -187,8 +208,10 @@ class JsonLoaderABC(ABC):
             raise e
 
         finally:
-            pg_cur.close()
-            pg_conn.close()
+            if pg_cur is not None:
+                pg_cur.close()
+            if pg_conn is not None:
+                pg_conn.close()
 
     def get_valeurs(self, a_mesure, valeurs, stop_dat, duration, use_second_input_key=False):
         #  [0]  [1]     [2]        [3]      [4]      [5]     [6]      [7]      [8]      [9]     [10]      [11]

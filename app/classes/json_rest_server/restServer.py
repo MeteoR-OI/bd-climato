@@ -3,7 +3,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 import json
 from django.urls import path
-from app.classes.repository.posteMeteor import PosteMeteor
 from app.tools.myTools import getDirNameInSettings
 import uuid
 import os

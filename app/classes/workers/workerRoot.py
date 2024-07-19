@@ -8,7 +8,7 @@
 #       Process the work item
 #   succeedWorkItem(work_item)
 #       Mark the work_item as processed
-#   failWorkItem(work_item, exc)
+#   failWorkItem(work_item)
 #       mark the work_item as failed (exc is the exception)
 # ----------
 import threading
@@ -266,11 +266,10 @@ class WorkerRoot:
                         "duration": datetime.now() - start_ts,
                     })
 
-
                 except Exception as exc:
                     try:
                         if in_use is True:
-                            a_worker['class'].failWorkItem(work_item, exc)
+                            a_worker['class'].failWorkItem(work_item)
                         in_use = False
                         t.logException(exc, {"svc": self.display})
                     except Exception as exc:
