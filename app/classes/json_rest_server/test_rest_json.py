@@ -1,8 +1,8 @@
 import requests
 
 def send_file():
-
-    url = 'http://localhost:8000/app/sendjson?meteor=MTG320&filename=obs.MTG320.2023-11-01T01-00.json'
+    # url = 'http://localhost:8000/app/sendjson?meteor=MTG320&filename=obs.MTG320.2023-11-01T01-00.json'
+    url = 'https://climato.meteor-oi.re/app/sendjson?meteor=MTG320&filename=obs.MTG320.2023-11-01T01-00.json'
     file_path = './data/json_not_in_git/obs.MTG320.2023-11-01T01-00.json'
     api_key = 'mon api key 007'
 

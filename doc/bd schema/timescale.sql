@@ -29,6 +29,21 @@ cd build && make
 make install
 
 
+============================================
+(install timescaledb 2.16.1 with postgres 17)
+=============================================
+be sure the PATH points to: /Applications/Postgres.app/Contents/Versions/16/bin
+
+git clone https://github.com/timescale/timescaledb
+git checkout 2.14.x
+
+./bootstrap
+
+cd build && make
+
+make install
+
+
 */
 
 -- Display chunck-name, and date range

@@ -9,10 +9,6 @@ import os
 import app.tools.myTools as t
 import app.tools.dbTools as dbt
 
-# restServer.py
-# pg_pool is required...
-
-
 @csrf_exempt
 @require_POST
 def upload_file(request):
