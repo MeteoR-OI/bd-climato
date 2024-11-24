@@ -210,9 +210,9 @@ insert into mesures
 (51, 'leaftemp2',       'leaf_temp2',       'leafTemp2',         null,        null,     false,   false,    1,      false,    true,     'leaftemp2',        '{}'),
 (54, 'leafwet1',        'leaf_wet1',        'leafWet1',          null,        null,     false,   false,    1,      false,    true,      'leafwet1',        '{}'),
 (55, 'leafwet2',        'leaf_wet2',        'leafWet2',          null,        null,     false,   false,    1,      false,    true,      'leafwet2',        '{}'),
-(60, 'radiation',       'radiation',        'radiation',       'skip',        null,     false,   false,    2,      false,    true,            null,
+(60, 'radiation',       'radiation',        'radiation',         null,        null,     false,   false,    2,      false,    true,            null,
   '{"w_dump": "lambda x: x * 0.03"}'),
-(61, 'radiation_rate', 'radiation_rate',    'radiation',         null,        null,     false,   true,     3,      false,    true,            null,        '{}'),
+(61, 'radiation_rate', 'radiation_rate',    'radiation',       'skip',        null,     false,   true,     3,      false,    false,           null,        '{}'),
 (62, 'uv_indice',       'uv',               'UV',                null,        null,     false,   true,     3,      false,    true,            null,        '{}'),
 (70, 'rain',            'rain',             'rain',              null,        null,     false,   false,    2,      false,    true,            null,
   '{"w_dump": "lambda x: x * 10", "json": "lambda x: x * 10"}'),
@@ -229,7 +229,7 @@ insert into mesures
 (96, 'soiltemp3',       'soil_temp3',       'soilTemp3',         null,        null,     true,    false,    4,      false,    true,     'soiltemp3',        '{}'),
 (97, 'soiltemp4',       'soil_temp4',       'soilTemp4',         null,        null,     true,    false,    4,      false,    true,     'soiltemp4',        '{}'),
 (100, 'voltage',         'voltage',         'consBatteryVoltage',null,        null,     false,   true,     3,      false,    true,            null,        '{}'),
-(110, 'wind dir',        'wind_dir',        'windDir',          'skip',       null,     false,   false,    0,      false,    true,            null,        '{}'),
+(110, 'wind dir',        'wind_dir',        'windDir',          'skip',       null,     false,   false,    0,       true,    true,            null,        '{}'),
 (111, 'wind',            'wind',            'windSpeed',        'wind',       110,      false,   false,    1,      false,    true,            null,
   '{"mfr_csv": "lambda x: x * 3.6"}'),
 (113, 'gust dir',        'wind_gust_dir',   'windGustDir',      'skip',       null,     false,   false,    0,      false,    true,  'wind_max_dir',        '{}'),
@@ -404,8 +404,8 @@ CREATE OR REPLACE TRIGGER delete_obs_trigger
 */
 create materialized view obs_hour WITH (timescaledb.continuous) as
   select
-        -- time_bucket('1 hour', o.date_local, origin => '1950-01-01') as date_local,
-        timescaledb_experimental.time_bucket_ng('1 hour', o.date_local, origin => '1950-01-01') as date_local,
+        time_bucket('1 hour', o.date_local, origin => '1950-01-01') as date_local,
+        -- timescaledb_experimental.time_bucket_ng('1 hour', o.date_local, origin => '1950-01-01') as date_local,
         o.poste_id as poste_id,
         avg(o.duration) as duration,
         avg(o.barometer) as barometer,
@@ -477,8 +477,8 @@ SELECT add_continuous_aggregate_policy('obs_hour',
 */
 create materialized view obs_day WITH (timescaledb.continuous) as
   select
-        -- time_bucket('1 day', o.date_local, origin => '1950-01-01') as date_local,
-        timescaledb_experimental.time_bucket_ng('1 day', o.date_local, origin => '1950-01-01') as date_local,
+        time_bucket('1 day', o.date_local, origin => '1950-01-01') as date_local,
+        -- timescaledb_experimental.time_bucket_ng('1 day', o.date_local, origin => '1950-01-01') as date_local,
         o.poste_id as poste_id,
         avg(o.duration) as duration,
         avg(o.barometer) as barometer,
@@ -550,8 +550,8 @@ SELECT add_continuous_aggregate_policy('obs_day',
 */
 create materialized view obs_month WITH (timescaledb.continuous) as
   select
-        -- time_bucket('1 month', o.date_local, origin => '1950-01-01') as date_local,
-        timescaledb_experimental.time_bucket_ng('1 month', o.date_local, origin => '1950-01-01') as date_local,
+        time_bucket('1 month', o.date_local, origin => '1950-01-01') as date_local,
+        -- timescaledb_experimental.time_bucket_ng('1 month', o.date_local, origin => '1950-01-01') as date_local,
         o.poste_id as poste_id,
         avg(o.duration) as duration,
         avg(o.barometer) as barometer,
@@ -623,8 +623,8 @@ SELECT add_continuous_aggregate_policy('obs_month',
 */
 create materialized view x_min_day WITH (timescaledb.continuous) as
   select
-        -- time_bucket('1 day', x.date_local, origin => '1950-01-01') as date_local,
-        timescaledb_experimental.time_bucket_ng('1 day', x.date_local, origin => '1950-01-01') as date_local,
+        time_bucket('1 day', x.date_local, origin => '1950-01-01') as date_local,
+        -- timescaledb_experimental.time_bucket_ng('1 day', x.date_local, origin => '1950-01-01') as date_local,
         x.poste_id as poste_id,
         x.mesure_id as mesure_id,
         m.agreg_type as agreg_type,
@@ -651,8 +651,8 @@ SELECT add_continuous_aggregate_policy('x_min_day',
 */
 create materialized view x_min_month WITH (timescaledb.continuous) as
   select
-        -- time_bucket('1 month', date_local) as date_local,
-        timescaledb_experimental.time_bucket_ng('1 month', date_local, origin => '1950-01-01') as date_local,
+        time_bucket('1 month', date_local) as date_local,
+        -- timescaledb_experimental.time_bucket_ng('1 month', date_local, origin => '1950-01-01') as date_local,
         poste_id as poste_id,
         mesure_id as mesure_id,
         agreg_type as agreg_type,
@@ -675,8 +675,8 @@ SELECT add_continuous_aggregate_policy('x_min_month',
 */
 create materialized view x_max_day WITH (timescaledb.continuous) as
   select
-        -- time_bucket('1 day', x.date_local, origin => '1950-01-01') as date_local,
-        timescaledb_experimental.time_bucket_ng('1 day', x.date_local, origin => '1950-01-01') as date_local,
+        time_bucket('1 day', x.date_local, origin => '1950-01-01') as date_local,
+        -- timescaledb_experimental.time_bucket_ng('1 day', x.date_local, origin => '1950-01-01') as date_local,
         x.poste_id as poste_id,
         x.mesure_id as mesure_id,
         m.agreg_type as agreg_type,
@@ -704,8 +704,8 @@ SELECT add_continuous_aggregate_policy('x_max_day',
 */
 create materialized view x_max_month WITH (timescaledb.continuous) as
   select
-        -- time_bucket('1 month', date_local, origin => '1950-01-01') as date_local,
-        timescaledb_experimental.time_bucket_ng('1 month', date_local, origin => '1950-01-01') as date_local,
+        time_bucket('1 month', date_local, origin => '1950-01-01') as date_local,
+        -- timescaledb_experimental.time_bucket_ng('1 month', date_local, origin => '1950-01-01') as date_local,
         poste_id as poste_id,
         mesure_id as mesure_id,
         agreg_type as agreg_type,
