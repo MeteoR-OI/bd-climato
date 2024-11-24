@@ -83,7 +83,7 @@ class Mesure(models.Model):
     max = models.BooleanField(null=True, db_default=True, verbose_name="Calcul des max")
     min = models.BooleanField(null=True, db_default=True, verbose_name="Calcul des min")
     agreg_type = models.IntegerField(null=True, choices=Aggreg_Type.choices, db_default=Aggreg_Type.NONE, verbose_name="Type d'agregation des donnees")
-    is_wind = models.BooleanField(null=True, db_default=False, verbose_name="Calcul du wind_dir")
+    is_winddir = models.BooleanField(null=True, db_default=False, verbose_name="Is it a wind direction")
     is_maxdir = models.BooleanField(null=True, db_default=False, verbose_name="existance de la colonne max_dir")    
     allow_zero = models.BooleanField(null=True, db_default=True, verbose_name="Zero est une valeur valide")
     convert = models.JSONField(null=True, verbose_name="Conversion")
